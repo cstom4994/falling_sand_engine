@@ -4,7 +4,7 @@
 #define _METADOT_DEBUGIMPL_HPP_
 
 #include "core/core.hpp"
-#include "core/macros.h"
+#include "core/macros.hpp"
 #include "ui/imgui/imgui_impl.hpp"
 
 struct DebugInfo {

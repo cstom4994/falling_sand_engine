@@ -17,25 +17,25 @@
 #include "core/const.h"
 #include "core/core.h"
 #include "core/core.hpp"
-#include "core/cpp/command.hpp"
-#include "core/cpp/static_relfection.hpp"
 #include "core/cpp/utils.hpp"
 #include "core/dbgtools.h"
 #include "core/debug.hpp"
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
-#include "core/macros.h"
+#include "core/macros.hpp"
+#include "core/utility.hpp"
 #include "engine/engine.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_ui.hpp"
+#include "libs/glad/glad.h"
 #include "libs/imgui/font_awesome.h"
 #include "libs/imgui/imgui.h"
 #include "meta/meta.hpp"
+#include "meta/static_relfection.hpp"
 #include "npc.hpp"
 #include "reflectionflat.hpp"
 #include "renderer/gpu.hpp"
-#include "libs/glad/glad.h"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
@@ -46,386 +46,6 @@ IMPLENGINE();
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
 #define ICON_LANG(_i, _c) std::string(std::string(_i) + " " + global.I18N.Get(_c)).c_str()
-
-namespace ImGui {
-struct InputTextCallback_UserData {
-    std::string *Str;
-    ImGuiInputTextCallback ChainCallback;
-    void *ChainCallbackUserData;
-};
-
-static int InputTextCallback(ImGuiInputTextCallbackData *data) {
-    auto *user_data = (InputTextCallback_UserData *)data->UserData;
-    if (data->EventFlag == ImGuiInputTextFlags_CallbackResize) {
-
-        std::string *str = user_data->Str;
-        IM_ASSERT(data->Buf == str->c_str());
-        str->resize(data->BufTextLen);
-        data->Buf = (char *)str->c_str();
-    } else if (user_data->ChainCallback) {
-
-        data->UserData = user_data->ChainCallbackUserData;
-        return user_data->ChainCallback(data);
-    }
-    return 0;
-}
-
-bool ConsoleInputText(const char *label, std::string *str, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void *user_data) {
-    IM_ASSERT((flags & ImGuiInputTextFlags_CallbackResize) == 0);
-    flags |= ImGuiInputTextFlags_CallbackResize;
-
-    InputTextCallback_UserData cb_user_data;
-    cb_user_data.Str = str;
-    cb_user_data.ChainCallback = callback;
-    cb_user_data.ChainCallbackUserData = user_data;
-    return InputText(label, (char *)str->c_str(), str->capacity() + 1, flags, InputTextCallback, &cb_user_data);
-}
-}  // namespace ImGui
-
-ImGuiConsole::ImGuiConsole(std::string c_name, size_t inputBufferSize) : m_ConsoleName(std::move(c_name)) {
-
-    m_Buffer.resize(inputBufferSize);
-    m_HistoryIndex = std::numeric_limits<size_t>::min();
-
-    InitIniSettings();
-
-    if (!m_LoadedFromIni) {
-        DefaultSettings();
-    }
-
-    RegisterConsoleCommands();
-}
-
-void ImGuiConsole::Draw() {
-
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, m_WindowAlpha);
-    // if (!ImGui::Begin(m_ConsoleName.data(), nullptr, ImGuiWindowFlags_MenuBar)) {
-    //     ImGui::PopStyleVar();
-    //     ImGui::End();
-    //     return;
-    // }
-    ImGui::PopStyleVar();
-
-    MenuBar();
-
-    if (m_FilterBar) {
-        FilterBar();
-    }
-
-    LogWindow();
-
-    ImGui::Separator();
-
-    InputBar();
-
-    // ImGui::End();
-}
-
-Command::System &ImGuiConsole::System() { return m_ConsoleSystem; }
-
-void ImGuiConsole::InitIniSettings() {
-    ImGuiContext &g = *ImGui::GetCurrentContext();
-
-    if (g.Initialized && !g.SettingsLoaded && !m_LoadedFromIni) {
-        // ImGuiSettingsHandler console_ini_handler;
-        // console_ini_handler.TypeName = "Console";
-        // console_ini_handler.TypeHash = ImHashStr("Console");
-        // console_ini_handler.ClearAllFn = SettingsHandler_ClearALl;
-        // console_ini_handler.ApplyAllFn = SettingsHandler_ApplyAll;
-        // console_ini_handler.ReadInitFn = SettingsHandler_ReadInit;
-        // console_ini_handler.ReadOpenFn = SettingsHandler_ReadOpen;
-        // console_ini_handler.ReadLineFn = SettingsHandler_ReadLine;
-        // console_ini_handler.WriteAllFn = SettingsHandler_WriteAll;
-        // console_ini_handler.UserData = this;
-        // g.SettingsHandlers.push_back(console_ini_handler);
-    }
-}
-
-void ImGuiConsole::DefaultSettings() {
-
-    m_AutoScroll = true;
-    m_ScrollToBottom = false;
-    m_ColoredOutput = true;
-    m_FilterBar = true;
-    m_TimeStamps = true;
-
-    m_WindowAlpha = 1;
-    m_ColorPalette[COL_COMMAND] = ImVec4(1.f, 1.f, 1.f, 1.f);
-    m_ColorPalette[COL_LOG] = ImVec4(1.f, 1.f, 1.f, 0.5f);
-    m_ColorPalette[COL_WARNING] = ImVec4(1.0f, 0.87f, 0.37f, 1.f);
-    m_ColorPalette[COL_ERROR] = ImVec4(1.f, 0.365f, 0.365f, 1.f);
-    m_ColorPalette[COL_INFO] = ImVec4(0.46f, 0.96f, 0.46f, 1.f);
-    m_ColorPalette[COL_TIMESTAMP] = ImVec4(1.f, 1.f, 1.f, 0.5f);
-}
-
-void ImGuiConsole::RegisterConsoleCommands() {
-    m_ConsoleSystem.RegisterCommand("clear", "Clear console log", [this]() { m_ConsoleSystem.Items().clear(); });
-
-    m_ConsoleSystem.RegisterCommand(
-            "filter", "Set screen filter",
-            [this](const String &filter) {
-                std::memset(m_TextFilter.InputBuf, '\0', 256);
-
-                std::copy(filter.m_String.c_str(), filter.m_String.c_str() + std::min(static_cast<int>(filter.m_String.length()), 255), m_TextFilter.InputBuf);
-
-                m_TextFilter.Build();
-            },
-            Command::Arg<String>("filter_str"));
-
-    // m_ConsoleSystem.RegisterCommand(
-    //         "run", "Run given script",
-    //         [this](const String &filter) { m_ConsoleSystem.RunScript(filter.m_String); },
-    //         Command::Arg<String>("script_name"));
-}
-
-void ImGuiConsole::FilterBar() {
-    m_TextFilter.Draw("Filter", ImGui::GetWindowWidth() * 0.25f);
-    ImGui::Separator();
-}
-
-void ImGuiConsole::LogWindow() {
-    const F32 footerHeightToReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
-    if (ImGui::BeginChild("ScrollRegion##", ImVec2(0, -footerHeightToReserve), false, 0)) {
-
-        static const F32 timestamp_width = ImGui::CalcTextSize("00:00:00:0000").x;
-        int count = 0;
-
-        ImGui::PushTextWrapPos();
-
-        for (const auto &item : m_ConsoleSystem.Items()) {
-
-            if (!m_TextFilter.PassFilter(item.Get().c_str())) continue;
-
-            if (item.m_Type == Command::COMMAND) {
-                if (m_TimeStamps) ImGui::PushTextWrapPos(ImGui::GetColumnWidth() - timestamp_width);
-                if (count++ != 0) ImGui::Dummy(ImVec2(-1, ImGui::GetFontSize()));
-            }
-
-            if (m_ColoredOutput) {
-                ImGui::PushStyleColor(ImGuiCol_Text, m_ColorPalette[item.m_Type]);
-                ImGui::TextUnformatted(item.Get().data());
-                ImGui::PopStyleColor();
-            } else {
-                ImGui::TextUnformatted(item.Get().data());
-            }
-
-            if (item.m_Type == Command::COMMAND && m_TimeStamps) {
-
-                ImGui::PopTextWrapPos();
-
-                ImGui::SameLine(ImGui::GetColumnWidth(-1) - timestamp_width);
-
-                ImGui::PushStyleColor(ImGuiCol_Text, m_ColorPalette[COL_TIMESTAMP]);
-                ImGui::Text("%02d:%02d:%02d:%04d", ((item.m_TimeStamp / 1000 / 3600) % 24), ((item.m_TimeStamp / 1000 / 60) % 60), ((item.m_TimeStamp / 1000) % 60), item.m_TimeStamp % 1000);
-                ImGui::PopStyleColor();
-            }
-        }
-
-        ImGui::PopTextWrapPos();
-
-        if ((m_ScrollToBottom && (ImGui::GetScrollY() >= ImGui::GetScrollMaxY() || m_AutoScroll))) ImGui::SetScrollHereY(1.0f);
-        m_ScrollToBottom = false;
-
-        ImGui::EndChild();
-    }
-}
-
-void ImGuiConsole::InputBar() {
-
-    ImGuiInputTextFlags inputTextFlags = ImGuiInputTextFlags_CallbackHistory | ImGuiInputTextFlags_CallbackCharFilter | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_EnterReturnsTrue |
-                                         ImGuiInputTextFlags_CallbackAlways;
-
-    bool reclaimFocus = false;
-
-    ImGui::PushItemWidth(-ImGui::GetStyle().ItemSpacing.x * 7);
-    if (ImGui::ConsoleInputText("Input", &m_Buffer, inputTextFlags, InputCallback, this)) {
-
-        if (!m_Buffer.empty()) {
-
-            m_ConsoleSystem.RunCommand(m_Buffer);
-
-            m_ScrollToBottom = true;
-        }
-
-        reclaimFocus = true;
-
-        m_Buffer.clear();
-    }
-    ImGui::PopItemWidth();
-
-    if (ImGui::IsItemEdited() && !m_WasPrevFrameTabCompletion) {
-        m_CmdSuggestions.clear();
-    }
-    m_WasPrevFrameTabCompletion = false;
-
-    ImGui::SetItemDefaultFocus();
-    if (reclaimFocus) ImGui::SetKeyboardFocusHere(-1);
-}
-
-void ImGuiConsole::MenuBar() {
-    if (ImGui::BeginMenuBar()) {
-
-        if (ImGui::BeginMenu(LANG("ui_settings"))) {
-
-            ImGui::Checkbox(LANG("ui_color_output"), &m_ColoredOutput);
-            ImGui::SameLine();
-            HelpMaker("Enable colored command output");
-
-            ImGui::Checkbox(LANG("ui_auto_scroll"), &m_AutoScroll);
-            ImGui::SameLine();
-            HelpMaker("Automatically scroll to bottom of console log");
-
-            ImGui::Checkbox(LANG("ui_filter_bar"), &m_FilterBar);
-            ImGui::SameLine();
-            HelpMaker("Enable console filter bar");
-
-            ImGui::Checkbox(LANG("ui_time_stamps"), &m_TimeStamps);
-            ImGui::SameLine();
-            HelpMaker("Display command execution timestamps");
-
-            if (ImGui::Button(LANG("ui_reset_settings"), ImVec2(ImGui::GetColumnWidth(), 0))) ImGui::OpenPopup("Reset Settings?");
-
-            if (ImGui::BeginPopupModal("Reset Settings?", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-                ImGui::Text(
-                        "All settings will be reset to default.\nThis operation cannot be "
-                        "undone!\n\n");
-                ImGui::Separator();
-
-                if (ImGui::Button(LANG("ui_reset"), ImVec2(120, 0))) {
-                    DefaultSettings();
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::SetItemDefaultFocus();
-                ImGui::SameLine();
-                if (ImGui::Button(LANG("ui_cancel"), ImVec2(120, 0))) {
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndPopup();
-            }
-
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu(LANG("ui_appearance"))) {
-
-            ImGuiColorEditFlags flags = ImGuiColorEditFlags_Float | ImGuiColorEditFlags_AlphaPreview | ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar;
-
-            ImGui::TextUnformatted("Color Palette");
-            ImGui::Indent();
-            ImGui::ColorEdit4("Command##", (F32 *)&m_ColorPalette[COL_COMMAND], flags);
-            ImGui::ColorEdit4("Log##", (F32 *)&m_ColorPalette[COL_LOG], flags);
-            ImGui::ColorEdit4("Warning##", (F32 *)&m_ColorPalette[COL_WARNING], flags);
-            ImGui::ColorEdit4("Error##", (F32 *)&m_ColorPalette[COL_ERROR], flags);
-            ImGui::ColorEdit4("Info##", (F32 *)&m_ColorPalette[COL_INFO], flags);
-            ImGui::ColorEdit4("Time Stamp##", (F32 *)&m_ColorPalette[COL_TIMESTAMP], flags);
-            ImGui::Unindent();
-
-            ImGui::Separator();
-
-            ImGui::TextUnformatted(LANG("ui_background"));
-            ImGui::SliderFloat("Transparency##", &m_WindowAlpha, 0.1f, 1.f);
-
-            ImGui::EndMenu();
-        }
-
-        ImGui::EndMenuBar();
-    }
-}
-
-void ImGuiConsole::HelpMaker(const char *desc) {
-    ImGui::TextDisabled("(?)");
-    if (ImGui::IsItemHovered()) {
-        ImGui::BeginTooltip();
-        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-        ImGui::TextUnformatted(desc);
-        ImGui::PopTextWrapPos();
-        ImGui::EndTooltip();
-    }
-}
-
-int ImGuiConsole::InputCallback(ImGuiInputTextCallbackData *data) {
-
-    if (data->BufTextLen == 0 && (data->EventFlag != ImGuiInputTextFlags_CallbackHistory)) return 0;
-
-    std::string input_str = data->Buf;
-    std::string trim_str;
-    auto console = static_cast<ImGuiConsole *>(data->UserData);
-
-    size_t startPos = console->m_Buffer.find_first_not_of(' ');
-    size_t endPos = console->m_Buffer.find_last_not_of(' ');
-
-    if (startPos != std::string::npos && endPos != std::string::npos)
-        trim_str = console->m_Buffer.substr(startPos, endPos + 1);
-    else
-        trim_str = console->m_Buffer;
-
-    switch (data->EventFlag) {
-        case ImGuiInputTextFlags_CallbackCompletion: {
-
-            size_t startSubtrPos = trim_str.find_last_of(' ');
-            Command::AutoComplete *console_autocomplete;
-
-            if (startSubtrPos == std::string::npos) {
-                startSubtrPos = 0;
-                console_autocomplete = &console->m_ConsoleSystem.CmdAutocomplete();
-            } else {
-                startSubtrPos += 1;
-                console_autocomplete = &console->m_ConsoleSystem.VarAutocomplete();
-            }
-
-            if (!trim_str.empty()) {
-
-                if (!console->m_CmdSuggestions.empty()) {
-                    console->m_ConsoleSystem.Log(Command::COMMAND) << "Suggestions: " << Command::endl;
-
-                    for (const auto &suggestion : console->m_CmdSuggestions) console->m_ConsoleSystem.Log(Command::LOG) << suggestion << Command::endl;
-
-                    console->m_CmdSuggestions.clear();
-                }
-
-                std::string partial = console_autocomplete->Suggestions(trim_str.substr(startSubtrPos, endPos + 1), console->m_CmdSuggestions);
-
-                if (!console->m_CmdSuggestions.empty() && console->m_CmdSuggestions.size() == 1) {
-                    data->DeleteChars(static_cast<int>(startSubtrPos), static_cast<int>(data->BufTextLen - startSubtrPos));
-                    data->InsertChars(static_cast<int>(startSubtrPos), console->m_CmdSuggestions[0].data());
-                    console->m_CmdSuggestions.clear();
-                } else {
-
-                    if (!partial.empty()) {
-                        data->DeleteChars(static_cast<int>(startSubtrPos), static_cast<int>(data->BufTextLen - startSubtrPos));
-                        data->InsertChars(static_cast<int>(startSubtrPos), partial.data());
-                    }
-                }
-            }
-
-            console->m_WasPrevFrameTabCompletion = true;
-        } break;
-
-        case ImGuiInputTextFlags_CallbackHistory: {
-
-            data->DeleteChars(0, data->BufTextLen);
-
-            if (console->m_HistoryIndex == std::numeric_limits<size_t>::min()) console->m_HistoryIndex = console->m_ConsoleSystem.History().GetNewIndex();
-
-            if (data->EventKey == ImGuiKey_UpArrow) {
-                if (console->m_HistoryIndex) --(console->m_HistoryIndex);
-            } else {
-                if (console->m_HistoryIndex < console->m_ConsoleSystem.History().Size()) ++(console->m_HistoryIndex);
-            }
-
-            std::string prevCommand = console->m_ConsoleSystem.History()[console->m_HistoryIndex];
-
-            data->InsertChars(data->CursorPos, prevCommand.data());
-        } break;
-
-        case ImGuiInputTextFlags_CallbackCharFilter:
-        case ImGuiInputTextFlags_CallbackAlways:
-        default:
-            break;
-    }
-    return 0;
-}
 
 void ProfilerDrawFrameNavigation(FrameInfo *_infos, uint32_t _numInfos) {
     ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_FirstUseEver);
@@ -1217,57 +837,57 @@ void ImGuiLayer::Init() {
     fileDialog.SetTitle("选择文件");
     fileDialog.SetTypeFilters({".lua"});
 
-    auto create_console = [&]() {
-        METADOT_NEW(C, console_imgui, ImGuiConsole, global.I18N.Get("ui_console"));
+    // auto create_console = [&]() {
+    //     METADOT_NEW(C, console_imgui, ImGuiConsole, global.I18N.Get("ui_console"));
 
-        // Our state
-        ImVec4 clear_color = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+    //    // Our state
+    //    ImVec4 clear_color = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
 
-        // Register variables
-        console_imgui->System().RegisterVariable("background_color", clear_color, imvec4_setter);
+    //    // Register variables
+    //    console_imgui->System().RegisterVariable("background_color", clear_color, imvec4_setter);
 
-        console_imgui->System().RegisterVariable("plPosX", global.GameData_.plPosX, Command::Arg<F32>(""));
-        console_imgui->System().RegisterVariable("plPosY", global.GameData_.plPosY, Command::Arg<F32>(""));
+    //    console_imgui->System().RegisterVariable("plPosX", global.GameData_.plPosX, Command::Arg<F32>(""));
+    //    console_imgui->System().RegisterVariable("plPosY", global.GameData_.plPosY, Command::Arg<F32>(""));
 
-        console_imgui->System().RegisterVariable("scale", Screen.gameScale, Command::Arg<I32>(""));
+    //    console_imgui->System().RegisterVariable("scale", Screen.gameScale, Command::Arg<I32>(""));
 
-        MetaEngine::Struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>("")); });
+    //    MetaEngine::Struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>("")); });
 
-        // Register custom commands
-        console_imgui->System().RegisterCommand("random_background_color", "Assigns a random color to the background application", [&clear_color]() {
-            clear_color.x = (rand() % 256) / 256.f;
-            clear_color.y = (rand() % 256) / 256.f;
-            clear_color.z = (rand() % 256) / 256.f;
-            clear_color.w = (rand() % 256) / 256.f;
-        });
-        console_imgui->System().RegisterCommand("reset_background_color", "Reset background color to its original value", [&clear_color, val = clear_color]() { clear_color = val; });
+    //    // Register custom commands
+    //    console_imgui->System().RegisterCommand("random_background_color", "Assigns a random color to the background application", [&clear_color]() {
+    //        clear_color.x = (rand() % 256) / 256.f;
+    //        clear_color.y = (rand() % 256) / 256.f;
+    //        clear_color.z = (rand() % 256) / 256.f;
+    //        clear_color.w = (rand() % 256) / 256.f;
+    //    });
+    //    console_imgui->System().RegisterCommand("reset_background_color", "Reset background color to its original value", [&clear_color, val = clear_color]() { clear_color = val; });
 
-        console_imgui->System().RegisterCommand("print_methods", "a", [this]() {
-            for (auto &cmds : console_imgui->System().Commands()) {
-                console_imgui->System().Log(Command::ItemType::LOG) << "\t" << cmds.first << Command::endl;
-            }
-        });
-        console_imgui->System().RegisterCommand(
-                "lua", "dostring",
-                [&](const char *s) {
-                    auto &l = Scripting::GetSingletonPtr()->Lua;
-                    l->s_lua.dostring(s);
-                },
-                Command::Arg<String>(""));
+    //    console_imgui->System().RegisterCommand("print_methods", "a", [this]() {
+    //        for (auto &cmds : console_imgui->System().Commands()) {
+    //            console_imgui->System().Log(Command::ItemType::LOG) << "\t" << cmds.first << Command::endl;
+    //        }
+    //    });
+    //    console_imgui->System().RegisterCommand(
+    //            "lua", "dostring",
+    //            [&](const char *s) {
+    //                auto &l = Scripting::GetSingletonPtr()->Lua;
+    //                l->s_lua.dostring(s);
+    //            },
+    //            Command::Arg<String>(""));
 
-        console_imgui->System().RegisterVariable("tps", Time.maxTps, Command::Arg<U32>(""));
+    //    console_imgui->System().RegisterVariable("tps", Time.maxTps, Command::Arg<U32>(""));
 
-        console_imgui->System().Log(Command::ItemType::INFO) << "游戏控制终端" << Command::endl;
-    };
+    //    console_imgui->System().Log(Command::ItemType::INFO) << "游戏控制终端" << Command::endl;
+    //};
 
-    create_console();
+    // create_console();
 
     firstRun = true;
 }
 
 void ImGuiLayer::End() {
 
-    METADOT_DELETE(C, console_imgui, ImGuiConsole);
+    // METADOT_DELETE(C, console_imgui, ImGuiConsole);
 
     RendererShutdownFunction();
     PlatformShutdownFunction();
@@ -1393,7 +1013,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             ImGui::BeginTabBar("ui_tweaks_tabbar");
 
             if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_TERMINAL, "ui_console"))) {
-                console_imgui->Draw();
+                // console_imgui->Draw();
                 ImGui::EndTabItem();
             }
 
@@ -1428,7 +1048,7 @@ CSTDTime | {6} | Nothing)";
                 rawtime = time(NULL);
                 struct tm *timeinfo = localtime(&rawtime);
 
-                TickInfoPanel.data = MetaEngine::Format(TickInfoPanel.data, Time.tickCount, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTickTime, metadot_gettime(), rawtime);
+                TickInfoPanel.data = MetaEngine::Format(TickInfoPanel.data, Time.tickCount, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTickTime, ME_gettime(), rawtime);
 
                 ImGui::Auto(TickInfoPanel);
 
@@ -1448,13 +1068,13 @@ CSTDTime | {6} | Nothing)";
                     ImGui::SameLine();
                     if (ImGui::Button("NPC")) {
 
-                        vec4 pl_transform{-global.game->GameIsolate_.world->loadZone.x + global.game->GameIsolate_.world->tickZone.x + global.game->GameIsolate_.world->tickZone.w / 2.0f,
-                                          -global.game->GameIsolate_.world->loadZone.y + global.game->GameIsolate_.world->tickZone.y + global.game->GameIsolate_.world->tickZone.h / 2.0f, 10, 20};
+                        MEvec4 pl_transform{-global.game->GameIsolate_.world->loadZone.x + global.game->GameIsolate_.world->tickZone.x + global.game->GameIsolate_.world->tickZone.w / 2.0f,
+                                            -global.game->GameIsolate_.world->loadZone.y + global.game->GameIsolate_.world->tickZone.y + global.game->GameIsolate_.world->tickZone.h / 2.0f, 10, 20};
 
                         b2PolygonShape sh;
                         sh.SetAsBox(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
-                        RigidBody *rb = global.game->GameIsolate_.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.pos.x + pl_transform.rect.x / 2.0f - 0.5,
-                                                                                       pl_transform.pos.y + pl_transform.rect.y / 2.0f - 0.5, 0, sh, 1, 1, NULL);
+                        RigidBody *rb = global.game->GameIsolate_.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.x + pl_transform.z / 2.0f - 0.5,
+                                                                                       pl_transform.y + pl_transform.w / 2.0f - 0.5, 0, sh, 1, 1, NULL);
                         rb->body->SetGravityScale(0);
                         rb->body->SetLinearDamping(0);
                         rb->body->SetAngularDamping(0);
@@ -1462,11 +1082,12 @@ CSTDTime | {6} | Nothing)";
                         auto npc = global.game->GameIsolate_.world->Reg().create_entity();
                         MetaEngine::ECS::entity_filler(npc)
                                 .component<Controlable>()
-                                .component<WorldEntity>(true, pl_transform.pos.x, pl_transform.pos.y, 0.0f, 0.0f, (int)pl_transform.rect.x, (int)pl_transform.rect.y, rb, std::string("NPC"))
+                                .component<WorldEntity>(true, pl_transform.x, pl_transform.y, 0.0f, 0.0f, (int)pl_transform.z, (int)pl_transform.w, rb, std::string("NPC"))
                                 .component<Bot>(1);
 
                         auto npc_bot = global.game->GameIsolate_.world->Reg().find_component<Bot>(npc);
-                        // npc_bot->setItemInHand(global.game->GameIsolate_.world->Reg().find_component<WorldEntity>(global.game->GameIsolate_.world->player), i3, global.game->GameIsolate_.world.get());
+                        // npc_bot->setItemInHand(global.game->GameIsolate_.world->Reg().find_component<WorldEntity>(global.game->GameIsolate_.world->player), i3,
+                        // global.game->GameIsolate_.world.get());
                     }
                     ImGui::SameLine();
                     if (ImGui::Button("Audio")) {
@@ -1487,7 +1108,7 @@ CSTDTime | {6} | Nothing)";
 
                         if (global.game->GameIsolate_.world == nullptr || !global.game->GameIsolate_.world->isPlayerInWorld()) {
                         } else {
-                            using namespace MetaEngine::StaticRefl;
+                            using namespace ME::meta::static_refl;
 
                             TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t depth) {
                                 for (std::size_t i = 0; i < depth; i++) std::cout << "  ";
@@ -1583,7 +1204,7 @@ CSTDTime | {6} | Nothing)";
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem(CC("自动序列测试"))) {
-                    //ShowAutoTestWindow();
+                    // ShowAutoTestWindow();
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();
@@ -1622,7 +1243,7 @@ CSTDTime | {6} | Nothing)";
                     static bool check_rigidbody = false;
                     ImGui::Checkbox(CC("只查看刚体有效"), &check_rigidbody);
 
-                    static vec2 check_chunk = {1, 1};
+                    static MEvec2 check_chunk = {1, 1};
                     static Chunk *check_chunk_ptr = nullptr;
 
                     if (ImGui::BeginCombo("ChunkList", CC("选择检视区块..."))) {
@@ -1639,7 +1260,7 @@ CSTDTime | {6} | Nothing)";
 
                     ImGui::Indent();
                     if (check_chunk_ptr != nullptr)
-                        MetaEngine::StaticRefl::TypeInfo<Chunk>::ForEachVarOf(*check_chunk_ptr, [&](const auto &field, auto &&var) {
+                        ME::meta::static_refl::TypeInfo<Chunk>::ForEachVarOf(*check_chunk_ptr, [&](const auto &field, auto &&var) {
                             if (field.name == "pack_filename") return;
 
                             if (check_rigidbody)
@@ -1680,7 +1301,7 @@ CSTDTime | {6} | Nothing)";
 
                     // if (check_rigidbody_ptr != nullptr) {
                     //     ImGui::Text("刚体名: %s", check_rigidbody_ptr->name.c_str());
-                    //     MetaEngine::StaticRefl::TypeInfo<RigidBody>::ForEachVarOf(*check_rigidbody_ptr, [&](const auto &field, auto &&var) { ImGui::Auto(var, std::string(field.name)); });
+                    //     ME::meta::static_refl::TypeInfo<RigidBody>::ForEachVarOf(*check_rigidbody_ptr, [&](const auto &field, auto &&var) { ImGui::Auto(var, std::string(field.name)); });
                     // }
                 }
                 ImGui::EndTabItem();
@@ -1696,7 +1317,8 @@ CSTDTime | {6} | Nothing)";
 
                     ImGui::TableHeadersRow();
 
-                    // MetaEngine::Struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>(""));
+                    // MetaEngine::Struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value,
+                    // Command::Arg<int>(""));
                     // });
                     int i = 0;
 
@@ -1806,7 +1428,7 @@ CSTDTime | {6} | Nothing)";
             ImGui::BeginTabBar("ViewContents");
 
             for (auto &view : view_contents) {
-                if (ImGui::BeginTabItem(FUtil_GetFileName(view.file.c_str()))) {
+                if (ImGui::BeginTabItem(ME_fs_get_filename(view.file.c_str()))) {
                     view_editing = &view;
 
                     if (!view_editing->is_edited) {
@@ -1826,7 +1448,7 @@ CSTDTime | {6} | Nothing)";
                 switch (view_editing->tags) {
                     case Editor_Code:
                         ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(), editor.IsOverwrite() ? "Ovr" : "Ins",
-                                    editor.CanUndo() ? "*" : " ", editor.GetLanguageDefinition().mName.c_str(), FUtil_GetFileName(view_editing->file.c_str()));
+                                    editor.CanUndo() ? "*" : " ", editor.GetLanguageDefinition().mName.c_str(), ME_fs_get_filename(view_editing->file.c_str()));
 
                         editor.Render("TextEditor");
                         break;

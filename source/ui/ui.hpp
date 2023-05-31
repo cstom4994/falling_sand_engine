@@ -122,8 +122,8 @@ public:
 
     bool UIIsMouseOnControls();
 
-    void DrawPoint(vec3 pos, float size, Texture* texture, U8 r, U8 g, U8 b);
-    void DrawLine(vec3 min, vec3 max, float thickness, U8 r, U8 g, U8 b);
+    void DrawPoint(MEvec3 pos, float size, Texture* texture, U8 r, U8 g, U8 b);
+    void DrawLine(MEvec3 min, MEvec3 max, float thickness, U8 r, U8 g, U8 b);
 };
 
 #endif

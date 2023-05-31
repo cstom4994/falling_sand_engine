@@ -30,8 +30,8 @@ const char *GLEnumToString(GLenum e);
 
 class Drawing {
 public:
-    static vec2 rotate_point(float cx, float cy, float angle, vec2 p);
-    static void drawPolygon(R_Target *renderer, METAENGINE_Color col, vec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
+    static MEvec2 rotate_point(float cx, float cy, float angle, MEvec2 p);
+    static void drawPolygon(R_Target *renderer, METAENGINE_Color col, MEvec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
     static U32 darkenColor(U32 col, float brightness);
     static void drawText(std::string text, METAENGINE_Color col, int x, int y);
     static void drawTextWithPlate(R_Target *target, std::string text, METAENGINE_Color col, int x, int y, METAENGINE_Color backcolor = {77, 77, 77, 140});

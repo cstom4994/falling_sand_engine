@@ -6,7 +6,7 @@
 #include "core/sdl_wrapper.h"
 
 #define CUTE_SYNC_IMPLEMENTATION
-#ifdef METADOT_PLATFORM_WINDOWS
+#ifdef ME_PLATFORM_WINDOWS
 #define CUTE_SYNC_WINDOWS
 #else
 #define CUTE_SYNC_SDL
@@ -416,10 +416,10 @@ struct intern_table_t {
     Arena arena;
     ReadWriteLock lock;
 
-    METADOT_INLINE void read_lock() { metadot_read_lock(&lock); }
-    METADOT_INLINE void read_unlock() { metadot_read_unlock(&lock); }
-    METADOT_INLINE void write_lock() { metadot_write_lock(&lock); }
-    METADOT_INLINE void write_unlock() { metadot_write_unlock(&lock); }
+    ME_INLINE void read_lock() { metadot_read_lock(&lock); }
+    ME_INLINE void read_unlock() { metadot_read_unlock(&lock); }
+    ME_INLINE void write_lock() { metadot_write_lock(&lock); }
+    ME_INLINE void write_unlock() { metadot_write_unlock(&lock); }
 };
 
 static intern_table_t* g_intern_table;
@@ -614,13 +614,13 @@ void metadot_message_box(METAENGINE_MessageBoxType type, const char* title, cons
 static int s_primes[] = {31,     67,      127,     257,     509,     1021,     2053,     4099,     8191,      16381,     32771,     65537,      131071,    262147,
                          524287, 1048573, 2097143, 4194301, 8388617, 16777213, 33554467, 67108859, 134217757, 268435459, 536870909, 1073741827, 2147483647};
 
-static METADOT_INLINE int s_next_prime(int a) {
+static ME_INLINE int s_next_prime(int a) {
     int i = 0;
     while (s_primes[i] <= a) ++i;
     return s_primes[i];
 }
 
-static METADOT_INLINE void* s_get_item(const METAENGINE_Hhdr* table, int index) {
+static ME_INLINE void* s_get_item(const METAENGINE_Hhdr* table, int index) {
     uint8_t* items = (uint8_t*)table->items_data;
     return items + index * table->item_size;
 }
@@ -662,9 +662,9 @@ void metadot_hashtable_free_impl(METAENGINE_Hhdr* table) {
     METAENGINE_FW_FREE(table);
 }
 
-static METADOT_INLINE int s_keys_equal(const METAENGINE_Hhdr* table, const void* a, const void* b) { return !METAENGINE_MEMCMP(a, b, table->key_size); }
+static ME_INLINE int s_keys_equal(const METAENGINE_Hhdr* table, const void* a, const void* b) { return !METAENGINE_MEMCMP(a, b, table->key_size); }
 
-static METADOT_INLINE void* s_get_key(const METAENGINE_Hhdr* table, int index) {
+static ME_INLINE void* s_get_key(const METAENGINE_Hhdr* table, int index) {
     uint8_t* keys = (uint8_t*)table->items_key;
     return keys + index * table->key_size;
 }
@@ -954,7 +954,7 @@ METAENGINE_Handle metadot_handle_allocator_alloc(METAENGINE_HandleTable* table, 
     return handle;
 }
 
-static METADOT_INLINE uint32_t s_table_index(METAENGINE_Handle handle) { return (uint32_t)((handle & 0xFFFFFFFF00000000ULL) >> 32); }
+static ME_INLINE uint32_t s_table_index(METAENGINE_Handle handle) { return (uint32_t)((handle & 0xFFFFFFFF00000000ULL) >> 32); }
 
 uint32_t metadot_handle_allocator_get_index(METAENGINE_HandleTable* table, METAENGINE_Handle handle) {
     METAENGINE_HandleEntry* m_handles = table->m_handles.data();

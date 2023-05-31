@@ -359,7 +359,7 @@ void ProfilerRelease(ProfilerFrame* _data) {
 }
 
 uint64_t ProfilerGetClock() {
-#ifdef METADOT_PLATFORM_WINDOWS
+#ifdef ME_PLATFORM_WINDOWS
 #if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__x86_64__)
     uint64_t q = __rdtsc();
 #else
@@ -367,17 +367,17 @@ uint64_t ProfilerGetClock() {
     QueryPerformanceCounter(&li);
     int64_t q = li.QuadPart;
 #endif
-#elif METADOT_PLATFORM_XBOXONE
+#elif ME_PLATFORM_XBOXONE
     LARGE_INTEGER li;
     QueryPerformanceCounter(&li);
     int64_t q = li.QuadPart;
-#elif METADOT_PLATFORM_PS4
+#elif ME_PLATFORM_PS4
     int64_t q = sceKernelReadTsc();
-#elif METADOT_PLATFORM_ANDROID
+#elif ME_PLATFORM_ANDROID
     int64_t q = ::clock();
-#elif METADOT_PLATFORM_EMSCRIPTEN
+#elif ME_PLATFORM_EMSCRIPTEN
     int64_t q = (int64_t)(emscripten_get_now() * 1000.0);
-#elif METADOT_PLATFORM_SWITCH
+#elif ME_PLATFORM_SWITCH
     int64_t q = nn::os::GetSystemTick().GetInt64Value();
 #else
     struct timeval now;
@@ -388,7 +388,7 @@ uint64_t ProfilerGetClock() {
 }
 
 uint64_t ProfilerGetClockFrequency() {
-#ifdef METADOT_PLATFORM_WINDOWS
+#ifdef ME_PLATFORM_WINDOWS
 #if defined(_M_IX86) || defined(_M_X64) || defined(__i386__) || defined(__x86_64__)
     static uint64_t frequency = 1;
     static bool initialized = false;
@@ -413,15 +413,15 @@ uint64_t ProfilerGetClockFrequency() {
     QueryPerformanceFrequency(&li);
     return li.QuadPart;
 #endif
-#elif METADOT_PLATFORM_XBOXONE
+#elif ME_PLATFORM_XBOXONE
     LARGE_INTEGER li;
     QueryPerformanceFrequency(&li);
     return li.QuadPart;
-#elif METADOT_PLATFORM_ANDROID
+#elif ME_PLATFORM_ANDROID
     return CLOCKS_PER_SEC;
-#elif METADOT_PLATFORM_PS4
+#elif ME_PLATFORM_PS4
     return sceKernelGetTscFrequency();
-#elif METADOT_PLATFORM_SWITCH
+#elif ME_PLATFORM_SWITCH
     return nn::os::GetSystemTickFrequency();
 #else
     return 1000000;

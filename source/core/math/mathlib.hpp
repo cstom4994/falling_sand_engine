@@ -15,99 +15,13 @@
 #include <vector>
 
 #include "core/core.hpp"
+#include "core/mathlib.hpp"
 #include "libs/imgui/imgui.h"
 
-#ifdef METADOT_PLATFORM_WIN32
+#ifdef ME_PLATFORM_WIN32
 #undef far
 #undef near
 #endif
-
-union vec2 {
-    float v[2] = {};
-    struct {
-        float x, y;
-    };
-    struct {
-        float w, h;
-    };
-
-    vec2(){};
-    vec2(float _x, float _y) { x = _x, y = _y; };
-
-    inline float &operator[](size_t i) { return v[i]; };
-};
-
-union vec3 {
-    float v[3] = {};
-    struct {
-        float x, y, z;
-    };
-    struct {
-        float w, h, d;
-    };
-    struct {
-        float r, g, b;
-    };
-
-    vec3(){};
-    vec3(float _x, float _y, float _z) { x = _x, y = _y, z = _z; };
-    vec3(vec2 _xy, float _z) { x = _xy.x, y = _xy.y, z = _z; };
-    vec3(float _x, vec3 _yz) { x = _x, y = _yz.x, z = _yz.y; };
-
-    inline float &operator[](size_t i) { return v[i]; };
-};
-
-union vec4 {
-    float v[4] = {};
-    struct {
-        float x, y, z, w;
-    };
-    struct {
-        float r, g, b, a;
-    };
-
-    struct {
-        vec2 pos;
-        vec2 rect;
-    };
-
-    vec4(){};
-    vec4(float _x, float _y, float _z, float _w) { x = _x, y = _y, z = _z, w = _w; };
-    vec4(vec3 _xyz, float _w) { x = _xyz.x, y = _xyz.y, z = _xyz.z, w = _w; };
-    vec4(float _x, vec3 _yzw) { x = _x, y = _yzw.x, z = _yzw.y, w = _yzw.z; };
-    vec4(vec2 _xy, vec2 _zw) { x = _xy.x, y = _xy.y, z = _zw.x, w = _zw.y; };
-
-    inline float &operator[](size_t i) { return v[i]; };
-};
-
-union mat3 {
-    float m[3][3] = {};
-    vec3 v[3];
-    mat3(){};
-    inline vec3 &operator[](size_t i) { return v[i]; };
-};
-
-union mat4 {
-    float m[4][4] = {};
-    vec4 v[4];
-    mat4(){};
-    inline vec4 &operator[](size_t i) { return v[i]; };
-};
-
-union quaternion {
-    float q[4] = {};
-    struct {
-        float x, y, z, w;
-    };
-
-    quaternion(){};
-    quaternion(float _x, float _y, float _z, float _w) { x = _x, y = _y, z = _z, w = _w; };
-    quaternion(vec3 _xyz, float _w) { x = _xyz.x, y = _xyz.y, z = _xyz.z, w = _w; };
-    quaternion(float _x, vec3 _yzw) { x = _x, y = _yzw.x, z = _yzw.y, w = _yzw.z; };
-    quaternion(vec2 _xy, vec2 _zw) { x = _xy.x, y = _xy.y, z = _zw.x, w = _zw.y; };
-
-    inline float operator[](size_t i) { return q[i]; };
-};
 
 typedef struct U16Point {
     U16 x;
@@ -122,15 +36,15 @@ typedef struct metadot_rect {
 typedef signed int metadot_bool;
 
 #define VECTOR3_ZERO \
-    vec3 { 0.0f, 0.0f, 0.0f }
+    MEvec3 { 0.0f, 0.0f, 0.0f }
 #define VECTOR3_FORWARD \
-    vec3 { 1.0f, 0.0f, 0.0f }
+    MEvec3 { 1.0f, 0.0f, 0.0f }
 #define VECTOR3_UP \
-    vec3 { 0.0f, 0.0f, 1.0f }
+    MEvec3 { 0.0f, 0.0f, 1.0f }
 #define VECTOR3_DOWN \
-    vec3 { 0.0f, 0.0f, -1.0f }
+    MEvec3 { 0.0f, 0.0f, -1.0f }
 #define VECTOR3_LEFT \
-    vec3 { 0.0f, 1.0f, 0.0f }
+    MEvec3 { 0.0f, 1.0f, 0.0f }
 
 #define INT_INFINITY 0x3f3f3f3f
 
@@ -140,16 +54,13 @@ typedef signed int metadot_bool;
 #define FRAC1(x) (1 - x + floorf(x))
 
 #define UTIL_cross(u, v) \
-    (vec3) { (u).y *(v).z - (u).z *(v).y, (u).z *(v).x - (u).x *(v).z, (u).x *(v).y - (u).y *(v).x }
+    (MEvec3) { (u).y *(v).z - (u).z *(v).y, (u).z *(v).x - (u).x *(v).z, (u).x *(v).y - (u).y *(v).x }
 #define UTIL_dot(u, v) ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
 // #define norm(v) sqrt(dot(v, v))// norm = length of  vector
 
 F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap = 0, int y_wrap = 0, int z_wrap = 0);
 
-static_inline ImVec4 vec4_to_imvec4(const vec4 &v4) { return {v4.x, v4.y, v4.z, v4.w}; }
-
-template <class T>
-constexpr T pi = T(3.1415926535897932385L);
+static_inline ImVec4 vec4_to_imvec4(const MEvec4 &v4) { return {v4.x, v4.y, v4.z, v4.w}; }
 
 #pragma region NewMATH
 
@@ -157,7 +68,7 @@ namespace NewMaths {
 
 constexpr std::size_t hash_combine(std::size_t l, std::size_t r) noexcept { return l ^ (r + 0x9e3779b9 + (l << 6) + (l >> 2)); }
 
-F32 vec22angle(vec2 v2);
+F32 vec22angle(MEvec2 v2);
 F32 clamp(F32 input, F32 min, F32 max);
 int rand_range(int min, int max);
 uint64_t rand_XOR();
@@ -178,15 +89,15 @@ static F32 dot(v2 A, v2 B);
 static F32 perpdot(v2 A, v2 B);
 static bool operator==(v2 A, v2 B);
 
-vec3 NormalizeVector(vec3 v);
-vec3 Add(vec3 a, vec3 b);
-vec3 Subtract(vec3 a, vec3 b);
-vec3 ScalarMult(vec3 v, F32 s);
-F64 Distance(vec3 a, vec3 b);
-vec3 VectorProjection(vec3 a, vec3 b);
-vec3 Reflection(vec3 *v1, vec3 *v2);
+MEvec3 NormalizeVector(MEvec3 v);
+MEvec3 Add(MEvec3 a, MEvec3 b);
+MEvec3 Subtract(MEvec3 a, MEvec3 b);
+MEvec3 ScalarMult(MEvec3 v, F32 s);
+F64 Distance(MEvec3 a, MEvec3 b);
+MEvec3 VectorProjection(MEvec3 a, MEvec3 b);
+MEvec3 Reflection(MEvec3 *v1, MEvec3 *v2);
 
-F64 DistanceFromPointToLine2D(vec3 lP1, vec3 lP2, vec3 p);
+F64 DistanceFromPointToLine2D(MEvec3 lP1, MEvec3 lP2, MEvec3 p);
 
 typedef struct Matrix3x3 {
     F32 m[3][3];
@@ -194,10 +105,10 @@ typedef struct Matrix3x3 {
 
 Matrix3x3 Transpose(Matrix3x3 m);
 Matrix3x3 Identity();
-vec3 Matrix3x3ToEulerAngles(Matrix3x3 m);
-Matrix3x3 EulerAnglesToMatrix3x3(vec3 rotation);
-vec3 RotateVector(vec3 v, Matrix3x3 m);
-vec3 RotatePoint(vec3 p, vec3 r, vec3 pivot);
+MEvec3 Matrix3x3ToEulerAngles(Matrix3x3 m);
+Matrix3x3 EulerAnglesToMatrix3x3(MEvec3 rotation);
+MEvec3 RotateVector(MEvec3 v, Matrix3x3 m);
+MEvec3 RotatePoint(MEvec3 p, MEvec3 r, MEvec3 pivot);
 Matrix3x3 MultiplyMatrix3x3(Matrix3x3 a, Matrix3x3 b);
 
 typedef struct Matrix4x4 {
@@ -824,13 +735,13 @@ CVector2<Type> Mul(const CXForm<Type> &T, const CVector2<Type> &v) {
 template< class Type, class Vector2 >
 Vector2 Mul( const CXForm< Type >& T, const Vector2& v )
 {
-	Vector2 result;
-	result.x = v.x * T.scale.x;
-	result.y = v.y * T.scale.y;
-	result = Mul( T.R, result );
-	result.x += T.position.x;
-	result.y += T.position.y;
-	return result;
+    Vector2 result;
+    result.x = v.x * T.scale.x;
+    result.y = v.y * T.scale.y;
+    result = Mul( T.R, result );
+    result.x += T.position.x;
+    result.y += T.position.y;
+    return result;
 }
 #endif
 
@@ -1173,7 +1084,7 @@ typedef struct METAENGINE_V2 {
 
 // Use this to create a v2 struct.
 // The C++ API uses V2(x, y).
-METADOT_INLINE METAENGINE_V2 metadot_v2(float x, float y) {
+ME_INLINE METAENGINE_V2 metadot_v2(float x, float y) {
     METAENGINE_V2 result;
     result.x = x;
     result.y = y;
@@ -1246,37 +1157,37 @@ typedef struct METAENGINE_Rect {
 //--------------------------------------------------------------------------------------------------
 // Scalar float ops.
 
-METADOT_INLINE float metadot_min(float a, float b) { return a < b ? a : b; }
-METADOT_INLINE float metadot_max(float a, float b) { return b < a ? a : b; }
-METADOT_INLINE float metadot_clamp(float a, float lo, float hi) { return metadot_max(lo, metadot_min(a, hi)); }
-METADOT_INLINE float metadot_clamp01(float a) { return metadot_max(0.0f, metadot_min(a, 1.0f)); }
-METADOT_INLINE float metadot_sign(float a) { return a < 0 ? -1.0f : 1.0f; }
-METADOT_INLINE float metadot_intersect(float da, float db) { return da / (da - db); }
-METADOT_INLINE float metadot_safe_invert(float a) { return a != 0 ? 1.0f / a : 0; }
-METADOT_INLINE float metadot_lerp(float a, float b, float t) { return a + (b - a) * t; }
-METADOT_INLINE float metadot_remap(float t, float lo, float hi) { return (hi - lo) != 0 ? (t - lo) / (hi - lo) : 0; }
-METADOT_INLINE float metadot_mod(float x, float m) { return x - (int)(x / m) * m; }
-METADOT_INLINE float metadot_fract(float x) { return x - floorf(x); }
+ME_INLINE float metadot_min(float a, float b) { return a < b ? a : b; }
+ME_INLINE float metadot_max(float a, float b) { return b < a ? a : b; }
+ME_INLINE float metadot_clamp(float a, float lo, float hi) { return metadot_max(lo, metadot_min(a, hi)); }
+ME_INLINE float metadot_clamp01(float a) { return metadot_max(0.0f, metadot_min(a, 1.0f)); }
+ME_INLINE float metadot_sign(float a) { return a < 0 ? -1.0f : 1.0f; }
+ME_INLINE float metadot_intersect(float da, float db) { return da / (da - db); }
+ME_INLINE float metadot_safe_invert(float a) { return a != 0 ? 1.0f / a : 0; }
+ME_INLINE float metadot_lerp(float a, float b, float t) { return a + (b - a) * t; }
+ME_INLINE float metadot_remap(float t, float lo, float hi) { return (hi - lo) != 0 ? (t - lo) / (hi - lo) : 0; }
+ME_INLINE float metadot_mod(float x, float m) { return x - (int)(x / m) * m; }
+ME_INLINE float metadot_fract(float x) { return x - floorf(x); }
 
-METADOT_INLINE int metadot_sign_int(int a) { return a < 0 ? -1 : 1; }
+ME_INLINE int metadot_sign_int(int a) { return a < 0 ? -1 : 1; }
 #define metadot_min(a, b) ((a) < (b) ? (a) : (b))
 #define metadot_max(a, b) ((b) < (a) ? (a) : (b))
-METADOT_INLINE float metadot_abs(float a) { return fabsf(a); }
-METADOT_INLINE int metadot_abs_int(int a) {
+ME_INLINE float metadot_abs(float a) { return fabsf(a); }
+ME_INLINE int metadot_abs_int(int a) {
     int mask = a >> ((sizeof(int) * 8) - 1);
     return (a + mask) ^ mask;
 }
-METADOT_INLINE int metadot_clamp_int(int a, int lo, int hi) { return metadot_max(lo, metadot_min(a, hi)); }
-METADOT_INLINE int metadot_clamp01_int(int a) { return metadot_max(0, metadot_min(a, 1)); }
-METADOT_INLINE bool metadot_is_even(int x) { return (x % 2) == 0; }
-METADOT_INLINE bool metadot_is_odd(int x) { return !metadot_is_even(x); }
+ME_INLINE int metadot_clamp_int(int a, int lo, int hi) { return metadot_max(lo, metadot_min(a, hi)); }
+ME_INLINE int metadot_clamp01_int(int a) { return metadot_max(0, metadot_min(a, 1)); }
+ME_INLINE bool metadot_is_even(int x) { return (x % 2) == 0; }
+ME_INLINE bool metadot_is_odd(int x) { return !metadot_is_even(x); }
 
 //--------------------------------------------------------------------------------------------------
 // Bit manipulation.
 
-METADOT_INLINE bool metadot_is_power_of_two(int a) { return a != 0 && (a & (a - 1)) == 0; }
-METADOT_INLINE bool metadot_is_power_of_two_uint(uint64_t a) { return a != 0 && (a & (a - 1)) == 0; }
-METADOT_INLINE int metadot_fit_power_of_two(int a) {
+ME_INLINE bool metadot_is_power_of_two(int a) { return a != 0 && (a & (a - 1)) == 0; }
+ME_INLINE bool metadot_is_power_of_two_uint(uint64_t a) { return a != 0 && (a & (a - 1)) == 0; }
+ME_INLINE int metadot_fit_power_of_two(int a) {
     a--;
     a |= a >> 1;
     a |= a >> 2;
@@ -1291,21 +1202,21 @@ METADOT_INLINE int metadot_fit_power_of_two(int a) {
 // Easing functions.
 // Adapted from Noel Berry: https://github.com/NoelFB/blah/blob/master/include/blah_ease.h
 
-METADOT_INLINE float metadot_smoothstep(float x) { return x * x * (3.0f - 2.0f * x); }
-METADOT_INLINE float metadot_quad_in(float x) { return x * x; }
-METADOT_INLINE float metadot_quad_out(float x) { return -(x * (x - 2.0f)); }
-METADOT_INLINE float metadot_quad_in_out(float x) {
+ME_INLINE float metadot_smoothstep(float x) { return x * x * (3.0f - 2.0f * x); }
+ME_INLINE float metadot_quad_in(float x) { return x * x; }
+ME_INLINE float metadot_quad_out(float x) { return -(x * (x - 2.0f)); }
+ME_INLINE float metadot_quad_in_out(float x) {
     if (x < 0.5f)
         return 2.0f * x * x;
     else
         return (-2.0f * x * x) + (4.0f * x) - 1.0f;
 }
-METADOT_INLINE float metadot_cube_in(float x) { return x * x * x; }
-METADOT_INLINE float metadot_cube_out(float x) {
+ME_INLINE float metadot_cube_in(float x) { return x * x * x; }
+ME_INLINE float metadot_cube_out(float x) {
     float f = (x - 1);
     return f * f * f + 1.0f;
 }
-METADOT_INLINE float metadot_cube_in_out(float x) {
+ME_INLINE float metadot_cube_in_out(float x) {
     if (x < 0.5f)
         return 4.0f * x * x * x;
     else {
@@ -1313,12 +1224,12 @@ METADOT_INLINE float metadot_cube_in_out(float x) {
         return 0.5f * x * x * x + 1.0f;
     }
 }
-METADOT_INLINE float metadot_quart_in(float x) { return x * x * x * x; }
-METADOT_INLINE float metadot_quart_out(float x) {
+ME_INLINE float metadot_quart_in(float x) { return x * x * x * x; }
+ME_INLINE float metadot_quart_out(float x) {
     float f = (x - 1.0f);
     return f * f * f * (1.0f - x) + 1.0f;
 }
-METADOT_INLINE float metadot_quart_in_out(float x) {
+ME_INLINE float metadot_quart_in_out(float x) {
     if (x < 0.5f)
         return 8.0f * x * x * x * x;
     else {
@@ -1326,12 +1237,12 @@ METADOT_INLINE float metadot_quart_in_out(float x) {
         return -8.0f * f * f * f * f + 1.0f;
     }
 }
-METADOT_INLINE float metadot_quint_in(float x) { return x * x * x * x * x; }
-METADOT_INLINE float metadot_quint_out(float x) {
+ME_INLINE float metadot_quint_in(float x) { return x * x * x * x * x; }
+ME_INLINE float metadot_quint_out(float x) {
     float f = (x - 1);
     return f * f * f * f * f + 1.0f;
 }
-METADOT_INLINE float metadot_quint_in_out(float x) {
+ME_INLINE float metadot_quint_in_out(float x) {
     if (x < 0.5f)
         return 16.0f * x * x * x * x * x;
     else {
@@ -1339,23 +1250,23 @@ METADOT_INLINE float metadot_quint_in_out(float x) {
         return 0.5f * f * f * f * f * f + 1.0f;
     }
 }
-METADOT_INLINE float metadot_sin_in(float x) { return sinf((x - 1.0f) * METAENGINE_PI * 0.5f) + 1.0f; }
-METADOT_INLINE float metadot_sin_out(float x) { return sinf(x * (METAENGINE_PI * 0.5f)); }
-METADOT_INLINE float metadot_sin_in_out(float x) { return 0.5f * (1.0f - cosf(x * METAENGINE_PI)); }
-METADOT_INLINE float metadot_circle_in(float x) { return 1.0f - sqrtf(1.0f - (x * x)); }
-METADOT_INLINE float metadot_circle_out(float x) { return sqrtf((2.0f - x) * x); }
-METADOT_INLINE float metadot_circle_in_out(float x) {
+ME_INLINE float metadot_sin_in(float x) { return sinf((x - 1.0f) * METAENGINE_PI * 0.5f) + 1.0f; }
+ME_INLINE float metadot_sin_out(float x) { return sinf(x * (METAENGINE_PI * 0.5f)); }
+ME_INLINE float metadot_sin_in_out(float x) { return 0.5f * (1.0f - cosf(x * METAENGINE_PI)); }
+ME_INLINE float metadot_circle_in(float x) { return 1.0f - sqrtf(1.0f - (x * x)); }
+ME_INLINE float metadot_circle_out(float x) { return sqrtf((2.0f - x) * x); }
+ME_INLINE float metadot_circle_in_out(float x) {
     if (x < 0.5f)
         return 0.5f * (1.0f - sqrtf(1.0f - 4.0f * (x * x)));
     else
         return 0.5f * (sqrtf(-((2.0f * x) - 3.0f) * ((2.0f * x) - 1.0f)) + 1.0f);
 }
-METADOT_INLINE float metadot_back_in(float x) { return x * x * x - x * sinf(x * METAENGINE_PI); }
-METADOT_INLINE float metadot_back_out(float x) {
+ME_INLINE float metadot_back_in(float x) { return x * x * x - x * sinf(x * METAENGINE_PI); }
+ME_INLINE float metadot_back_out(float x) {
     float f = (1.0f - x);
     return 1.0f - (x * x * x - x * sinf(f * METAENGINE_PI));
 }
-METADOT_INLINE float metadot_back_in_out(float x) {
+ME_INLINE float metadot_back_in_out(float x) {
     if (x < 0.5f) {
         float f = 2.0f * x;
         return 0.5f * (f * f * f - f * sinf(f * METAENGINE_PI));
@@ -1368,56 +1279,56 @@ METADOT_INLINE float metadot_back_in_out(float x) {
 //--------------------------------------------------------------------------------------------------
 // 2D vector ops.
 
-METADOT_INLINE METAENGINE_V2 metadot_add_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(a.x + b.x, a.y + b.y); }
-METADOT_INLINE METAENGINE_V2 metadot_sub_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(a.x - b.x, a.y - b.y); }
+ME_INLINE METAENGINE_V2 metadot_add_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(a.x + b.x, a.y + b.y); }
+ME_INLINE METAENGINE_V2 metadot_sub_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(a.x - b.x, a.y - b.y); }
 
-METADOT_INLINE float metadot_dot(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x * b.x + a.y * b.y; }
+ME_INLINE float metadot_dot(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x * b.x + a.y * b.y; }
 
-METADOT_INLINE METAENGINE_V2 metadot_mul_v2_f(METAENGINE_V2 a, float b) { return metadot_v2(a.x * b, a.y * b); }
-METADOT_INLINE METAENGINE_V2 metadot_mul_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(a.x * b.x, a.y * b.y); }
-METADOT_INLINE METAENGINE_V2 metadot_div_v2_f(METAENGINE_V2 a, float b) { return metadot_v2(a.x / b, a.y / b); }
+ME_INLINE METAENGINE_V2 metadot_mul_v2_f(METAENGINE_V2 a, float b) { return metadot_v2(a.x * b, a.y * b); }
+ME_INLINE METAENGINE_V2 metadot_mul_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(a.x * b.x, a.y * b.y); }
+ME_INLINE METAENGINE_V2 metadot_div_v2_f(METAENGINE_V2 a, float b) { return metadot_v2(a.x / b, a.y / b); }
 
-METADOT_INLINE METAENGINE_V2 metadot_skew(METAENGINE_V2 a) { return metadot_v2(-a.y, a.x); }
-METADOT_INLINE METAENGINE_V2 metadot_cw90(METAENGINE_V2 a) { return metadot_v2(a.y, -a.x); }
-METADOT_INLINE float metadot_det2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x * b.y - a.y * b.x; }
-METADOT_INLINE float metadot_cross(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_det2(a, b); }
-METADOT_INLINE METAENGINE_V2 metadot_cross_v2_f(METAENGINE_V2 a, float b) { return metadot_v2(b * a.y, -b * a.x); }
-METADOT_INLINE METAENGINE_V2 metadot_cross_f_v2(float a, METAENGINE_V2 b) { return metadot_v2(-a * b.y, a * b.x); }
-METADOT_INLINE METAENGINE_V2 metadot_min_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(metadot_min(a.x, b.x), metadot_min(a.y, b.y)); }
-METADOT_INLINE METAENGINE_V2 metadot_max_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(metadot_max(a.x, b.x), metadot_max(a.y, b.y)); }
-METADOT_INLINE METAENGINE_V2 metadot_clamp_v2(METAENGINE_V2 a, METAENGINE_V2 lo, METAENGINE_V2 hi) { return metadot_max_v2(lo, metadot_min_v2(a, hi)); }
-METADOT_INLINE METAENGINE_V2 metadot_clamp01_v2(METAENGINE_V2 a) { return metadot_max_v2(metadot_v2(0, 0), metadot_min_v2(a, metadot_v2(1, 1))); }
-METADOT_INLINE METAENGINE_V2 metadot_abs_v2(METAENGINE_V2 a) { return metadot_v2(fabsf(a.x), fabsf(a.y)); }
-METADOT_INLINE float metadot_hmin(METAENGINE_V2 a) { return metadot_min(a.x, a.y); }
-METADOT_INLINE float metadot_hmax(METAENGINE_V2 a) { return metadot_max(a.x, a.y); }
-METADOT_INLINE float metadot_len(METAENGINE_V2 a) { return sqrtf(metadot_dot(a, a)); }
-METADOT_INLINE float metadot_distance(METAENGINE_V2 a, METAENGINE_V2 b) {
+ME_INLINE METAENGINE_V2 metadot_skew(METAENGINE_V2 a) { return metadot_v2(-a.y, a.x); }
+ME_INLINE METAENGINE_V2 metadot_cw90(METAENGINE_V2 a) { return metadot_v2(a.y, -a.x); }
+ME_INLINE float metadot_det2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x * b.y - a.y * b.x; }
+ME_INLINE float metadot_cross(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_det2(a, b); }
+ME_INLINE METAENGINE_V2 metadot_cross_v2_f(METAENGINE_V2 a, float b) { return metadot_v2(b * a.y, -b * a.x); }
+ME_INLINE METAENGINE_V2 metadot_cross_f_v2(float a, METAENGINE_V2 b) { return metadot_v2(-a * b.y, a * b.x); }
+ME_INLINE METAENGINE_V2 metadot_min_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(metadot_min(a.x, b.x), metadot_min(a.y, b.y)); }
+ME_INLINE METAENGINE_V2 metadot_max_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(metadot_max(a.x, b.x), metadot_max(a.y, b.y)); }
+ME_INLINE METAENGINE_V2 metadot_clamp_v2(METAENGINE_V2 a, METAENGINE_V2 lo, METAENGINE_V2 hi) { return metadot_max_v2(lo, metadot_min_v2(a, hi)); }
+ME_INLINE METAENGINE_V2 metadot_clamp01_v2(METAENGINE_V2 a) { return metadot_max_v2(metadot_v2(0, 0), metadot_min_v2(a, metadot_v2(1, 1))); }
+ME_INLINE METAENGINE_V2 metadot_abs_v2(METAENGINE_V2 a) { return metadot_v2(fabsf(a.x), fabsf(a.y)); }
+ME_INLINE float metadot_hmin(METAENGINE_V2 a) { return metadot_min(a.x, a.y); }
+ME_INLINE float metadot_hmax(METAENGINE_V2 a) { return metadot_max(a.x, a.y); }
+ME_INLINE float metadot_len(METAENGINE_V2 a) { return sqrtf(metadot_dot(a, a)); }
+ME_INLINE float metadot_distance(METAENGINE_V2 a, METAENGINE_V2 b) {
     METAENGINE_V2 d = metadot_sub_v2(b, a);
     return sqrtf(metadot_dot(d, d));
 }
-METADOT_INLINE METAENGINE_V2 metadot_norm(METAENGINE_V2 a) { return metadot_div_v2_f(a, metadot_len(a)); }
-METADOT_INLINE METAENGINE_V2 metadot_safe_norm(METAENGINE_V2 a) {
+ME_INLINE METAENGINE_V2 metadot_norm(METAENGINE_V2 a) { return metadot_div_v2_f(a, metadot_len(a)); }
+ME_INLINE METAENGINE_V2 metadot_safe_norm(METAENGINE_V2 a) {
     float sq = metadot_dot(a, a);
     return sq ? metadot_div_v2_f(a, sqrtf(sq)) : metadot_v2(0, 0);
 }
-METADOT_INLINE float metadot_safe_norm_f(float a) { return a == 0 ? 0 : metadot_sign(a); }
-METADOT_INLINE int metadot_safe_norm_int(int a) { return a == 0 ? 0 : metadot_sign_int(a); }
-METADOT_INLINE METAENGINE_V2 metadot_neg_v2(METAENGINE_V2 a) { return metadot_v2(-a.x, -a.y); }
-METADOT_INLINE METAENGINE_V2 metadot_lerp_v2(METAENGINE_V2 a, METAENGINE_V2 b, float t) { return metadot_add_v2(a, metadot_mul_v2_f(metadot_sub_v2(b, a), t)); }
-METADOT_INLINE METAENGINE_V2 metadot_bezier(METAENGINE_V2 a, METAENGINE_V2 c0, METAENGINE_V2 b, float t) { return metadot_lerp_v2(metadot_lerp_v2(a, c0, t), metadot_lerp_v2(c0, b, t), t); }
-METADOT_INLINE METAENGINE_V2 metadot_bezier2(METAENGINE_V2 a, METAENGINE_V2 c0, METAENGINE_V2 c1, METAENGINE_V2 b, float t) {
+ME_INLINE float metadot_safe_norm_f(float a) { return a == 0 ? 0 : metadot_sign(a); }
+ME_INLINE int metadot_safe_norm_int(int a) { return a == 0 ? 0 : metadot_sign_int(a); }
+ME_INLINE METAENGINE_V2 metadot_neg_v2(METAENGINE_V2 a) { return metadot_v2(-a.x, -a.y); }
+ME_INLINE METAENGINE_V2 metadot_lerp_v2(METAENGINE_V2 a, METAENGINE_V2 b, float t) { return metadot_add_v2(a, metadot_mul_v2_f(metadot_sub_v2(b, a), t)); }
+ME_INLINE METAENGINE_V2 metadot_bezier(METAENGINE_V2 a, METAENGINE_V2 c0, METAENGINE_V2 b, float t) { return metadot_lerp_v2(metadot_lerp_v2(a, c0, t), metadot_lerp_v2(c0, b, t), t); }
+ME_INLINE METAENGINE_V2 metadot_bezier2(METAENGINE_V2 a, METAENGINE_V2 c0, METAENGINE_V2 c1, METAENGINE_V2 b, float t) {
     return metadot_bezier(metadot_lerp_v2(a, c0, t), metadot_lerp_v2(c0, c1, t), metadot_lerp_v2(c1, b, t), t);
 }
-METADOT_INLINE int metadot_lesser_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x < b.x && a.y < b.y; }
-METADOT_INLINE int metadot_greater_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x > b.x && a.y > b.y; }
-METADOT_INLINE int metadot_lesser_equal_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x <= b.x && a.y <= b.y; }
-METADOT_INLINE int metadot_greater_equal_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x >= b.x && a.y >= b.y; }
-METADOT_INLINE METAENGINE_V2 metadot_floor(METAENGINE_V2 a) { return metadot_v2(floorf(a.x), floorf(a.y)); }
-METADOT_INLINE METAENGINE_V2 metadot_round(METAENGINE_V2 a) { return metadot_v2(roundf(a.x), roundf(a.y)); }
-METADOT_INLINE METAENGINE_V2 metadot_safe_invert_v2(METAENGINE_V2 a) { return metadot_v2(metadot_safe_invert(a.x), metadot_safe_invert(a.y)); }
-METADOT_INLINE METAENGINE_V2 metadot_sign_v2(METAENGINE_V2 a) { return metadot_v2(metadot_sign(a.x), metadot_sign(a.y)); }
+ME_INLINE int metadot_lesser_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x < b.x && a.y < b.y; }
+ME_INLINE int metadot_greater_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x > b.x && a.y > b.y; }
+ME_INLINE int metadot_lesser_equal_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x <= b.x && a.y <= b.y; }
+ME_INLINE int metadot_greater_equal_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x >= b.x && a.y >= b.y; }
+ME_INLINE METAENGINE_V2 metadot_floor(METAENGINE_V2 a) { return metadot_v2(floorf(a.x), floorf(a.y)); }
+ME_INLINE METAENGINE_V2 metadot_round(METAENGINE_V2 a) { return metadot_v2(roundf(a.x), roundf(a.y)); }
+ME_INLINE METAENGINE_V2 metadot_safe_invert_v2(METAENGINE_V2 a) { return metadot_v2(metadot_safe_invert(a.x), metadot_safe_invert(a.y)); }
+ME_INLINE METAENGINE_V2 metadot_sign_v2(METAENGINE_V2 a) { return metadot_v2(metadot_sign(a.x), metadot_sign(a.y)); }
 
-METADOT_INLINE int metadot_parallel(METAENGINE_V2 a, METAENGINE_V2 b, float tol) {
+ME_INLINE int metadot_parallel(METAENGINE_V2 a, METAENGINE_V2 b, float tol) {
     float k = metadot_len(a) / metadot_len(b);
     b = metadot_mul_v2_f(b, k);
     if (fabs(a.x - b.x) < tol && fabs(a.y - b.y) < tol) return 1;
@@ -1427,29 +1338,29 @@ METADOT_INLINE int metadot_parallel(METAENGINE_V2 a, METAENGINE_V2 b, float tol)
 //--------------------------------------------------------------------------------------------------
 // METAENGINE_SinCos rotation ops.
 
-METADOT_INLINE METAENGINE_SinCos metadot_sincos_f(float radians) {
+ME_INLINE METAENGINE_SinCos metadot_sincos_f(float radians) {
     METAENGINE_SinCos r;
     r.s = sinf(radians);
     r.c = cosf(radians);
     return r;
 }
-METADOT_INLINE METAENGINE_SinCos metadot_sincos() {
+ME_INLINE METAENGINE_SinCos metadot_sincos() {
     METAENGINE_SinCos r;
     r.c = 1.0f;
     r.s = 0;
     return r;
 }
-METADOT_INLINE METAENGINE_V2 metadot_x_axis(METAENGINE_SinCos r) { return metadot_v2(r.c, r.s); }
-METADOT_INLINE METAENGINE_V2 metadot_y_axis(METAENGINE_SinCos r) { return metadot_v2(-r.s, r.c); }
-METADOT_INLINE METAENGINE_V2 metadot_mul_sc_v2(METAENGINE_SinCos a, METAENGINE_V2 b) { return metadot_v2(a.c * b.x - a.s * b.y, a.s * b.x + a.c * b.y); }
-METADOT_INLINE METAENGINE_V2 metadot_mulT_sc_v2(METAENGINE_SinCos a, METAENGINE_V2 b) { return metadot_v2(a.c * b.x + a.s * b.y, -a.s * b.x + a.c * b.y); }
-METADOT_INLINE METAENGINE_SinCos metadot_mul_sc(METAENGINE_SinCos a, METAENGINE_SinCos b) {
+ME_INLINE METAENGINE_V2 metadot_x_axis(METAENGINE_SinCos r) { return metadot_v2(r.c, r.s); }
+ME_INLINE METAENGINE_V2 metadot_y_axis(METAENGINE_SinCos r) { return metadot_v2(-r.s, r.c); }
+ME_INLINE METAENGINE_V2 metadot_mul_sc_v2(METAENGINE_SinCos a, METAENGINE_V2 b) { return metadot_v2(a.c * b.x - a.s * b.y, a.s * b.x + a.c * b.y); }
+ME_INLINE METAENGINE_V2 metadot_mulT_sc_v2(METAENGINE_SinCos a, METAENGINE_V2 b) { return metadot_v2(a.c * b.x + a.s * b.y, -a.s * b.x + a.c * b.y); }
+ME_INLINE METAENGINE_SinCos metadot_mul_sc(METAENGINE_SinCos a, METAENGINE_SinCos b) {
     METAENGINE_SinCos c;
     c.c = a.c * b.c - a.s * b.s;
     c.s = a.s * b.c + a.c * b.s;
     return c;
 }
-METADOT_INLINE METAENGINE_SinCos metadot_mulT_sc(METAENGINE_SinCos a, METAENGINE_SinCos b) {
+ME_INLINE METAENGINE_SinCos metadot_mulT_sc(METAENGINE_SinCos a, METAENGINE_SinCos b) {
     METAENGINE_SinCos c;
     c.c = a.c * b.c + a.s * b.s;
     c.s = a.c * b.s - a.s * b.c;
@@ -1457,12 +1368,12 @@ METADOT_INLINE METAENGINE_SinCos metadot_mulT_sc(METAENGINE_SinCos a, METAENGINE
 }
 
 // Remaps the result from atan2f to the continuous range of 0, 2*PI.
-METADOT_INLINE float metadot_atan2_360(float y, float x) { return atan2f(-y, -x) + METAENGINE_PI; }
-METADOT_INLINE float metadot_atan2_360_sc(METAENGINE_SinCos r) { return metadot_atan2_360(r.s, r.c); }
-METADOT_INLINE float metadot_atan2_360_v2(METAENGINE_V2 v) { return atan2f(-v.y, -v.x) + METAENGINE_PI; }
+ME_INLINE float metadot_atan2_360(float y, float x) { return atan2f(-y, -x) + METAENGINE_PI; }
+ME_INLINE float metadot_atan2_360_sc(METAENGINE_SinCos r) { return metadot_atan2_360(r.s, r.c); }
+ME_INLINE float metadot_atan2_360_v2(METAENGINE_V2 v) { return atan2f(-v.y, -v.x) + METAENGINE_PI; }
 
 // Computes the shortest angle to rotate the vector a to the vector b.
-METADOT_INLINE float metadot_shortest_arc(METAENGINE_V2 a, METAENGINE_V2 b) {
+ME_INLINE float metadot_shortest_arc(METAENGINE_V2 a, METAENGINE_V2 b) {
     float c = metadot_dot(a, b);
     float s = metadot_det2(a, b);
     float theta = acosf(c);
@@ -1473,26 +1384,26 @@ METADOT_INLINE float metadot_shortest_arc(METAENGINE_V2 a, METAENGINE_V2 b) {
     }
 }
 
-METADOT_INLINE float metadot_angle_diff(float radians_a, float radians_b) { return metadot_mod((radians_b - radians_a) + METAENGINE_PI, 2.0f * METAENGINE_PI) - METAENGINE_PI; }
-METADOT_INLINE METAENGINE_V2 metadot_from_angle(float radians) { return metadot_v2(cosf(radians), sinf(radians)); }
+ME_INLINE float metadot_angle_diff(float radians_a, float radians_b) { return metadot_mod((radians_b - radians_a) + METAENGINE_PI, 2.0f * METAENGINE_PI) - METAENGINE_PI; }
+ME_INLINE METAENGINE_V2 metadot_from_angle(float radians) { return metadot_v2(cosf(radians), sinf(radians)); }
 
 //--------------------------------------------------------------------------------------------------
 // m2 ops.
 // 2D graphics matrix for only scale + rotate.
 
-METADOT_INLINE METAENGINE_M2x2 metadot_mul_m2_f(METAENGINE_M2x2 a, float b) {
+ME_INLINE METAENGINE_M2x2 metadot_mul_m2_f(METAENGINE_M2x2 a, float b) {
     METAENGINE_M2x2 c;
     c.x = metadot_mul_v2_f(a.x, b);
     c.y = metadot_mul_v2_f(a.y, b);
     return c;
 }
-METADOT_INLINE METAENGINE_V2 metadot_mul_m2_v2(METAENGINE_M2x2 a, METAENGINE_V2 b) {
+ME_INLINE METAENGINE_V2 metadot_mul_m2_v2(METAENGINE_M2x2 a, METAENGINE_V2 b) {
     METAENGINE_V2 c;
     c.x = a.x.x * b.x + a.y.x * b.y;
     c.y = a.x.y * b.x + a.y.y * b.y;
     return c;
 }
-METADOT_INLINE METAENGINE_M2x2 metadot_mul_m2(METAENGINE_M2x2 a, METAENGINE_M2x2 b) {
+ME_INLINE METAENGINE_M2x2 metadot_mul_m2(METAENGINE_M2x2 a, METAENGINE_M2x2 b) {
     METAENGINE_M2x2 c;
     c.x = metadot_mul_m2_v2(a, b.x);
     c.y = metadot_mul_m2_v2(a, b.y);
@@ -1503,46 +1414,46 @@ METADOT_INLINE METAENGINE_M2x2 metadot_mul_m2(METAENGINE_M2x2 a, METAENGINE_M2x2
 // m3x2 ops.
 // General purpose 2D graphics matrix; scale + rotate + translate.
 
-METADOT_INLINE METAENGINE_V2 metadot_mul_m32_v2(METAENGINE_M3x2 a, METAENGINE_V2 b) { return metadot_add_v2(metadot_mul_m2_v2(a.m, b), a.p); }
-METADOT_INLINE METAENGINE_M3x2 metadot_mul_m32(METAENGINE_M3x2 a, METAENGINE_M3x2 b) {
+ME_INLINE METAENGINE_V2 metadot_mul_m32_v2(METAENGINE_M3x2 a, METAENGINE_V2 b) { return metadot_add_v2(metadot_mul_m2_v2(a.m, b), a.p); }
+ME_INLINE METAENGINE_M3x2 metadot_mul_m32(METAENGINE_M3x2 a, METAENGINE_M3x2 b) {
     METAENGINE_M3x2 c;
     c.m = metadot_mul_m2(a.m, b.m);
     c.p = metadot_add_v2(metadot_mul_m2_v2(a.m, b.p), a.p);
     return c;
 }
-METADOT_INLINE METAENGINE_M3x2 metadot_make_identity() {
+ME_INLINE METAENGINE_M3x2 metadot_make_identity() {
     METAENGINE_M3x2 m;
     m.m.x = metadot_v2(1, 0);
     m.m.y = metadot_v2(0, 1);
     m.p = metadot_v2(0, 0);
     return m;
 }
-METADOT_INLINE METAENGINE_M3x2 metadot_make_translation_f(float x, float y) {
+ME_INLINE METAENGINE_M3x2 metadot_make_translation_f(float x, float y) {
     METAENGINE_M3x2 m;
     m.m.x = metadot_v2(1, 0);
     m.m.y = metadot_v2(0, 1);
     m.p = metadot_v2(x, y);
     return m;
 }
-METADOT_INLINE METAENGINE_M3x2 metadot_make_translation(METAENGINE_V2 p) { return metadot_make_translation_f(p.x, p.y); }
-METADOT_INLINE METAENGINE_M3x2 metadot_make_scale(METAENGINE_V2 s) {
+ME_INLINE METAENGINE_M3x2 metadot_make_translation(METAENGINE_V2 p) { return metadot_make_translation_f(p.x, p.y); }
+ME_INLINE METAENGINE_M3x2 metadot_make_scale(METAENGINE_V2 s) {
     METAENGINE_M3x2 m;
     m.m.x = metadot_v2(s.x, 0);
     m.m.y = metadot_v2(0, s.y);
     m.p = metadot_v2(0, 0);
     return m;
 }
-METADOT_INLINE METAENGINE_M3x2 metadot_make_scale_f(float s) { return metadot_make_scale(metadot_v2(s, s)); }
-METADOT_INLINE METAENGINE_M3x2 metadot_make_scale_translation(METAENGINE_V2 s, METAENGINE_V2 p) {
+ME_INLINE METAENGINE_M3x2 metadot_make_scale_f(float s) { return metadot_make_scale(metadot_v2(s, s)); }
+ME_INLINE METAENGINE_M3x2 metadot_make_scale_translation(METAENGINE_V2 s, METAENGINE_V2 p) {
     METAENGINE_M3x2 m;
     m.m.x = metadot_v2(s.x, 0);
     m.m.y = metadot_v2(0, s.y);
     m.p = p;
     return m;
 }
-METADOT_INLINE METAENGINE_M3x2 metadot_make_scale_translation_f(float s, METAENGINE_V2 p) { return metadot_make_scale_translation(metadot_v2(s, s), p); }
-METADOT_INLINE METAENGINE_M3x2 metadot_make_scale_translation_f_f(float sx, float sy, METAENGINE_V2 p) { return metadot_make_scale_translation(metadot_v2(sx, sy), p); }
-METADOT_INLINE METAENGINE_M3x2 metadot_make_rotation(float radians) {
+ME_INLINE METAENGINE_M3x2 metadot_make_scale_translation_f(float s, METAENGINE_V2 p) { return metadot_make_scale_translation(metadot_v2(s, s), p); }
+ME_INLINE METAENGINE_M3x2 metadot_make_scale_translation_f_f(float sx, float sy, METAENGINE_V2 p) { return metadot_make_scale_translation(metadot_v2(sx, sy), p); }
+ME_INLINE METAENGINE_M3x2 metadot_make_rotation(float radians) {
     METAENGINE_SinCos sc = metadot_sincos_f(radians);
     METAENGINE_M3x2 m;
     m.m.x = metadot_v2(sc.c, -sc.s);
@@ -1550,7 +1461,7 @@ METADOT_INLINE METAENGINE_M3x2 metadot_make_rotation(float radians) {
     m.p = metadot_v2(0, 0);
     return m;
 }
-METADOT_INLINE METAENGINE_M3x2 metadot_make_transform_TSR(METAENGINE_V2 p, METAENGINE_V2 s, float radians) {
+ME_INLINE METAENGINE_M3x2 metadot_make_transform_TSR(METAENGINE_V2 p, METAENGINE_V2 s, float radians) {
     METAENGINE_SinCos sc = metadot_sincos_f(radians);
     METAENGINE_M3x2 m;
     m.m.x = metadot_mul_v2_f(metadot_v2(sc.c, -sc.s), s.x);
@@ -1559,7 +1470,7 @@ METADOT_INLINE METAENGINE_M3x2 metadot_make_transform_TSR(METAENGINE_V2 p, METAE
     return m;
 }
 
-METADOT_INLINE METAENGINE_M3x2 metadot_invert(METAENGINE_M3x2 a) {
+ME_INLINE METAENGINE_M3x2 metadot_invert(METAENGINE_M3x2 a) {
     float id = metadot_safe_invert(metadot_det2(a.m.x, a.m.y));
     METAENGINE_M3x2 b;
     b.m.x = metadot_v2(a.m.y.y * id, -a.m.x.y * id);
@@ -1573,27 +1484,27 @@ METADOT_INLINE METAENGINE_M3x2 metadot_invert(METAENGINE_M3x2 a) {
 // Transform ops.
 // No scale factor allowed here, good for physics + colliders.
 
-METADOT_INLINE METAENGINE_Transform metadot_make_transform() {
+ME_INLINE METAENGINE_Transform metadot_make_transform() {
     METAENGINE_Transform x;
     x.p = metadot_v2(0, 0);
     x.r = metadot_sincos();
     return x;
 }
-METADOT_INLINE METAENGINE_Transform metadot_make_transform_TR(METAENGINE_V2 p, float radians) {
+ME_INLINE METAENGINE_Transform metadot_make_transform_TR(METAENGINE_V2 p, float radians) {
     METAENGINE_Transform x;
     x.r = metadot_sincos_f(radians);
     x.p = p;
     return x;
 }
-METADOT_INLINE METAENGINE_V2 metadot_mul_tf_v2(METAENGINE_Transform a, METAENGINE_V2 b) { return metadot_add_v2(metadot_mul_sc_v2(a.r, b), a.p); }
-METADOT_INLINE METAENGINE_V2 metadot_mulT_tf_v2(METAENGINE_Transform a, METAENGINE_V2 b) { return metadot_mulT_sc_v2(a.r, metadot_sub_v2(b, a.p)); }
-METADOT_INLINE METAENGINE_Transform metadot_mul_tf(METAENGINE_Transform a, METAENGINE_Transform b) {
+ME_INLINE METAENGINE_V2 metadot_mul_tf_v2(METAENGINE_Transform a, METAENGINE_V2 b) { return metadot_add_v2(metadot_mul_sc_v2(a.r, b), a.p); }
+ME_INLINE METAENGINE_V2 metadot_mulT_tf_v2(METAENGINE_Transform a, METAENGINE_V2 b) { return metadot_mulT_sc_v2(a.r, metadot_sub_v2(b, a.p)); }
+ME_INLINE METAENGINE_Transform metadot_mul_tf(METAENGINE_Transform a, METAENGINE_Transform b) {
     METAENGINE_Transform c;
     c.r = metadot_mul_sc(a.r, b.r);
     c.p = metadot_add_v2(metadot_mul_sc_v2(a.r, b.p), a.p);
     return c;
 }
-METADOT_INLINE METAENGINE_Transform metadot_mulT_tf(METAENGINE_Transform a, METAENGINE_Transform b) {
+ME_INLINE METAENGINE_Transform metadot_mulT_tf(METAENGINE_Transform a, METAENGINE_Transform b) {
     METAENGINE_Transform c;
     c.r = metadot_mulT_sc(a.r, b.r);
     c.p = metadot_mulT_sc_v2(a.r, metadot_sub_v2(b.p, a.p));
@@ -1604,91 +1515,91 @@ METADOT_INLINE METAENGINE_Transform metadot_mulT_tf(METAENGINE_Transform a, META
 // Halfspace (plane/line) ops.
 // Functions for infinite lines.
 
-METADOT_INLINE METAENGINE_Halfspace metadot_plane(METAENGINE_V2 n, float d) {
+ME_INLINE METAENGINE_Halfspace metadot_plane(METAENGINE_V2 n, float d) {
     METAENGINE_Halfspace h;
     h.n = n;
     h.d = d;
     return h;
 }
-METADOT_INLINE METAENGINE_Halfspace metadot_plane2(METAENGINE_V2 n, METAENGINE_V2 p) {
+ME_INLINE METAENGINE_Halfspace metadot_plane2(METAENGINE_V2 n, METAENGINE_V2 p) {
     METAENGINE_Halfspace h;
     h.n = n;
     h.d = metadot_dot(n, p);
     return h;
 }
-METADOT_INLINE METAENGINE_V2 metadot_origin(METAENGINE_Halfspace h) { return metadot_mul_v2_f(h.n, h.d); }
-METADOT_INLINE float metadot_distance_hs(METAENGINE_Halfspace h, METAENGINE_V2 p) { return metadot_dot(h.n, p) - h.d; }
-METADOT_INLINE METAENGINE_V2 metadot_project(METAENGINE_Halfspace h, METAENGINE_V2 p) { return metadot_sub_v2(p, metadot_mul_v2_f(h.n, metadot_distance_hs(h, p))); }
-METADOT_INLINE METAENGINE_Halfspace metadot_mul_tf_hs(METAENGINE_Transform a, METAENGINE_Halfspace b) {
+ME_INLINE METAENGINE_V2 metadot_origin(METAENGINE_Halfspace h) { return metadot_mul_v2_f(h.n, h.d); }
+ME_INLINE float metadot_distance_hs(METAENGINE_Halfspace h, METAENGINE_V2 p) { return metadot_dot(h.n, p) - h.d; }
+ME_INLINE METAENGINE_V2 metadot_project(METAENGINE_Halfspace h, METAENGINE_V2 p) { return metadot_sub_v2(p, metadot_mul_v2_f(h.n, metadot_distance_hs(h, p))); }
+ME_INLINE METAENGINE_Halfspace metadot_mul_tf_hs(METAENGINE_Transform a, METAENGINE_Halfspace b) {
     METAENGINE_Halfspace c;
     c.n = metadot_mul_sc_v2(a.r, b.n);
     c.d = metadot_dot(metadot_mul_tf_v2(a, metadot_origin(b)), c.n);
     return c;
 }
-METADOT_INLINE METAENGINE_Halfspace metadot_mulT_tf_hs(METAENGINE_Transform a, METAENGINE_Halfspace b) {
+ME_INLINE METAENGINE_Halfspace metadot_mulT_tf_hs(METAENGINE_Transform a, METAENGINE_Halfspace b) {
     METAENGINE_Halfspace c;
     c.n = metadot_mulT_sc_v2(a.r, b.n);
     c.d = metadot_dot(metadot_mulT_tf_v2(a, metadot_origin(b)), c.n);
     return c;
 }
-METADOT_INLINE METAENGINE_V2 metadot_intersect_halfspace(METAENGINE_V2 a, METAENGINE_V2 b, float da, float db) { return metadot_add_v2(a, metadot_mul_v2_f(metadot_sub_v2(b, a), (da / (da - db)))); }
-METADOT_INLINE METAENGINE_V2 metadot_intersect_halfspace2(METAENGINE_Halfspace h, METAENGINE_V2 a, METAENGINE_V2 b) {
+ME_INLINE METAENGINE_V2 metadot_intersect_halfspace(METAENGINE_V2 a, METAENGINE_V2 b, float da, float db) { return metadot_add_v2(a, metadot_mul_v2_f(metadot_sub_v2(b, a), (da / (da - db)))); }
+ME_INLINE METAENGINE_V2 metadot_intersect_halfspace2(METAENGINE_Halfspace h, METAENGINE_V2 a, METAENGINE_V2 b) {
     return metadot_intersect_halfspace(a, b, metadot_distance_hs(h, a), metadot_distance_hs(h, b));
 }
 
 //--------------------------------------------------------------------------------------------------
 // AABB helpers.
 
-METADOT_INLINE METAENGINE_Aabb metadot_make_aabb(METAENGINE_V2 min, METAENGINE_V2 max) {
+ME_INLINE METAENGINE_Aabb metadot_make_aabb(METAENGINE_V2 min, METAENGINE_V2 max) {
     METAENGINE_Aabb bb;
     bb.min = min;
     bb.max = max;
     return bb;
 }
-METADOT_INLINE METAENGINE_Aabb metadot_make_aabb_pos_w_h(METAENGINE_V2 pos, float w, float h) {
+ME_INLINE METAENGINE_Aabb metadot_make_aabb_pos_w_h(METAENGINE_V2 pos, float w, float h) {
     METAENGINE_Aabb bb;
     METAENGINE_V2 he = metadot_mul_v2_f(metadot_v2(w, h), 0.5f);
     bb.min = metadot_sub_v2(pos, he);
     bb.max = metadot_add_v2(pos, he);
     return bb;
 }
-METADOT_INLINE METAENGINE_Aabb metadot_make_aabb_center_half_extents(METAENGINE_V2 center, METAENGINE_V2 half_extents) {
+ME_INLINE METAENGINE_Aabb metadot_make_aabb_center_half_extents(METAENGINE_V2 center, METAENGINE_V2 half_extents) {
     METAENGINE_Aabb bb;
     bb.min = metadot_sub_v2(center, half_extents);
     bb.max = metadot_add_v2(center, half_extents);
     return bb;
 }
-METADOT_INLINE METAENGINE_Aabb metadot_make_aabb_from_top_left(METAENGINE_V2 top_left, float w, float h) {
+ME_INLINE METAENGINE_Aabb metadot_make_aabb_from_top_left(METAENGINE_V2 top_left, float w, float h) {
     return metadot_make_aabb(metadot_add_v2(top_left, metadot_v2(0, -h)), metadot_add_v2(top_left, metadot_v2(w, 0)));
 }
-METADOT_INLINE float metadot_width(METAENGINE_Aabb bb) { return bb.max.x - bb.min.x; }
-METADOT_INLINE float metadot_height(METAENGINE_Aabb bb) { return bb.max.y - bb.min.y; }
-METADOT_INLINE float metadot_half_width(METAENGINE_Aabb bb) { return metadot_width(bb) * 0.5f; }
-METADOT_INLINE float metadot_half_height(METAENGINE_Aabb bb) { return metadot_height(bb) * 0.5f; }
-METADOT_INLINE METAENGINE_V2 metadot_half_extents(METAENGINE_Aabb bb) { return (metadot_mul_v2_f(metadot_sub_v2(bb.max, bb.min), 0.5f)); }
-METADOT_INLINE METAENGINE_V2 metadot_extents(METAENGINE_Aabb aabb) { return metadot_sub_v2(aabb.max, aabb.min); }
-METADOT_INLINE METAENGINE_Aabb metadot_expand_aabb(METAENGINE_Aabb aabb, METAENGINE_V2 v) { return metadot_make_aabb(metadot_sub_v2(aabb.min, v), metadot_add_v2(aabb.max, v)); }
-METADOT_INLINE METAENGINE_Aabb metadot_expand_aabb_f(METAENGINE_Aabb aabb, float v) {
+ME_INLINE float metadot_width(METAENGINE_Aabb bb) { return bb.max.x - bb.min.x; }
+ME_INLINE float metadot_height(METAENGINE_Aabb bb) { return bb.max.y - bb.min.y; }
+ME_INLINE float metadot_half_width(METAENGINE_Aabb bb) { return metadot_width(bb) * 0.5f; }
+ME_INLINE float metadot_half_height(METAENGINE_Aabb bb) { return metadot_height(bb) * 0.5f; }
+ME_INLINE METAENGINE_V2 metadot_half_extents(METAENGINE_Aabb bb) { return (metadot_mul_v2_f(metadot_sub_v2(bb.max, bb.min), 0.5f)); }
+ME_INLINE METAENGINE_V2 metadot_extents(METAENGINE_Aabb aabb) { return metadot_sub_v2(aabb.max, aabb.min); }
+ME_INLINE METAENGINE_Aabb metadot_expand_aabb(METAENGINE_Aabb aabb, METAENGINE_V2 v) { return metadot_make_aabb(metadot_sub_v2(aabb.min, v), metadot_add_v2(aabb.max, v)); }
+ME_INLINE METAENGINE_Aabb metadot_expand_aabb_f(METAENGINE_Aabb aabb, float v) {
     METAENGINE_V2 factor = metadot_v2(v, v);
     return metadot_make_aabb(metadot_sub_v2(aabb.min, factor), metadot_add_v2(aabb.max, factor));
 }
-METADOT_INLINE METAENGINE_V2 metadot_min_aabb(METAENGINE_Aabb bb) { return bb.min; }
-METADOT_INLINE METAENGINE_V2 metadot_max_aabb(METAENGINE_Aabb bb) { return bb.max; }
-METADOT_INLINE METAENGINE_V2 metadot_midpoint(METAENGINE_Aabb bb) { return metadot_mul_v2_f(metadot_add_v2(bb.min, bb.max), 0.5f); }
-METADOT_INLINE METAENGINE_V2 metadot_center(METAENGINE_Aabb bb) { return metadot_mul_v2_f(metadot_add_v2(bb.min, bb.max), 0.5f); }
-METADOT_INLINE METAENGINE_V2 metadot_top_left(METAENGINE_Aabb bb) { return metadot_v2(bb.min.x, bb.max.y); }
-METADOT_INLINE METAENGINE_V2 metadot_top_right(METAENGINE_Aabb bb) { return metadot_v2(bb.max.x, bb.max.y); }
-METADOT_INLINE METAENGINE_V2 metadot_bottom_left(METAENGINE_Aabb bb) { return metadot_v2(bb.min.x, bb.min.y); }
-METADOT_INLINE METAENGINE_V2 metadot_bottom_right(METAENGINE_Aabb bb) { return metadot_v2(bb.max.x, bb.min.y); }
-METADOT_INLINE bool metadot_contains_point(METAENGINE_Aabb bb, METAENGINE_V2 p) { return metadot_greater_equal_v2(p, bb.min) && metadot_lesser_equal_v2(p, bb.max); }
-METADOT_INLINE bool metadot_contains_aabb(METAENGINE_Aabb a, METAENGINE_Aabb b) { return metadot_lesser_equal_v2(a.min, b.min) && metadot_greater_equal_v2(a.max, b.max); }
-METADOT_INLINE float metadot_surface_area_aabb(METAENGINE_Aabb bb) { return 2.0f * metadot_width(bb) * metadot_height(bb); }
-METADOT_INLINE float metadot_area_aabb(METAENGINE_Aabb bb) { return metadot_width(bb) * metadot_height(bb); }
-METADOT_INLINE METAENGINE_V2 metadot_clamp_aabb_v2(METAENGINE_Aabb bb, METAENGINE_V2 p) { return metadot_clamp_v2(p, bb.min, bb.max); }
-METADOT_INLINE METAENGINE_Aabb metadot_clamp_aabb(METAENGINE_Aabb a, METAENGINE_Aabb b) { return metadot_make_aabb(metadot_clamp_v2(a.min, b.min, b.max), metadot_clamp_v2(a.max, b.min, b.max)); }
-METADOT_INLINE METAENGINE_Aabb metadot_combine(METAENGINE_Aabb a, METAENGINE_Aabb b) { return metadot_make_aabb(metadot_min_v2(a.min, b.min), metadot_max_v2(a.max, b.max)); }
+ME_INLINE METAENGINE_V2 metadot_min_aabb(METAENGINE_Aabb bb) { return bb.min; }
+ME_INLINE METAENGINE_V2 metadot_max_aabb(METAENGINE_Aabb bb) { return bb.max; }
+ME_INLINE METAENGINE_V2 metadot_midpoint(METAENGINE_Aabb bb) { return metadot_mul_v2_f(metadot_add_v2(bb.min, bb.max), 0.5f); }
+ME_INLINE METAENGINE_V2 metadot_center(METAENGINE_Aabb bb) { return metadot_mul_v2_f(metadot_add_v2(bb.min, bb.max), 0.5f); }
+ME_INLINE METAENGINE_V2 metadot_top_left(METAENGINE_Aabb bb) { return metadot_v2(bb.min.x, bb.max.y); }
+ME_INLINE METAENGINE_V2 metadot_top_right(METAENGINE_Aabb bb) { return metadot_v2(bb.max.x, bb.max.y); }
+ME_INLINE METAENGINE_V2 metadot_bottom_left(METAENGINE_Aabb bb) { return metadot_v2(bb.min.x, bb.min.y); }
+ME_INLINE METAENGINE_V2 metadot_bottom_right(METAENGINE_Aabb bb) { return metadot_v2(bb.max.x, bb.min.y); }
+ME_INLINE bool metadot_contains_point(METAENGINE_Aabb bb, METAENGINE_V2 p) { return metadot_greater_equal_v2(p, bb.min) && metadot_lesser_equal_v2(p, bb.max); }
+ME_INLINE bool metadot_contains_aabb(METAENGINE_Aabb a, METAENGINE_Aabb b) { return metadot_lesser_equal_v2(a.min, b.min) && metadot_greater_equal_v2(a.max, b.max); }
+ME_INLINE float metadot_surface_area_aabb(METAENGINE_Aabb bb) { return 2.0f * metadot_width(bb) * metadot_height(bb); }
+ME_INLINE float metadot_area_aabb(METAENGINE_Aabb bb) { return metadot_width(bb) * metadot_height(bb); }
+ME_INLINE METAENGINE_V2 metadot_clamp_aabb_v2(METAENGINE_Aabb bb, METAENGINE_V2 p) { return metadot_clamp_v2(p, bb.min, bb.max); }
+ME_INLINE METAENGINE_Aabb metadot_clamp_aabb(METAENGINE_Aabb a, METAENGINE_Aabb b) { return metadot_make_aabb(metadot_clamp_v2(a.min, b.min, b.max), metadot_clamp_v2(a.max, b.min, b.max)); }
+ME_INLINE METAENGINE_Aabb metadot_combine(METAENGINE_Aabb a, METAENGINE_Aabb b) { return metadot_make_aabb(metadot_min_v2(a.min, b.min), metadot_max_v2(a.max, b.max)); }
 
-METADOT_INLINE int metadot_overlaps(METAENGINE_Aabb a, METAENGINE_Aabb b) {
+ME_INLINE int metadot_overlaps(METAENGINE_Aabb a, METAENGINE_Aabb b) {
     int d0 = b.max.x < a.min.x;
     int d1 = a.max.x < b.min.x;
     int d2 = b.max.y < a.min.y;
@@ -1696,9 +1607,9 @@ METADOT_INLINE int metadot_overlaps(METAENGINE_Aabb a, METAENGINE_Aabb b) {
     return !(d0 | d1 | d2 | d3);
 }
 
-METADOT_INLINE int metadot_collide_aabb(METAENGINE_Aabb a, METAENGINE_Aabb b) { return metadot_overlaps(a, b); }
+ME_INLINE int metadot_collide_aabb(METAENGINE_Aabb a, METAENGINE_Aabb b) { return metadot_overlaps(a, b); }
 
-METADOT_INLINE METAENGINE_Aabb metadot_make_aabb_verts(METAENGINE_V2 *verts, int count) {
+ME_INLINE METAENGINE_Aabb metadot_make_aabb_verts(METAENGINE_V2 *verts, int count) {
     METAENGINE_V2 vmin = verts[0];
     METAENGINE_V2 vmax = vmin;
     for (int i = 0; i < count; ++i) {
@@ -1708,7 +1619,7 @@ METADOT_INLINE METAENGINE_Aabb metadot_make_aabb_verts(METAENGINE_V2 *verts, int
     return metadot_make_aabb(vmin, vmax);
 }
 
-METADOT_INLINE void metadot_aabb_verts(METAENGINE_V2 *out, METAENGINE_Aabb bb) {
+ME_INLINE void metadot_aabb_verts(METAENGINE_V2 *out, METAENGINE_Aabb bb) {
     out[0] = bb.min;
     out[1] = metadot_v2(bb.max.x, bb.min.y);
     out[2] = bb.max;
@@ -1718,9 +1629,9 @@ METADOT_INLINE void metadot_aabb_verts(METAENGINE_V2 *out, METAENGINE_Aabb bb) {
 //--------------------------------------------------------------------------------------------------
 // Circle helpers.
 
-METADOT_INLINE float metadot_area_circle(METAENGINE_Circle c) { return 3.14159265f * c.r * c.r; }
-METADOT_INLINE float metadot_surface_area_circle(METAENGINE_Circle c) { return 2.0f * 3.14159265f * c.r; }
-METADOT_INLINE METAENGINE_Circle metadot_mul_tf_circle(METAENGINE_Transform tx, METAENGINE_Circle a) {
+ME_INLINE float metadot_area_circle(METAENGINE_Circle c) { return 3.14159265f * c.r * c.r; }
+ME_INLINE float metadot_surface_area_circle(METAENGINE_Circle c) { return 2.0f * 3.14159265f * c.r; }
+ME_INLINE METAENGINE_Circle metadot_mul_tf_circle(METAENGINE_Transform tx, METAENGINE_Circle a) {
     METAENGINE_Circle b;
     b.p = metadot_mul_tf_v2(tx, a.p);
     b.r = a.r;
@@ -1731,10 +1642,10 @@ METADOT_INLINE METAENGINE_Circle metadot_mul_tf_circle(METAENGINE_Transform tx, 
 // Ray ops.
 // Full raycasting suite is farther down below in this file.
 
-METADOT_INLINE METAENGINE_V2 metadot_impact(METAENGINE_Ray r, float t) { return metadot_add_v2(r.p, metadot_mul_v2_f(r.d, t)); }
-METADOT_INLINE METAENGINE_V2 metadot_endpoint(METAENGINE_Ray r) { return metadot_add_v2(r.p, metadot_mul_v2_f(r.d, r.t)); }
+ME_INLINE METAENGINE_V2 metadot_impact(METAENGINE_Ray r, float t) { return metadot_add_v2(r.p, metadot_mul_v2_f(r.d, t)); }
+ME_INLINE METAENGINE_V2 metadot_endpoint(METAENGINE_Ray r) { return metadot_add_v2(r.p, metadot_mul_v2_f(r.d, r.t)); }
 
-METADOT_INLINE int metadot_ray_to_halfpsace(METAENGINE_Ray A, METAENGINE_Halfspace B, METAENGINE_Raycast *out) {
+ME_INLINE int metadot_ray_to_halfpsace(METAENGINE_Ray A, METAENGINE_Halfspace B, METAENGINE_Raycast *out) {
     float da = metadot_distance_hs(B, A.p);
     float db = metadot_distance_hs(B, metadot_impact(A, A.t));
     if (da * db > 0) return 0;
@@ -1744,7 +1655,7 @@ METADOT_INLINE int metadot_ray_to_halfpsace(METAENGINE_Ray A, METAENGINE_Halfspa
 }
 
 // http://www.randygaul.net/2014/07/23/distance-point-to-line-segment/
-METADOT_INLINE float metadot_distance_sq(METAENGINE_V2 a, METAENGINE_V2 b, METAENGINE_V2 p) {
+ME_INLINE float metadot_distance_sq(METAENGINE_V2 a, METAENGINE_V2 b, METAENGINE_V2 p) {
     METAENGINE_V2 n = metadot_sub_v2(b, a);
     METAENGINE_V2 pa = metadot_sub_v2(a, p);
     float c = metadot_dot(n, pa);
@@ -1847,7 +1758,7 @@ typedef enum METAENGINE_ShapeType {
 #undef METAENGINE_ENUM
 } METAENGINE_ShapeType;
 
-METADOT_INLINE const char *metadot_shape_type_to_string(METAENGINE_ShapeType type) {
+ME_INLINE const char *metadot_shape_type_to_string(METAENGINE_ShapeType type) {
     switch (type) {
 #define METAENGINE_ENUM(K, V) \
     case METAENGINE_##K:      \
@@ -1975,33 +1886,33 @@ namespace MetaEngine {
 
 using v2 = METAENGINE_V2;
 
-METADOT_INLINE v2 V2(float x, float y) {
+ME_INLINE v2 V2(float x, float y) {
     v2 result;
     result.x = x;
     result.y = y;
     return result;
 }
 
-METADOT_INLINE v2 operator+(v2 a, v2 b) { return V2(a.x + b.x, a.y + b.y); }
-METADOT_INLINE v2 operator-(v2 a, v2 b) { return V2(a.x - b.x, a.y - b.y); }
-METADOT_INLINE v2 &operator+=(v2 &a, v2 b) { return a = a + b; }
-METADOT_INLINE v2 &operator-=(v2 &a, v2 b) { return a = a - b; }
+ME_INLINE v2 operator+(v2 a, v2 b) { return V2(a.x + b.x, a.y + b.y); }
+ME_INLINE v2 operator-(v2 a, v2 b) { return V2(a.x - b.x, a.y - b.y); }
+ME_INLINE v2 &operator+=(v2 &a, v2 b) { return a = a + b; }
+ME_INLINE v2 &operator-=(v2 &a, v2 b) { return a = a - b; }
 
-METADOT_INLINE v2 operator*(v2 a, float b) { return V2(a.x * b, a.y * b); }
-METADOT_INLINE v2 operator*(v2 a, v2 b) { return V2(a.x * b.x, a.y * b.y); }
-METADOT_INLINE v2 &operator*=(v2 &a, float b) { return a = a * b; }
-METADOT_INLINE v2 &operator*=(v2 &a, v2 b) { return a = a * b; }
-METADOT_INLINE v2 operator/(v2 a, float b) { return V2(a.x / b, a.y / b); }
-METADOT_INLINE v2 operator/(v2 a, v2 b) { return V2(a.x / b.x, a.y / b.y); }
-METADOT_INLINE v2 &operator/=(v2 &a, float b) { return a = a / b; }
-METADOT_INLINE v2 &operator/=(v2 &a, v2 b) { return a = a / b; }
+ME_INLINE v2 operator*(v2 a, float b) { return V2(a.x * b, a.y * b); }
+ME_INLINE v2 operator*(v2 a, v2 b) { return V2(a.x * b.x, a.y * b.y); }
+ME_INLINE v2 &operator*=(v2 &a, float b) { return a = a * b; }
+ME_INLINE v2 &operator*=(v2 &a, v2 b) { return a = a * b; }
+ME_INLINE v2 operator/(v2 a, float b) { return V2(a.x / b, a.y / b); }
+ME_INLINE v2 operator/(v2 a, v2 b) { return V2(a.x / b.x, a.y / b.y); }
+ME_INLINE v2 &operator/=(v2 &a, float b) { return a = a / b; }
+ME_INLINE v2 &operator/=(v2 &a, v2 b) { return a = a / b; }
 
-METADOT_INLINE v2 operator-(v2 a) { return V2(-a.x, -a.y); }
+ME_INLINE v2 operator-(v2 a) { return V2(-a.x, -a.y); }
 
-METADOT_INLINE int operator<(v2 a, v2 b) { return a.x < b.x && a.y < b.y; }
-METADOT_INLINE int operator>(v2 a, v2 b) { return a.x > b.x && a.y > b.y; }
-METADOT_INLINE int operator<=(v2 a, v2 b) { return a.x <= b.x && a.y <= b.y; }
-METADOT_INLINE int operator>=(v2 a, v2 b) { return a.x >= b.x && a.y >= b.y; }
+ME_INLINE int operator<(v2 a, v2 b) { return a.x < b.x && a.y < b.y; }
+ME_INLINE int operator>(v2 a, v2 b) { return a.x > b.x && a.y > b.y; }
+ME_INLINE int operator<=(v2 a, v2 b) { return a.x <= b.x && a.y <= b.y; }
+ME_INLINE int operator>=(v2 a, v2 b) { return a.x >= b.x && a.y >= b.y; }
 
 using SinCos = METAENGINE_SinCos;
 using M2x2 = METAENGINE_M2x2;
@@ -2020,11 +1931,11 @@ using GjkCache = METAENGINE_GjkCache;
 using ToiResult = METAENGINE_ToiResult;
 
 using ShapeType = METAENGINE_ShapeType;
-#define METAENGINE_ENUM(K, V) METADOT_INLINE constexpr ShapeType K = METAENGINE_##K;
+#define METAENGINE_ENUM(K, V) ME_INLINE constexpr ShapeType K = METAENGINE_##K;
 METAENGINE_SHAPE_TYPE_DEFS
 #undef METAENGINE_ENUM
 
-METADOT_INLINE const char *to_string(ShapeType type) {
+ME_INLINE const char *to_string(ShapeType type) {
     switch (type) {
 #define METAENGINE_ENUM(K, V) \
     case METAENGINE_##K:      \
@@ -2036,1796 +1947,240 @@ METADOT_INLINE const char *to_string(ShapeType type) {
     }
 }
 
-METADOT_INLINE float min(float a, float b) { return metadot_min(a, b); }
-METADOT_INLINE float max(float a, float b) { return metadot_max(a, b); }
-METADOT_INLINE float clamp(float a, float lo, float hi) { return metadot_clamp(a, lo, hi); }
-METADOT_INLINE float clamp01(float a) { return metadot_clamp01(a); }
-METADOT_INLINE float sign(float a) { return metadot_sign(a); }
-METADOT_INLINE float intersect(float da, float db) { return metadot_intersect(da, db); }
-METADOT_INLINE float safe_invert(float a) { return metadot_safe_invert(a); }
-METADOT_INLINE float lerp_f(float a, float b, float t) { return metadot_lerp(a, b, t); }
-METADOT_INLINE float remap(float t, float lo, float hi) { return metadot_remap(t, lo, hi); }
-METADOT_INLINE float mod(float x, float m) { return metadot_mod(x, m); }
-METADOT_INLINE float fract(float x) { return metadot_fract(x); }
+ME_INLINE float min(float a, float b) { return metadot_min(a, b); }
+ME_INLINE float max(float a, float b) { return metadot_max(a, b); }
+ME_INLINE float clamp(float a, float lo, float hi) { return metadot_clamp(a, lo, hi); }
+ME_INLINE float clamp01(float a) { return metadot_clamp01(a); }
+ME_INLINE float sign(float a) { return metadot_sign(a); }
+ME_INLINE float intersect(float da, float db) { return metadot_intersect(da, db); }
+ME_INLINE float safe_invert(float a) { return metadot_safe_invert(a); }
+ME_INLINE float lerp_f(float a, float b, float t) { return metadot_lerp(a, b, t); }
+ME_INLINE float remap(float t, float lo, float hi) { return metadot_remap(t, lo, hi); }
+ME_INLINE float mod(float x, float m) { return metadot_mod(x, m); }
+ME_INLINE float fract(float x) { return metadot_fract(x); }
 
-METADOT_INLINE int sign(int a) { return metadot_sign_int(a); }
-METADOT_INLINE int min(int a, int b) { return metadot_min(a, b); }
-METADOT_INLINE int max(int a, int b) { return metadot_max(a, b); }
-METADOT_INLINE uint64_t min(uint64_t a, uint64_t b) { return metadot_min(a, b); }
-METADOT_INLINE uint64_t max(uint64_t a, uint64_t b) { return metadot_max(a, b); }
-METADOT_INLINE float abs(float a) { return metadot_abs(a); }
-METADOT_INLINE int abs(int a) { return metadot_abs_int(a); }
-METADOT_INLINE int clamp(int a, int lo, int hi) { return metadot_clamp_int(a, lo, hi); }
-METADOT_INLINE int clamp01(int a) { return metadot_clamp01_int(a); }
-METADOT_INLINE bool is_even(int x) { return metadot_is_even(x); }
-METADOT_INLINE bool is_odd(int x) { return metadot_is_odd(x); }
+ME_INLINE int sign(int a) { return metadot_sign_int(a); }
+ME_INLINE int min(int a, int b) { return metadot_min(a, b); }
+ME_INLINE int max(int a, int b) { return metadot_max(a, b); }
+ME_INLINE uint64_t min(uint64_t a, uint64_t b) { return metadot_min(a, b); }
+ME_INLINE uint64_t max(uint64_t a, uint64_t b) { return metadot_max(a, b); }
+ME_INLINE float abs(float a) { return metadot_abs(a); }
+ME_INLINE int abs(int a) { return metadot_abs_int(a); }
+ME_INLINE int clamp(int a, int lo, int hi) { return metadot_clamp_int(a, lo, hi); }
+ME_INLINE int clamp01(int a) { return metadot_clamp01_int(a); }
+ME_INLINE bool is_even(int x) { return metadot_is_even(x); }
+ME_INLINE bool is_odd(int x) { return metadot_is_odd(x); }
 
-METADOT_INLINE bool is_power_of_two(int a) { return metadot_is_power_of_two(a); }
-METADOT_INLINE bool is_power_of_two(uint64_t a) { return metadot_is_power_of_two_uint(a); }
-METADOT_INLINE int fit_power_of_two(int a) { return metadot_fit_power_of_two(a); }
+ME_INLINE bool is_power_of_two(int a) { return metadot_is_power_of_two(a); }
+ME_INLINE bool is_power_of_two(uint64_t a) { return metadot_is_power_of_two_uint(a); }
+ME_INLINE int fit_power_of_two(int a) { return metadot_fit_power_of_two(a); }
 
-METADOT_INLINE float smoothstep(float x) { return metadot_smoothstep(x); }
-METADOT_INLINE float quad_in(float x) { return metadot_quad_in(x); }
-METADOT_INLINE float quad_out(float x) { return metadot_quad_out(x); }
-METADOT_INLINE float quad_in_out(float x) { return metadot_quad_in_out(x); }
-METADOT_INLINE float cube_in(float x) { return metadot_cube_in(x); }
-METADOT_INLINE float cube_out(float x) { return metadot_cube_out(x); }
-METADOT_INLINE float cube_in_out(float x) { return metadot_cube_in_out(x); }
-METADOT_INLINE float quart_in(float x) { return metadot_quart_in(x); }
-METADOT_INLINE float quart_out(float x) { return metadot_quart_out(x); }
-METADOT_INLINE float quart_in_out(float x) { return metadot_quart_in_out(x); }
-METADOT_INLINE float quint_in(float x) { return metadot_quint_in(x); }
-METADOT_INLINE float quint_out(float x) { return metadot_quint_out(x); }
-METADOT_INLINE float quint_in_out(float x) { return metadot_quint_in_out(x); }
-METADOT_INLINE float sin_in(float x) { return metadot_sin_in(x); }
-METADOT_INLINE float sin_out(float x) { return metadot_sin_out(x); }
-METADOT_INLINE float sin_in_out(float x) { return metadot_sin_in_out(x); }
-METADOT_INLINE float circle_in(float x) { return metadot_circle_in(x); }
-METADOT_INLINE float circle_out(float x) { return metadot_circle_out(x); }
-METADOT_INLINE float circle_in_out(float x) { return metadot_circle_in_out(x); }
-METADOT_INLINE float back_in(float x) { return metadot_back_in(x); }
-METADOT_INLINE float back_out(float x) { return metadot_back_out(x); }
-METADOT_INLINE float back_in_out(float x) { return metadot_back_in_out(x); }
+ME_INLINE float smoothstep(float x) { return metadot_smoothstep(x); }
+ME_INLINE float quad_in(float x) { return metadot_quad_in(x); }
+ME_INLINE float quad_out(float x) { return metadot_quad_out(x); }
+ME_INLINE float quad_in_out(float x) { return metadot_quad_in_out(x); }
+ME_INLINE float cube_in(float x) { return metadot_cube_in(x); }
+ME_INLINE float cube_out(float x) { return metadot_cube_out(x); }
+ME_INLINE float cube_in_out(float x) { return metadot_cube_in_out(x); }
+ME_INLINE float quart_in(float x) { return metadot_quart_in(x); }
+ME_INLINE float quart_out(float x) { return metadot_quart_out(x); }
+ME_INLINE float quart_in_out(float x) { return metadot_quart_in_out(x); }
+ME_INLINE float quint_in(float x) { return metadot_quint_in(x); }
+ME_INLINE float quint_out(float x) { return metadot_quint_out(x); }
+ME_INLINE float quint_in_out(float x) { return metadot_quint_in_out(x); }
+ME_INLINE float sin_in(float x) { return metadot_sin_in(x); }
+ME_INLINE float sin_out(float x) { return metadot_sin_out(x); }
+ME_INLINE float sin_in_out(float x) { return metadot_sin_in_out(x); }
+ME_INLINE float circle_in(float x) { return metadot_circle_in(x); }
+ME_INLINE float circle_out(float x) { return metadot_circle_out(x); }
+ME_INLINE float circle_in_out(float x) { return metadot_circle_in_out(x); }
+ME_INLINE float back_in(float x) { return metadot_back_in(x); }
+ME_INLINE float back_out(float x) { return metadot_back_out(x); }
+ME_INLINE float back_in_out(float x) { return metadot_back_in_out(x); }
 
-METADOT_INLINE float dot(v2 a, v2 b) { return metadot_dot(a, b); }
+ME_INLINE float dot(v2 a, v2 b) { return metadot_dot(a, b); }
 
-METADOT_INLINE v2 skew(v2 a) { return metadot_skew(a); }
-METADOT_INLINE v2 cw90(v2 a) { return metadot_cw90(a); }
-METADOT_INLINE float det2(v2 a, v2 b) { return metadot_det2(a, b); }
-METADOT_INLINE float cross(v2 a, v2 b) { return metadot_cross(a, b); }
-METADOT_INLINE v2 cross(v2 a, float b) { return metadot_cross_v2_f(a, b); }
-METADOT_INLINE v2 cross(float a, v2 b) { return metadot_cross_f_v2(a, b); }
-METADOT_INLINE v2 min(v2 a, v2 b) { return metadot_min_v2(a, b); }
-METADOT_INLINE v2 max(v2 a, v2 b) { return metadot_max_v2(a, b); }
-METADOT_INLINE v2 clamp(v2 a, v2 lo, v2 hi) { return metadot_clamp_v2(a, lo, hi); }
-METADOT_INLINE v2 clamp01(v2 a) { return metadot_clamp01_v2(a); }
-METADOT_INLINE v2 abs(v2 a) { return metadot_abs_v2(a); }
-METADOT_INLINE float hmin(v2 a) { return metadot_hmin(a); }
-METADOT_INLINE float hmax(v2 a) { return metadot_hmax(a); }
-METADOT_INLINE float len(v2 a) { return metadot_len(a); }
-METADOT_INLINE float distance(v2 a, v2 b) { return metadot_distance(a, b); }
-METADOT_INLINE v2 norm(v2 a) { return metadot_norm(a); }
-METADOT_INLINE v2 safe_norm(v2 a) { return metadot_safe_norm(a); }
-METADOT_INLINE float safe_norm(float a) { return metadot_safe_norm_f(a); }
-METADOT_INLINE int safe_norm(int a) { return metadot_safe_norm_int(a); }
+ME_INLINE v2 skew(v2 a) { return metadot_skew(a); }
+ME_INLINE v2 cw90(v2 a) { return metadot_cw90(a); }
+ME_INLINE float det2(v2 a, v2 b) { return metadot_det2(a, b); }
+ME_INLINE float cross(v2 a, v2 b) { return metadot_cross(a, b); }
+ME_INLINE v2 cross(v2 a, float b) { return metadot_cross_v2_f(a, b); }
+ME_INLINE v2 cross(float a, v2 b) { return metadot_cross_f_v2(a, b); }
+ME_INLINE v2 min(v2 a, v2 b) { return metadot_min_v2(a, b); }
+ME_INLINE v2 max(v2 a, v2 b) { return metadot_max_v2(a, b); }
+ME_INLINE v2 clamp(v2 a, v2 lo, v2 hi) { return metadot_clamp_v2(a, lo, hi); }
+ME_INLINE v2 clamp01(v2 a) { return metadot_clamp01_v2(a); }
+ME_INLINE v2 abs(v2 a) { return metadot_abs_v2(a); }
+ME_INLINE float hmin(v2 a) { return metadot_hmin(a); }
+ME_INLINE float hmax(v2 a) { return metadot_hmax(a); }
+ME_INLINE float len(v2 a) { return metadot_len(a); }
+ME_INLINE float distance(v2 a, v2 b) { return metadot_distance(a, b); }
+ME_INLINE v2 norm(v2 a) { return metadot_norm(a); }
+ME_INLINE v2 safe_norm(v2 a) { return metadot_safe_norm(a); }
+ME_INLINE float safe_norm(float a) { return metadot_safe_norm_f(a); }
+ME_INLINE int safe_norm(int a) { return metadot_safe_norm_int(a); }
 
-METADOT_INLINE v2 lerp_v2(v2 a, v2 b, float t) { return metadot_lerp_v2(a, b, t); }
-METADOT_INLINE v2 bezier(v2 a, v2 c0, v2 b, float t) { return metadot_bezier(a, c0, b, t); }
-METADOT_INLINE v2 bezier(v2 a, v2 c0, v2 c1, v2 b, float t) { return metadot_bezier2(a, c0, c1, b, t); }
-METADOT_INLINE v2 floor(v2 a) { return metadot_floor(a); }
-METADOT_INLINE v2 round(v2 a) { return metadot_round(a); }
-METADOT_INLINE v2 safe_invert(v2 a) { return metadot_safe_invert_v2(a); }
-METADOT_INLINE v2 sign(v2 a) { return metadot_sign_v2(a); }
+ME_INLINE v2 lerp_v2(v2 a, v2 b, float t) { return metadot_lerp_v2(a, b, t); }
+ME_INLINE v2 bezier(v2 a, v2 c0, v2 b, float t) { return metadot_bezier(a, c0, b, t); }
+ME_INLINE v2 bezier(v2 a, v2 c0, v2 c1, v2 b, float t) { return metadot_bezier2(a, c0, c1, b, t); }
+ME_INLINE v2 floor(v2 a) { return metadot_floor(a); }
+ME_INLINE v2 round(v2 a) { return metadot_round(a); }
+ME_INLINE v2 safe_invert(v2 a) { return metadot_safe_invert_v2(a); }
+ME_INLINE v2 sign(v2 a) { return metadot_sign_v2(a); }
 
-METADOT_INLINE int parallel(v2 a, v2 b, float tol) { return metadot_parallel(a, b, tol); }
+ME_INLINE int parallel(v2 a, v2 b, float tol) { return metadot_parallel(a, b, tol); }
 
-METADOT_INLINE SinCos sincos(float radians) { return metadot_sincos_f(radians); }
-METADOT_INLINE SinCos sincos() { return metadot_sincos(); }
-METADOT_INLINE v2 x_axis(SinCos r) { return metadot_x_axis(r); }
-METADOT_INLINE v2 y_axis(SinCos r) { return metadot_y_axis(r); }
-METADOT_INLINE v2 mul(SinCos a, v2 b) { return metadot_mul_sc_v2(a, b); }
-METADOT_INLINE v2 mulT(SinCos a, v2 b) { return metadot_mulT_sc_v2(a, b); }
-METADOT_INLINE SinCos mul(SinCos a, SinCos b) { return metadot_mul_sc(a, b); }
-METADOT_INLINE SinCos mulT(SinCos a, SinCos b) { return metadot_mulT_sc(a, b); }
+ME_INLINE SinCos sincos(float radians) { return metadot_sincos_f(radians); }
+ME_INLINE SinCos sincos() { return metadot_sincos(); }
+ME_INLINE v2 x_axis(SinCos r) { return metadot_x_axis(r); }
+ME_INLINE v2 y_axis(SinCos r) { return metadot_y_axis(r); }
+ME_INLINE v2 mul(SinCos a, v2 b) { return metadot_mul_sc_v2(a, b); }
+ME_INLINE v2 mulT(SinCos a, v2 b) { return metadot_mulT_sc_v2(a, b); }
+ME_INLINE SinCos mul(SinCos a, SinCos b) { return metadot_mul_sc(a, b); }
+ME_INLINE SinCos mulT(SinCos a, SinCos b) { return metadot_mulT_sc(a, b); }
 
-METADOT_INLINE float atan2_360(float y, float x) { return metadot_atan2_360(y, x); }
-METADOT_INLINE float atan2_360(v2 v) { return metadot_atan2_360_v2(v); }
-METADOT_INLINE float atan2_360(SinCos r) { return metadot_atan2_360_sc(r); }
+ME_INLINE float atan2_360(float y, float x) { return metadot_atan2_360(y, x); }
+ME_INLINE float atan2_360(v2 v) { return metadot_atan2_360_v2(v); }
+ME_INLINE float atan2_360(SinCos r) { return metadot_atan2_360_sc(r); }
 
-METADOT_INLINE float shortest_arc(v2 a, v2 b) { return metadot_shortest_arc(a, b); }
+ME_INLINE float shortest_arc(v2 a, v2 b) { return metadot_shortest_arc(a, b); }
 
-METADOT_INLINE float angle_diff(float radians_a, float radians_b) { return metadot_angle_diff(radians_a, radians_b); }
-METADOT_INLINE v2 from_angle(float radians) { return metadot_from_angle(radians); }
+ME_INLINE float angle_diff(float radians_a, float radians_b) { return metadot_angle_diff(radians_a, radians_b); }
+ME_INLINE v2 from_angle(float radians) { return metadot_from_angle(radians); }
 
-METADOT_INLINE v2 mul(M2x2 a, v2 b) { return metadot_mul_m2_v2(a, b); }
-METADOT_INLINE M2x2 mul(M2x2 a, M2x2 b) { return metadot_mul_m2(a, b); }
+ME_INLINE v2 mul(M2x2 a, v2 b) { return metadot_mul_m2_v2(a, b); }
+ME_INLINE M2x2 mul(M2x2 a, M2x2 b) { return metadot_mul_m2(a, b); }
 
-METADOT_INLINE v2 mul(M3x2 a, v2 b) { return metadot_mul_m32_v2(a, b); }
-METADOT_INLINE M3x2 mul(M3x2 a, M3x2 b) { return metadot_mul_m32(a, b); }
-METADOT_INLINE M3x2 make_identity() { return metadot_make_identity(); }
-METADOT_INLINE M3x2 make_translation(float x, float y) { return metadot_make_translation_f(x, y); }
-METADOT_INLINE M3x2 make_translation(v2 p) { return metadot_make_translation(p); }
-METADOT_INLINE M3x2 make_scale(v2 s) { return metadot_make_scale(s); }
-METADOT_INLINE M3x2 make_scale(float s) { return metadot_make_scale_f(s); }
-METADOT_INLINE M3x2 make_scale(v2 s, v2 p) { return metadot_make_scale_translation(s, p); }
-METADOT_INLINE M3x2 make_scale(float s, v2 p) { return metadot_make_scale_translation_f(s, p); }
-METADOT_INLINE M3x2 make_scale(float sx, float sy, v2 p) { return metadot_make_scale_translation_f_f(sx, sy, p); }
-METADOT_INLINE M3x2 make_rotation(float radians) { return metadot_make_rotation(radians); }
-METADOT_INLINE M3x2 make_transform(v2 p, v2 s, float radians) { return metadot_make_transform_TSR(p, s, radians); }
-METADOT_INLINE M3x2 invert(M3x2 m) { return metadot_invert(m); }
+ME_INLINE v2 mul(M3x2 a, v2 b) { return metadot_mul_m32_v2(a, b); }
+ME_INLINE M3x2 mul(M3x2 a, M3x2 b) { return metadot_mul_m32(a, b); }
+ME_INLINE M3x2 make_identity() { return metadot_make_identity(); }
+ME_INLINE M3x2 make_translation(float x, float y) { return metadot_make_translation_f(x, y); }
+ME_INLINE M3x2 make_translation(v2 p) { return metadot_make_translation(p); }
+ME_INLINE M3x2 make_scale(v2 s) { return metadot_make_scale(s); }
+ME_INLINE M3x2 make_scale(float s) { return metadot_make_scale_f(s); }
+ME_INLINE M3x2 make_scale(v2 s, v2 p) { return metadot_make_scale_translation(s, p); }
+ME_INLINE M3x2 make_scale(float s, v2 p) { return metadot_make_scale_translation_f(s, p); }
+ME_INLINE M3x2 make_scale(float sx, float sy, v2 p) { return metadot_make_scale_translation_f_f(sx, sy, p); }
+ME_INLINE M3x2 make_rotation(float radians) { return metadot_make_rotation(radians); }
+ME_INLINE M3x2 make_transform(v2 p, v2 s, float radians) { return metadot_make_transform_TSR(p, s, radians); }
+ME_INLINE M3x2 invert(M3x2 m) { return metadot_invert(m); }
 
-METADOT_INLINE MTransform make_transform() { return metadot_make_transform(); }
-METADOT_INLINE MTransform make_transform(v2 p, float radians) { return metadot_make_transform_TR(p, radians); }
-METADOT_INLINE v2 mul(MTransform a, v2 b) { return metadot_mul_tf_v2(a, b); }
-METADOT_INLINE v2 mulT(MTransform a, v2 b) { return metadot_mulT_tf_v2(a, b); }
-METADOT_INLINE MTransform mul(MTransform a, MTransform b) { return metadot_mul_tf(a, b); }
-METADOT_INLINE MTransform mulT(MTransform a, MTransform b) { return metadot_mulT_tf(a, b); }
+ME_INLINE MTransform make_transform() { return metadot_make_transform(); }
+ME_INLINE MTransform make_transform(v2 p, float radians) { return metadot_make_transform_TR(p, radians); }
+ME_INLINE v2 mul(MTransform a, v2 b) { return metadot_mul_tf_v2(a, b); }
+ME_INLINE v2 mulT(MTransform a, v2 b) { return metadot_mulT_tf_v2(a, b); }
+ME_INLINE MTransform mul(MTransform a, MTransform b) { return metadot_mul_tf(a, b); }
+ME_INLINE MTransform mulT(MTransform a, MTransform b) { return metadot_mulT_tf(a, b); }
 
-METADOT_INLINE Halfspace plane(v2 n, float d) { return metadot_plane(n, d); }
-METADOT_INLINE Halfspace plane(v2 n, v2 p) { return metadot_plane2(n, p); }
-METADOT_INLINE v2 origin(Halfspace h) { return metadot_origin(h); }
-METADOT_INLINE float distance(Halfspace h, v2 p) { return metadot_distance_hs(h, p); }
-METADOT_INLINE v2 project(Halfspace h, v2 p) { return metadot_project(h, p); }
-METADOT_INLINE Halfspace mul(MTransform a, Halfspace b) { return metadot_mul_tf_hs(a, b); }
-METADOT_INLINE Halfspace mulT(MTransform a, Halfspace b) { return metadot_mulT_tf_hs(a, b); }
-METADOT_INLINE v2 intersect(v2 a, v2 b, float da, float db) { return metadot_intersect_halfspace(a, b, da, db); }
-METADOT_INLINE v2 intersect(Halfspace h, v2 a, v2 b) { return metadot_intersect_halfspace2(h, a, b); }
+ME_INLINE Halfspace plane(v2 n, float d) { return metadot_plane(n, d); }
+ME_INLINE Halfspace plane(v2 n, v2 p) { return metadot_plane2(n, p); }
+ME_INLINE v2 origin(Halfspace h) { return metadot_origin(h); }
+ME_INLINE float distance(Halfspace h, v2 p) { return metadot_distance_hs(h, p); }
+ME_INLINE v2 project(Halfspace h, v2 p) { return metadot_project(h, p); }
+ME_INLINE Halfspace mul(MTransform a, Halfspace b) { return metadot_mul_tf_hs(a, b); }
+ME_INLINE Halfspace mulT(MTransform a, Halfspace b) { return metadot_mulT_tf_hs(a, b); }
+ME_INLINE v2 intersect(v2 a, v2 b, float da, float db) { return metadot_intersect_halfspace(a, b, da, db); }
+ME_INLINE v2 intersect(Halfspace h, v2 a, v2 b) { return metadot_intersect_halfspace2(h, a, b); }
 
-METADOT_INLINE Aabb make_aabb(v2 min, v2 max) { return metadot_make_aabb(min, max); }
-METADOT_INLINE Aabb make_aabb(v2 pos, float w, float h) { return metadot_make_aabb_pos_w_h(pos, w, h); }
-METADOT_INLINE Aabb make_aabb_center_half_extents(v2 center, v2 half_extents) { return metadot_make_aabb_center_half_extents(center, half_extents); }
-METADOT_INLINE Aabb make_aabb_from_top_left(v2 top_left, float w, float h) { return metadot_make_aabb_from_top_left(top_left, w, h); }
-METADOT_INLINE float width(Aabb bb) { return metadot_width(bb); }
-METADOT_INLINE float height(Aabb bb) { return metadot_height(bb); }
-METADOT_INLINE float half_width(Aabb bb) { return metadot_half_width(bb); }
-METADOT_INLINE float half_height(Aabb bb) { return metadot_half_height(bb); }
-METADOT_INLINE v2 half_extents(Aabb bb) { return metadot_half_extents(bb); }
-METADOT_INLINE v2 extents(Aabb aabb) { return metadot_extents(aabb); }
-METADOT_INLINE Aabb expand(Aabb aabb, v2 v) { return metadot_expand_aabb(aabb, v); }
-METADOT_INLINE Aabb expand(Aabb aabb, float v) { return metadot_expand_aabb_f(aabb, v); }
-METADOT_INLINE v2 min(Aabb bb) { return metadot_min_aabb(bb); }
-METADOT_INLINE v2 max(Aabb bb) { return metadot_max_aabb(bb); }
-METADOT_INLINE v2 midpoint(Aabb bb) { return metadot_midpoint(bb); }
-METADOT_INLINE v2 center(Aabb bb) { return metadot_center(bb); }
-METADOT_INLINE v2 top_left(Aabb bb) { return metadot_top_left(bb); }
-METADOT_INLINE v2 top_right(Aabb bb) { return metadot_top_right(bb); }
-METADOT_INLINE v2 bottom_left(Aabb bb) { return metadot_bottom_left(bb); }
-METADOT_INLINE v2 bottom_right(Aabb bb) { return metadot_bottom_right(bb); }
-METADOT_INLINE bool contains(Aabb bb, v2 p) { return metadot_contains_point(bb, p); }
-METADOT_INLINE bool contains(Aabb a, Aabb b) { return metadot_contains_aabb(a, b); }
-METADOT_INLINE float surface_area(Aabb bb) { return metadot_surface_area_aabb(bb); }
-METADOT_INLINE float area(Aabb bb) { return metadot_area_aabb(bb); }
-METADOT_INLINE v2 clamp(Aabb bb, v2 p) { return metadot_clamp_aabb_v2(bb, p); }
-METADOT_INLINE Aabb clamp(Aabb a, Aabb b) { return metadot_clamp_aabb(a, b); }
-METADOT_INLINE Aabb combine(Aabb a, Aabb b) { return metadot_combine(a, b); }
+ME_INLINE Aabb make_aabb(v2 min, v2 max) { return metadot_make_aabb(min, max); }
+ME_INLINE Aabb make_aabb(v2 pos, float w, float h) { return metadot_make_aabb_pos_w_h(pos, w, h); }
+ME_INLINE Aabb make_aabb_center_half_extents(v2 center, v2 half_extents) { return metadot_make_aabb_center_half_extents(center, half_extents); }
+ME_INLINE Aabb make_aabb_from_top_left(v2 top_left, float w, float h) { return metadot_make_aabb_from_top_left(top_left, w, h); }
+ME_INLINE float width(Aabb bb) { return metadot_width(bb); }
+ME_INLINE float height(Aabb bb) { return metadot_height(bb); }
+ME_INLINE float half_width(Aabb bb) { return metadot_half_width(bb); }
+ME_INLINE float half_height(Aabb bb) { return metadot_half_height(bb); }
+ME_INLINE v2 half_extents(Aabb bb) { return metadot_half_extents(bb); }
+ME_INLINE v2 extents(Aabb aabb) { return metadot_extents(aabb); }
+ME_INLINE Aabb expand(Aabb aabb, v2 v) { return metadot_expand_aabb(aabb, v); }
+ME_INLINE Aabb expand(Aabb aabb, float v) { return metadot_expand_aabb_f(aabb, v); }
+ME_INLINE v2 min(Aabb bb) { return metadot_min_aabb(bb); }
+ME_INLINE v2 max(Aabb bb) { return metadot_max_aabb(bb); }
+ME_INLINE v2 midpoint(Aabb bb) { return metadot_midpoint(bb); }
+ME_INLINE v2 center(Aabb bb) { return metadot_center(bb); }
+ME_INLINE v2 top_left(Aabb bb) { return metadot_top_left(bb); }
+ME_INLINE v2 top_right(Aabb bb) { return metadot_top_right(bb); }
+ME_INLINE v2 bottom_left(Aabb bb) { return metadot_bottom_left(bb); }
+ME_INLINE v2 bottom_right(Aabb bb) { return metadot_bottom_right(bb); }
+ME_INLINE bool contains(Aabb bb, v2 p) { return metadot_contains_point(bb, p); }
+ME_INLINE bool contains(Aabb a, Aabb b) { return metadot_contains_aabb(a, b); }
+ME_INLINE float surface_area(Aabb bb) { return metadot_surface_area_aabb(bb); }
+ME_INLINE float area(Aabb bb) { return metadot_area_aabb(bb); }
+ME_INLINE v2 clamp(Aabb bb, v2 p) { return metadot_clamp_aabb_v2(bb, p); }
+ME_INLINE Aabb clamp(Aabb a, Aabb b) { return metadot_clamp_aabb(a, b); }
+ME_INLINE Aabb combine(Aabb a, Aabb b) { return metadot_combine(a, b); }
 
-METADOT_INLINE int overlaps(Aabb a, Aabb b) { return metadot_overlaps(a, b); }
-METADOT_INLINE int collide(Aabb a, Aabb b) { return metadot_collide_aabb(a, b); }
+ME_INLINE int overlaps(Aabb a, Aabb b) { return metadot_overlaps(a, b); }
+ME_INLINE int collide(Aabb a, Aabb b) { return metadot_collide_aabb(a, b); }
 
-METADOT_INLINE Aabb make_aabb(v2 *verts, int count) { return metadot_make_aabb_verts((METAENGINE_V2 *)verts, count); }
-METADOT_INLINE void aabb_verts(v2 *out, Aabb bb) { return metadot_aabb_verts((METAENGINE_V2 *)out, bb); }
+ME_INLINE Aabb make_aabb(v2 *verts, int count) { return metadot_make_aabb_verts((METAENGINE_V2 *)verts, count); }
+ME_INLINE void aabb_verts(v2 *out, Aabb bb) { return metadot_aabb_verts((METAENGINE_V2 *)out, bb); }
 
-METADOT_INLINE float area(Circle c) { return metadot_area_circle(c); }
-METADOT_INLINE float surface_area(Circle c) { return metadot_surface_area_circle(c); }
-METADOT_INLINE Circle mul(MTransform tx, Circle a) { return metadot_mul_tf_circle(tx, a); }
+ME_INLINE float area(Circle c) { return metadot_area_circle(c); }
+ME_INLINE float surface_area(Circle c) { return metadot_surface_area_circle(c); }
+ME_INLINE Circle mul(MTransform tx, Circle a) { return metadot_mul_tf_circle(tx, a); }
 
-METADOT_INLINE v2 impact(Ray r, float t) { return metadot_impact(r, t); }
-METADOT_INLINE v2 endpoint(Ray r) { return metadot_endpoint(r); }
+ME_INLINE v2 impact(Ray r, float t) { return metadot_impact(r, t); }
+ME_INLINE v2 endpoint(Ray r) { return metadot_endpoint(r); }
 
-METADOT_INLINE int ray_to_halfpsace(Ray A, Halfspace B, Raycast *out) { return metadot_ray_to_halfpsace(A, B, out); }
-METADOT_INLINE float distance_sq(v2 a, v2 b, v2 p) { return metadot_distance_sq(a, b, p); }
+ME_INLINE int ray_to_halfpsace(Ray A, Halfspace B, Raycast *out) { return metadot_ray_to_halfpsace(A, B, out); }
+ME_INLINE float distance_sq(v2 a, v2 b, v2 p) { return metadot_distance_sq(a, b, p); }
 
-METADOT_INLINE bool circle_to_circle(Circle A, Circle B) { return metadot_circle_to_circle(A, B); }
-METADOT_INLINE bool circle_to_aabb(Circle A, Aabb B) { return metadot_circle_to_aabb(A, B); }
-METADOT_INLINE bool circle_to_capsule(Circle A, Capsule B) { return metadot_circle_to_capsule(A, B); }
-METADOT_INLINE bool aabb_to_aabb(Aabb A, Aabb B) { return metadot_aabb_to_aabb(A, B); }
-METADOT_INLINE bool aabb_to_capsule(Aabb A, Capsule B) { return metadot_aabb_to_capsule(A, B); }
-METADOT_INLINE bool capsule_to_capsule(Capsule A, Capsule B) { return metadot_capsule_to_capsule(A, B); }
-METADOT_INLINE bool circle_to_poly(Circle A, const Poly *B, const MTransform *bx) { return metadot_circle_to_poly(A, B, bx); }
-METADOT_INLINE bool aabb_to_poly(Aabb A, const Poly *B, const MTransform *bx) { return metadot_aabb_to_poly(A, B, bx); }
-METADOT_INLINE bool capsule_to_poly(Capsule A, const Poly *B, const MTransform *bx) { return metadot_capsule_to_poly(A, B, bx); }
-METADOT_INLINE bool poly_to_poly(const Poly *A, const MTransform *ax, const Poly *B, const MTransform *bx) { return metadot_poly_to_poly(A, ax, B, bx); }
+ME_INLINE bool circle_to_circle(Circle A, Circle B) { return metadot_circle_to_circle(A, B); }
+ME_INLINE bool circle_to_aabb(Circle A, Aabb B) { return metadot_circle_to_aabb(A, B); }
+ME_INLINE bool circle_to_capsule(Circle A, Capsule B) { return metadot_circle_to_capsule(A, B); }
+ME_INLINE bool aabb_to_aabb(Aabb A, Aabb B) { return metadot_aabb_to_aabb(A, B); }
+ME_INLINE bool aabb_to_capsule(Aabb A, Capsule B) { return metadot_aabb_to_capsule(A, B); }
+ME_INLINE bool capsule_to_capsule(Capsule A, Capsule B) { return metadot_capsule_to_capsule(A, B); }
+ME_INLINE bool circle_to_poly(Circle A, const Poly *B, const MTransform *bx) { return metadot_circle_to_poly(A, B, bx); }
+ME_INLINE bool aabb_to_poly(Aabb A, const Poly *B, const MTransform *bx) { return metadot_aabb_to_poly(A, B, bx); }
+ME_INLINE bool capsule_to_poly(Capsule A, const Poly *B, const MTransform *bx) { return metadot_capsule_to_poly(A, B, bx); }
+ME_INLINE bool poly_to_poly(const Poly *A, const MTransform *ax, const Poly *B, const MTransform *bx) { return metadot_poly_to_poly(A, ax, B, bx); }
 
-METADOT_INLINE bool ray_to_circle(Ray A, Circle B, Raycast *out) { return metadot_ray_to_circle(A, B, out); }
-METADOT_INLINE bool ray_to_aabb(Ray A, Aabb B, Raycast *out) { return metadot_ray_to_aabb(A, B, out); }
-METADOT_INLINE bool ray_to_capsule(Ray A, Capsule B, Raycast *out) { return metadot_ray_to_capsule(A, B, out); }
-METADOT_INLINE bool ray_to_poly(Ray A, const Poly *B, const MTransform *bx_ptr, Raycast *out) { return metadot_ray_to_poly(A, B, bx_ptr, out); }
+ME_INLINE bool ray_to_circle(Ray A, Circle B, Raycast *out) { return metadot_ray_to_circle(A, B, out); }
+ME_INLINE bool ray_to_aabb(Ray A, Aabb B, Raycast *out) { return metadot_ray_to_aabb(A, B, out); }
+ME_INLINE bool ray_to_capsule(Ray A, Capsule B, Raycast *out) { return metadot_ray_to_capsule(A, B, out); }
+ME_INLINE bool ray_to_poly(Ray A, const Poly *B, const MTransform *bx_ptr, Raycast *out) { return metadot_ray_to_poly(A, B, bx_ptr, out); }
 
-METADOT_INLINE void circle_to_circle_manifold(Circle A, Circle B, Manifold *m) { return metadot_circle_to_circle_manifold(A, B, m); }
-METADOT_INLINE void circle_to_aabb_manifold(Circle A, Aabb B, Manifold *m) { return metadot_circle_to_aabb_manifold(A, B, m); }
-METADOT_INLINE void circle_to_capsule_manifold(Circle A, Capsule B, Manifold *m) { return metadot_circle_to_capsule_manifold(A, B, m); }
-METADOT_INLINE void aabb_to_aabb_manifold(Aabb A, Aabb B, Manifold *m) { return metadot_aabb_to_aabb_manifold(A, B, m); }
-METADOT_INLINE void aabb_to_capsule_manifold(Aabb A, Capsule B, Manifold *m) { return metadot_aabb_to_capsule_manifold(A, B, m); }
-METADOT_INLINE void capsule_to_capsule_manifold(Capsule A, Capsule B, Manifold *m) { return metadot_capsule_to_capsule_manifold(A, B, m); }
-METADOT_INLINE void circle_to_poly_manifold(Circle A, const Poly *B, const MTransform *bx, Manifold *m) { return metadot_circle_to_poly_manifold(A, B, bx, m); }
-METADOT_INLINE void aabb_to_poly_manifold(Aabb A, const Poly *B, const MTransform *bx, Manifold *m) { return metadot_aabb_to_poly_manifold(A, B, bx, m); }
-METADOT_INLINE void capsule_to_poly_manifold(Capsule A, const Poly *B, const MTransform *bx, Manifold *m) { return metadot_capsule_to_poly_manifold(A, B, bx, m); }
-METADOT_INLINE void poly_to_poly_manifold(const Poly *A, const MTransform *ax, const Poly *B, const MTransform *bx, Manifold *m) { return metadot_poly_to_poly_manifold(A, ax, B, bx, m); }
+ME_INLINE void circle_to_circle_manifold(Circle A, Circle B, Manifold *m) { return metadot_circle_to_circle_manifold(A, B, m); }
+ME_INLINE void circle_to_aabb_manifold(Circle A, Aabb B, Manifold *m) { return metadot_circle_to_aabb_manifold(A, B, m); }
+ME_INLINE void circle_to_capsule_manifold(Circle A, Capsule B, Manifold *m) { return metadot_circle_to_capsule_manifold(A, B, m); }
+ME_INLINE void aabb_to_aabb_manifold(Aabb A, Aabb B, Manifold *m) { return metadot_aabb_to_aabb_manifold(A, B, m); }
+ME_INLINE void aabb_to_capsule_manifold(Aabb A, Capsule B, Manifold *m) { return metadot_aabb_to_capsule_manifold(A, B, m); }
+ME_INLINE void capsule_to_capsule_manifold(Capsule A, Capsule B, Manifold *m) { return metadot_capsule_to_capsule_manifold(A, B, m); }
+ME_INLINE void circle_to_poly_manifold(Circle A, const Poly *B, const MTransform *bx, Manifold *m) { return metadot_circle_to_poly_manifold(A, B, bx, m); }
+ME_INLINE void aabb_to_poly_manifold(Aabb A, const Poly *B, const MTransform *bx, Manifold *m) { return metadot_aabb_to_poly_manifold(A, B, bx, m); }
+ME_INLINE void capsule_to_poly_manifold(Capsule A, const Poly *B, const MTransform *bx, Manifold *m) { return metadot_capsule_to_poly_manifold(A, B, bx, m); }
+ME_INLINE void poly_to_poly_manifold(const Poly *A, const MTransform *ax, const Poly *B, const MTransform *bx, Manifold *m) { return metadot_poly_to_poly_manifold(A, ax, B, bx, m); }
 
-METADOT_INLINE float gjk(const void *A, ShapeType typeA, const MTransform *ax_ptr, const void *B, ShapeType typeB, const MTransform *bx_ptr, v2 *outA, v2 *outB, int use_radius, int *iterations,
-                         GjkCache *cache) {
+ME_INLINE float gjk(const void *A, ShapeType typeA, const MTransform *ax_ptr, const void *B, ShapeType typeB, const MTransform *bx_ptr, v2 *outA, v2 *outB, int use_radius, int *iterations,
+                    GjkCache *cache) {
     return metadot_gjk(A, typeA, ax_ptr, B, typeB, bx_ptr, (METAENGINE_V2 *)outA, (METAENGINE_V2 *)outB, use_radius, iterations, cache);
 }
 
-METADOT_INLINE ToiResult toi(const void *A, ShapeType typeA, const MTransform *ax_ptr, v2 vA, const void *B, ShapeType typeB, const MTransform *bx_ptr, v2 vB, int use_radius, int *iterations) {
+ME_INLINE ToiResult toi(const void *A, ShapeType typeA, const MTransform *ax_ptr, v2 vA, const void *B, ShapeType typeB, const MTransform *bx_ptr, v2 vB, int use_radius, int *iterations) {
     return metadot_toi(A, typeA, ax_ptr, vA, B, typeB, bx_ptr, vB, use_radius);
 }
 
-METADOT_INLINE void inflate(void *shape, ShapeType type, float skin_factor) { return metadot_inflate(shape, type, skin_factor); }
+ME_INLINE void inflate(void *shape, ShapeType type, float skin_factor) { return metadot_inflate(shape, type, skin_factor); }
 
-METADOT_INLINE int hull(v2 *verts, int count) { return metadot_hull((METAENGINE_V2 *)verts, count); }
-METADOT_INLINE void norms(v2 *verts, v2 *norms, int count) { return metadot_norms((METAENGINE_V2 *)verts, (METAENGINE_V2 *)norms, count); }
+ME_INLINE int hull(v2 *verts, int count) { return metadot_hull((METAENGINE_V2 *)verts, count); }
+ME_INLINE void norms(v2 *verts, v2 *norms, int count) { return metadot_norms((METAENGINE_V2 *)verts, (METAENGINE_V2 *)norms, count); }
 
-METADOT_INLINE void make_poly(Poly *p) { return metadot_make_poly(p); }
-METADOT_INLINE v2 centroid(const v2 *verts, int count) { return metadot_centroid((METAENGINE_V2 *)verts, count); }
+ME_INLINE void make_poly(Poly *p) { return metadot_make_poly(p); }
+ME_INLINE v2 centroid(const v2 *verts, int count) { return metadot_centroid((METAENGINE_V2 *)verts, count); }
 
-METADOT_INLINE int collided(const void *A, const MTransform *ax, ShapeType typeA, const void *B, const MTransform *bx, ShapeType typeB) { return metadot_collided(A, ax, typeA, B, bx, typeB); }
-METADOT_INLINE void collide(const void *A, const MTransform *ax, ShapeType typeA, const void *B, const MTransform *bx, ShapeType typeB, Manifold *m) {
+ME_INLINE int collided(const void *A, const MTransform *ax, ShapeType typeA, const void *B, const MTransform *bx, ShapeType typeB) { return metadot_collided(A, ax, typeA, B, bx, typeB); }
+ME_INLINE void collide(const void *A, const MTransform *ax, ShapeType typeA, const void *B, const MTransform *bx, ShapeType typeB, Manifold *m) {
     return metadot_collide(A, ax, typeA, B, bx, typeB, m);
 }
-METADOT_INLINE bool cast_ray(Ray A, const void *B, const MTransform *bx, ShapeType typeB, Raycast *out) { return metadot_cast_ray(A, B, bx, typeB, out); }
+ME_INLINE bool cast_ray(Ray A, const void *B, const MTransform *bx, ShapeType typeB, Raycast *out) { return metadot_cast_ray(A, B, bx, typeB, out); }
 
 }  // namespace MetaEngine
 
 #pragma endregion c2
 
-#pragma region liner
-
-#define METADOT_USE_SSE 0
-#if METADOT_USE_SSE
-#include <pmmintrin.h>
-#include <xmmintrin.h>
-#endif
-
-// if you wish NOT to include iostream, simply change the
-// #define to 0
-#define METADOT_INCLUDE_IOSTREAM 1
-#if METADOT_INCLUDE_IOSTREAM
-#include <iostream>
-#endif
-
-#include <cmath>
-
-#define METADOT_SQRTF sqrtf
-#define METADOT_SINF sinf
-#define METADOT_COSF cosf
-#define METADOT_TANF tanf
-#define METADOT_ACOSF acosf
-
-#define METADOT_MIN(x, y) ((x) < (y) ? (x) : (y))
-#define METADOT_MAX(x, y) ((x) > (y) ? (x) : (y))
-#define METADOT_ABS(x) ((x) > 0 ? (x) : -(x))
-
-inline float rad_to_deg(float rad) { return rad * 57.2957795131f; }
-inline float deg_to_rad(float deg) { return deg * 0.01745329251f; }
-
-#if METADOT_INCLUDE_IOSTREAM
-
-inline std::ostream &operator<<(std::ostream &os, const vec2 &v) {
-    os << v.x << ", " << v.y;
-    return os;
-}
-
-inline std::ostream &operator<<(std::ostream &os, const vec3 &v) {
-    os << v.x << ", " << v.y << ", " << v.z;
-    return os;
-}
-
-inline std::ostream &operator<<(std::ostream &os, const vec4 &v) {
-    os << v.x << ", " << v.y << ", " << v.z << ", " << v.w;
-    return os;
-}
-
-// input:
-
-inline std::istream &operator>>(std::istream &is, vec2 &v) {
-    is >> v.x >> v.y;
-    return is;
-}
-
-inline std::istream &operator>>(std::istream &is, vec3 &v) {
-    is >> v.x >> v.y >> v.z;
-    return is;
-}
-
-inline std::istream &operator>>(std::istream &is, vec4 &v) {
-    is >> v.x >> v.y >> v.z >> v.w;
-    return is;
-}
-
-#endif
-
-// addition:
-
-inline vec2 operator+(const vec2 &v1, const vec2 &v2) {
-    vec2 result;
-
-    result.x = v1.x + v2.x;
-    result.y = v1.y + v2.y;
-
-    return result;
-}
-
-inline vec3 operator+(const vec3 &v1, const vec3 &v2) {
-    vec3 result;
-
-    result.x = v1.x + v2.x;
-    result.y = v1.y + v2.y;
-    result.z = v1.z + v2.z;
-
-    return result;
-}
-
-inline vec4 operator+(const vec4 &v1, const vec4 &v2) {
-    vec4 result;
-
-    result.x = v1.x + v2.x;
-    result.y = v1.y + v2.y;
-    result.z = v1.z + v2.z;
-    result.w = v1.w + v2.w;
-    return result;
-}
-
-// subtraction:
-
-inline vec2 operator-(const vec2 &v1, const vec2 &v2) {
-    vec2 result;
-
-    result.x = v1.x - v2.x;
-    result.y = v1.y - v2.y;
-
-    return result;
-}
-
-inline vec3 operator-(const vec3 &v1, const vec3 &v2) {
-    vec3 result;
-
-    result.x = v1.x - v2.x;
-    result.y = v1.y - v2.y;
-    result.z = v1.z - v2.z;
-
-    return result;
-}
-
-inline vec4 operator-(const vec4 &v1, const vec4 &v2) {
-    vec4 result;
-
-    result.x = v1.x - v2.x;
-    result.y = v1.y - v2.y;
-    result.z = v1.z - v2.z;
-    result.w = v1.w - v2.w;
-
-    return result;
-}
-
-// multiplication:
-
-inline vec2 operator*(const vec2 &v1, const vec2 &v2) {
-    vec2 result;
-
-    result.x = v1.x * v2.x;
-    result.y = v1.y * v2.y;
-
-    return result;
-}
-
-inline vec3 operator*(const vec3 &v1, const vec3 &v2) {
-    vec3 result;
-
-    result.x = v1.x * v2.x;
-    result.y = v1.y * v2.y;
-    result.z = v1.z * v2.z;
-
-    return result;
-}
-
-inline vec4 operator*(const vec4 &v1, const vec4 &v2) {
-    vec4 result;
-
-    result.x = v1.x * v2.x;
-    result.y = v1.y * v2.y;
-    result.z = v1.z * v2.z;
-    result.w = v1.w * v2.w;
-
-    return result;
-}
-
-// division:
-
-inline vec2 operator/(const vec2 &v1, const vec2 &v2) {
-    vec2 result;
-
-    result.x = v1.x / v2.x;
-    result.y = v1.y / v2.y;
-
-    return result;
-}
-
-inline vec3 operator/(const vec3 &v1, const vec3 &v2) {
-    vec3 result;
-
-    result.x = v1.x / v2.x;
-    result.y = v1.y / v2.y;
-    result.z = v1.z / v2.z;
-
-    return result;
-}
-
-inline vec4 operator/(const vec4 &v1, const vec4 &v2) {
-    vec4 result;
-
-#if METADOT_USE_SSE
-
-    result.packed = _mm_div_ps(v1.packed, v2.packed);
-
-#else
-
-    result.x = v1.x / v2.x;
-    result.y = v1.y / v2.y;
-    result.z = v1.z / v2.z;
-    result.w = v1.w / v2.w;
-
-#endif
-
-    return result;
-}
-
-// scalar multiplication:
-
-inline vec2 operator*(const vec2 &v, float s) {
-    vec2 result;
-
-    result.x = v.x * s;
-    result.y = v.y * s;
-
-    return result;
-}
-
-inline vec3 operator*(const vec3 &v, float s) {
-    vec3 result;
-
-    result.x = v.x * s;
-    result.y = v.y * s;
-    result.z = v.z * s;
-
-    return result;
-}
-
-inline vec4 operator*(const vec4 &v, float s) {
-    vec4 result;
-
-#if METADOT_USE_SSE
-
-    __m128 scale = _mm_set1_ps(s);
-    result.packed = _mm_mul_ps(v.packed, scale);
-
-#else
-
-    result.x = v.x * s;
-    result.y = v.y * s;
-    result.z = v.z * s;
-    result.w = v.w * s;
-
-#endif
-
-    return result;
-}
-
-inline vec2 operator*(float s, const vec2 &v) { return v * s; }
-
-inline vec3 operator*(float s, const vec3 &v) { return v * s; }
-
-inline vec4 operator*(float s, const vec4 &v) { return v * s; }
-
-// scalar division:
-
-inline vec2 operator/(const vec2 &v, float s) {
-    vec2 result;
-
-    result.x = v.x / s;
-    result.y = v.y / s;
-
-    return result;
-}
-
-inline vec3 operator/(const vec3 &v, float s) {
-    vec3 result;
-
-    result.x = v.x / s;
-    result.y = v.y / s;
-    result.z = v.z / s;
-
-    return result;
-}
-
-inline vec4 operator/(const vec4 &v, float s) {
-    vec4 result;
-
-#if METADOT_USE_SSE
-
-    __m128 scale = _mm_set1_ps(s);
-    result.packed = _mm_div_ps(v.packed, scale);
-
-#else
-
-    result.x = v.x / s;
-    result.y = v.y / s;
-    result.z = v.z / s;
-    result.w = v.w / s;
-
-#endif
-
-    return result;
-}
-
-inline vec2 operator/(float s, const vec2 &v) {
-    vec2 result;
-
-    result.x = s / v.x;
-    result.y = s / v.y;
-
-    return result;
-}
-
-inline vec3 operator/(float s, const vec3 &v) {
-    vec3 result;
-
-    result.x = s / v.x;
-    result.y = s / v.y;
-    result.z = s / v.z;
-
-    return result;
-}
-
-inline vec4 operator/(float s, const vec4 &v) {
-    vec4 result;
-
-#if METADOT_USE_SSE
-
-    __m128 scale = _mm_set1_ps(s);
-    result.packed = _mm_div_ps(scale, v.packed);
-
-#else
-
-    result.x = s / v.x;
-    result.y = s / v.y;
-    result.z = s / v.z;
-    result.w = s / v.w;
-
-#endif
-
-    return result;
-}
-
-// dot product:
-
-inline float dot(const vec2 &v1, const vec2 &v2) {
-    float result;
-
-    result = v1.x * v2.x + v1.y * v2.y;
-
-    return result;
-}
-
-inline float dot(const vec3 &v1, const vec3 &v2) {
-    float result;
-
-    result = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-
-    return result;
-}
-
-inline float dot(const vec4 &v1, const vec4 &v2) {
-    float result;
-
-#if METADOT_USE_SSE
-
-    __m128 r = _mm_mul_ps(v1.packed, v2.packed);
-    r = _mm_hadd_ps(r, r);
-    r = _mm_hadd_ps(r, r);
-    _mm_store_ss(&result, r);
-
-#else
-
-    result = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
-
-#endif
-
-    return result;
-}
-
-// cross product
-
-inline vec3 cross(const vec3 &v1, const vec3 &v2) {
-    vec3 result;
-
-    result.x = (v1.y * v2.z) - (v1.z * v2.y);
-    result.y = (v1.z * v2.x) - (v1.x * v2.z);
-    result.z = (v1.x * v2.y) - (v1.y * v2.x);
-
-    return result;
-}
-
-// length:
-
-inline float length(const vec2 &v) {
-    float result;
-
-    result = METADOT_SQRTF(dot(v, v));
-
-    return result;
-}
-
-inline float length(const vec3 &v) {
-    float result;
-
-    result = METADOT_SQRTF(dot(v, v));
-
-    return result;
-}
-
-inline float length(const vec4 &v) {
-    float result;
-
-    result = METADOT_SQRTF(dot(v, v));
-
-    return result;
-}
-
-// normalize:
-
-inline vec2 normalize(const vec2 &v) {
-    vec2 result;
-
-    float len = length(v);
-    if (len != 0.0f) result = v / len;
-
-    return result;
-}
-
-inline vec3 normalize(const vec3 &v) {
-    vec3 result;
-
-    float len = length(v);
-    if (len != 0.0f) result = v / len;
-
-    return result;
-}
-
-inline vec4 normalize(const vec4 &v) {
-    vec4 result;
-
-    float len = length(v);
-    result = v / len;
-
-    return result;
-}
-
-// distance:
-
-inline float distance(const vec2 &v1, const vec2 &v2) {
-    float result;
-
-    vec2 to = v1 - v2;
-    result = length(to);
-
-    return result;
-}
-
-inline float distance(const vec3 &v1, const vec3 &v2) {
-    float result;
-
-    vec3 to = v1 - v2;
-    result = length(to);
-
-    return result;
-}
-
-inline float distance(const vec4 &v1, const vec4 &v2) {
-    float result;
-
-    vec4 to = v1 - v2;
-    result = length(to);
-
-    return result;
-}
-
-// equality:
-
-inline bool operator==(const vec2 &v1, const vec2 &v2) {
-    bool result;
-
-    result = (v1.x == v2.x) && (v1.y == v2.y);
-
-    return result;
-}
-
-inline bool operator==(const vec3 &v1, const vec3 &v2) {
-    bool result;
-
-    result = (v1.x == v2.x) && (v1.y == v2.y) && (v1.z == v2.z);
-
-    return result;
-}
-
-inline bool operator==(const vec4 &v1, const vec4 &v2) {
-    bool result;
-
-    // TODO: there are SIMD instructions for floating point equality, find a way to get a single bool from them
-    result = (v1.x == v2.x) && (v1.y == v2.y) && (v1.z == v2.z) && (v1.w == v2.w);
-
-    return result;
-}
-
-inline bool operator!=(const vec2 &v1, const vec2 &v2) {
-    bool result;
-
-    result = (v1.x != v2.x) || (v1.y != v2.y);
-
-    return result;
-}
-
-inline bool operator!=(const vec3 &v1, const vec3 &v2) {
-    bool result;
-
-    result = (v1.x != v2.x) || (v1.y != v2.y) || (v1.z != v2.z);
-
-    return result;
-}
-
-inline bool operator!=(const vec4 &v1, const vec4 &v2) {
-    bool result;
-
-    result = (v1.x != v2.x) || (v1.y != v2.y) || (v1.z != v2.z) || (v1.w != v2.w);
-
-    return result;
-}
-
-// min:
-
-inline vec2 min(const vec2 &v1, const vec2 &v2) {
-    vec2 result;
-
-    result.x = METADOT_MIN(v1.x, v2.x);
-    result.y = METADOT_MIN(v1.y, v2.y);
-
-    return result;
-}
-
-inline vec3 min(const vec3 &v1, const vec3 &v2) {
-    vec3 result;
-
-    result.x = METADOT_MIN(v1.x, v2.x);
-    result.y = METADOT_MIN(v1.y, v2.y);
-    result.z = METADOT_MIN(v1.z, v2.z);
-
-    return result;
-}
-
-inline vec4 min(const vec4 &v1, const vec4 &v2) {
-    vec4 result;
-
-#if METADOT_USE_SSE
-
-    result.packed = _mm_min_ps(v1.packed, v2.packed);
-
-#else
-
-    result.x = METADOT_MIN(v1.x, v2.x);
-    result.y = METADOT_MIN(v1.y, v2.y);
-    result.z = METADOT_MIN(v1.z, v2.z);
-    result.w = METADOT_MIN(v1.w, v2.w);
-
-#endif
-
-    return result;
-}
-
-// max:
-
-inline vec2 max(const vec2 &v1, const vec2 &v2) {
-    vec2 result;
-
-    result.x = METADOT_MAX(v1.x, v2.x);
-    result.y = METADOT_MAX(v1.y, v2.y);
-
-    return result;
-}
-
-inline vec3 max(const vec3 &v1, const vec3 &v2) {
-    vec3 result;
-
-    result.x = METADOT_MAX(v1.x, v2.x);
-    result.y = METADOT_MAX(v1.y, v2.y);
-    result.z = METADOT_MAX(v1.z, v2.z);
-
-    return result;
-}
-
-inline vec4 max(const vec4 &v1, const vec4 &v2) {
-    vec4 result;
-
-#if METADOT_USE_SSE
-
-    result.packed = _mm_max_ps(v1.packed, v2.packed);
-
-#else
-
-    result.x = METADOT_MAX(v1.x, v2.x);
-    result.y = METADOT_MAX(v1.y, v2.y);
-    result.z = METADOT_MAX(v1.z, v2.z);
-    result.w = METADOT_MAX(v1.w, v2.w);
-
-#endif
-
-    return result;
-}
-
-//----------------------------------------------------------------------//
-// MATRIX FUNCTIONS:
-
-#if METADOT_INCLUDE_IOSTREAM
-
-// output:
-
-inline std::ostream &operator<<(std::ostream &os, const mat3 &m) {
-    os << m.v[0] << std::endl << m.v[1] << std::endl << m.v[2];
-    return os;
-}
-
-inline std::ostream &operator<<(std::ostream &os, const mat4 &m) {
-    os << m.v[0] << std::endl << m.v[1] << std::endl << m.v[2] << std::endl << m.v[3];
-    return os;
-}
-
-// input:
-
-inline std::istream &operator>>(std::istream &is, mat3 &m) {
-    is >> m.v[0] >> m.v[1] >> m.v[2];
-    return is;
-}
-
-inline std::istream &operator>>(std::istream &is, mat4 &m) {
-    is >> m.v[0] >> m.v[1] >> m.v[2] >> m.v[3];
-    return is;
-}
-
-#endif
-
-// initialization:
-
-inline mat3 mat3_identity() {
-    mat3 result;
-
-    result.m[0][0] = 1.0f;
-    result.m[1][1] = 1.0f;
-    result.m[2][2] = 1.0f;
-
-    return result;
-}
-
-inline mat4 mat4_identity() {
-    mat4 result;
-
-    result.m[0][0] = 1.0f;
-    result.m[1][1] = 1.0f;
-    result.m[2][2] = 1.0f;
-    result.m[3][3] = 1.0f;
-
-    return result;
-}
-
-// addition:
-
-inline mat3 operator+(const mat3 &m1, const mat3 &m2) {
-    mat3 result;
-
-    result.m[0][0] = m1.m[0][0] + m2.m[0][0];
-    result.m[0][1] = m1.m[0][1] + m2.m[0][1];
-    result.m[0][2] = m1.m[0][2] + m2.m[0][2];
-    result.m[1][0] = m1.m[1][0] + m2.m[1][0];
-    result.m[1][1] = m1.m[1][1] + m2.m[1][1];
-    result.m[1][2] = m1.m[1][2] + m2.m[1][2];
-    result.m[2][0] = m1.m[2][0] + m2.m[2][0];
-    result.m[2][1] = m1.m[2][1] + m2.m[2][1];
-    result.m[2][2] = m1.m[2][2] + m2.m[2][2];
-
-    return result;
-}
-
-inline mat4 operator+(const mat4 &m1, const mat4 &m2) {
-    mat4 result;
-
-#if METADOT_USE_SSE
-
-    result.packed[0] = _mm_add_ps(m1.packed[0], m2.packed[0]);
-    result.packed[1] = _mm_add_ps(m1.packed[1], m2.packed[1]);
-    result.packed[2] = _mm_add_ps(m1.packed[2], m2.packed[2]);
-    result.packed[3] = _mm_add_ps(m1.packed[3], m2.packed[3]);
-
-#else
-
-    result.m[0][0] = m1.m[0][0] + m2.m[0][0];
-    result.m[0][1] = m1.m[0][1] + m2.m[0][1];
-    result.m[0][2] = m1.m[0][2] + m2.m[0][2];
-    result.m[0][3] = m1.m[0][3] + m2.m[0][3];
-    result.m[1][0] = m1.m[1][0] + m2.m[1][0];
-    result.m[1][1] = m1.m[1][1] + m2.m[1][1];
-    result.m[1][2] = m1.m[1][2] + m2.m[1][2];
-    result.m[1][3] = m1.m[1][3] + m2.m[1][3];
-    result.m[2][0] = m1.m[2][0] + m2.m[2][0];
-    result.m[2][1] = m1.m[2][1] + m2.m[2][1];
-    result.m[2][2] = m1.m[2][2] + m2.m[2][2];
-    result.m[2][3] = m1.m[2][3] + m2.m[2][3];
-    result.m[3][0] = m1.m[3][0] + m2.m[3][0];
-    result.m[3][1] = m1.m[3][1] + m2.m[3][1];
-    result.m[3][2] = m1.m[3][2] + m2.m[3][2];
-    result.m[3][3] = m1.m[3][3] + m2.m[3][3];
-
-#endif
-
-    return result;
-}
-
-// subtraction:
-
-inline mat3 operator-(const mat3 &m1, const mat3 &m2) {
-    mat3 result;
-
-    result.m[0][0] = m1.m[0][0] - m2.m[0][0];
-    result.m[0][1] = m1.m[0][1] - m2.m[0][1];
-    result.m[0][2] = m1.m[0][2] - m2.m[0][2];
-    result.m[1][0] = m1.m[1][0] - m2.m[1][0];
-    result.m[1][1] = m1.m[1][1] - m2.m[1][1];
-    result.m[1][2] = m1.m[1][2] - m2.m[1][2];
-    result.m[2][0] = m1.m[2][0] - m2.m[2][0];
-    result.m[2][1] = m1.m[2][1] - m2.m[2][1];
-    result.m[2][2] = m1.m[2][2] - m2.m[2][2];
-
-    return result;
-}
-
-inline mat4 operator-(const mat4 &m1, const mat4 &m2) {
-    mat4 result;
-
-#if METADOT_USE_SSE
-
-    result.packed[0] = _mm_sub_ps(m1.packed[0], m2.packed[0]);
-    result.packed[1] = _mm_sub_ps(m1.packed[1], m2.packed[1]);
-    result.packed[2] = _mm_sub_ps(m1.packed[2], m2.packed[2]);
-    result.packed[3] = _mm_sub_ps(m1.packed[3], m2.packed[3]);
-
-#else
-
-    result.m[0][0] = m1.m[0][0] - m2.m[0][0];
-    result.m[0][1] = m1.m[0][1] - m2.m[0][1];
-    result.m[0][2] = m1.m[0][2] - m2.m[0][2];
-    result.m[0][3] = m1.m[0][3] - m2.m[0][3];
-    result.m[1][0] = m1.m[1][0] - m2.m[1][0];
-    result.m[1][1] = m1.m[1][1] - m2.m[1][1];
-    result.m[1][2] = m1.m[1][2] - m2.m[1][2];
-    result.m[1][3] = m1.m[1][3] - m2.m[1][3];
-    result.m[2][0] = m1.m[2][0] - m2.m[2][0];
-    result.m[2][1] = m1.m[2][1] - m2.m[2][1];
-    result.m[2][2] = m1.m[2][2] - m2.m[2][2];
-    result.m[2][3] = m1.m[2][3] - m2.m[2][3];
-    result.m[3][0] = m1.m[3][0] - m2.m[3][0];
-    result.m[3][1] = m1.m[3][1] - m2.m[3][1];
-    result.m[3][2] = m1.m[3][2] - m2.m[3][2];
-    result.m[3][3] = m1.m[3][3] - m2.m[3][3];
-
-#endif
-
-    return result;
-}
-
-// multiplication:
-
-inline mat3 operator*(const mat3 &m1, const mat3 &m2) {
-    mat3 result;
-
-    result.m[0][0] = m1.m[0][0] * m2.m[0][0] + m1.m[1][0] * m2.m[0][1] + m1.m[2][0] * m2.m[0][2];
-    result.m[0][1] = m1.m[0][1] * m2.m[0][0] + m1.m[1][1] * m2.m[0][1] + m1.m[2][1] * m2.m[0][2];
-    result.m[0][2] = m1.m[0][2] * m2.m[0][0] + m1.m[1][2] * m2.m[0][1] + m1.m[2][2] * m2.m[0][2];
-    result.m[1][0] = m1.m[0][0] * m2.m[1][0] + m1.m[1][0] * m2.m[1][1] + m1.m[2][0] * m2.m[1][2];
-    result.m[1][1] = m1.m[0][1] * m2.m[1][0] + m1.m[1][1] * m2.m[1][1] + m1.m[2][1] * m2.m[1][2];
-    result.m[1][2] = m1.m[0][2] * m2.m[1][0] + m1.m[1][2] * m2.m[1][1] + m1.m[2][2] * m2.m[1][2];
-    result.m[2][0] = m1.m[0][0] * m2.m[2][0] + m1.m[1][0] * m2.m[2][1] + m1.m[2][0] * m2.m[2][2];
-    result.m[2][1] = m1.m[0][1] * m2.m[2][0] + m1.m[1][1] * m2.m[2][1] + m1.m[2][1] * m2.m[2][2];
-    result.m[2][2] = m1.m[0][2] * m2.m[2][0] + m1.m[1][2] * m2.m[2][1] + m1.m[2][2] * m2.m[2][2];
-
-    return result;
-}
-
-inline mat4 operator*(const mat4 &m1, const mat4 &m2) {
-    mat4 result;
-
-#if METADOT_USE_SSE
-
-    result.packed[0] = mat4_mult_column_sse(m2.packed[0], m1);
-    result.packed[1] = mat4_mult_column_sse(m2.packed[1], m1);
-    result.packed[2] = mat4_mult_column_sse(m2.packed[2], m1);
-    result.packed[3] = mat4_mult_column_sse(m2.packed[3], m1);
-
-#else
-
-    result.m[0][0] = m1.m[0][0] * m2.m[0][0] + m1.m[1][0] * m2.m[0][1] + m1.m[2][0] * m2.m[0][2] + m1.m[3][0] * m2.m[0][3];
-    result.m[0][1] = m1.m[0][1] * m2.m[0][0] + m1.m[1][1] * m2.m[0][1] + m1.m[2][1] * m2.m[0][2] + m1.m[3][1] * m2.m[0][3];
-    result.m[0][2] = m1.m[0][2] * m2.m[0][0] + m1.m[1][2] * m2.m[0][1] + m1.m[2][2] * m2.m[0][2] + m1.m[3][2] * m2.m[0][3];
-    result.m[0][3] = m1.m[0][3] * m2.m[0][0] + m1.m[1][3] * m2.m[0][1] + m1.m[2][3] * m2.m[0][2] + m1.m[3][3] * m2.m[0][3];
-    result.m[1][0] = m1.m[0][0] * m2.m[1][0] + m1.m[1][0] * m2.m[1][1] + m1.m[2][0] * m2.m[1][2] + m1.m[3][0] * m2.m[1][3];
-    result.m[1][1] = m1.m[0][1] * m2.m[1][0] + m1.m[1][1] * m2.m[1][1] + m1.m[2][1] * m2.m[1][2] + m1.m[3][1] * m2.m[1][3];
-    result.m[1][2] = m1.m[0][2] * m2.m[1][0] + m1.m[1][2] * m2.m[1][1] + m1.m[2][2] * m2.m[1][2] + m1.m[3][2] * m2.m[1][3];
-    result.m[1][3] = m1.m[0][3] * m2.m[1][0] + m1.m[1][3] * m2.m[1][1] + m1.m[2][3] * m2.m[1][2] + m1.m[3][3] * m2.m[1][3];
-    result.m[2][0] = m1.m[0][0] * m2.m[2][0] + m1.m[1][0] * m2.m[2][1] + m1.m[2][0] * m2.m[2][2] + m1.m[3][0] * m2.m[2][3];
-    result.m[2][1] = m1.m[0][1] * m2.m[2][0] + m1.m[1][1] * m2.m[2][1] + m1.m[2][1] * m2.m[2][2] + m1.m[3][1] * m2.m[2][3];
-    result.m[2][2] = m1.m[0][2] * m2.m[2][0] + m1.m[1][2] * m2.m[2][1] + m1.m[2][2] * m2.m[2][2] + m1.m[3][2] * m2.m[2][3];
-    result.m[2][3] = m1.m[0][3] * m2.m[2][0] + m1.m[1][3] * m2.m[2][1] + m1.m[2][3] * m2.m[2][2] + m1.m[3][3] * m2.m[2][3];
-    result.m[3][0] = m1.m[0][0] * m2.m[3][0] + m1.m[1][0] * m2.m[3][1] + m1.m[2][0] * m2.m[3][2] + m1.m[3][0] * m2.m[3][3];
-    result.m[3][1] = m1.m[0][1] * m2.m[3][0] + m1.m[1][1] * m2.m[3][1] + m1.m[2][1] * m2.m[3][2] + m1.m[3][1] * m2.m[3][3];
-    result.m[3][2] = m1.m[0][2] * m2.m[3][0] + m1.m[1][2] * m2.m[3][1] + m1.m[2][2] * m2.m[3][2] + m1.m[3][2] * m2.m[3][3];
-    result.m[3][3] = m1.m[0][3] * m2.m[3][0] + m1.m[1][3] * m2.m[3][1] + m1.m[2][3] * m2.m[3][2] + m1.m[3][3] * m2.m[3][3];
-
-#endif
-
-    return result;
-}
-
-inline vec3 operator*(const mat3 &m, const vec3 &v) {
-    vec3 result;
-
-    result.x = m.m[0][0] * v.x + m.m[1][0] * v.y + m.m[2][0] * v.z;
-    result.y = m.m[0][1] * v.x + m.m[1][1] * v.y + m.m[2][1] * v.z;
-    result.z = m.m[0][2] * v.x + m.m[1][2] * v.y + m.m[2][2] * v.z;
-
-    return result;
-}
-
-inline vec4 operator*(const mat4 &m, const vec4 &v) {
-    vec4 result;
-
-#if METADOT_USE_SSE
-
-    result.packed = mat4_mult_column_sse(v.packed, m);
-
-#else
-
-    result.x = m.m[0][0] * v.x + m.m[1][0] * v.y + m.m[2][0] * v.z + m.m[3][0] * v.w;
-    result.y = m.m[0][1] * v.x + m.m[1][1] * v.y + m.m[2][1] * v.z + m.m[3][1] * v.w;
-    result.z = m.m[0][2] * v.x + m.m[1][2] * v.y + m.m[2][2] * v.z + m.m[3][2] * v.w;
-    result.w = m.m[0][3] * v.x + m.m[1][3] * v.y + m.m[2][3] * v.z + m.m[3][3] * v.w;
-
-#endif
-
-    return result;
-}
-
-// transpose:
-
-inline mat3 transpose(const mat3 &m) {
-    mat3 result;
-
-    result.m[0][0] = m.m[0][0];
-    result.m[0][1] = m.m[1][0];
-    result.m[0][2] = m.m[2][0];
-    result.m[1][0] = m.m[0][1];
-    result.m[1][1] = m.m[1][1];
-    result.m[1][2] = m.m[2][1];
-    result.m[2][0] = m.m[0][2];
-    result.m[2][1] = m.m[1][2];
-    result.m[2][2] = m.m[2][2];
-
-    return result;
-}
-
-inline mat4 transpose(const mat4 &m) {
-    mat4 result = m;
-
-#if METADOT_USE_SSE
-
-    _MM_TRANSPOSE4_PS(result.packed[0], result.packed[1], result.packed[2], result.packed[3]);
-
-#else
-
-    result.m[0][0] = m.m[0][0];
-    result.m[0][1] = m.m[1][0];
-    result.m[0][2] = m.m[2][0];
-    result.m[0][3] = m.m[3][0];
-    result.m[1][0] = m.m[0][1];
-    result.m[1][1] = m.m[1][1];
-    result.m[1][2] = m.m[2][1];
-    result.m[1][3] = m.m[3][1];
-    result.m[2][0] = m.m[0][2];
-    result.m[2][1] = m.m[1][2];
-    result.m[2][2] = m.m[2][2];
-    result.m[2][3] = m.m[3][2];
-    result.m[3][0] = m.m[0][3];
-    result.m[3][1] = m.m[1][3];
-    result.m[3][2] = m.m[2][3];
-    result.m[3][3] = m.m[3][3];
-
-#endif
-
-    return result;
-}
-
-// inverse:
-
-inline mat3 inverse(const mat3 &m) {
-    mat3 result;
-
-    float det;
-    float a = m.m[0][0], b = m.m[0][1], c = m.m[0][2], d = m.m[1][0], e = m.m[1][1], f = m.m[1][2], g = m.m[2][0], h = m.m[2][1], i = m.m[2][2];
-
-    result.m[0][0] = e * i - f * h;
-    result.m[0][1] = -(b * i - h * c);
-    result.m[0][2] = b * f - e * c;
-    result.m[1][0] = -(d * i - g * f);
-    result.m[1][1] = a * i - c * g;
-    result.m[1][2] = -(a * f - d * c);
-    result.m[2][0] = d * h - g * e;
-    result.m[2][1] = -(a * h - g * b);
-    result.m[2][2] = a * e - b * d;
-
-    det = 1.0f / (a * result.m[0][0] + b * result.m[1][0] + c * result.m[2][0]);
-
-    result.m[0][0] *= det;
-    result.m[0][1] *= det;
-    result.m[0][2] *= det;
-    result.m[1][0] *= det;
-    result.m[1][1] *= det;
-    result.m[1][2] *= det;
-    result.m[2][0] *= det;
-    result.m[2][1] *= det;
-    result.m[2][2] *= det;
-
-    return result;
-}
-
-inline mat4 inverse(const mat4 &mat) {
-    // TODO: this function is not SIMD optimized, figure out how to do it
-
-    mat4 result;
-
-    float tmp[6];
-    float det;
-    float a = mat.m[0][0], b = mat.m[0][1], c = mat.m[0][2], d = mat.m[0][3], e = mat.m[1][0], f = mat.m[1][1], g = mat.m[1][2], h = mat.m[1][3], i = mat.m[2][0], j = mat.m[2][1], k = mat.m[2][2],
-          l = mat.m[2][3], m = mat.m[3][0], n = mat.m[3][1], o = mat.m[3][2], p = mat.m[3][3];
-
-    tmp[0] = k * p - o * l;
-    tmp[1] = j * p - n * l;
-    tmp[2] = j * o - n * k;
-    tmp[3] = i * p - m * l;
-    tmp[4] = i * o - m * k;
-    tmp[5] = i * n - m * j;
-
-    result.m[0][0] = f * tmp[0] - g * tmp[1] + h * tmp[2];
-    result.m[1][0] = -(e * tmp[0] - g * tmp[3] + h * tmp[4]);
-    result.m[2][0] = e * tmp[1] - f * tmp[3] + h * tmp[5];
-    result.m[3][0] = -(e * tmp[2] - f * tmp[4] + g * tmp[5]);
-
-    result.m[0][1] = -(b * tmp[0] - c * tmp[1] + d * tmp[2]);
-    result.m[1][1] = a * tmp[0] - c * tmp[3] + d * tmp[4];
-    result.m[2][1] = -(a * tmp[1] - b * tmp[3] + d * tmp[5]);
-    result.m[3][1] = a * tmp[2] - b * tmp[4] + c * tmp[5];
-
-    tmp[0] = g * p - o * h;
-    tmp[1] = f * p - n * h;
-    tmp[2] = f * o - n * g;
-    tmp[3] = e * p - m * h;
-    tmp[4] = e * o - m * g;
-    tmp[5] = e * n - m * f;
-
-    result.m[0][2] = b * tmp[0] - c * tmp[1] + d * tmp[2];
-    result.m[1][2] = -(a * tmp[0] - c * tmp[3] + d * tmp[4]);
-    result.m[2][2] = a * tmp[1] - b * tmp[3] + d * tmp[5];
-    result.m[3][2] = -(a * tmp[2] - b * tmp[4] + c * tmp[5]);
-
-    tmp[0] = g * l - k * h;
-    tmp[1] = f * l - j * h;
-    tmp[2] = f * k - j * g;
-    tmp[3] = e * l - i * h;
-    tmp[4] = e * k - i * g;
-    tmp[5] = e * j - i * f;
-
-    result.m[0][3] = -(b * tmp[0] - c * tmp[1] + d * tmp[2]);
-    result.m[1][3] = a * tmp[0] - c * tmp[3] + d * tmp[4];
-    result.m[2][3] = -(a * tmp[1] - b * tmp[3] + d * tmp[5]);
-    result.m[3][3] = a * tmp[2] - b * tmp[4] + c * tmp[5];
-
-    det = 1.0f / (a * result.m[0][0] + b * result.m[1][0] + c * result.m[2][0] + d * result.m[3][0]);
-
-#if METADOT_USE_SSE
-
-    __m128 scale = _mm_set1_ps(det);
-    result.packed[0] = _mm_mul_ps(result.packed[0], scale);
-    result.packed[1] = _mm_mul_ps(result.packed[1], scale);
-    result.packed[2] = _mm_mul_ps(result.packed[2], scale);
-    result.packed[3] = _mm_mul_ps(result.packed[3], scale);
-
-#else
-
-    result.m[0][0] = result.m[0][0] * det;
-    result.m[0][1] = result.m[0][1] * det;
-    result.m[0][2] = result.m[0][2] * det;
-    result.m[0][3] = result.m[0][3] * det;
-    result.m[1][0] = result.m[1][0] * det;
-    result.m[1][1] = result.m[1][1] * det;
-    result.m[1][2] = result.m[1][2] * det;
-    result.m[1][3] = result.m[1][3] * det;
-    result.m[2][0] = result.m[2][0] * det;
-    result.m[2][1] = result.m[2][1] * det;
-    result.m[2][2] = result.m[2][2] * det;
-    result.m[2][3] = result.m[2][3] * det;
-    result.m[3][0] = result.m[3][0] * det;
-    result.m[3][1] = result.m[3][1] * det;
-    result.m[3][2] = result.m[3][2] * det;
-    result.m[3][3] = result.m[3][3] * det;
-
-#endif
-
-    return result;
-}
-
-// translation:
-
-inline mat3 translate(const vec2 &t) {
-    mat3 result = mat3_identity();
-
-    result.m[2][0] = t.x;
-    result.m[2][1] = t.y;
-
-    return result;
-}
-
-inline mat4 translate(const vec3 &t) {
-    mat4 result = mat4_identity();
-
-    result.m[3][0] = t.x;
-    result.m[3][1] = t.y;
-    result.m[3][2] = t.z;
-
-    return result;
-}
-
-// scaling:
-
-inline mat3 scale(const vec2 &s) {
-    mat3 result = mat3_identity();
-
-    result.m[0][0] = s.x;
-    result.m[1][1] = s.y;
-
-    return result;
-}
-
-inline mat4 scale(const vec3 &s) {
-    mat4 result = mat4_identity();
-
-    result.m[0][0] = s.x;
-    result.m[1][1] = s.y;
-    result.m[2][2] = s.z;
-
-    return result;
-}
-
-// rotation:
-
-inline mat3 rotate(float angle) {
-    mat3 result = mat3_identity();
-
-    float radians = deg_to_rad(angle);
-    float sine = METADOT_SINF(radians);
-    float cosine = METADOT_COSF(radians);
-
-    result.m[0][0] = cosine;
-    result.m[1][0] = sine;
-    result.m[0][1] = -sine;
-    result.m[1][1] = cosine;
-
-    return result;
-}
-
-inline mat4 rotate(const vec3 &axis, float angle) {
-    mat4 result = mat4_identity();
-
-    vec3 normalized = normalize(axis);
-
-    float radians = deg_to_rad(angle);
-    float sine = METADOT_SINF(radians);
-    float cosine = METADOT_COSF(radians);
-    float cosine2 = 1.0f - cosine;
-
-    result.m[0][0] = normalized.x * normalized.x * cosine2 + cosine;
-    result.m[0][1] = normalized.x * normalized.y * cosine2 + normalized.z * sine;
-    result.m[0][2] = normalized.x * normalized.z * cosine2 - normalized.y * sine;
-    result.m[1][0] = normalized.y * normalized.x * cosine2 - normalized.z * sine;
-    result.m[1][1] = normalized.y * normalized.y * cosine2 + cosine;
-    result.m[1][2] = normalized.y * normalized.z * cosine2 + normalized.x * sine;
-    result.m[2][0] = normalized.z * normalized.x * cosine2 + normalized.y * sine;
-    result.m[2][1] = normalized.z * normalized.y * cosine2 - normalized.x * sine;
-    result.m[2][2] = normalized.z * normalized.z * cosine2 + cosine;
-
-    return result;
-}
-
-inline mat4 rotate(const vec3 &euler) {
-    mat4 result = mat4_identity();
-
-    vec3 radians;
-    radians.x = deg_to_rad(euler.x);
-    radians.y = deg_to_rad(euler.y);
-    radians.z = deg_to_rad(euler.z);
-
-    float sinX = METADOT_SINF(radians.x);
-    float cosX = METADOT_COSF(radians.x);
-    float sinY = METADOT_SINF(radians.y);
-    float cosY = METADOT_COSF(radians.y);
-    float sinZ = METADOT_SINF(radians.z);
-    float cosZ = METADOT_COSF(radians.z);
-
-    result.m[0][0] = cosY * cosZ;
-    result.m[0][1] = cosY * sinZ;
-    result.m[0][2] = -sinY;
-    result.m[1][0] = sinX * sinY * cosZ - cosX * sinZ;
-    result.m[1][1] = sinX * sinY * sinZ + cosX * cosZ;
-    result.m[1][2] = sinX * cosY;
-    result.m[2][0] = cosX * sinY * cosZ + sinX * sinZ;
-    result.m[2][1] = cosX * sinY * sinZ - sinX * cosZ;
-    result.m[2][2] = cosX * cosY;
-
-    return result;
-}
-
-// to mat3:
-
-inline mat3 top_left(const mat4 &m) {
-    mat3 result;
-
-    result.m[0][0] = m.m[0][0];
-    result.m[0][1] = m.m[0][1];
-    result.m[0][2] = m.m[0][2];
-    result.m[1][0] = m.m[1][0];
-    result.m[1][1] = m.m[1][1];
-    result.m[1][2] = m.m[1][2];
-    result.m[2][0] = m.m[2][0];
-    result.m[2][1] = m.m[2][1];
-    result.m[2][2] = m.m[2][2];
-
-    return result;
-}
-
-// projection:
-
-inline mat4 perspective(float fov, float aspect, float near, float far) {
-    mat4 result;
-
-    float scale = METADOT_TANF(deg_to_rad(fov * 0.5f)) * near;
-
-    float right = aspect * scale;
-    float left = -right;
-    float top = scale;
-    float bot = -top;
-
-    result.m[0][0] = near / right;
-    result.m[1][1] = near / top;
-    result.m[2][2] = -(far + near) / (far - near);
-    result.m[3][2] = -2.0f * far * near / (far - near);
-    result.m[2][3] = -1.0f;
-
-    return result;
-}
-
-inline mat4 orthographic(float left, float right, float bot, float top, float near, float far) {
-    mat4 result = mat4_identity();
-
-    result.m[0][0] = 2.0f / (right - left);
-    result.m[1][1] = 2.0f / (top - bot);
-    result.m[2][2] = 2.0f / (near - far);
-
-    result.m[3][0] = (left + right) / (left - right);
-    result.m[3][1] = (bot + top) / (bot - top);
-    result.m[3][2] = (near + far) / (near - far);
-
-    return result;
-}
-
-// view matrix:
-
-inline mat4 look(const vec3 &pos, const vec3 &dir, const vec3 &up) {
-    mat4 result;
-
-    vec3 r = normalize(cross(up, dir));
-    vec3 u = cross(dir, r);
-
-    mat4 RUD = mat4_identity();
-    RUD.m[0][0] = r.x;
-    RUD.m[1][0] = r.y;
-    RUD.m[2][0] = r.z;
-    RUD.m[0][1] = u.x;
-    RUD.m[1][1] = u.y;
-    RUD.m[2][1] = u.z;
-    RUD.m[0][2] = dir.x;
-    RUD.m[1][2] = dir.y;
-    RUD.m[2][2] = dir.z;
-
-    vec3 oppPos = {-pos.x, -pos.y, -pos.z};
-    result = RUD * translate(oppPos);
-
-    return result;
-}
-
-inline mat4 lookat(const vec3 &pos, const vec3 &target, const vec3 &up) {
-    mat4 result;
-
-    vec3 dir = normalize(pos - target);
-    result = look(pos, dir, up);
-
-    return result;
-}
-
-//----------------------------------------------------------------------//
-// QUATERNION FUNCTIONS:
-
-#if METADOT_INCLUDE_IOSTREAM
-
-inline std::ostream &operator<<(std::ostream &os, const quaternion &q) {
-    os << q.x << ", " << q.y << ", " << q.z << ", " << q.w;
-    return os;
-}
-
-inline std::istream &operator>>(std::istream &is, quaternion &q) {
-    is >> q.x >> q.y >> q.z >> q.w;
-    return is;
-}
-
-#endif
-
-inline quaternion quaternion_identity() {
-    quaternion result;
-
-    result.x = 0.0f;
-    result.y = 0.0f;
-    result.z = 0.0f;
-    result.w = 1.0f;
-
-    return result;
-}
-
-inline quaternion operator+(const quaternion &q1, const quaternion &q2) {
-    quaternion result;
-
-#if METADOT_USE_SSE
-
-    result.packed = _mm_add_ps(q1.packed, q2.packed);
-
-#else
-
-    result.x = q1.x + q2.x;
-    result.y = q1.y + q2.y;
-    result.z = q1.z + q2.z;
-    result.w = q1.w + q2.w;
-
-#endif
-
-    return result;
-}
-
-inline quaternion operator-(const quaternion &q1, const quaternion &q2) {
-    quaternion result;
-
-#if METADOT_USE_SSE
-
-    result.packed = _mm_sub_ps(q1.packed, q2.packed);
-
-#else
-
-    result.x = q1.x - q2.x;
-    result.y = q1.y - q2.y;
-    result.z = q1.z - q2.z;
-    result.w = q1.w - q2.w;
-
-#endif
-
-    return result;
-}
-
-inline quaternion operator*(const quaternion &q1, const quaternion &q2) {
-    quaternion result;
-
-#if METADOT_USE_SSE
-
-    __m128 temp1;
-    __m128 temp2;
-
-    temp1 = _mm_shuffle_ps(q1.packed, q1.packed, _MM_SHUFFLE(3, 3, 3, 3));
-    temp2 = q2.packed;
-    result.packed = _mm_mul_ps(temp1, temp2);
-
-    temp1 = _mm_xor_ps(_mm_shuffle_ps(q1.packed, q1.packed, _MM_SHUFFLE(0, 0, 0, 0)), _mm_setr_ps(0.0f, -0.0f, 0.0f, -0.0f));
-    temp2 = _mm_shuffle_ps(q2.packed, q2.packed, _MM_SHUFFLE(0, 1, 2, 3));
-    result.packed = _mm_add_ps(result.packed, _mm_mul_ps(temp1, temp2));
-
-    temp1 = _mm_xor_ps(_mm_shuffle_ps(q1.packed, q1.packed, _MM_SHUFFLE(1, 1, 1, 1)), _mm_setr_ps(0.0f, 0.0f, -0.0f, -0.0f));
-    temp2 = _mm_shuffle_ps(q2.packed, q2.packed, _MM_SHUFFLE(1, 0, 3, 2));
-    result.packed = _mm_add_ps(result.packed, _mm_mul_ps(temp1, temp2));
-
-    temp1 = _mm_xor_ps(_mm_shuffle_ps(q1.packed, q1.packed, _MM_SHUFFLE(2, 2, 2, 2)), _mm_setr_ps(-0.0f, 0.0f, 0.0f, -0.0f));
-    temp2 = _mm_shuffle_ps(q2.packed, q2.packed, _MM_SHUFFLE(2, 3, 0, 1));
-    result.packed = _mm_add_ps(result.packed, _mm_mul_ps(temp1, temp2));
-
-#else
-
-    result.x = q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y;
-    result.y = q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x;
-    result.z = q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w;
-    result.w = q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z;
-
-#endif
-
-    return result;
-}
-
-inline quaternion operator*(const quaternion &q, float s) {
-    quaternion result;
-
-#if METADOT_USE_SSE
-
-    __m128 scale = _mm_set1_ps(s);
-    result.packed = _mm_mul_ps(q.packed, scale);
-
-#else
-
-    result.x = q.x * s;
-    result.y = q.y * s;
-    result.z = q.z * s;
-    result.w = q.w * s;
-
-#endif
-
-    return result;
-}
-
-inline quaternion operator*(float s, const quaternion &q) { return q * s; }
-
-inline quaternion operator/(const quaternion &q, float s) {
-    quaternion result;
-
-#if METADOT_USE_SSE
-
-    __m128 scale = _mm_set1_ps(s);
-    result.packed = _mm_div_ps(q.packed, scale);
-
-#else
-
-    result.x = q.x / s;
-    result.y = q.y / s;
-    result.z = q.z / s;
-    result.w = q.w / s;
-
-#endif
-
-    return result;
-}
-
-inline quaternion operator/(float s, const quaternion &q) {
-    quaternion result;
-
-#if METADOT_USE_SSE
-
-    __m128 scale = _mm_set1_ps(s);
-    result.packed = _mm_div_ps(scale, q.packed);
-
-#else
-
-    result.x = s / q.x;
-    result.y = s / q.y;
-    result.z = s / q.z;
-    result.w = s / q.w;
-
-#endif
-
-    return result;
-}
-
-inline float dot(const quaternion &q1, const quaternion &q2) {
-    float result;
-
-#if METADOT_USE_SSE
-
-    __m128 r = _mm_mul_ps(q1.packed, q2.packed);
-    r = _mm_hadd_ps(r, r);
-    r = _mm_hadd_ps(r, r);
-    _mm_store_ss(&result, r);
-
-#else
-
-    result = q1.x * q2.x + q1.y * q2.y + q1.z * q2.z + q1.w * q2.w;
-
-#endif
-
-    return result;
-}
-
-inline float length(const quaternion &q) {
-    float result;
-
-    result = METADOT_SQRTF(dot(q, q));
-
-    return result;
-}
-
-inline quaternion normalize(const quaternion &q) {
-    quaternion result;
-
-    float len = length(q);
-    if (len != 0.0f) result = q / len;
-
-    return result;
-}
-
-inline quaternion conjugate(const quaternion &q) {
-    quaternion result;
-
-    result.x = -q.x;
-    result.y = -q.y;
-    result.z = -q.z;
-    result.w = q.w;
-
-    return result;
-}
-
-inline quaternion inverse(const quaternion &q) {
-    quaternion result;
-
-    result.x = -q.x;
-    result.y = -q.y;
-    result.z = -q.z;
-    result.w = q.w;
-
-#if METADOT_USE_SSE
-
-    __m128 scale = _mm_set1_ps(dot(q, q));
-    _mm_div_ps(result.packed, scale);
-
-#else
-
-    float invLen2 = 1.0f / dot(q, q);
-
-    result.x *= invLen2;
-    result.y *= invLen2;
-    result.z *= invLen2;
-    result.w *= invLen2;
-
-#endif
-
-    return result;
-}
-
-inline quaternion slerp(const quaternion &q1, const quaternion &q2, float a) {
-    quaternion result;
-
-    float cosine = dot(q1, q2);
-    float angle = METADOT_ACOSF(cosine);
-
-    float sine1 = METADOT_SINF((1.0f - a) * angle);
-    float sine2 = METADOT_SINF(a * angle);
-    float invSine = 1.0f / METADOT_SINF(angle);
-
-    quaternion q1scaled = q1 * sine1;
-    quaternion q2scaled = q2 * sine2;
-
-    result = q1scaled + q2scaled;
-    result = result * invSine;
-
-    return result;
-}
-
-inline bool operator==(const quaternion &q1, const quaternion &q2) {
-    bool result;
-
-    // TODO: there are SIMD instructions for floating point equality, find a way to get a single bool from them
-    result = (q1.x == q2.x) && (q1.y == q2.y) && (q1.z == q2.z) && (q1.w == q2.w);
-
-    return result;
-}
-
-inline bool operator!=(const quaternion &q1, const quaternion &q2) {
-    bool result;
-
-    result = (q1.x != q2.x) || (q1.y != q2.y) || (q1.z != q2.z) || (q1.w != q2.w);
-
-    return result;
-}
-
-inline quaternion quaternion_from_axis_angle(const vec3 &axis, float angle) {
-    quaternion result;
-
-    float radians = deg_to_rad(angle * 0.5f);
-    vec3 normalized = normalize(axis);
-    float sine = METADOT_SINF(radians);
-
-    result.x = normalized.x * sine;
-    result.y = normalized.y * sine;
-    result.z = normalized.z * sine;
-    result.w = METADOT_COSF(radians);
-
-    return result;
-}
-
-inline quaternion quaternion_from_euler(const vec3 &angles) {
-    quaternion result;
-
-    vec3 radians;
-    radians.x = deg_to_rad(angles.x * 0.5f);
-    radians.y = deg_to_rad(angles.y * 0.5f);
-    radians.z = deg_to_rad(angles.z * 0.5f);
-
-    float sinx = METADOT_SINF(radians.x);
-    float cosx = METADOT_COSF(radians.x);
-    float siny = METADOT_SINF(radians.y);
-    float cosy = METADOT_COSF(radians.y);
-    float sinz = METADOT_SINF(radians.z);
-    float cosz = METADOT_COSF(radians.z);
-
-#if METADOT_USE_SSE
-
-    __m128 packedx = _mm_setr_ps(sinx, cosx, cosx, cosx);
-    __m128 packedy = _mm_setr_ps(cosy, siny, cosy, cosy);
-    __m128 packedz = _mm_setr_ps(cosz, cosz, sinz, cosz);
-
-    result.packed = _mm_mul_ps(_mm_mul_ps(packedx, packedy), packedz);
-
-    packedx = _mm_shuffle_ps(packedx, packedx, _MM_SHUFFLE(0, 0, 0, 1));
-    packedy = _mm_shuffle_ps(packedy, packedy, _MM_SHUFFLE(1, 1, 0, 1));
-    packedz = _mm_shuffle_ps(packedz, packedz, _MM_SHUFFLE(2, 0, 2, 2));
-
-    result.packed = _mm_addsub_ps(result.packed, _mm_mul_ps(_mm_mul_ps(packedx, packedy), packedz));
-
-#else
-
-    result.x = sinx * cosy * cosz - cosx * siny * sinz;
-    result.y = cosx * siny * cosz + sinx * cosy * sinz;
-    result.z = cosx * cosy * sinz - sinx * siny * cosz;
-    result.w = cosx * cosy * cosz + sinx * siny * sinz;
-
-#endif
-
-    return result;
-}
-
-inline mat4 quaternion_to_mat4(const quaternion &q) {
-    mat4 result = mat4_identity();
-
-    float x2 = q.x + q.x;
-    float y2 = q.y + q.y;
-    float z2 = q.z + q.z;
-    float xx2 = q.x * x2;
-    float xy2 = q.x * y2;
-    float xz2 = q.x * z2;
-    float yy2 = q.y * y2;
-    float yz2 = q.y * z2;
-    float zz2 = q.z * z2;
-    float sx2 = q.w * x2;
-    float sy2 = q.w * y2;
-    float sz2 = q.w * z2;
-
-    result.m[0][0] = 1.0f - (yy2 + zz2);
-    result.m[0][1] = xy2 - sz2;
-    result.m[0][2] = xz2 + sy2;
-    result.m[1][0] = xy2 + sz2;
-    result.m[1][1] = 1.0f - (xx2 + zz2);
-    result.m[1][2] = yz2 - sx2;
-    result.m[2][0] = xz2 - sy2;
-    result.m[2][1] = yz2 + sx2;
-    result.m[2][2] = 1.0f - (xx2 + yy2);
-
-    return result;
-}
-
-#pragma endregion liner
-
-#ifdef METADOT_PLATFORM_WIN32
+#ifdef ME_PLATFORM_WIN32
 #define far
 #define near
 #endif

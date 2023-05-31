@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "core/core.hpp"
-#include "core/cpp/static_relfection.hpp"
 #include "core/cpp/type.hpp"
 #include "core/math/mathlib.hpp"
 #include "core/sdl_wrapper.h"
 #include "ecs/ecs.hpp"
 #include "game_basic.hpp"
+#include "meta/static_relfection.hpp"
 #include "physics/box2d.h"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua/lua_wrapper.hpp"
@@ -88,7 +88,7 @@ public:
 };
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<WorldEntity> : TypeInfoBase<WorldEntity> {
+struct ME::meta::static_refl::TypeInfo<WorldEntity> : TypeInfoBase<WorldEntity> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("x"), &Type::x},
@@ -106,7 +106,7 @@ struct MetaEngine::StaticRefl::TypeInfo<WorldEntity> : TypeInfoBase<WorldEntity>
 };
 
 METAENGINE_GUI_DEFINE_BEGIN(template <>, WorldEntity)
-MetaEngine::StaticRefl::TypeInfo<WorldEntity>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
+ME::meta::static_refl::TypeInfo<WorldEntity>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
 METAENGINE_GUI_DEFINE_END
 
 void ReleaseGameData();
@@ -140,7 +140,7 @@ struct MaterialInteraction {
 };
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<MaterialInteraction> : TypeInfoBase<MaterialInteraction> {
+struct ME::meta::static_refl::TypeInfo<MaterialInteraction> : TypeInfoBase<MaterialInteraction> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("type"), &MaterialInteraction::type}, Field{TSTR("data1"), &MaterialInteraction::data1}, Field{TSTR("data2"), &MaterialInteraction::data2},
@@ -189,7 +189,7 @@ struct Material {
 };
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<Material> : TypeInfoBase<Material> {
+struct ME::meta::static_refl::TypeInfo<Material> : TypeInfoBase<Material> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("name"), &Material::name},
@@ -217,7 +217,7 @@ struct MetaEngine::StaticRefl::TypeInfo<Material> : TypeInfoBase<Material> {
 };
 
 METAENGINE_GUI_DEFINE_BEGIN(template <>, Material)
-MetaEngine::StaticRefl::TypeInfo<Material>::ForEachVarOf(var, [](auto field, auto &&value) {
+ME::meta::static_refl::TypeInfo<Material>::ForEachVarOf(var, [](auto field, auto &&value) {
     static_assert(std::is_lvalue_reference_v<decltype(value)>);
     ImGui::Auto(value, std::string(field.name));
 });
@@ -277,7 +277,7 @@ public:
 };
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<MaterialInstance> : TypeInfoBase<MaterialInstance> {
+struct ME::meta::static_refl::TypeInfo<MaterialInstance> : TypeInfoBase<MaterialInstance> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {};
 };
@@ -330,7 +330,7 @@ typedef enum EnumPlayerHoldType {
 } EnumPlayerHoldType;
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<EnumPlayerHoldType> : TypeInfoBase<EnumPlayerHoldType> {
+struct ME::meta::static_refl::TypeInfo<EnumPlayerHoldType> : TypeInfoBase<EnumPlayerHoldType> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("None"), Type::None},
@@ -340,7 +340,7 @@ struct MetaEngine::StaticRefl::TypeInfo<EnumPlayerHoldType> : TypeInfoBase<EnumP
 };
 
 METAENGINE_GUI_DEFINE_BEGIN(template <>, EnumPlayerHoldType)
-ImGui::Text("EnumPlayerHoldType: %s", MetaEngine::StaticRefl::TypeInfo<EnumPlayerHoldType>::fields.NameOfValue(var).data());
+ImGui::Text("EnumPlayerHoldType: %s", ME::meta::static_refl::TypeInfo<EnumPlayerHoldType>::fields.NameOfValue(var).data());
 METAENGINE_GUI_DEFINE_END
 
 class Item {
@@ -374,14 +374,14 @@ public:
 };
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<Item> : TypeInfoBase<Item> {
+struct ME::meta::static_refl::TypeInfo<Item> : TypeInfoBase<Item> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {Field{TSTR("name"), &Type::name}, Field{TSTR("pivotX"), &Type::pivotX}, Field{TSTR("pivotY"), &Type::pivotY}, Field{TSTR("breakSize"), &Type::breakSize},
                                          Field{TSTR("capacity"), &Type::capacity}};
 };
 
 METAENGINE_GUI_DEFINE_BEGIN(template <>, Item)
-MetaEngine::StaticRefl::TypeInfo<Item>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
+ME::meta::static_refl::TypeInfo<Item>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
 METAENGINE_GUI_DEFINE_END
 
 using ItemLuaPtr = MetaEngine::Ref<Item>;
@@ -450,7 +450,7 @@ public:
 };
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<Biome> : TypeInfoBase<Biome> {
+struct ME::meta::static_refl::TypeInfo<Biome> : TypeInfoBase<Biome> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("id"), &Type::id},
@@ -568,7 +568,7 @@ public:
 };
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<RigidBody> : TypeInfoBase<RigidBody> {
+struct ME::meta::static_refl::TypeInfo<RigidBody> : TypeInfoBase<RigidBody> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("matWidth"), &Type::matWidth},
@@ -685,7 +685,7 @@ public:
 };
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<Player> : TypeInfoBase<Player> {
+struct ME::meta::static_refl::TypeInfo<Player> : TypeInfoBase<Player> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("heldItem"), &Type::heldItem},
@@ -702,7 +702,7 @@ struct MetaEngine::StaticRefl::TypeInfo<Player> : TypeInfoBase<Player> {
 };
 
 METAENGINE_GUI_DEFINE_BEGIN(template <>, Player)
-MetaEngine::StaticRefl::TypeInfo<Player>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
+ME::meta::static_refl::TypeInfo<Player>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
 METAENGINE_GUI_DEFINE_END
 
 struct move_player_event {

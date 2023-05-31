@@ -35,7 +35,7 @@ bool InitFilesystem() {
             //     METADOT_ASSERT_E(0);
             // } else if (true) {
             //     // Put the base directory (the path to the exe) onto the file system search path.
-            //     // metadot_fs_mount(Core.gamepath.c_str(), "", true);
+            //     // ME_fs_mount(Core.gamepath.c_str(), "", true);
             // }
 
             return METADOT_OK;
@@ -58,45 +58,6 @@ bool InitFilesystem() {
     }
 
 #endif
-}
-
-// Char pointer get form futil_readfilestring must be gc_free manually
-char* metadot_fs_readfilestring(const char* path) {
-    char* source = NULL;
-    FILE* fp = fopen(METADOT_RESLOC(path), "r");
-    if (fp != NULL) {
-        /* Go to the end of the file. */
-        if (fseek(fp, 0L, SEEK_END) == 0) {
-            /* Get the size of the file. */
-            long bufsize = ftell(fp);
-            if (bufsize == -1) { /* Error */
-            }
-
-            /* Allocate our buffer to that size. */
-            source = (char*)malloc(sizeof(char) * (bufsize + 1));
-
-            /* Go back to the start of the file. */
-            if (fseek(fp, 0L, SEEK_SET) != 0) { /* Error */
-            }
-
-            /* Read the entire file into memory. */
-            size_t newLen = fread(source, sizeof(char), bufsize, fp);
-            if (ferror(fp) != 0) {
-                fputs("Error reading file", stderr);
-                METADOT_ERROR("Error reading file %s", METADOT_RESLOC(path));
-            } else {
-                source[newLen++] = '\0'; /* Just to be safe. */
-            }
-        }
-        fclose(fp);
-        return source;
-    }
-    free(source); /* Don't forget to call free() later! */
-    return R_null;
-}
-
-void metadot_fs_freestring(void* ptr) {
-    if (NULL != ptr) free(ptr);
 }
 
 #define METAENGINE_FILE_SYSTEM_BUFFERED_IO_SIZE (2 * METAENGINE_MB)

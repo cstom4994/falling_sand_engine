@@ -1499,7 +1499,7 @@ inline void ImGuiWidget::FileBrowser::Display() {
 
     // display elements in pwd
 
-#ifdef METADOT_PLATFORM_WINDOWS
+#ifdef ME_PLATFORM_WINDOWS
     char currentDrive = static_cast<char>(pwd_.c_str()[0]);
     char driveStr[] = {currentDrive, ':', '\0'};
 

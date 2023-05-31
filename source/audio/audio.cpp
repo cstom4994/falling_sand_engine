@@ -11,9 +11,9 @@ void Audio::LoadSound(const std::string &strSoundName, bool b3d, bool bLooping, 
 
 void Audio::UnLoadSound(const std::string &strSoundName) {}
 
-int Audio::PlaySounds(const std::string &strSoundName, const vec3 &vPosition, float fVolumedB) { return 1; }
+int Audio::PlaySounds(const std::string &strSoundName, const MEvec3 &vPosition, float fVolumedB) { return 1; }
 
-void Audio::SetChannel3dPosition(int nChannelId, const vec3 &vPosition) {}
+void Audio::SetChannel3dPosition(int nChannelId, const MEvec3 &vPosition) {}
 
 void Audio::SetChannelVolume(int nChannelId, float fVolumedB) {}
 

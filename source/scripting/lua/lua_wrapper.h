@@ -5,7 +5,7 @@
 #include "core/core.h"
 #include "libs/lua/lua.hpp"
 
-#ifdef METADOT_PLATFORM_WINDOWS
+#ifdef ME_PLATFORM_WINDOWS
 #define strerror_r(errno, buf, len) strerror_s(buf, len, errno)
 #endif
 

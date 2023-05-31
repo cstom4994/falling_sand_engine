@@ -81,7 +81,7 @@ extern "C" {
  *              metadot_kv_destroy(kv);
  *              return NULL;
  *          }
- *          bool result = !metadot_is_error(metadot_fs_write_entire_buffer_to_file(metadot_kv_buffer(kv), metadot_kv_buffer_size(kv)));
+ *          bool result = !metadot_is_error(ME_fs_write_entire_buffer_to_file(metadot_kv_buffer(kv), metadot_kv_buffer_size(kv)));
  *          metadot_kv_destroy(kv);
  *          return result;
  *     }
@@ -103,7 +103,7 @@ extern "C" {
  *     {
  *          void* data;
  *          size_t size;
- *          if (metadot_is_error(metadot_fs_read_entire_file_to_memory(path, &data, &size))) return false;
+ *          if (metadot_is_error(ME_fs_read_entire_file_to_memory(path, &data, &size))) return false;
  *          METADOT_KeyValue* kv = kv_read(data, size);
  *          if (!kv) return false;
  *          bool result = serialize(kv, stuff);
@@ -129,7 +129,7 @@ typedef enum METADOT_KeyValueState {
 #undef METADOT_ENUM
 } METADOT_KeyValueState;
 
-METADOT_INLINE const char* metadot_key_value_state_to_string(METADOT_KeyValueState state) {
+ME_INLINE const char* metadot_key_value_state_to_string(METADOT_KeyValueState state) {
     switch (state) {
 #define METADOT_ENUM(K, V) \
     case METADOT_##K:      \
@@ -272,7 +272,7 @@ typedef enum METADOT_KeyValueType {
 #undef METADOT_ENUM
 } METADOT_KeyValueType;
 
-METADOT_INLINE const char* metadot_key_value_type_to_string(METADOT_KeyValueType type) {
+ME_INLINE const char* metadot_key_value_type_to_string(METADOT_KeyValueType type) {
     switch (type) {
 #define METADOT_ENUM(K, V) \
     case METADOT_##K:      \
@@ -321,11 +321,11 @@ namespace MetaEngine {
 using KeyValue = METADOT_KeyValue;
 
 using KeyValueState = METADOT_KeyValueState;
-#define METADOT_ENUM(K, V) METADOT_INLINE constexpr KeyValueState K = METADOT_##K;
+#define METADOT_ENUM(K, V) ME_INLINE constexpr KeyValueState K = METADOT_##K;
 METADOT_KV_STATE_DEFS
 #undef METADOT_ENUM
 
-METADOT_INLINE const char* to_string(KeyValueState state) {
+ME_INLINE const char* to_string(KeyValueState state) {
     switch (state) {
 #define METADOT_ENUM(K, V) \
     case METADOT_##K:      \
@@ -338,11 +338,11 @@ METADOT_INLINE const char* to_string(KeyValueState state) {
 }
 
 using KeyValueType = METADOT_KeyValueType;
-#define METADOT_ENUM(K, V) METADOT_INLINE constexpr KeyValueType K = METADOT_##K;
+#define METADOT_ENUM(K, V) ME_INLINE constexpr KeyValueType K = METADOT_##K;
 METADOT_KV_TYPE_DEFS
 #undef METADOT_ENUM
 
-METADOT_INLINE const char* to_string(KeyValueType type) {
+ME_INLINE const char* to_string(KeyValueType type) {
     switch (type) {
 #define METADOT_ENUM(K, V) \
     case METADOT_##K:      \
@@ -354,32 +354,32 @@ METADOT_INLINE const char* to_string(KeyValueType type) {
     }
 }
 
-METADOT_INLINE KeyValue* kv_read(const void* data, size_t size, Result* result_out = NULL) { return metadot_kv_read(data, size, result_out); }
-METADOT_INLINE KeyValue* kv_write(KeyValue* kv) { return metadot_kv_write(); }
-METADOT_INLINE void kv_destroy(KeyValue* kv) { metadot_kv_destroy(kv); }
-METADOT_INLINE KeyValueState kv_state(KeyValue* kv) { return (KeyValueState)metadot_kv_state(kv); }
-METADOT_INLINE const char* kv_buffer(KeyValue* kv) { return metadot_kv_buffer(kv); }
-METADOT_INLINE size_t kv_buffer_size(KeyValue* kv) { return metadot_kv_buffer_size(kv); }
-METADOT_INLINE void kv_set_base(KeyValue* kv, KeyValue* base) { metadot_kv_set_base(kv, base); }
-METADOT_INLINE Result kv_error_state(KeyValue* kv) { return metadot_kv_last_error(kv); }
-METADOT_INLINE bool kv_key(KeyValue* kv, const char* key, KeyValueType* type = NULL) { return metadot_kv_key(kv, key, type); }
-METADOT_INLINE bool kv_val(KeyValue* kv, uint8_t* val) { return metadot_kv_val_uint8(kv, val); }
-METADOT_INLINE bool kv_val(KeyValue* kv, uint16_t* val) { return metadot_kv_val_uint16(kv, val); }
-METADOT_INLINE bool kv_val(KeyValue* kv, uint32_t* val) { return metadot_kv_val_uint32(kv, val); }
-METADOT_INLINE bool kv_val(KeyValue* kv, uint64_t* val) { return metadot_kv_val_uint64(kv, val); }
-METADOT_INLINE bool kv_val(KeyValue* kv, int8_t* val) { return metadot_kv_val_int8(kv, val); }
-METADOT_INLINE bool kv_val(KeyValue* kv, int16_t* val) { return metadot_kv_val_int16(kv, val); }
-METADOT_INLINE bool kv_val(KeyValue* kv, int32_t* val) { return metadot_kv_val_int32(kv, val); }
-METADOT_INLINE bool kv_val(KeyValue* kv, int64_t* val) { return metadot_kv_val_int64(kv, val); }
-METADOT_INLINE bool kv_val(KeyValue* kv, float* val) { return metadot_kv_val_float(kv, val); }
-METADOT_INLINE bool kv_val(KeyValue* kv, double* val) { return metadot_kv_val_double(kv, val); }
-METADOT_INLINE bool kv_val(KeyValue* kv, bool* val) { return metadot_kv_val_bool(kv, val); }
-METADOT_INLINE bool kv_val_string(KeyValue* kv, const char** str, size_t* size) { return metadot_kv_val_string(kv, str, size); }
-METADOT_INLINE bool kv_val_blob(KeyValue* kv, void* data, size_t data_capacity, size_t* data_len) { return metadot_kv_val_blob(kv, data, data_capacity, data_len); }
-METADOT_INLINE bool kv_object_begin(KeyValue* kv, const char* key = NULL) { return metadot_kv_object_begin(kv, key); }
-METADOT_INLINE bool kv_object_end(KeyValue* kv) { return metadot_kv_object_end(kv); }
-METADOT_INLINE bool kv_array_begin(KeyValue* kv, int* count, const char* key = NULL) { return metadot_kv_array_begin(kv, count, key); }
-METADOT_INLINE bool kv_array_end(KeyValue* kv) { return metadot_kv_array_end(kv); }
+ME_INLINE KeyValue* kv_read(const void* data, size_t size, Result* result_out = NULL) { return metadot_kv_read(data, size, result_out); }
+ME_INLINE KeyValue* kv_write(KeyValue* kv) { return metadot_kv_write(); }
+ME_INLINE void kv_destroy(KeyValue* kv) { metadot_kv_destroy(kv); }
+ME_INLINE KeyValueState kv_state(KeyValue* kv) { return (KeyValueState)metadot_kv_state(kv); }
+ME_INLINE const char* kv_buffer(KeyValue* kv) { return metadot_kv_buffer(kv); }
+ME_INLINE size_t kv_buffer_size(KeyValue* kv) { return metadot_kv_buffer_size(kv); }
+ME_INLINE void kv_set_base(KeyValue* kv, KeyValue* base) { metadot_kv_set_base(kv, base); }
+ME_INLINE Result kv_error_state(KeyValue* kv) { return metadot_kv_last_error(kv); }
+ME_INLINE bool kv_key(KeyValue* kv, const char* key, KeyValueType* type = NULL) { return metadot_kv_key(kv, key, type); }
+ME_INLINE bool kv_val(KeyValue* kv, uint8_t* val) { return metadot_kv_val_uint8(kv, val); }
+ME_INLINE bool kv_val(KeyValue* kv, uint16_t* val) { return metadot_kv_val_uint16(kv, val); }
+ME_INLINE bool kv_val(KeyValue* kv, uint32_t* val) { return metadot_kv_val_uint32(kv, val); }
+ME_INLINE bool kv_val(KeyValue* kv, uint64_t* val) { return metadot_kv_val_uint64(kv, val); }
+ME_INLINE bool kv_val(KeyValue* kv, int8_t* val) { return metadot_kv_val_int8(kv, val); }
+ME_INLINE bool kv_val(KeyValue* kv, int16_t* val) { return metadot_kv_val_int16(kv, val); }
+ME_INLINE bool kv_val(KeyValue* kv, int32_t* val) { return metadot_kv_val_int32(kv, val); }
+ME_INLINE bool kv_val(KeyValue* kv, int64_t* val) { return metadot_kv_val_int64(kv, val); }
+ME_INLINE bool kv_val(KeyValue* kv, float* val) { return metadot_kv_val_float(kv, val); }
+ME_INLINE bool kv_val(KeyValue* kv, double* val) { return metadot_kv_val_double(kv, val); }
+ME_INLINE bool kv_val(KeyValue* kv, bool* val) { return metadot_kv_val_bool(kv, val); }
+ME_INLINE bool kv_val_string(KeyValue* kv, const char** str, size_t* size) { return metadot_kv_val_string(kv, str, size); }
+ME_INLINE bool kv_val_blob(KeyValue* kv, void* data, size_t data_capacity, size_t* data_len) { return metadot_kv_val_blob(kv, data, data_capacity, data_len); }
+ME_INLINE bool kv_object_begin(KeyValue* kv, const char* key = NULL) { return metadot_kv_object_begin(kv, key); }
+ME_INLINE bool kv_object_end(KeyValue* kv) { return metadot_kv_object_end(kv); }
+ME_INLINE bool kv_array_begin(KeyValue* kv, int* count, const char* key = NULL) { return metadot_kv_array_begin(kv, count, key); }
+ME_INLINE bool kv_array_end(KeyValue* kv) { return metadot_kv_array_end(kv); }
 
 }  // namespace MetaEngine
 

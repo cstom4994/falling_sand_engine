@@ -12,8 +12,8 @@
 class State {
 public:
     // Basic set of mandate requirements
-    vec2 pos;
-    vec2 range = {0, 0};
+    MEvec2 pos;
+    MEvec2 range = {0, 0};
     std::string task = "Null";
 
     // Target Bot
@@ -119,9 +119,9 @@ public:
     int hammerY = 0;
 
     // Meta Data
-    vec2 pos;
-    vec2 range = {0, 0};
-    vec2 viewDistance;
+    MEvec2 pos;
+    MEvec2 range = {0, 0};
+    MEvec2 viewDistance;
 
     std::string species;
     bool dead = false;
@@ -139,7 +139,7 @@ public:
     bool interrupt = false;           // Interrupt flag
     bool tryInterrupt(State _state);  // Attempt an Interruption of the Bot
     std::string task = "Idle";        // Task Name
-    std::stack<vec2> path;            // Movement Path
+    std::stack<MEvec2> path;          // Movement Path
     void executeTask(World &world);
 
     // Memories / Brain

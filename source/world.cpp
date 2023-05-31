@@ -20,7 +20,7 @@
 #include "core/debug.hpp"
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
-#include "core/macros.h"
+#include "core/macros.hpp"
 #include "core/math/mathlib.hpp"
 #include "core/threadpool.hpp"
 #include "engine/engine.h"
@@ -137,7 +137,7 @@ void World::init(std::string worldPath, U16 w, U16 h, R_Target *target, Audio *a
         }
     }
 
-    gravity = vec2(0, 20);
+    gravity = MEvec2(0, 20);
     b2world = new b2World(gravity);
 
     struct gameplay_feature {};
@@ -343,7 +343,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     F32 ynew = minX * s + minY * c;
 
     // translate point back:
-    rb->body->SetTransform(vec2(rb->body->GetPosition().x + xnew, rb->body->GetPosition().y + ynew), rb->body->GetAngle());
+    rb->body->SetTransform(MEvec2(rb->body->GetPosition().x + xnew, rb->body->GetPosition().y + ynew), rb->body->GetAngle());
 
     // If it is a single pixel rigid body, it will be deconstructed.
     if (maxX == 1 || maxY == 1) return;
@@ -373,7 +373,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         }
     }
 
-    std::vector<std::vector<vec2>> meshes = {};
+    std::vector<std::vector<MEvec2>> meshes = {};
 
     std::list<TPPLPoly> shapes;
     std::list<MarchingSquares::Result> results;
@@ -437,7 +437,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         MarchingSquares::Result r = MarchingSquares::FindPerimeter(lookX, lookY, texture->w, texture->h, data);
         results.push_back(r);
 
-        std::vector<vec2> worldMesh;
+        std::vector<MEvec2> worldMesh;
 
         F32 lastX = (F32)r.initialX;
         F32 lastY = (F32)r.initialY;
@@ -622,7 +622,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
             C_Surface *sfc = polys2sSfcs[b];
 
             RigidBody *rbn = makeRigidBodyMulti(b2_dynamicBody, 0, 0, rb->body->GetAngle(), polys2, rb->body->GetFixtureList()[0].GetDensity(), rb->body->GetFixtureList()[0].GetFriction(), sfc);
-            rbn->body->SetTransform(vec2(rb->body->GetPosition().x, rb->body->GetPosition().y), rb->body->GetAngle());
+            rbn->body->SetTransform(MEvec2(rb->body->GetPosition().x, rb->body->GetPosition().y), rb->body->GetAngle());
             rbn->body->SetLinearVelocity(rb->body->GetLinearVelocity());
             rbn->body->SetAngularVelocity(rb->body->GetAngularVelocity());
             rbn->outline = shapes;
@@ -724,7 +724,7 @@ found : {};
         }
     }
 
-    std::vector<std::vector<vec2>> worldMeshes = {};
+    std::vector<std::vector<MEvec2>> worldMeshes = {};
     std::list<TPPLPoly> shapes;
     std::list<MarchingSquares::Result> results;
     int inn = 0;
@@ -790,7 +790,7 @@ found : {};
 
         results.push_back(r);
 
-        std::vector<vec2> worldMesh;
+        std::vector<MEvec2> worldMesh;
 
         F32 lastX = (F32)r.initialX;
         F32 lastY = (F32)r.initialY;
@@ -1860,9 +1860,9 @@ void World::tick() {
 #endif
 
             // while (tickPool->n_idle() != tickPool->size()) {
-            //	//printf("%d / %d", tickPool->n_idle(), tickPool->size());
-            //	auto n = tickPool->n_idle();
-            //	auto i = 0;
+            //  //printf("%d / %d", tickPool->n_idle(), tickPool->size());
+            //  auto n = tickPool->n_idle();
+            //  auto i = 0;
             // }
         }
     }
@@ -1902,16 +1902,16 @@ void World::tickTemperature() {
             F32 n = 0.01;
             F32 v = 0;
             // for (int xx = -1; xx <= 1; xx++) {
-            //	for (int yy = -1; yy <= 1; yy++) {
-            //		F32 factor = abs(tiles[(x + xx) + (y + yy) * width].temperature) / 64 * tiles[(x + xx) + (y + yy) * width].mat->conductionOther;
-            //		//factor = fmax(-1, fmin(factor, 1));
+            //  for (int yy = -1; yy <= 1; yy++) {
+            //      F32 factor = abs(tiles[(x + xx) + (y + yy) * width].temperature) / 64 * tiles[(x + xx) + (y + yy) * width].mat->conductionOther;
+            //      //factor = fmax(-1, fmin(factor, 1));
 
-            //		v += tiles[(x + xx) + (y + yy) * width].temperature * factor;
-            //		n += factor;
+            //      v += tiles[(x + xx) + (y + yy) * width].temperature * factor;
+            //      n += factor;
 
-            //		// ((v1 * f1) + (v2 * f2)) / (f1 + f2)
-            //		//=(v1 * f1) + (v2 * f2)
-            //	}
+            //      // ((v1 * f1) + (v2 * f2)) / (f1 + f2)
+            //      //=(v1 * f1) + (v2 * f2)
+            //  }
             //}
             F32 factor = 0;
 #define FN(xa, ya)                                                                                                                   \
@@ -2138,7 +2138,7 @@ void World::tickCells() {
     // });
 
     // std::remove_if(cells.begin(), cells.end(), [&](CellData* cur) {
-    //	return cur->y > height;
+    //  return cur->y > height;
     // });
 }
 
@@ -2191,8 +2191,8 @@ void World::tickObjects() {
         }
 
         // if (cur->needsUpdate) {
-        // 	updateRigidBodyHitbox(cur);
-        // 	//continue;
+        //  updateRigidBodyHitbox(cur);
+        //  //continue;
         // }
     }
 
@@ -2531,7 +2531,7 @@ void World::tickChunks() {
 
             for (int i = 0; i < rigidBodies.size(); i++) {
                 RigidBody cur = *rigidBodies[i];
-                cur.body->SetTransform(vec2(cur.body->GetPosition().x + changeX, cur.body->GetPosition().y + changeY), cur.body->GetAngle());
+                cur.body->SetTransform(MEvec2(cur.body->GetPosition().x + changeX, cur.body->GetPosition().y + changeY), cur.body->GetAngle());
             }
         }
 
@@ -2631,41 +2631,41 @@ Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
     }
 
     // if (populate) {
-    //	if (!ch.populated) {
-    //		Populator pop;
-    //		std::vector<PlacedStructure> structs = pop.apply(prop, ch, *this);
-    //		ch.populated = true;
+    //  if (!ch.populated) {
+    //      Populator pop;
+    //      std::vector<PlacedStructure> structs = pop.apply(prop, ch, *this);
+    //      ch.populated = true;
 
-    //		/*for (int i = 0; i < structs.size(); i++) {
-    //			addStructure(structs[i]);
-    //		}*/
+    //      /*for (int i = 0; i < structs.size(); i++) {
+    //          addStructure(structs[i]);
+    //      }*/
 
-    //		for (int i = 0; i < structures.size(); i++) {
-    //			PlacedStructure st = structures[i];
-    //			int sx = std::max(st.x + loadZone.x, ch.x*CHUNK_W + loadZone.x);
-    //			int sy = std::max(st.y + loadZone.y, ch.y*CHUNK_H + loadZone.y);
-    //			int ex = std::min(st.x + loadZone.x + st.base.w, ch.x*CHUNK_W + loadZone.x + CHUNK_W);
-    //			int ey = std::min(st.y + loadZone.y + st.base.h, ch.y*CHUNK_H + loadZone.y + CHUNK_H);
+    //      for (int i = 0; i < structures.size(); i++) {
+    //          PlacedStructure st = structures[i];
+    //          int sx = std::max(st.x + loadZone.x, ch.x*CHUNK_W + loadZone.x);
+    //          int sy = std::max(st.y + loadZone.y, ch.y*CHUNK_H + loadZone.y);
+    //          int ex = std::min(st.x + loadZone.x + st.base.w, ch.x*CHUNK_W + loadZone.x + CHUNK_W);
+    //          int ey = std::min(st.y + loadZone.y + st.base.h, ch.y*CHUNK_H + loadZone.y + CHUNK_H);
 
-    //			for (int x = sx; x < ex; x++) {
-    //				for (int y = sy; y < ey; y++) {
-    //					int tx = x - (st.x + loadZone.x);
-    //					int ty = y - (st.y + loadZone.y);
+    //          for (int x = sx; x < ex; x++) {
+    //              for (int y = sy; y < ey; y++) {
+    //                  int tx = x - (st.x + loadZone.x);
+    //                  int ty = y - (st.y + loadZone.y);
     //
-    //					int chx = x - loadZone.x - ch.x*CHUNK_W;
-    //					int chy = y - loadZone.y - ch.y*CHUNK_H;
+    //                  int chx = x - loadZone.x - ch.x*CHUNK_W;
+    //                  int chy = y - loadZone.y - ch.y*CHUNK_H;
 
-    //					if (tx >= 0 && ty >= 0 && chx >= 0 && chy >= 0 && tx < st.base.w && ty < st.base.h && chx < CHUNK_W && chy < CHUNK_H) {
-    //						if (st.base.tiles[tx + ty * st.base.w].mat->id != Materials::GENERIC_AIR.id) {
-    //							prop[chx + chy * CHUNK_W] = st.base.tiles[tx + ty * st.base.w];
-    //						}
-    //					}
-    //				}
-    //			}
+    //                  if (tx >= 0 && ty >= 0 && chx >= 0 && chy >= 0 && tx < st.base.w && ty < st.base.h && chx < CHUNK_W && chy < CHUNK_H) {
+    //                      if (st.base.tiles[tx + ty * st.base.w].mat->id != Materials::GENERIC_AIR.id) {
+    //                          prop[chx + chy * CHUNK_W] = st.base.tiles[tx + ty * st.base.w];
+    //                      }
+    //                  }
+    //              }
+    //          }
     //
-    //		}
+    //      }
 
-    //	}
+    //  }
     //}
 
     return ch;
@@ -2674,25 +2674,25 @@ Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
 void World::unloadChunk(Chunk *ch) {
     // MaterialInstance* data = new MaterialInstance[CHUNK_W * CHUNK_H];
     // for (int x = 0; x < CHUNK_W; x++) {
-    //	for (int y = 0; y < CHUNK_H; y++) {
-    //		int tx = ch->x * CHUNK_W + loadZone.x + x;
-    //		int ty = ch->y * CHUNK_H + loadZone.y + y;
-    //		if (tx < 0 || tx >= width || ty < 0 || ty >= height) continue;
-    //		data[x + y * CHUNK_W] = tiles[tx + ty * width];
-    //		tiles[tx + ty * width] = Tiles_NOTHING;
-    //		//dirty[tx + ty * width] = true;
-    //	}
+    //  for (int y = 0; y < CHUNK_H; y++) {
+    //      int tx = ch->x * CHUNK_W + loadZone.x + x;
+    //      int ty = ch->y * CHUNK_H + loadZone.y + y;
+    //      if (tx < 0 || tx >= width || ty < 0 || ty >= height) continue;
+    //      data[x + y * CHUNK_W] = tiles[tx + ty * width];
+    //      tiles[tx + ty * width] = Tiles_NOTHING;
+    //      //dirty[tx + ty * width] = true;
+    //  }
     // }
     // MaterialInstance* layer2 = new MaterialInstance[CHUNK_W * CHUNK_H];
     // for (int x = 0; x < CHUNK_W; x++) {
-    //	for (int y = 0; y < CHUNK_H; y++) {
-    //		int tx = ch->x * CHUNK_W + loadZone.x + x;
-    //		int ty = ch->y * CHUNK_H + loadZone.y + y;
-    //		if (tx < 0 || tx >= width || ty < 0 || ty >= height) continue;
-    //		layer2[x + y * CHUNK_W] = this->layer2[tx + ty * width];
-    //		this->layer2[tx + ty * width] = Tiles_NOTHING;
-    //		//dirty[tx + ty * width] = true;
-    //	}
+    //  for (int y = 0; y < CHUNK_H; y++) {
+    //      int tx = ch->x * CHUNK_W + loadZone.x + x;
+    //      int ty = ch->y * CHUNK_H + loadZone.y + y;
+    //      if (tx < 0 || tx >= width || ty < 0 || ty >= height) continue;
+    //      layer2[x + y * CHUNK_W] = this->layer2[tx + ty * width];
+    //      this->layer2[tx + ty * width] = Tiles_NOTHING;
+    //      //dirty[tx + ty * width] = true;
+    //  }
     // }
     // ch->write(data, layer2);
 
@@ -2797,11 +2797,11 @@ void World::addStructure(PlacedStructure str) {
     }
 }
 
-vec2 World::getNearestPoint(F32 x, F32 y) {
+MEvec2 World::getNearestPoint(F32 x, F32 y) {
     F32 xm = fmod(1 + fmod(x, 1), 1);
     F32 ym = fmod(1 + fmod(y, 1), 1);
     F32 closestDist = 100;
-    vec2 closest;
+    MEvec2 closest;
     for (int i = 0; i < distributedPoints.size(); i++) {
         F32 dx = distributedPoints[i].x - xm;
         F32 dy = distributedPoints[i].y - ym;
@@ -2814,11 +2814,11 @@ vec2 World::getNearestPoint(F32 x, F32 y) {
     return {closest.x + (x - xm), closest.y + (y - ym)};
 }
 
-std::vector<vec2> World::getPointsWithin(F32 x, F32 y, F32 w, F32 h) {
+std::vector<MEvec2> World::getPointsWithin(F32 x, F32 y, F32 w, F32 h) {
     F32 xm = fmod(1 + fmod(x, 1), 1);
     F32 ym = fmod(1 + fmod(y, 1), 1);
 
-    std::vector<vec2> pts;
+    std::vector<MEvec2> pts;
     for (F32 xo = floor(x) - 1; xo < ceil(x + w); xo++) {
         for (F32 yo = floor(y) - 1; yo < ceil(y + h); yo++) {
             for (int i = 0; i < distributedPoints.size(); i++) {
@@ -3151,7 +3151,7 @@ void World::tickEntities(R_Target *t) {
 
         // cur->render(t, loadZone.x, loadZone.y);
 
-        cur->rb->body->SetTransform(vec2(cur->x + loadZone.x + cur->hw / 2 - 0.5, cur->y + loadZone.y + cur->hh / 2 - 1.5), 0);
+        cur->rb->body->SetTransform(MEvec2(cur->x + loadZone.x + cur->hw / 2 - 0.5, cur->y + loadZone.y + cur->hh / 2 - 1.5), 0);
         cur->rb->body->SetLinearVelocity({cur->vx * 25, cur->vy * 25});
 
         return false;
@@ -3383,11 +3383,11 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName, bool noSaveLoad) {
         char *metaFilePath = new char[255];
         snprintf(metaFilePath, 255, "%s/world.json", worldFileName.c_str());
 
-        if (!FUtil_exists(METADOT_RESLOC(metaFilePath))) {
+        if (!ME_fs_exists(METADOT_RESLOC(metaFilePath))) {
             meta.save(worldFileName);
         }
 
-        json metafile = json::parse(metadot_fs_readfilestring(metaFilePath));
+        json metafile = json::parse(ME_fs_readfilestring(metaFilePath));
 
         if (!metafile.empty()) {
 

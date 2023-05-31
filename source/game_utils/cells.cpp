@@ -18,7 +18,7 @@ inline float clampf(float value, float min_inclusive, float max_inclusive) {
     return value < min_inclusive ? min_inclusive : value < max_inclusive ? value : max_inclusive;
 }
 
-inline void normalize_point(float x, float y, vec2* out) {
+inline void normalize_point(float x, float y, MEvec2* out) {
     float n = x * x + y * y;
     // Already normalized.
     if (n == 1.0f) {

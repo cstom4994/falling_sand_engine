@@ -4,10 +4,11 @@
 
 #include "core/cpp/utils.hpp"
 #include "core/math/mathlib.hpp"
+#include "core/utility.hpp"
 
 RNG* RNG_Create() {
     pcg32_random_t rng;
-    pcg32_srandom_r(&rng, metadot_gettime(), 1);
+    pcg32_srandom_r(&rng, ME_gettime(), 1);
     unsigned int seed = pcg32_random_r(&rng);
 
     RNG* sRNG = new RNG;

@@ -9,7 +9,7 @@
 
 engine_render Render;
 
-vec2 MetaEngine::Drawing::rotate_point(float cx, float cy, float angle, vec2 p) {
+MEvec2 MetaEngine::Drawing::rotate_point(float cx, float cy, float angle, MEvec2 p) {
     float s = sin(angle);
     float c = cos(angle);
 
@@ -22,14 +22,14 @@ vec2 MetaEngine::Drawing::rotate_point(float cx, float cy, float angle, vec2 p) 
     float ynew = p.x * s + p.y * c;
 
     // translate point back:
-    return vec2(xnew + cx, ynew + cy);
+    return MEvec2(xnew + cx, ynew + cy);
 }
 
-void MetaEngine::Drawing::drawPolygon(R_Target *target, METAENGINE_Color col, vec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy) {
+void MetaEngine::Drawing::drawPolygon(R_Target *target, METAENGINE_Color col, MEvec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy) {
     if (count < 2) return;
-    vec2 last = rotate_point(cx, cy, angle, verts[count - 1]);
+    MEvec2 last = rotate_point(cx, cy, angle, verts[count - 1]);
     for (int i = 0; i < count; i++) {
-        vec2 rot = rotate_point(cx, cy, angle, verts[i]);
+        MEvec2 rot = rotate_point(cx, cy, angle, verts[i]);
         R_Line(target, x + last.x * scale, y + last.y * scale, x + rot.x * scale, y + rot.y * scale, col);
         last = rot;
     }

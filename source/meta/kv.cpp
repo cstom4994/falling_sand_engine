@@ -99,20 +99,20 @@ void metadot_kv_destroy(METADOT_KeyValue* kv) {
     }
 }
 
-static METADOT_INLINE void s_push_array(METADOT_KeyValue* kv, int in_array) {
+static ME_INLINE void s_push_array(METADOT_KeyValue* kv, int in_array) {
     kv->in_array_stack.add(kv->in_array);
     kv->in_array = in_array;
 }
 
-static METADOT_INLINE void s_pop_array(METADOT_KeyValue* kv) { kv->in_array = kv->in_array_stack.pop(); }
+static ME_INLINE void s_pop_array(METADOT_KeyValue* kv) { kv->in_array = kv->in_array_stack.pop(); }
 
-static METADOT_INLINE void s_push_read_mode_array(METADOT_KeyValue* kv, metadot_kv_val_t* val) {
+static ME_INLINE void s_push_read_mode_array(METADOT_KeyValue* kv, metadot_kv_val_t* val) {
     kv->read_mode_array_stack.add(val);
     kv->read_mode_array_index_stack.add(0);
     kv->read_mode_from_array = val ? 1 : 0;
 }
 
-static METADOT_INLINE void s_pop_read_mode_array(METADOT_KeyValue* kv) {
+static ME_INLINE void s_pop_read_mode_array(METADOT_KeyValue* kv) {
     kv->read_mode_array_stack.pop();
     kv->read_mode_array_index_stack.pop();
     if (kv->read_mode_array_stack.count()) {
@@ -122,18 +122,18 @@ static METADOT_INLINE void s_pop_read_mode_array(METADOT_KeyValue* kv) {
     }
 }
 
-static METADOT_INLINE int s_isspace(uint8_t c) { return (c == ' ') | (c == '\t') | (c == '\n') | (c == '\v') | (c == '\f') | (c == '\r'); }
+static ME_INLINE int s_isspace(uint8_t c) { return (c == ' ') | (c == '\t') | (c == '\n') | (c == '\v') | (c == '\f') | (c == '\r'); }
 
-static METADOT_INLINE void s_skip_white(METADOT_KeyValue* kv) {
+static ME_INLINE void s_skip_white(METADOT_KeyValue* kv) {
     while (kv->in < kv->in_end && s_isspace(*kv->in)) kv->in++;
 }
 
-static METADOT_INLINE uint8_t s_peek(METADOT_KeyValue* kv) {
+static ME_INLINE uint8_t s_peek(METADOT_KeyValue* kv) {
     while (kv->in < kv->in_end && s_isspace(*kv->in)) kv->in++;
     return kv->in < kv->in_end ? *kv->in : 0;
 }
 
-static METADOT_INLINE uint8_t s_next(METADOT_KeyValue* kv) {
+static ME_INLINE uint8_t s_next(METADOT_KeyValue* kv) {
     uint8_t c;
     if (kv->in == kv->in_end) return 0;
     while (s_isspace(c = *kv->in++))
@@ -141,7 +141,7 @@ static METADOT_INLINE uint8_t s_next(METADOT_KeyValue* kv) {
     return c;
 }
 
-static METADOT_INLINE int s_try(METADOT_KeyValue* kv, uint8_t expect) {
+static ME_INLINE int s_try(METADOT_KeyValue* kv, uint8_t expect) {
     if (kv->in == kv->in_end) return 0;
     if (s_peek(kv) == expect) {
         kv->in++;
@@ -196,7 +196,7 @@ static METAENGINE_Result s_scan_string(METADOT_KeyValue* kv, metadot_kv_string_t
     return err;
 }
 
-static METADOT_INLINE METAENGINE_Result s_parse_int(METADOT_KeyValue* kv, int64_t* out) {
+static ME_INLINE METAENGINE_Result s_parse_int(METADOT_KeyValue* kv, int64_t* out) {
     uint8_t* end;
     int64_t val = METAENGINE_STRTOLL((char*)kv->in, (char**)&end, 10);
     if (kv->in == end) {
@@ -208,7 +208,7 @@ static METADOT_INLINE METAENGINE_Result s_parse_int(METADOT_KeyValue* kv, int64_
     return metadot_result_success();
 }
 
-static METADOT_INLINE METAENGINE_Result s_parse_float(METADOT_KeyValue* kv, double* out) {
+static ME_INLINE METAENGINE_Result s_parse_float(METADOT_KeyValue* kv, double* out) {
     uint8_t* end;
     double val = METAENGINE_STRTOD((char*)kv->in, (char**)&end);
     if (kv->in == end) {
@@ -238,7 +238,7 @@ static METAENGINE_Result s_parse_hex(METADOT_KeyValue* kv, uint64_t* hex) {
     return metadot_result_success();
 }
 
-static METADOT_INLINE METAENGINE_Result s_parse_number(METADOT_KeyValue* kv, metadot_kv_val_t* val) {
+static ME_INLINE METAENGINE_Result s_parse_number(METADOT_KeyValue* kv, metadot_kv_val_t* val) {
     METAENGINE_Result err;
     if (kv->in + 1 < kv->in_end && ((kv->in[1] == 'x') | (kv->in[1] == 'X'))) {
         uint64_t hex;
@@ -479,9 +479,9 @@ METAENGINE_Result metadot_kv_last_error(METADOT_KeyValue* kv) {
     return kv->last_err;
 }
 
-static METADOT_INLINE void s_write_u8(METADOT_KeyValue* kv, uint8_t val) { kv->write_buffer.add(val); }
+static ME_INLINE void s_write_u8(METADOT_KeyValue* kv, uint8_t val) { kv->write_buffer.add(val); }
 
-static METADOT_INLINE void s_try_consume_one_tab(METADOT_KeyValue* kv) {
+static ME_INLINE void s_try_consume_one_tab(METADOT_KeyValue* kv) {
     METADOT_ASSERT_E(kv->mode == METADOT_KV_STATE_WRITE);
     char last = kv->write_buffer.last();
     if (last == '\t') {
@@ -489,36 +489,36 @@ static METADOT_INLINE void s_try_consume_one_tab(METADOT_KeyValue* kv) {
     }
 }
 
-static METADOT_INLINE void s_try_consume_whitespace(METADOT_KeyValue* kv) {
+static ME_INLINE void s_try_consume_whitespace(METADOT_KeyValue* kv) {
     METADOT_ASSERT_E(kv->mode == METADOT_KV_STATE_WRITE);
     while (kv->write_buffer.size() && s_isspace(kv->write_buffer.last())) {
         kv->write_buffer.pop();
     }
 }
 
-static METADOT_INLINE void s_tabs_delta(METADOT_KeyValue* kv, int delta) { kv->tabs += delta; }
+static ME_INLINE void s_tabs_delta(METADOT_KeyValue* kv, int delta) { kv->tabs += delta; }
 
-static METADOT_INLINE void s_tabs(METADOT_KeyValue* kv) {
+static ME_INLINE void s_tabs(METADOT_KeyValue* kv) {
     int tabs = kv->tabs;
     for (int i = 0; i < tabs; ++i) {
         s_write_u8(kv, '\t');
     }
 }
 
-static METADOT_INLINE void s_write_str_no_quotes(METADOT_KeyValue* kv, const char* str, size_t len) {
+static ME_INLINE void s_write_str_no_quotes(METADOT_KeyValue* kv, const char* str, size_t len) {
     kv->write_buffer.fit((int)(kv->write_buffer.count() + len));
     kv->write_buffer.append(str, str + len);
 }
 
-static METADOT_INLINE void s_write_str(METADOT_KeyValue* kv, const char* str, size_t len) {
+static ME_INLINE void s_write_str(METADOT_KeyValue* kv, const char* str, size_t len) {
     s_write_u8(kv, '"');
     s_write_str_no_quotes(kv, str, len);
     s_write_u8(kv, '"');
 }
 
-static METADOT_INLINE void s_write_str(METADOT_KeyValue* kv, const char* str) { s_write_str(kv, str, (int)METAENGINE_STRLEN(str)); }
+static ME_INLINE void s_write_str(METADOT_KeyValue* kv, const char* str) { s_write_str(kv, str, (int)METAENGINE_STRLEN(str)); }
 
-static METADOT_INLINE metadot_kv_field_t* s_find_field(metadot_kv_object_t* object, const char* key) {
+static ME_INLINE metadot_kv_field_t* s_find_field(metadot_kv_object_t* object, const char* key) {
     size_t len = METAENGINE_STRLEN(key);
     int count = object->fields.count();
     for (int i = 0; i < count; ++i) {
@@ -557,7 +557,7 @@ static void s_match_key(METADOT_KeyValue* kv, const char* key) {
 }
 
 static void s_write_key(METADOT_KeyValue* kv, const char* key, METADOT_KeyValueType* type) {
-    METADOT_UNUSED(type);
+    ME_UNUSED(type);
     s_write_str_no_quotes(kv, key, (int)METAENGINE_STRLEN(key));
     s_write_str_no_quotes(kv, " = ", 3);
 }
@@ -599,7 +599,7 @@ static void s_write(METADOT_KeyValue* kv, float val) { kv->write_buffer.fmt_appe
 
 static void s_write(METADOT_KeyValue* kv, double val) { kv->write_buffer.fmt_append("%f", val); }
 
-static METADOT_INLINE void s_begin_val(METADOT_KeyValue* kv) {
+static ME_INLINE void s_begin_val(METADOT_KeyValue* kv) {
     if (kv->in_array) {
         if (kv->in_array == METADOT_KV_IN_ARRAY_AND_FIRST_ELEMENT) {
             kv->in_array = METADOT_KV_IN_ARRAY;
@@ -609,7 +609,7 @@ static METADOT_INLINE void s_begin_val(METADOT_KeyValue* kv) {
     }
 }
 
-static METADOT_INLINE void s_end_val(METADOT_KeyValue* kv) {
+static ME_INLINE void s_end_val(METADOT_KeyValue* kv) {
     s_write_u8(kv, ',');
     if (!kv->in_array) {
         s_write_u8(kv, '\n');
@@ -617,7 +617,7 @@ static METADOT_INLINE void s_end_val(METADOT_KeyValue* kv) {
     }
 }
 
-static METADOT_INLINE metadot_kv_val_t* s_pop_val(METADOT_KeyValue* kv, METADOT_KeyValueType type, bool pop_val = true) {
+static ME_INLINE metadot_kv_val_t* s_pop_val(METADOT_KeyValue* kv, METADOT_KeyValueType type, bool pop_val = true) {
     if (kv->read_mode_from_array) {
         metadot_kv_val_t* array_val = kv->read_mode_array_stack.last();
         int& index = kv->read_mode_array_index_stack.last();

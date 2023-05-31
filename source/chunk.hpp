@@ -11,10 +11,10 @@
 #include "core/const.h"
 #include "core/core.h"
 #include "core/cpp/property.hpp"
-#include "core/cpp/static_relfection.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
 #include "meta/meta.hpp"
+#include "meta/static_relfection.hpp"
 #include "reflectionflat.hpp"
 
 #define CHUNK_DATABASE_FORMAT "ssiiiiiiiBB"
@@ -25,7 +25,7 @@ typedef struct {
     I32 temperature;
 } MaterialInstanceData;
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<MaterialInstanceData> : TypeInfoBase<MaterialInstanceData> {
+struct ME::meta::static_refl::TypeInfo<MaterialInstanceData> : TypeInfoBase<MaterialInstanceData> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("index"), &Type::index},
@@ -58,7 +58,7 @@ typedef struct Chunk {
 } Chunk;
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
+struct ME::meta::static_refl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("pack_filename"), &Type::pack_filename},
@@ -78,7 +78,7 @@ struct MetaEngine::StaticRefl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
     };
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template<>, b2PolygonShape)
+METAENGINE_GUI_DEFINE_BEGIN(template <>, b2PolygonShape)
 ImGui::Auto("b2PolygonShape");
 METAENGINE_GUI_DEFINE_END
 

@@ -5,7 +5,7 @@
 #include <functional>
 #include <sstream>
 
-#include "core/macros.h"
+#include "core/macros.hpp"
 
 namespace MetaEngine {
 

@@ -1,7 +1,7 @@
 
 #include "sound.h"
 
-#include "core/macros.h"
+#include "core/macros.hpp"
 
 #undef STB_VORBIS_HEADER_ONLY
 #include "libs/external/stb_vorbis.c"

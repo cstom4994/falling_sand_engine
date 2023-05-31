@@ -12,7 +12,8 @@
 #include "core/debug.hpp"
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
-#include "core/macros.h"
+#include "core/macros.hpp"
+#include "core/utility.hpp"
 #include "cvar.hpp"
 #include "game.hpp"
 #include "game_resources.hpp"
@@ -265,7 +266,7 @@ void InitMaterials() {
     REGISTER(MaterialsList::ScriptableMaterials[1003]);
 
     // Just test
-    // MetaEngine::StaticRefl::TypeInfo<Material>::fields.ForEach([](const auto &field) { METADOT_DBG(field.name); });
+    // ME::meta::static_refl::TypeInfo<Material>::fields.ForEach([](const auto &field) { METADOT_DBG(field.name); });
 }
 
 void RegisterMaterial(int s_id, std::string name, std::string index_name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color) {
@@ -739,143 +740,143 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 
 // std::vector<PlacedStructure> Populator::apply(MaterialInstance* tiles, Chunk ch, World world){
 
-// 	for (int x = 0; x < CHUNK_W; x++) {
-// 		for (int y = 0; y < CHUNK_H; y++) {
-// 			int px = x + ch.x * CHUNK_W;
-// 			int py = y + ch.y * CHUNK_H;
-// 			if (tiles[x + y * CHUNK_W].mat.physicsType == PhysicsType::SOLID && tiles[x + y * CHUNK_W].mat.id != Materials::CLOUD.id) {
-// 				F64 n = world.perlin.noise(px / 64.0, py / 64.0, 3802);
-// 				F64 n2 = world.perlin.noise(px / 150.0, py / 150.0, 6213);
-// 				F64 ndetail = world.perlin.noise(px / 16.0, py / 16.0, 5319) * 0.1;
-// 				if (n2 + n + ndetail < std::fmin(0.95, (py) / 1000.0)) {
-// 					F64 nlav = world.perlin.noise(px / 250.0, py / 250.0, 7018);
-// 					if (nlav > 0.7) {
-// 						tiles[x + y * CHUNK_W] = rand() % 3 == 0 ? (ch.y > 5 ? TilesCreateLava() : TilesCreateWater()) : Tiles_NOTHING;
-// 					}
-// 					else {
-// 						tiles[x + y * CHUNK_W] = Tiles_NOTHING;
-// 					}
-// 				}
-// 				else {
-// 					F64 n3 = world.perlin.noise(px / 64.0, py / 64.0, 9828);
-// 					if (n3 - 0.25 > py / 1000.0) {
-// 						tiles[x + y * CHUNK_W] = Tiles_NOTHING;
-// 					}
-// 				}
-// 			}
+//  for (int x = 0; x < CHUNK_W; x++) {
+//      for (int y = 0; y < CHUNK_H; y++) {
+//          int px = x + ch.x * CHUNK_W;
+//          int py = y + ch.y * CHUNK_H;
+//          if (tiles[x + y * CHUNK_W].mat.physicsType == PhysicsType::SOLID && tiles[x + y * CHUNK_W].mat.id != Materials::CLOUD.id) {
+//              F64 n = world.perlin.noise(px / 64.0, py / 64.0, 3802);
+//              F64 n2 = world.perlin.noise(px / 150.0, py / 150.0, 6213);
+//              F64 ndetail = world.perlin.noise(px / 16.0, py / 16.0, 5319) * 0.1;
+//              if (n2 + n + ndetail < std::fmin(0.95, (py) / 1000.0)) {
+//                  F64 nlav = world.perlin.noise(px / 250.0, py / 250.0, 7018);
+//                  if (nlav > 0.7) {
+//                      tiles[x + y * CHUNK_W] = rand() % 3 == 0 ? (ch.y > 5 ? TilesCreateLava() : TilesCreateWater()) : Tiles_NOTHING;
+//                  }
+//                  else {
+//                      tiles[x + y * CHUNK_W] = Tiles_NOTHING;
+//                  }
+//              }
+//              else {
+//                  F64 n3 = world.perlin.noise(px / 64.0, py / 64.0, 9828);
+//                  if (n3 - 0.25 > py / 1000.0) {
+//                      tiles[x + y * CHUNK_W] = Tiles_NOTHING;
+//                  }
+//              }
+//          }
 
-// 			if (tiles[x + y * CHUNK_W].mat.id == Materials::SMOOTH_STONE.id) {
-// 				F64 n = world.perlin.noise(px / 48.0, py / 48.0, 5124);
-// 				if (n < 0.25) tiles[x + y * CHUNK_W] = TilesCreateIron(px, py);
-// 			}
+//          if (tiles[x + y * CHUNK_W].mat.id == Materials::SMOOTH_STONE.id) {
+//              F64 n = world.perlin.noise(px / 48.0, py / 48.0, 5124);
+//              if (n < 0.25) tiles[x + y * CHUNK_W] = TilesCreateIron(px, py);
+//          }
 
-// 			if (tiles[x + y * CHUNK_W].mat.id == Materials::SMOOTH_STONE.id) {
-// 				F64 n = world.perlin.noise(px / 32.0, py / 32.0, 7513);
-// 				if (n < 0.20) tiles[x + y * CHUNK_W] = TilesCreateGold(px, py);
-// 			}
+//          if (tiles[x + y * CHUNK_W].mat.id == Materials::SMOOTH_STONE.id) {
+//              F64 n = world.perlin.noise(px / 32.0, py / 32.0, 7513);
+//              if (n < 0.20) tiles[x + y * CHUNK_W] = TilesCreateGold(px, py);
+//          }
 
-// 			MaterialInstance prop = tiles[x + y * CHUNK_W];
-// 			if (prop.mat.id == Materials::SMOOTH_STONE.id) {
-// 				int dist = 6 + world.perlin.noise(px / 10.0, py / 10.0, 3323) * 5 + 5;
-// 				for (int dx = -dist; dx <= dist; dx++) {
-// 					for (int dy = -dist; dy <= dist; dy++) {
-// 						if (x + dx >= 0 && x + dx < CHUNK_W && y + dy >= 0 && y + dy < CHUNK_H) {
-// 							if (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::AIR || (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::SAND && tiles[(x + dx)
+//          MaterialInstance prop = tiles[x + y * CHUNK_W];
+//          if (prop.mat.id == Materials::SMOOTH_STONE.id) {
+//              int dist = 6 + world.perlin.noise(px / 10.0, py / 10.0, 3323) * 5 + 5;
+//              for (int dx = -dist; dx <= dist; dx++) {
+//                  for (int dy = -dist; dy <= dist; dy++) {
+//                      if (x + dx >= 0 && x + dx < CHUNK_W && y + dy >= 0 && y + dy < CHUNK_H) {
+//                          if (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::AIR || (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::SAND && tiles[(x + dx)
 // + (y
 // + dy)
-// * CHUNK_W].mat.id != Materials::SOFT_DIRT.id)) { 								tiles[x + y * CHUNK_W] = TilesCreateCobbleStone(px, py); 								goto nextTile;
-// 							}
-// 						}
-// 					}
-// 				}
-// 			}
-// 			else if (prop.mat.id == Materials::SMOOTH_DIRT.id) {
-// 				int dist = 6 + world.perlin.noise(px / 10.0, py / 10.0, 3323) * 5 + 5;
-// 				for (int dx = -dist; dx <= dist; dx++) {
-// 					for (int dy = -dist; dy <= dist; dy++) {
-// 						if (x + dx >= 0 && x + dx < CHUNK_W && y + dy >= 0 && y + dy < CHUNK_H) {
-// 							if (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::AIR || (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::SAND && tiles[(x + dx)
+// * CHUNK_W].mat.id != Materials::SOFT_DIRT.id)) {                                 tiles[x + y * CHUNK_W] = TilesCreateCobbleStone(px, py);                                goto nextTile;
+//                          }
+//                      }
+//                  }
+//              }
+//          }
+//          else if (prop.mat.id == Materials::SMOOTH_DIRT.id) {
+//              int dist = 6 + world.perlin.noise(px / 10.0, py / 10.0, 3323) * 5 + 5;
+//              for (int dx = -dist; dx <= dist; dx++) {
+//                  for (int dy = -dist; dy <= dist; dy++) {
+//                      if (x + dx >= 0 && x + dx < CHUNK_W && y + dy >= 0 && y + dy < CHUNK_H) {
+//                          if (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::AIR || (tiles[(x + dx) + (y + dy) * CHUNK_W].mat.physicsType == PhysicsType::SAND && tiles[(x + dx)
 // + (y
 // + dy)
-// * CHUNK_W].mat.id != Materials::SOFT_DIRT.id)) { 								tiles[x + y * CHUNK_W] = TilesCreateCobbleDirt(px, py); 								goto nextTile;
-// 							}
-// 						}
-// 					}
-// 				}
-// 			}
+// * CHUNK_W].mat.id != Materials::SOFT_DIRT.id)) {                                 tiles[x + y * CHUNK_W] = TilesCreateCobbleDirt(px, py);                                 goto nextTile;
+//                          }
+//                      }
+//                  }
+//              }
+//          }
 
-// 		nextTile: {}
+//      nextTile: {}
 
-// 		}
-// 	}
+//      }
+//  }
 
-// 	std::vector<PlacedStructure> structs;
-// 	//if (ch.x % 2 == 0) {
-// 	//	TileProperties* str = new TileProperties[100 * 50];
-// 	//	for (int x = 0; x < 20; x++) {
-// 	//		for (int y = 0; y < 8; y++) {
-// 	//			str[x + y * 20] = Tiles_TEST_SOLID;
-// 	//		}
-// 	//	}
-// 	//	PlacedStructure* ps = new PlacedStructure(Structure(20, 8, str), ch.x * CHUNK_W - 10, ch.y * CHUNK_H - 4);
-// 	//	//world.addCell(new Cell(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
-// 	//	structs.push_back(*ps);
-// 	//	//std::cout << "placestruct " << world.structures.size() << std::endl;
-// 	//}
+//  std::vector<PlacedStructure> structs;
+//  //if (ch.x % 2 == 0) {
+//  //  TileProperties* str = new TileProperties[100 * 50];
+//  //  for (int x = 0; x < 20; x++) {
+//  //      for (int y = 0; y < 8; y++) {
+//  //          str[x + y * 20] = Tiles_TEST_SOLID;
+//  //      }
+//  //  }
+//  //  PlacedStructure* ps = new PlacedStructure(Structure(20, 8, str), ch.x * CHUNK_W - 10, ch.y * CHUNK_H - 4);
+//  //  //world.addCell(new Cell(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
+//  //  structs.push_back(*ps);
+//  //  //std::cout << "placestruct " << world.structures.size() << std::endl;
+//  //}
 
-// 	//if (ch.x % 2 == 0) {
-// 	//	TileProperties* str = new TileProperties[100 * 50];
-// 	//	for (int x = 0; x < 100; x++) {
-// 	//		for (int y = 0; y < 50; y++) {
-// 	//			if (x == 0 || x == 99 || y == 0 || y == 49) {
-// 	//				str[x + y * 100] = Tiles_TEST_SOLID;
-// 	//			}else {
-// 	//				str[x + y * 100] = Tiles_NOTHING;
-// 	//			}
-// 	//		}
-// 	//	}
-// 	//	PlacedStructure* ps = new PlacedStructure(Structure(100, 50, str), ch.x * CHUNK_W - 50, ch.y * CHUNK_H - 25);
-// 	//	//world.addCell(new Cell(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
-// 	//	structs.push_back(*ps);
-// 	//	//std::cout << "placestruct " << world.structures.size() << std::endl;
-// 	//}
+//  //if (ch.x % 2 == 0) {
+//  //  TileProperties* str = new TileProperties[100 * 50];
+//  //  for (int x = 0; x < 100; x++) {
+//  //      for (int y = 0; y < 50; y++) {
+//  //          if (x == 0 || x == 99 || y == 0 || y == 49) {
+//  //              str[x + y * 100] = Tiles_TEST_SOLID;
+//  //          }else {
+//  //              str[x + y * 100] = Tiles_NOTHING;
+//  //          }
+//  //      }
+//  //  }
+//  //  PlacedStructure* ps = new PlacedStructure(Structure(100, 50, str), ch.x * CHUNK_W - 50, ch.y * CHUNK_H - 25);
+//  //  //world.addCell(new Cell(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
+//  //  structs.push_back(*ps);
+//  //  //std::cout << "placestruct " << world.structures.size() << std::endl;
+//  //}
 
-// 	if (ch.y < 2 && rand() % 2 == 0) {
-// 		//TileProperties* str = new TileProperties[100 * 50];
-// 		int posX = ch.x * CHUNK_W + (rand() % CHUNK_W);
-// 		int posY = ch.y * CHUNK_H + (rand() % CHUNK_H);
-// 		/*for (int x = 0; x < 100; x++) {
-// 			for (int y = 0; y < 50; y++) {
-// 				str[x + y * 100] = TilesCreateCloud(x + posX + ch.x * CHUNK_W, y + posY + ch.y * CHUNK_H);
-// 			}
-// 		}*/
-// 		std::string m = "data/assets/objects/cloud_";
-// 		m.append(std::to_string(rand() % 11));
-// 		m.append(".png");
-// 		Structure st = Structure(LoadTexture(m, SDL_PIXELFORMAT_ARGB8888), Materials::CLOUD);
-// 		PlacedStructure* ps = new PlacedStructure(st, posX, posY);
-// 		//world.addCell(new Cell(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
-// 		structs.push_back(*ps);
-// 		//std::cout << "placestruct " << world.structures.size() << std::endl;
-// 	}
+//  if (ch.y < 2 && rand() % 2 == 0) {
+//      //TileProperties* str = new TileProperties[100 * 50];
+//      int posX = ch.x * CHUNK_W + (rand() % CHUNK_W);
+//      int posY = ch.y * CHUNK_H + (rand() % CHUNK_H);
+//      /*for (int x = 0; x < 100; x++) {
+//          for (int y = 0; y < 50; y++) {
+//              str[x + y * 100] = TilesCreateCloud(x + posX + ch.x * CHUNK_W, y + posY + ch.y * CHUNK_H);
+//          }
+//      }*/
+//      std::string m = "data/assets/objects/cloud_";
+//      m.append(std::to_string(rand() % 11));
+//      m.append(".png");
+//      Structure st = Structure(LoadTexture(m, SDL_PIXELFORMAT_ARGB8888), Materials::CLOUD);
+//      PlacedStructure* ps = new PlacedStructure(st, posX, posY);
+//      //world.addCell(new Cell(Tiles_TEST_SAND, ch.x * CHUNK_W, ch.y * CHUNK_H, 0, 0, 0, 1));
+//      structs.push_back(*ps);
+//      //std::cout << "placestruct " << world.structures.size() << std::endl;
+//  }
 
-// 	F32 treePointsScale = 2000;
-// 	std::vector<b2Vec2> treePts = world.getPointsWithin((ch.x - 1) * CHUNK_W / treePointsScale, (ch.y - 1) * CHUNK_H / treePointsScale, CHUNK_W * 3 / treePointsScale, CHUNK_H * 3 /
-// treePointsScale); 	Structure tree = Structures::makeTree1(world, ch.x * CHUNK_W, ch.y * CHUNK_H); 	std::cout << treePts.size() << std::endl; 	for (int i = 0; i < treePts.size(); i++) { 		int
-// px = treePts[i].x * treePointsScale - ch.x * CHUNK_W; 		int py = treePts[i].y * treePointsScale - ch.y * CHUNK_H;
+//  F32 treePointsScale = 2000;
+//  std::vector<b2Vec2> treePts = world.getPointsWithin((ch.x - 1) * CHUNK_W / treePointsScale, (ch.y - 1) * CHUNK_H / treePointsScale, CHUNK_W * 3 / treePointsScale, CHUNK_H * 3 /
+// treePointsScale);    Structure tree = Structures::makeTree1(world, ch.x * CHUNK_W, ch.y * CHUNK_H);  std::cout << treePts.size() << std::endl;   for (int i = 0; i < treePts.size(); i++) {      int
+// px = treePts[i].x * treePointsScale - ch.x * CHUNK_W;        int py = treePts[i].y * treePointsScale - ch.y * CHUNK_H;
 
-// 		for (int xx = 0; xx < tree.w; xx++) {
-// 			for (int yy = 0; yy < tree.h; yy++) {
-// 				if (px + xx >= 0 && px + xx < CHUNK_W && py + yy >= 0 && py + yy < CHUNK_H) {
-// 					if (tree.tiles[xx + yy * tree.w].mat.physicsType != PhysicsType::AIR) {
-// 						tiles[(px + xx) + (py + yy) * CHUNK_W] = tree.tiles[xx + yy * tree.w];
-// 					}
-// 				}
-// 			}
-// 		}
-// 	}
+//      for (int xx = 0; xx < tree.w; xx++) {
+//          for (int yy = 0; yy < tree.h; yy++) {
+//              if (px + xx >= 0 && px + xx < CHUNK_W && py + yy >= 0 && py + yy < CHUNK_H) {
+//                  if (tree.tiles[xx + yy * tree.w].mat.physicsType != PhysicsType::AIR) {
+//                      tiles[(px + xx) + (py + yy) * CHUNK_W] = tree.tiles[xx + yy * tree.w];
+//                  }
+//              }
+//          }
+//      }
+//  }
 
-// 	return structs;
+//  return structs;
 // }
 
 std::vector<PlacedStructure> TestPhase1Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
@@ -1189,7 +1190,7 @@ void Player::renderLQ(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
     R_Rectangle(target, we->x + ofsX, we->y + ofsY, we->x + ofsX + we->hw, we->y + ofsY + we->hh, {0xff, 0xff, 0xff, 0xff});
 }
 
-vec2 rotate_point2(F32 cx, F32 cy, F32 angle, vec2 p);
+MEvec2 rotate_point2(F32 cx, F32 cy, F32 angle, MEvec2 p);
 
 void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
     RigidBody *r;
@@ -1199,7 +1200,7 @@ void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
 
         F32 angle = holdAngle;
 
-        vec2 pt = rotate_point2(0, 0, angle * 3.1415 / 180.0, {(F32)(heldItem->surface->w / 2.0), (F32)(heldItem->surface->h / 2.0)});
+        MEvec2 pt = rotate_point2(0, 0, angle * 3.1415 / 180.0, {(F32)(heldItem->surface->w / 2.0), (F32)(heldItem->surface->h / 2.0)});
 
         r = world->makeRigidBody(b2_dynamicBody, we->x + we->hw / 2 + world->loadZone.x - pt.x + 16 * cos((holdAngle + 180) * 3.1415f / 180.0f),
                                  we->y + we->hh / 2 + world->loadZone.y - pt.y + 16 * sin((holdAngle + 180) * 3.1415f / 180.0f), angle, ps, 1, 0.3, heldItem->surface);
@@ -1210,7 +1211,7 @@ void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
         // 270 -> -w/2  h/2
 
         F32 strength = 10;
-        int time = metadot_gettime() - startThrow;
+        int time = ME_gettime() - startThrow;
 
         if (time > 1000) time = 1000;
 
@@ -1237,7 +1238,7 @@ Player::~Player() {
     if (heldItem) delete heldItem;
 }
 
-vec2 rotate_point2(F32 cx, F32 cy, F32 angle, vec2 p) {
+MEvec2 rotate_point2(F32 cx, F32 cy, F32 angle, MEvec2 p) {
     F32 s = sin(angle);
     F32 c = cos(angle);
 
@@ -1250,7 +1251,7 @@ vec2 rotate_point2(F32 cx, F32 cy, F32 angle, vec2 p) {
     F32 yn = p.x * s + p.y * c;
 
     // translate back
-    return vec2(xn + cx, yn + cy);
+    return MEvec2(xn + cx, yn + cy);
 }
 
 void ControableSystem::process(MetaEngine::ECS::registry &world, const move_player_event &evt) {

@@ -2,7 +2,7 @@
 #include "renderer_opengl.h"
 
 #include "core/const.h"
-#include "core/macros.h"
+#include "core/macros.hpp"
 #include "core/sdl_wrapper.h"
 #include "libs/external/stb_image.h"
 #include "libs/glad/glad.h"

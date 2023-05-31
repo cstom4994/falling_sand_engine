@@ -3,7 +3,7 @@
 #ifndef _METADOT_CONST_H_
 #define _METADOT_CONST_H_
 
-#include "core/macros.h"
+#include "core/macros.hpp"
 
 static const int WINDOWS_MAX_WIDTH = 1920;
 static const int WINDOWS_MAX_HEIGHT = 1080;
@@ -33,8 +33,6 @@ static const float FLUID_FlowSpeed = 1.0f;
 
 #define TraceTimeNum 60
 
-static const double PI = 3.14159265358979323846;
-
 static const int GameTick = 4;
 
 #define METADOT_NAME "MetaDot"
@@ -57,7 +55,7 @@ static const char *VERSION_COMPATIBILITY[] = {METADOT_VERSION_TEXT, "0.0.1", 0};
 
 static const char *engine_funcs_name_gpu = "_metadot_gpu";
 static const char *engine_funcs_name_fs = "_metadot_fs";
-static const char *engine_funcs_name_fs_internal = "_metadot_fs_m";
+static const char *engine_funcs_name_fs_internal = "_ME_fs_m";
 static const char *engine_funcs_name_image = "_metadot_image";
 static const char *engine_funcs_name_image_internal = "_metadot_image_m";
 static const char *engine_funcs_name_lz4 = "_metadot_lz4";

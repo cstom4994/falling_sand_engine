@@ -1262,7 +1262,7 @@ void METADOT_CDECL metadot_sinuke_intern_table();
 
 namespace MetaEngine {
 
-METADOT_INLINE uint64_t constexpr fnv1a(const void* data, int size) {
+ME_INLINE uint64_t constexpr fnv1a(const void* data, int size) {
     const char* s = (const char*)data;
     uint64_t h = 14695981039346656037ULL;
     char c = 0;
@@ -1280,23 +1280,23 @@ METADOT_INLINE uint64_t constexpr fnv1a(const void* data, int size) {
  * The buffer starts out statically allocated, and grows onto the heap as necessary.
  */
 struct String {
-    METADOT_INLINE String() { s_static(); }
-    METADOT_INLINE String(const char* s) {
+    ME_INLINE String() { s_static(); }
+    ME_INLINE String(const char* s) {
         s_static();
         sset(m_str, s);
     }
-    METADOT_INLINE String(const char* start, const char* end) {
+    ME_INLINE String(const char* start, const char* end) {
         s_static();
         int length = (int)(end - start);
         sfit(m_str, length);
         METAENGINE_STRNCPY(m_str, start, length);
         METAENGINE_AHDR(m_str)->size = length + 1;
     }
-    METADOT_INLINE String(const String& s) {
+    ME_INLINE String(const String& s) {
         s_static();
         sset(m_str, s);
     }
-    METADOT_INLINE String(String&& s) {
+    ME_INLINE String(String&& s) {
         if (METAENGINE_AHDR(s.m_str)->is_static) {
             s_static();
             sset(m_str, s);
@@ -1305,184 +1305,184 @@ struct String {
         }
         s.m_str = NULL;
     }
-    METADOT_INLINE ~String() { sfree(m_str); }
+    ME_INLINE ~String() { sfree(m_str); }
 
-    METADOT_INLINE static String steal_from(char* cute_c_api_string) {
+    ME_INLINE static String steal_from(char* cute_c_api_string) {
         METAENGINE_ACANARY(cute_c_api_string);
         String r;
         r.m_str = cute_c_api_string;
         return r;
     }
-    METADOT_INLINE static String from(int i) {
+    ME_INLINE static String from(int i) {
         String r;
         sint(r.m_str, i);
         return r;
     }
-    METADOT_INLINE static String from(uint64_t uint) {
+    ME_INLINE static String from(uint64_t uint) {
         String r;
         suint(r.m_str, uint);
         return r;
     }
-    METADOT_INLINE static String from(float f) {
+    ME_INLINE static String from(float f) {
         String r;
         sfloat(r.m_str, f);
         return r;
     }
-    METADOT_INLINE static String from(double f) {
+    ME_INLINE static String from(double f) {
         String r;
         sfloat(r.m_str, f);
         return r;
     }
-    METADOT_INLINE static String from_hex(uint64_t uint) {
+    ME_INLINE static String from_hex(uint64_t uint) {
         String r;
         shex(r.m_str, uint);
         return r;
     }
-    METADOT_INLINE static String from(bool b) {
+    ME_INLINE static String from(bool b) {
         String r;
         sbool(r.m_str, b);
         return r;
     }
 
-    METADOT_INLINE int to_int() const { return stoint(m_str); }
-    METADOT_INLINE uint64_t to_uint() const { return stouint(m_str); }
-    METADOT_INLINE float to_float() const { return stofloat(m_str); }
-    METADOT_INLINE double to_double() const { return stodouble(m_str); }
-    METADOT_INLINE uint64_t to_hex() const { return stohex(m_str); }
-    METADOT_INLINE bool to_bool() const { return stobool(m_str); }
+    ME_INLINE int to_int() const { return stoint(m_str); }
+    ME_INLINE uint64_t to_uint() const { return stouint(m_str); }
+    ME_INLINE float to_float() const { return stofloat(m_str); }
+    ME_INLINE double to_double() const { return stodouble(m_str); }
+    ME_INLINE uint64_t to_hex() const { return stohex(m_str); }
+    ME_INLINE bool to_bool() const { return stobool(m_str); }
 
-    METADOT_INLINE const char* c_str() const { return m_str; }
-    METADOT_INLINE char* c_str() { return m_str; }
-    METADOT_INLINE const char* begin() const { return m_str; }
-    METADOT_INLINE char* begin() { return m_str; }
-    METADOT_INLINE const char* end() const { return m_str + string_size(m_str); }
-    METADOT_INLINE char* end() { return m_str + string_size(m_str); }
-    METADOT_INLINE char last() const { return slast(m_str); }
-    METADOT_INLINE operator const char*() const { return m_str; }
-    METADOT_INLINE operator char*() const { return m_str; }
+    ME_INLINE const char* c_str() const { return m_str; }
+    ME_INLINE char* c_str() { return m_str; }
+    ME_INLINE const char* begin() const { return m_str; }
+    ME_INLINE char* begin() { return m_str; }
+    ME_INLINE const char* end() const { return m_str + string_size(m_str); }
+    ME_INLINE char* end() { return m_str + string_size(m_str); }
+    ME_INLINE char last() const { return slast(m_str); }
+    ME_INLINE operator const char*() const { return m_str; }
+    ME_INLINE operator char*() const { return m_str; }
 
-    METADOT_INLINE char& operator[](int index) {
+    ME_INLINE char& operator[](int index) {
         s_chki(index);
         return m_str[index];
     }
-    METADOT_INLINE const char& operator[](int index) const {
+    ME_INLINE const char& operator[](int index) const {
         s_chki(index);
         return m_str[index];
     }
 
-    METADOT_INLINE int len() const { return slen(m_str); }
-    METADOT_INLINE int capacity() const { return scap(m_str); }
-    METADOT_INLINE int size() const { return string_size(m_str); }
-    METADOT_INLINE int count() const { return string_size(m_str); }
-    METADOT_INLINE void ensure_capacity(int capacity) { sfit(m_str, capacity); }
-    METADOT_INLINE void fit(int capacity) { sfit(m_str, capacity); }
-    METADOT_INLINE void set_len(int len) {
+    ME_INLINE int len() const { return slen(m_str); }
+    ME_INLINE int capacity() const { return scap(m_str); }
+    ME_INLINE int size() const { return string_size(m_str); }
+    ME_INLINE int count() const { return string_size(m_str); }
+    ME_INLINE void ensure_capacity(int capacity) { sfit(m_str, capacity); }
+    ME_INLINE void fit(int capacity) { sfit(m_str, capacity); }
+    ME_INLINE void set_len(int len) {
         sfit(m_str, len + 1);
         string_size(m_str) = len + 1;
     }
-    METADOT_INLINE bool empty() const { return sempty(m_str); }
+    ME_INLINE bool empty() const { return sempty(m_str); }
 
-    METADOT_INLINE String& add(char ch) {
+    ME_INLINE String& add(char ch) {
         spush(m_str, ch);
         return *this;
     }
-    METADOT_INLINE String& append(const char* s) {
+    ME_INLINE String& append(const char* s) {
         sappend(m_str, s);
         return *this;
     }
-    METADOT_INLINE String& append(const char* start, const char* end) {
+    ME_INLINE String& append(const char* start, const char* end) {
         sappend_range(m_str, start, end);
         return *this;
     }
-    METADOT_INLINE String& append(int codepoint) {
+    ME_INLINE String& append(int codepoint) {
         sappend_UTF8(m_str, codepoint);
         return *this;
     }
-    METADOT_INLINE String& fmt(const char* fmt, ...) {
+    ME_INLINE String& fmt(const char* fmt, ...) {
         va_list args;
         va_start(args, fmt);
         svfmt(m_str, fmt, args);
         va_end(args);
         return *this;
     }
-    METADOT_INLINE String& fmt_append(const char* fmt, ...) {
+    ME_INLINE String& fmt_append(const char* fmt, ...) {
         va_list args;
         va_start(args, fmt);
         svfmt_append(m_str, fmt, args);
         va_end(args);
         return *this;
     }
-    METADOT_INLINE String& trim() {
+    ME_INLINE String& trim() {
         strim(m_str);
         return *this;
     }
-    METADOT_INLINE String& ltrim() {
+    ME_INLINE String& ltrim() {
         sltrim(m_str);
         return *this;
     }
-    METADOT_INLINE String& rtrim() {
+    ME_INLINE String& rtrim() {
         srtrim(m_str);
         return *this;
     }
-    METADOT_INLINE String& lpad(char pad, int count) {
+    ME_INLINE String& lpad(char pad, int count) {
         slpad(m_str, pad, count);
         return *this;
     }
-    METADOT_INLINE String& rpad(char pad, int count) {
+    ME_INLINE String& rpad(char pad, int count) {
         srpad(m_str, pad, count);
         return *this;
     }
-    METADOT_INLINE String& set(const char* s) {
+    ME_INLINE String& set(const char* s) {
         sset(m_str, s);
         return *this;
     }
-    METADOT_INLINE String& operator=(const char* s) {
+    ME_INLINE String& operator=(const char* s) {
         sset(m_str, s);
         return *this;
     }
-    METADOT_INLINE String& operator=(const String& s) {
+    ME_INLINE String& operator=(const String& s) {
         sset(m_str, s);
         return *this;
     }
-    METADOT_INLINE String& operator=(String&& s) {
+    ME_INLINE String& operator=(String&& s) {
         sset(m_str, s);
         return *this;
     }
-    METADOT_INLINE Array<String> split(char split_c) {
+    ME_INLINE Array<String> split(char split_c) {
         Array<String> r;
         char** s = ssplit(m_str, split_c);
         for (int i = 0; i < alen(s); ++i) r.add(metadot_move(steal_from(s[i])));
         return r;
     }
-    METADOT_INLINE char pop() { return apop(m_str); }
-    METADOT_INLINE int first_index_of(char ch) const { return sfirst_index_of(m_str, ch); }
-    METADOT_INLINE int last_index_of(char ch) const { return slast_index_of(m_str, ch); }
-    METADOT_INLINE int first_index_of(char ch, int offset) const { return sfirst_index_of(m_str + offset, ch); }
-    METADOT_INLINE int last_index_of(char ch, int offset) const { return slast_index_of(m_str + offset, ch); }
-    METADOT_INLINE String find(const char* find_me) const { return String(sfind(m_str, find_me)); }
-    METADOT_INLINE String& replace(const char* replace_me, const char* with_me) {
+    ME_INLINE char pop() { return apop(m_str); }
+    ME_INLINE int first_index_of(char ch) const { return sfirst_index_of(m_str, ch); }
+    ME_INLINE int last_index_of(char ch) const { return slast_index_of(m_str, ch); }
+    ME_INLINE int first_index_of(char ch, int offset) const { return sfirst_index_of(m_str + offset, ch); }
+    ME_INLINE int last_index_of(char ch, int offset) const { return slast_index_of(m_str + offset, ch); }
+    ME_INLINE String find(const char* find_me) const { return String(sfind(m_str, find_me)); }
+    ME_INLINE String& replace(const char* replace_me, const char* with_me) {
         sreplace(m_str, replace_me, with_me);
         return *this;
     }
-    METADOT_INLINE String& erase(int index, int count) {
+    ME_INLINE String& erase(int index, int count) {
         serase(m_str, index, count);
         return *this;
     }
-    METADOT_INLINE String dup() const { return steal_from(sdup(m_str)); }
-    METADOT_INLINE void clear() { sclear(m_str); }
+    ME_INLINE String dup() const { return steal_from(sdup(m_str)); }
+    ME_INLINE void clear() { sclear(m_str); }
 
-    METADOT_INLINE bool starts_with(const char* s) const { return sprefix(m_str, s); }
-    METADOT_INLINE bool ends_with(const char* s) const { return ssuffix(m_str, s); }
-    METADOT_INLINE bool prefix(const char* s) const { return sprefix(m_str, s); }
-    METADOT_INLINE bool suffix(const char* s) const { return ssuffix(m_str, s); }
-    METADOT_INLINE bool operator==(const char* s) { return !METAENGINE_STRCMP(m_str, s); }
-    METADOT_INLINE bool operator!=(const char* s) { return METAENGINE_STRCMP(m_str, s); }
-    METADOT_INLINE bool compare(const char* s, bool no_case = false) { return no_case ? sequ(m_str, s) : siequ(m_str, s); }
-    METADOT_INLINE bool cmp(const char* s, bool no_case = false) { compare(s, no_case); }
-    METADOT_INLINE bool contains(const char* contains_me) { return scontains(m_str, contains_me); }
-    METADOT_INLINE void to_upper() { stoupper(m_str); }
-    METADOT_INLINE void to_lower() { stolower(m_str); }
-    METADOT_INLINE uint64_t hash() const { return shash(m_str); }
+    ME_INLINE bool starts_with(const char* s) const { return sprefix(m_str, s); }
+    ME_INLINE bool ends_with(const char* s) const { return ssuffix(m_str, s); }
+    ME_INLINE bool prefix(const char* s) const { return sprefix(m_str, s); }
+    ME_INLINE bool suffix(const char* s) const { return ssuffix(m_str, s); }
+    ME_INLINE bool operator==(const char* s) { return !METAENGINE_STRCMP(m_str, s); }
+    ME_INLINE bool operator!=(const char* s) { return METAENGINE_STRCMP(m_str, s); }
+    ME_INLINE bool compare(const char* s, bool no_case = false) { return no_case ? sequ(m_str, s) : siequ(m_str, s); }
+    ME_INLINE bool cmp(const char* s, bool no_case = false) { compare(s, no_case); }
+    ME_INLINE bool contains(const char* contains_me) { return scontains(m_str, contains_me); }
+    ME_INLINE void to_upper() { stoupper(m_str); }
+    ME_INLINE void to_lower() { stolower(m_str); }
+    ME_INLINE uint64_t hash() const { return shash(m_str); }
 
 private:
     char* m_str = u.m_buffer;
@@ -1491,14 +1491,14 @@ private:
         void* align;
     } u;
 
-    METADOT_INLINE void s_static() {
+    ME_INLINE void s_static() {
         sstatic(m_str, u.m_buffer, sizeof(u.m_buffer));
         METADOT_ASSERT_E(slen(m_str) == 0);
     }
-    METADOT_INLINE void s_chki(int i) const { METADOT_ASSERT_E(i >= 0 && i < string_size(m_str)); }
+    ME_INLINE void s_chki(int i) const { METADOT_ASSERT_E(i >= 0 && i < string_size(m_str)); }
 };
 
-METADOT_INLINE String operator+(const String& a, const String& b) {
+ME_INLINE String operator+(const String& a, const String& b) {
     String result = a;
     result.append(b);
     return result;
@@ -1516,10 +1516,10 @@ METADOT_INLINE String operator+(const String& a, const String& b) {
  *     }
  */
 struct UTF8 {
-    METADOT_INLINE UTF8() {}
-    METADOT_INLINE UTF8(const char* text) { this->text = text; }
+    ME_INLINE UTF8() {}
+    ME_INLINE UTF8(const char* text) { this->text = text; }
 
-    METADOT_INLINE bool next() {
+    ME_INLINE bool next() {
         if (*text) {
             text = metadot_decode_UTF8(text, &codepoint);
             return true;
@@ -1543,10 +1543,10 @@ struct UTF8 {
  *     }
  */
 struct UTF16 {
-    METADOT_INLINE UTF16() {}
-    METADOT_INLINE UTF16(const uint16_t* text) { this->text = text; }
+    ME_INLINE UTF16() {}
+    ME_INLINE UTF16(const uint16_t* text) { this->text = text; }
 
-    METADOT_INLINE bool next() {
+    ME_INLINE bool next() {
         if (*text) {
             text = metadot_decode_UTF16(text, &codepoint);
             return true;
@@ -1583,21 +1583,21 @@ typedef struct METAENGINE_Result {
     const char* details;
 } METAENGINE_Result;
 
-METADOT_INLINE bool metadot_is_error(METAENGINE_Result result) { return result.code == METAENGINE_RESULT_ERROR; }
+ME_INLINE bool metadot_is_error(METAENGINE_Result result) { return result.code == METAENGINE_RESULT_ERROR; }
 
-METADOT_INLINE METAENGINE_Result metadot_result_make(int code, const char* details) {
+ME_INLINE METAENGINE_Result metadot_result_make(int code, const char* details) {
     METAENGINE_Result result;
     result.code = code;
     result.details = details;
     return result;
 }
-METADOT_INLINE METAENGINE_Result metadot_result_error(const char* details) {
+ME_INLINE METAENGINE_Result metadot_result_error(const char* details) {
     METAENGINE_Result result;
     result.code = METAENGINE_RESULT_ERROR;
     result.details = details;
     return result;
 }
-METADOT_INLINE METAENGINE_Result metadot_result_success() {
+ME_INLINE METAENGINE_Result metadot_result_success() {
     METAENGINE_Result result;
     result.code = METAENGINE_RESULT_SUCCESS;
     result.details = NULL;
@@ -1615,7 +1615,7 @@ typedef enum METAENGINE_MessageBoxType {
 #undef METAENGINE_ENUM
 } METAENGINE_MessageBoxType;
 
-METADOT_INLINE const char* metadot_message_box_type_to_string(METAENGINE_MessageBoxType type) {
+ME_INLINE const char* metadot_message_box_type_to_string(METAENGINE_MessageBoxType type) {
     switch (type) {
 #define METAENGINE_ENUM(K, V) \
     case METAENGINE_##K:      \
@@ -1647,11 +1647,11 @@ enum : int {
 };
 
 using MessageBoxType = METAENGINE_MessageBoxType;
-#define METAENGINE_ENUM(K, V) METADOT_INLINE constexpr MessageBoxType K = METAENGINE_##K;
+#define METAENGINE_ENUM(K, V) ME_INLINE constexpr MessageBoxType K = METAENGINE_##K;
 METAENGINE_MESSAGE_BOX_TYPE_DEFS
 #undef METAENGINE_ENUM
 
-METADOT_INLINE const char* to_string(MessageBoxType type) {
+ME_INLINE const char* to_string(MessageBoxType type) {
     switch (type) {
 #define METAENGINE_ENUM(K, V) \
     case METAENGINE_##K:      \
@@ -1663,12 +1663,12 @@ METADOT_INLINE const char* to_string(MessageBoxType type) {
     }
 }
 
-METADOT_INLINE bool is_error(Result error) { return metadot_is_error(error); }
+ME_INLINE bool is_error(Result error) { return metadot_is_error(error); }
 
-METADOT_INLINE Result result_make(int code, const char* details) { return metadot_result_make(code, details); }
-METADOT_INLINE Result result_failure(const char* details) { return metadot_result_error(details); }
-METADOT_INLINE Result result_success() { return metadot_result_success(); }
-METADOT_INLINE void message_box(MessageBoxType type, const char* title, const char* text) { return metadot_message_box(type, title, text); }
+ME_INLINE Result result_make(int code, const char* details) { return metadot_result_make(code, details); }
+ME_INLINE Result result_failure(const char* details) { return metadot_result_error(details); }
+ME_INLINE Result result_success() { return metadot_result_success(); }
+ME_INLINE void message_box(MessageBoxType type, const char* title, const char* text) { return metadot_message_box(type, title, text); }
 
 }  // namespace MetaEngine
 
@@ -2305,32 +2305,32 @@ namespace MetaEngine {
 using Handle = uint64_t;
 
 struct HandleTable {
-    METADOT_INLINE HandleTable(int initial_capacity = 0) : m_alloc(metadot_make_handle_allocator(initial_capacity)) {}
+    ME_INLINE HandleTable(int initial_capacity = 0) : m_alloc(metadot_make_handle_allocator(initial_capacity)) {}
 
-    METADOT_INLINE ~HandleTable() {
+    ME_INLINE ~HandleTable() {
         metadot_destroy_handle_allocator(m_alloc);
         m_alloc = NULL;
     }
 
-    METADOT_INLINE METAENGINE_Handle alloc_handle(uint32_t index, uint16_t type = 0) { return metadot_handle_allocator_alloc(m_alloc, index, type); }
+    ME_INLINE METAENGINE_Handle alloc_handle(uint32_t index, uint16_t type = 0) { return metadot_handle_allocator_alloc(m_alloc, index, type); }
 
-    METADOT_INLINE METAENGINE_Handle alloc_handle() { return metadot_handle_allocator_alloc(m_alloc, ~0, 0); }
+    ME_INLINE METAENGINE_Handle alloc_handle() { return metadot_handle_allocator_alloc(m_alloc, ~0, 0); }
 
-    METADOT_INLINE uint32_t get_index(METAENGINE_Handle handle) { return metadot_handle_allocator_get_index(m_alloc, handle); }
+    ME_INLINE uint32_t get_index(METAENGINE_Handle handle) { return metadot_handle_allocator_get_index(m_alloc, handle); }
 
-    METADOT_INLINE uint16_t get_type(METAENGINE_Handle handle) { return metadot_handle_allocator_get_type(m_alloc, handle); }
+    ME_INLINE uint16_t get_type(METAENGINE_Handle handle) { return metadot_handle_allocator_get_type(m_alloc, handle); }
 
-    METADOT_INLINE void update_index(METAENGINE_Handle handle, uint32_t index) { metadot_handle_allocator_update_index(m_alloc, handle, index); }
+    ME_INLINE void update_index(METAENGINE_Handle handle, uint32_t index) { metadot_handle_allocator_update_index(m_alloc, handle, index); }
 
-    METADOT_INLINE void free_handle(METAENGINE_Handle handle) { metadot_handle_allocator_free(m_alloc, handle); }
+    ME_INLINE void free_handle(METAENGINE_Handle handle) { metadot_handle_allocator_free(m_alloc, handle); }
 
-    METADOT_INLINE bool is_valid(METAENGINE_Handle handle) { return !!metadot_handle_allocator_is_handle_valid(m_alloc, handle); }
+    ME_INLINE bool is_valid(METAENGINE_Handle handle) { return !!metadot_handle_allocator_is_handle_valid(m_alloc, handle); }
 
-    METADOT_INLINE bool is_active(METAENGINE_Handle handle) { return metadot_handle_allocator_is_active(m_alloc, handle); }
+    ME_INLINE bool is_active(METAENGINE_Handle handle) { return metadot_handle_allocator_is_active(m_alloc, handle); }
 
-    METADOT_INLINE void activate(METAENGINE_Handle handle) { metadot_handle_allocator_activate(m_alloc, handle); }
+    ME_INLINE void activate(METAENGINE_Handle handle) { metadot_handle_allocator_activate(m_alloc, handle); }
 
-    METADOT_INLINE void deactivate(METAENGINE_Handle handle) { metadot_handle_allocator_deactivate(m_alloc, handle); }
+    ME_INLINE void deactivate(METAENGINE_Handle handle) { metadot_handle_allocator_deactivate(m_alloc, handle); }
 
     METAENGINE_HandleTable* m_alloc;
 };
@@ -2427,55 +2427,55 @@ using ReadWriteLock = METAENGINE_ReadWriteLock;
 using Threadpool = METAENGINE_Threadpool;
 using TaskFn = METAENGINE_TaskFn;
 
-METADOT_INLINE Mutex make_mutex() { return metadot_make_mutex(); }
-METADOT_INLINE void destroy_mutex(Mutex* mutex) { metadot_destroy_mutex(mutex); }
-METADOT_INLINE Result mutex_lock(Mutex* mutex) { return metadot_mutex_lock(mutex); }
-METADOT_INLINE Result mutex_unlock(Mutex* mutex) { return metadot_mutex_unlock(mutex); }
-METADOT_INLINE bool Mutexrylock(Mutex* mutex) { return METAENGINE_Mutexrylock(mutex); }
+ME_INLINE Mutex make_mutex() { return metadot_make_mutex(); }
+ME_INLINE void destroy_mutex(Mutex* mutex) { metadot_destroy_mutex(mutex); }
+ME_INLINE Result mutex_lock(Mutex* mutex) { return metadot_mutex_lock(mutex); }
+ME_INLINE Result mutex_unlock(Mutex* mutex) { return metadot_mutex_unlock(mutex); }
+ME_INLINE bool Mutexrylock(Mutex* mutex) { return METAENGINE_Mutexrylock(mutex); }
 
-METADOT_INLINE ConditionVariable make_cv() { return metadot_make_cv(); }
-METADOT_INLINE void destroy_cv(ConditionVariable* cv) { metadot_destroy_cv(cv); }
-METADOT_INLINE Result cv_wake_all(ConditionVariable* cv) { return metadot_cv_wake_all(cv); }
-METADOT_INLINE Result cv_wake_one(ConditionVariable* cv) { return metadot_cv_wake_one(cv); }
-METADOT_INLINE Result cv_wait(ConditionVariable* cv, Mutex* mutex) { return metadot_cv_wait(cv, mutex); }
+ME_INLINE ConditionVariable make_cv() { return metadot_make_cv(); }
+ME_INLINE void destroy_cv(ConditionVariable* cv) { metadot_destroy_cv(cv); }
+ME_INLINE Result cv_wake_all(ConditionVariable* cv) { return metadot_cv_wake_all(cv); }
+ME_INLINE Result cv_wake_one(ConditionVariable* cv) { return metadot_cv_wake_one(cv); }
+ME_INLINE Result cv_wait(ConditionVariable* cv, Mutex* mutex) { return metadot_cv_wait(cv, mutex); }
 
-METADOT_INLINE Semaphore make_sem(int initial_count) { return metadot_make_sem(initial_count); }
-METADOT_INLINE void destroy_sem(Semaphore* semaphore) { metadot_destroy_sem(semaphore); }
-METADOT_INLINE Result sem_post(Semaphore* semaphore) { return metadot_sem_post(semaphore); }
-METADOT_INLINE Result sem_try(Semaphore* semaphore) { return metadot_sem_try(semaphore); }
-METADOT_INLINE Result sem_wait(Semaphore* semaphore) { return metadot_sem_wait(semaphore); }
-METADOT_INLINE Result sem_value(Semaphore* semaphore) { return metadot_sem_value(semaphore); }
+ME_INLINE Semaphore make_sem(int initial_count) { return metadot_make_sem(initial_count); }
+ME_INLINE void destroy_sem(Semaphore* semaphore) { metadot_destroy_sem(semaphore); }
+ME_INLINE Result sem_post(Semaphore* semaphore) { return metadot_sem_post(semaphore); }
+ME_INLINE Result sem_try(Semaphore* semaphore) { return metadot_sem_try(semaphore); }
+ME_INLINE Result sem_wait(Semaphore* semaphore) { return metadot_sem_wait(semaphore); }
+ME_INLINE Result sem_value(Semaphore* semaphore) { return metadot_sem_value(semaphore); }
 
-METADOT_INLINE Thread* thread_create(ThreadFn func, const char* name, void* udata) { return metadot_thread_create(func, name, udata); }
-METADOT_INLINE void thread_detach(Thread* thread) { metadot_thread_detach(thread); }
-METADOT_INLINE ThreadId thread_get_id(Thread* thread) { return metadot_thread_get_id(thread); }
-METADOT_INLINE ThreadId thread_id() { return metadot_thread_id(); }
-METADOT_INLINE Result thread_wait(Thread* thread) { return metadot_thread_wait(thread); }
+ME_INLINE Thread* thread_create(ThreadFn func, const char* name, void* udata) { return metadot_thread_create(func, name, udata); }
+ME_INLINE void thread_detach(Thread* thread) { metadot_thread_detach(thread); }
+ME_INLINE ThreadId thread_get_id(Thread* thread) { return metadot_thread_get_id(thread); }
+ME_INLINE ThreadId thread_id() { return metadot_thread_id(); }
+ME_INLINE Result thread_wait(Thread* thread) { return metadot_thread_wait(thread); }
 
-METADOT_INLINE int core_count() { return metadot_core_count(); }
-METADOT_INLINE int cacheline_size() { return metadot_cacheline_size(); }
+ME_INLINE int core_count() { return metadot_core_count(); }
+ME_INLINE int cacheline_size() { return metadot_cacheline_size(); }
 
-METADOT_INLINE AtomicInt atomic_zero() { return metadot_atomic_zero(); }
-METADOT_INLINE int atomic_add(AtomicInt* atomic, int addend) { return metadot_atomic_add(atomic, addend); }
-METADOT_INLINE int atomic_set(AtomicInt* atomic, int value) { return metadot_atomic_set(atomic, value); }
-METADOT_INLINE int atomic_get(AtomicInt* atomic) { return metadot_atomic_get(atomic); }
-METADOT_INLINE Result atomic_cas(AtomicInt* atomic, int expected, int value) { return metadot_atomic_cas(atomic, expected, value); }
-METADOT_INLINE void* atomic_ptr_set(void** atomic, void* value) { return metadot_atomic_ptr_set(atomic, value); }
-METADOT_INLINE void* atomic_ptr_get(void** atomic) { return metadot_atomic_ptr_get(atomic); }
-METADOT_INLINE Result atomic_ptr_cas(void** atomic, void* expected, void* value) { return metadot_atomic_ptr_cas(atomic, expected, value); }
+ME_INLINE AtomicInt atomic_zero() { return metadot_atomic_zero(); }
+ME_INLINE int atomic_add(AtomicInt* atomic, int addend) { return metadot_atomic_add(atomic, addend); }
+ME_INLINE int atomic_set(AtomicInt* atomic, int value) { return metadot_atomic_set(atomic, value); }
+ME_INLINE int atomic_get(AtomicInt* atomic) { return metadot_atomic_get(atomic); }
+ME_INLINE Result atomic_cas(AtomicInt* atomic, int expected, int value) { return metadot_atomic_cas(atomic, expected, value); }
+ME_INLINE void* atomic_ptr_set(void** atomic, void* value) { return metadot_atomic_ptr_set(atomic, value); }
+ME_INLINE void* atomic_ptr_get(void** atomic) { return metadot_atomic_ptr_get(atomic); }
+ME_INLINE Result atomic_ptr_cas(void** atomic, void* expected, void* value) { return metadot_atomic_ptr_cas(atomic, expected, value); }
 
-METADOT_INLINE ReadWriteLock make_rw_lock() { return metadot_make_rw_lock(); }
-METADOT_INLINE void destroy_rw_lock(ReadWriteLock* rw) { metadot_destroy_rw_lock(rw); }
-METADOT_INLINE void read_lock(ReadWriteLock* rw) { metadot_read_lock(rw); }
-METADOT_INLINE void read_unlock(ReadWriteLock* rw) { metadot_read_unlock(rw); }
-METADOT_INLINE void write_lock(ReadWriteLock* rw) { metadot_write_lock(rw); }
-METADOT_INLINE void write_unlock(ReadWriteLock* rw) { metadot_write_unlock(rw); }
+ME_INLINE ReadWriteLock make_rw_lock() { return metadot_make_rw_lock(); }
+ME_INLINE void destroy_rw_lock(ReadWriteLock* rw) { metadot_destroy_rw_lock(rw); }
+ME_INLINE void read_lock(ReadWriteLock* rw) { metadot_read_lock(rw); }
+ME_INLINE void read_unlock(ReadWriteLock* rw) { metadot_read_unlock(rw); }
+ME_INLINE void write_lock(ReadWriteLock* rw) { metadot_write_lock(rw); }
+ME_INLINE void write_unlock(ReadWriteLock* rw) { metadot_write_unlock(rw); }
 
-METADOT_INLINE Threadpool* make_threadpool(int thread_count) { return metadot_make_threadpool(thread_count); }
-METADOT_INLINE void destroy_threadpool(Threadpool* pool) { return metadot_destroy_threadpool(pool); }
-METADOT_INLINE void threadpool_add_task(Threadpool* pool, TaskFn* task, void* param) { return metadot_threadpool_add_task(pool, task, param); }
-METADOT_INLINE void threadpool_kick_and_wait(Threadpool* pool) { return metadot_threadpool_kick_and_wait(pool); }
-METADOT_INLINE void threadpool_kick(Threadpool* pool) { return metadot_threadpool_kick(pool); }
+ME_INLINE Threadpool* make_threadpool(int thread_count) { return metadot_make_threadpool(thread_count); }
+ME_INLINE void destroy_threadpool(Threadpool* pool) { return metadot_destroy_threadpool(pool); }
+ME_INLINE void threadpool_add_task(Threadpool* pool, TaskFn* task, void* param) { return metadot_threadpool_add_task(pool, task, param); }
+ME_INLINE void threadpool_kick_and_wait(Threadpool* pool) { return metadot_threadpool_kick_and_wait(pool); }
+ME_INLINE void threadpool_kick(Threadpool* pool) { return metadot_threadpool_kick(pool); }
 
 }  // namespace MetaEngine
 

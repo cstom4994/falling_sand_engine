@@ -8,7 +8,7 @@
 #include <filesystem>
 
 #include "core/core.hpp"
-#include "core/macros.h"
+#include "core/macros.hpp"
 #include "core/platform.h"
 #include "core/stl/stl.h"
 
@@ -21,33 +21,6 @@
 bool InitFilesystem();
 
 #define METADOT_RESLOC(x) x
-
-#ifdef METADOT_PLATFORM_WINDOWS
-#define S_ISREG(m) (((m)&0170000) == (0100000))
-#define S_ISDIR(m) (((m)&0170000) == (0040000))  
-#endif
-
-inline R_bool FUtil_exists(const char* path) {
-    struct stat buffer;
-    return (stat(path, &buffer) == 0 || S_ISDIR(buffer.st_mode));
-}
-
-inline const char* FUtil_GetFileName(const char* path) {
-    int len = strlen(path);
-    int flag = 0;
-
-    for (int i = len - 1; i > 0; i--) {
-        if (path[i] == '\\' || path[i] == '//' || path[i] == '/') {
-            flag = 1;
-            path = path + i + 1;
-            break;
-        }
-    }
-    return path;
-}
-
-char* metadot_fs_readfilestring(const char* path);
-void metadot_fs_freestring(void* ptr);
 
 #ifdef __cplusplus
 extern "C" {

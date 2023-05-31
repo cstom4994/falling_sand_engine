@@ -1,16 +1,19 @@
-#ifndef _METADOT_CPP_SF_HPP_
-#define _METADOT_CPP_SF_HPP_
+#ifndef ME_CPP_SF_HPP
+#define ME_CPP_SF_HPP
 
 #include <cassert>
 #include <string_view>
 #include <tuple>
 #include <utility>
 
-#include "core/cpp/name.hpp"
+#include "core/cpp/templatelist.hpp"
 #include "core/cpp/tstr.hpp"
-#include "core/cpp/typelist.hpp"
+#include "core/cpp/type.hpp"
 
-namespace MetaEngine::StaticRefl {
+namespace ME::meta::static_refl {
+
+using namespace MetaEngine;
+
 template <typename Name, typename T>
 struct NamedValue;
 
@@ -92,9 +95,9 @@ template <typename Signature>
 constexpr auto WrapConstructor();
 template <typename T>
 constexpr auto WrapDestructor();
-}  // namespace MetaEngine::StaticRefl
+}  // namespace ME::meta::static_refl
 
-namespace MetaEngine::StaticRefl::detail {
+namespace ME::meta::static_refl::detail {
 template <typename T, template <typename...> class U>
 struct IsInstance : std::false_type {};
 template <template <typename...> class U, typename... Ts>
@@ -122,9 +125,9 @@ struct ConstructorWrapper<T(Args...)> {
         });
     }
 };
-}  // namespace MetaEngine::StaticRefl::detail
+}  // namespace ME::meta::static_refl::detail
 
-namespace MetaEngine::StaticRefl {
+namespace ME::meta::static_refl {
 // Signature : T(Args...)
 // ->
 // void(*)(T*, Args...)
@@ -189,9 +192,9 @@ struct ElemList {
 
 #define MetaDotRefl_ElemList_GetByValue(list, value) list.Get<list.FindValue(value)>()
 };
-}  // namespace MetaEngine::StaticRefl
+}  // namespace ME::meta::static_refl
 
-namespace MetaEngine::StaticRefl::detail {
+namespace ME::meta::static_refl::detail {
 template <typename List, typename Func, typename Acc, std::size_t... Ns>
 constexpr auto Accumulate(const List& list, Func&& func, Acc acc, std::index_sequence<Ns...>) {
     if constexpr (sizeof...(Ns) > 0) {
@@ -215,9 +218,9 @@ struct IsSameNameWith {
     template <typename T>
     struct Ttype : std::is_same<typename T::TName, Name> {};
 };
-}  // namespace MetaEngine::StaticRefl::detail
+}  // namespace ME::meta::static_refl::detail
 
-namespace MetaEngine::StaticRefl {
+namespace ME::meta::static_refl {
 template <typename... Elems>
 template <typename Init, typename Func>
 constexpr auto ElemList<Elems...>::Accumulate(Init init, Func&& func) const {
@@ -253,7 +256,7 @@ constexpr const auto& ElemList<Elems...>::Find(Name) const {
     }();
     static_assert(idx != static_cast<std::size_t>(-1));
     return Get<idx>();*/
-    return Get<MetaEngine::FindIf_v<TypeList<Elems...>, detail::IsSameNameWith<Name>::template Ttype>>();
+    return Get<ME::FindIf_v<TypeList<Elems...>, detail::IsSameNameWith<Name>::template Ttype>>();
 }
 
 template <typename... Elems>
@@ -344,9 +347,9 @@ template <typename... Bases>
 struct BaseList : ElemList<Bases...> {
     constexpr BaseList(Bases... bases) : ElemList<Bases...>{bases...} {};
 };
-}  // namespace MetaEngine::StaticRefl
+}  // namespace ME::meta::static_refl
 
-namespace MetaEngine::StaticRefl::detail {
+namespace ME::meta::static_refl::detail {
 template <typename T>
 struct FieldTraits;
 
@@ -369,9 +372,9 @@ struct FieldTraits<T*> : FieldTraitsBase<void, T, true, std::is_function_v<T>> {
 // enum / static constexpr
 template <typename T>
 struct FieldTraits : FieldTraitsBase<void, T, true, false> {};
-}  // namespace MetaEngine::StaticRefl::detail
+}  // namespace ME::meta::static_refl::detail
 
-namespace MetaEngine::StaticRefl {
+namespace ME::meta::static_refl {
 template <typename Name, typename T, typename AList>
 struct Field : detail::FieldTraits<T>, NamedValue<Name, T> {
     static_assert(detail::IsInstance<AList, AttrList>::value);
@@ -412,9 +415,9 @@ struct TypeInfoBase {
     template <typename U, typename Func>
     static constexpr void ForEachVarOf(U&& obj, Func&& func);
 };
-}  // namespace MetaEngine::StaticRefl
+}  // namespace ME::meta::static_refl
 
-namespace MetaEngine::StaticRefl::detail {
+namespace ME::meta::static_refl::detail {
 template <typename TI, typename U, typename Func>
 constexpr void ForEachNonVirtualVarOf(TI info, U&& obj, Func&& func) {
     info.fields.ForEach([&](const auto& field) {
@@ -427,9 +430,9 @@ constexpr void ForEachNonVirtualVarOf(TI info, U&& obj, Func&& func) {
         }
     });
 }
-}  // namespace MetaEngine::StaticRefl::detail
+}  // namespace ME::meta::static_refl::detail
 
-namespace MetaEngine::StaticRefl {
+namespace ME::meta::static_refl {
 template <typename T, typename... Bases>
 template <typename Derived>
 constexpr auto&& TypeInfoBase<T, Bases...>::Forward(Derived&& derived) noexcept {
@@ -498,6 +501,6 @@ constexpr void TypeInfoBase<T, Bases...>::ForEachVarOf(U&& obj, Func&& func) {
     });
     detail::ForEachNonVirtualVarOf(TypeInfo<Type>{}, std::forward<U>(obj), std::forward<Func>(func));
 }
-}  // namespace MetaEngine::StaticRefl
+}  // namespace ME::meta::static_refl
 
 #endif

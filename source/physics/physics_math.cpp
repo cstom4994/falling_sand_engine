@@ -3,30 +3,30 @@
 
 #include <cstdio>
 
-vec2 subtract(vec2 a, vec2 b) {
+MEvec2 subtract(MEvec2 a, MEvec2 b) {
     a.x -= b.x;
     a.y -= b.y;
     return a;
 }
-vec2 negate(vec2 v) {
+MEvec2 negate(MEvec2 v) {
     v.x = -v.x;
     v.y = -v.y;
     return v;
 }
-vec2 perpendicular(vec2 v) {
-    vec2 p = {v.y, -v.x};
+MEvec2 perpendicular(MEvec2 v) {
+    MEvec2 p = {v.y, -v.x};
     return p;
 }
-float dotProduct(vec2 a, vec2 b) { return a.x * b.x + a.y * b.y; }
-float lengthSquared(vec2 v) { return v.x * v.x + v.y * v.y; }
+float dotProduct(MEvec2 a, MEvec2 b) { return a.x * b.x + a.y * b.y; }
+float lengthSquared(MEvec2 v) { return v.x * v.x + v.y * v.y; }
 
 //-----------------------------------------------------------------------------
 // Triple product expansion is used to calculate perpendicular normal vectors
 // which kinda 'prefer' pointing towards the Origin in Minkowski space
 
-vec2 tripleProduct(vec2 a, vec2 b, vec2 c) {
+MEvec2 tripleProduct(MEvec2 a, MEvec2 b, MEvec2 c) {
 
-    vec2 r;
+    MEvec2 r;
 
     float ac = a.x * c.x + a.y * c.y;  // perform a.dot(c)
     float bc = b.x * c.x + b.y * c.y;  // perform b.dot(c)
@@ -42,8 +42,8 @@ vec2 tripleProduct(vec2 a, vec2 b, vec2 c) {
 // Center of Gravity, especially for bodies with nonuniform density,
 // but this is ok as initial direction of simplex search in GJK.
 
-vec2 averagePoint(const vec2 *vertices, size_t count) {
-    vec2 avg = {0.f, 0.f};
+MEvec2 averagePoint(const MEvec2 *vertices, size_t count) {
+    MEvec2 avg = {0.f, 0.f};
     for (size_t i = 0; i < count; i++) {
         avg.x += vertices[i].x;
         avg.y += vertices[i].y;
@@ -56,7 +56,7 @@ vec2 averagePoint(const vec2 *vertices, size_t count) {
 //-----------------------------------------------------------------------------
 // Get furthest vertex along a certain direction
 
-size_t indexOfFurthestPoint(const vec2 *vertices, size_t count, vec2 d) {
+size_t indexOfFurthestPoint(const MEvec2 *vertices, size_t count, MEvec2 d) {
 
     float maxProduct = dotProduct(d, vertices[0]);
     size_t index = 0;
@@ -73,7 +73,7 @@ size_t indexOfFurthestPoint(const vec2 *vertices, size_t count, vec2 d) {
 //-----------------------------------------------------------------------------
 // Minkowski sum support function for GJK
 
-vec2 support(const vec2 *vertices1, size_t count1, const vec2 *vertices2, size_t count2, vec2 d) {
+MEvec2 support(const MEvec2 *vertices1, size_t count1, const MEvec2 *vertices2, size_t count2, MEvec2 d) {
 
     // get furthest point of first body along an arbitrary direction
     size_t i = indexOfFurthestPoint(vertices1, count1, d);
@@ -87,13 +87,13 @@ vec2 support(const vec2 *vertices1, size_t count1, const vec2 *vertices2, size_t
 
 int iter_count = 0;
 
-int fast_c2(const vec2 *vertices1, size_t count1, const vec2 *vertices2, size_t count2) {
+int fast_c2(const MEvec2 *vertices1, size_t count1, const MEvec2 *vertices2, size_t count2) {
 
     size_t index = 0;  // index of current vertex of simplex
-    vec2 a, b, c, d, ao, ab, ac, abperp, acperp, simplex[3];
+    MEvec2 a, b, c, d, ao, ab, ac, abperp, acperp, simplex[3];
 
-    vec2 position1 = averagePoint(vertices1, count1);  // not a CoG but
-    vec2 position2 = averagePoint(vertices2, count2);  // it's ok for GJK )
+    MEvec2 position1 = averagePoint(vertices1, count1);  // not a CoG but
+    MEvec2 position2 = averagePoint(vertices2, count2);  // it's ok for GJK )
 
     // initial direction from the center of 1st body to the center of 2nd body
     d = subtract(position1, position2);
@@ -1761,7 +1761,7 @@ int TPPLPartition::Triangulate_MONO(TPPLPoly *poly, TPPLPolyList *triangles) {
 
 #pragma endregion TPPL
 
-void simplify_section(const std::vector<vec2> &pts, F32 tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted) {
+void simplify_section(const std::vector<MEvec2> &pts, F32 tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted) {
     // make sure we always return 2 points
     if (pts.size() - omitted <= 2) return;
 
@@ -1794,12 +1794,12 @@ void simplify_section(const std::vector<vec2> &pts, F32 tolerance, size_t i, siz
     }
 }
 
-std::vector<vec2> simplify(const std::vector<vec2> &vertices, F32 tolerance) {
+std::vector<MEvec2> simplify(const std::vector<MEvec2> &vertices, F32 tolerance) {
     std::vector<bool> mark_map(vertices.size(), true);
 
     simplify_section(vertices, tolerance, 0, vertices.size() - 1, &mark_map);
 
-    std::vector<vec2> result;
+    std::vector<MEvec2> result;
     for (size_t i = 0; i != vertices.size(); ++i) {
         if (mark_map[i]) {
             result.push_back(vertices[i]);

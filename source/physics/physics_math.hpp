@@ -33,9 +33,9 @@ struct PVec2 {
     /// Construct using coordinates.
     PVec2(float xIn, float yIn) : x(xIn), y(yIn) {}
 
-    PVec2(const vec2 &v2) : x(v2.x), y(v2.y) {}
+    PVec2(const MEvec2 &v2) : x(v2.x), y(v2.y) {}
 
-    operator vec2() const { return vec2{x, y}; }
+    operator MEvec2() const { return MEvec2{x, y}; }
 
     /// Set this vector to all zeros.
     void SetZero() {
@@ -927,8 +927,8 @@ public:
 
 #pragma endregion TPPL
 
-void simplify_section(const std::vector<vec2> &pts, F32 tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted = 0);
-std::vector<vec2> simplify(const std::vector<vec2> &vertices, F32 tolerance);
+void simplify_section(const std::vector<MEvec2> &pts, F32 tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted = 0);
+std::vector<MEvec2> simplify(const std::vector<MEvec2> &vertices, F32 tolerance);
 F32 pDistance(F32 x, F32 y, F32 x1, F32 y1, F32 x2, F32 y2);
 
 //  * A simple implementation of the marching squares algorithm that can identify
@@ -943,7 +943,7 @@ namespace MarchingSquares {
 struct Direction {
     Direction() : x(0), y(0) {}
     Direction(int x, int y) : x(x), y(y) {}
-    Direction(vec2 vec) : x(vec.x), y(vec.y) {}
+    Direction(MEvec2 vec) : x(vec.x), y(vec.y) {}
     int x;
     int y;
 };

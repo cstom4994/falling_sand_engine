@@ -1,30 +1,32 @@
 
 
-#ifndef METADOT_PLATFORM_H
-#define METADOT_PLATFORM_H
+#ifndef ME_PLATFORM_H
+#define ME_PLATFORM_H
+
+#include <filesystem>
 
 #include "core/core.h"
-#include "core/macros.h"
+#include "core/macros.hpp"
 #include "core/sdl_wrapper.h"
 #include "core/stl/stl.h"
 
 /*--------------------------------------------------------------------------
  * Platform specific headers
  *------------------------------------------------------------------------*/
-#ifdef METADOT_PLATFORM_WINDOWS
+#ifdef ME_PLATFORM_WINDOWS
 #define WINDOWS_LEAN_AND_MEAN
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x601
 #endif
 #include <windows.h>
-#elif defined(METADOT_PLATFORM_POSIX)
+#elif defined(ME_PLATFORM_POSIX)
 #include <pthread.h>
 #include <sys/time.h>
 #else
 #error "Unsupported platform!"
 #endif
 
-#if defined(METADOT_PLATFORM_WINDOWS)
+#if defined(ME_PLATFORM_WINDOWS)
 #include <Windows.h>
 #include <io.h>
 #include <shobjidl.h>
@@ -41,7 +43,7 @@
 #define PATH_MAX 260
 #endif
 
-#elif defined(METADOT_PLATFORM_LINUX)
+#elif defined(ME_PLATFORM_LINUX)
 #include <bits/types/struct_tm.h>
 #include <bits/types/time_t.h>
 #include <dirent.h>
@@ -50,7 +52,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #define PATH_SEP '/'
-#elif defined(METADOT_PLATFORM_APPLE)
+#elif defined(ME_PLATFORM_APPLE)
 #include <TargetConditionals.h>
 #include <mach-o/dyld.h>
 #include <sys/ioctl.h>
@@ -58,7 +60,7 @@
 #include <sys/time.h>
 #endif
 
-#ifdef METADOT_PLATFORM_WINDOWS
+#ifdef ME_PLATFORM_WINDOWS
 #define getFullPath(a, b) GetFullPathName((LPCWSTR)a, MAX_PATH, (LPWSTR)b, NULL)
 #define rmdir(a) _rmdir(a)
 #define PATH_SEPARATOR '\\'
@@ -83,15 +85,15 @@
 
 #define FS_LINE_INCR 256
 
-typedef void *(*metadot_gl_loader_fn)(const char *name);
+typedef void* (*metadot_gl_loader_fn)(const char* name);
 
 /*--------------------------------------------------------------------------*/
 static inline uint64_t getThreadID() {
-#if defined(METADOT_PLATFORM_WINDOWS)
+#if defined(ME_PLATFORM_WINDOWS)
     return (uint64_t)GetCurrentThreadId();
-#elif defined(METADOT_PLATFORM_LINUX)
+#elif defined(ME_PLATFORM_LINUX)
     return (uint64_t)syscall(SYS_gettid);
-#elif defined(METADOT_PLATFORM_APPLE)
+#elif defined(ME_PLATFORM_APPLE)
     return (mach_port_t)::pthread_mach_thread_np(pthread_self());
 #else
 #error "Unsupported platform!"
@@ -101,7 +103,7 @@ static inline uint64_t getThreadID() {
 // Thread Local Storage(TLS)
 // msvc: https://learn.microsoft.com/en-us/cpp/parallel/thread-local-storage-tls
 
-#ifdef METADOT_PLATFORM_WINDOWS
+#ifdef ME_PLATFORM_WINDOWS
 
 static inline uint32_t tlsAllocate() { return (uint32_t)TlsAlloc(); }
 
@@ -119,9 +121,9 @@ static inline pthread_key_t tlsAllocate() {
     return handle;
 }
 
-static inline void tlsSetValue(pthread_key_t _handle, void* _value) { pthread_setspecific(_handle, _value); }
+static inline void tlsSetValue(pthread_key_t _handle, void *_value) { pthread_setspecific(_handle, _value); }
 
-static inline void* tlsGetValue(pthread_key_t _handle) { return pthread_getspecific(_handle); }
+static inline void *tlsGetValue(pthread_key_t _handle) { return pthread_getspecific(_handle); }
 
 static inline void tlsFree(pthread_key_t _handle) { pthread_key_delete(_handle); }
 
@@ -129,7 +131,7 @@ static inline void tlsFree(pthread_key_t _handle) { pthread_key_delete(_handle);
 
 namespace MetaEngine {
 
-#if defined(METADOT_PLATFORM_WINDOWS)
+#if defined(ME_PLATFORM_WINDOWS)
 typedef CRITICAL_SECTION metadot_mutex;
 
 static inline void metadot_mutex_init(metadot_mutex* _mutex) { InitializeCriticalSection(_mutex); }
@@ -142,18 +144,18 @@ static inline int metadot_mutex_trylock(metadot_mutex* _mutex) { return TryEnter
 
 static inline void metadot_mutex_unlock(metadot_mutex* _mutex) { LeaveCriticalSection(_mutex); }
 
-#elif defined(METADOT_PLATFORM_POSIX)
+#elif defined(ME_PLATFORM_POSIX)
 typedef pthread_mutex_t metadot_mutex;
 
-static inline void metadot_mutex_init(metadot_mutex* _mutex) { pthread_mutex_init(_mutex, NULL); }
+static inline void metadot_mutex_init(metadot_mutex *_mutex) { pthread_mutex_init(_mutex, NULL); }
 
-static inline void metadot_mutex_destroy(metadot_mutex* _mutex) { pthread_mutex_destroy(_mutex); }
+static inline void metadot_mutex_destroy(metadot_mutex *_mutex) { pthread_mutex_destroy(_mutex); }
 
-static inline void metadot_mutex_lock(metadot_mutex* _mutex) { pthread_mutex_lock(_mutex); }
+static inline void metadot_mutex_lock(metadot_mutex *_mutex) { pthread_mutex_lock(_mutex); }
 
-static inline int metadot_mutex_trylock(metadot_mutex* _mutex) { return pthread_mutex_trylock(_mutex); }
+static inline int metadot_mutex_trylock(metadot_mutex *_mutex) { return pthread_mutex_trylock(_mutex); }
 
-static inline void metadot_mutex_unlock(metadot_mutex* _mutex) { pthread_mutex_unlock(_mutex); }
+static inline void metadot_mutex_unlock(metadot_mutex *_mutex) { pthread_mutex_unlock(_mutex); }
 
 #else
 #error "Unsupported platform!"
@@ -208,4 +210,171 @@ void metadot_set_windowtitle(const char* title);
 char* metadot_clipboard_get();
 METAENGINE_Result metadot_clipboard_set(const char* string);
 
-#endif  // METADOT_PLATFORM_H
+#pragma region strings
+
+#ifndef _WIN32
+
+#pragma message("this strinengine.h implementation is for Windows only!")
+
+#else
+
+static int bcmp(const void *s1, const void *s2, size_t n) { return memcmp(s1, s2, n); }
+
+static void bcopy(const void *src, void *dest, size_t n) { memcpy(dest, src, n); }
+
+static void bzero(void *s, size_t n) { memset(s, 0, n); }
+
+static void explicit_bzero(void *s, size_t n) {
+    volatile char *vs = (volatile char *)s;
+    while (n) {
+        *vs++ = 0;
+        n--;
+    }
+}
+
+static const char *index(const char *s, int c) { return strchr(s, c); }
+
+static const char *rindex(const char *s, int c) { return strrchr(s, c); }
+
+static int ffs(int i) {
+    int bit;
+
+    if (0 == i) return 0;
+
+    for (bit = 1; !(i & 1); ++bit) i >>= 1;
+    return bit;
+}
+
+static int ffsl(long i) {
+    int bit;
+
+    if (0 == i) return 0;
+
+    for (bit = 1; !(i & 1); ++bit) i >>= 1;
+    return bit;
+}
+
+static int ffsll(long long i) {
+    int bit;
+
+    if (0 == i) return 0;
+
+    for (bit = 1; !(i & 1); ++bit) i >>= 1;
+    return bit;
+}
+
+#ifndef __MINGW32__
+
+static int strcasecmp(const char *s1, const char *s2) {
+    const unsigned char *u1 = (const unsigned char *)s1;
+    const unsigned char *u2 = (const unsigned char *)s2;
+    int result;
+
+    while ((result = tolower(*u1) - tolower(*u2)) == 0 && *u1 != 0) {
+        *u1++;
+        *u2++;
+    }
+
+    return result;
+}
+
+static int strncasecmp(const char *s1, const char *s2, size_t n) {
+    const unsigned char *u1 = (const unsigned char *)s1;
+    const unsigned char *u2 = (const unsigned char *)s2;
+    int result;
+
+    for (; n != 0; n--) {
+        result = tolower(*u1) - tolower(*u2);
+        if (result) return result;
+        if (*u1 == 0) return 0;
+    }
+    return 0;
+}
+
+static int strcasecmp_l(const char *s1, const char *s2, _locale_t loc) {
+    const unsigned char *u1 = (const unsigned char *)s1;
+    const unsigned char *u2 = (const unsigned char *)s2;
+    int result;
+
+    while ((result = _tolower_l(*u1, loc) - _tolower_l(*u2, loc)) == 0 && *u1 != 0) {
+        *u1++;
+        *u2++;
+    }
+
+    return result;
+}
+
+static int strncasecmp_l(const char *s1, const char *s2, size_t n, _locale_t loc) {
+    const unsigned char *u1 = (const unsigned char *)s1;
+    const unsigned char *u2 = (const unsigned char *)s2;
+    int result;
+
+    for (; n != 0; n--) {
+        result = _tolower_l(*u1, loc) - _tolower_l(*u2, loc);
+        if (result) return result;
+        if (*u1 == 0) return 0;
+    }
+    return 0;
+}
+
+#endif
+
+#endif /* _WIN32 */
+
+#pragma endregion strings
+
+#if __linux__
+#define openFile(filePath, mode) fopen(filePath, mode)
+#define seekFile(file, offset, whence) fseeko(file, offset, whence)
+#define tellFile(file) ftello(file)
+#elif _WIN32
+inline static FILE *openFile(const char *filePath, const char *mode) {
+    FILE *file;
+
+    errno_t error = fopen_s(&file, filePath, mode);
+
+    if (error != 0) return NULL;
+
+    return file;
+}
+
+#define seekFile(file, offset, whence) _fseeki64(file, offset, whence)
+#define tellFile(file) _ftelli64(file)
+#else
+#error Unsupported operating system
+#endif
+
+#define closeFile(file) fclose(file)
+
+#ifdef ME_PLATFORM_WINDOWS
+#define S_ISREG(m) (((m)&0170000) == (0100000))
+#define S_ISDIR(m) (((m)&0170000) == (0040000))
+#endif
+
+inline bool ME_fs_exists(const char* path) {
+    struct stat buffer;
+    return (stat(path, &buffer) == 0 || S_ISDIR(buffer.st_mode));
+}
+
+inline const char* ME_fs_get_filename(const char* path) {
+    int len = strlen(path);
+    int flag = 0;
+
+    for (int i = len - 1; i > 0; i--) {
+        if (path[i] == '\\' || path[i] == '//' || path[i] == '/') {
+            flag = 1;
+            path = path + i + 1;
+            break;
+        }
+    }
+    return path;
+}
+
+char* ME_fs_readfilestring(const char* path);
+void ME_fs_freestring(void* ptr);
+std::string ME_fs_normalize_path(const std::string& messyPath);
+bool ME_fs_directory_exists(const std::filesystem::path& path, std::filesystem::file_status status = std::filesystem::file_status{});
+void ME_fs_create_directory(const std::string& directory_name);
+std::string ME_fs_readfile(const std::string& filename);
+
+#endif  // ME_PLATFORM_H

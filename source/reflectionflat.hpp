@@ -7,14 +7,13 @@
 #include <vector>
 
 #include "core/core.h"
-#include "core/macros.h"
-#include "core/cpp/command.hpp"
+#include "core/macros.hpp"
 #include "game_basic.hpp"
 
-METADOT_INLINE Command::ItemLog &operator<<(Command::ItemLog &log, ImVec4 &vec) {
-    log << "ImVec4: [" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << "]";
-    return log;
-}
+//ME_INLINE Command::ItemLog &operator<<(Command::ItemLog &log, ImVec4 &vec) {
+//    log << "ImVec4: [" << vec.x << ", " << vec.y << ", " << vec.z << ", " << vec.w << "]";
+//    return log;
+//}
 
 static void int_setter(int &my_type, int v) { my_type = v; }
 
@@ -40,7 +39,7 @@ struct Msg {
 }  // namespace Meta
 
 template <>
-struct MetaEngine::StaticRefl::TypeInfo<Meta::Msg> : TypeInfoBase<Meta::Msg> {
+struct ME::meta::static_refl::TypeInfo<Meta::Msg> : TypeInfoBase<Meta::Msg> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("a"), &Type::a},

@@ -13,9 +13,8 @@
 
 #include "audio/audio.h"
 #include "core/alloc.hpp"
-#include "core/cpp/command.hpp"
 #include "core/debug.hpp"
-#include "core/macros.h"
+#include "core/macros.hpp"
 #include "core/profiler/profiler.h"
 #include "core/sdl_wrapper.h"
 #include "game_datastruct.hpp"
@@ -27,59 +26,6 @@
 #define METADOT_FLASHL_TIME_IN_MS 333.0f
 
 struct ImGuiSettingsHandler;
-class ImGuiConsole {
-public:
-    explicit ImGuiConsole(std::string c_name = "Console", size_t inputBufferSize = 256);
-
-    void Draw();
-
-    Command::System& System();
-
-protected:
-    Command::System m_ConsoleSystem;
-    size_t m_HistoryIndex;
-
-    std::string m_Buffer;
-    std::string m_ConsoleName;
-    ImGuiTextFilter m_TextFilter;
-    bool m_AutoScroll;
-    bool m_ColoredOutput;
-    bool m_ScrollToBottom;
-    bool m_FilterBar;
-    bool m_TimeStamps;
-
-    void InitIniSettings();
-    void DefaultSettings();
-    void RegisterConsoleCommands();
-
-    void MenuBar();
-    void FilterBar();
-    void InputBar();
-    void LogWindow();
-
-    static void HelpMaker(const char* desc);
-
-    F32 m_WindowAlpha;
-
-    enum COLOR_PALETTE {
-
-        COL_COMMAND = 0,
-        COL_LOG,
-        COL_WARNING,
-        COL_ERROR,
-        COL_INFO,
-
-        COL_TIMESTAMP,
-
-        COL_COUNT
-    };
-
-    std::array<ImVec4, COL_COUNT> m_ColorPalette;
-    static int InputCallback(ImGuiInputTextCallbackData* data);
-    bool m_WasPrevFrameTabCompletion = false;
-    std::vector<std::string> m_CmdSuggestions;
-    bool m_LoadedFromIni = false;
-};
 
 static const int s_maxLevelColors = 11;
 static const ImU32 s_levelColors[s_maxLevelColors] = {IM_COL32(90, 150, 110, 255), IM_COL32(80, 180, 115, 255),  IM_COL32(129, 195, 110, 255), IM_COL32(170, 190, 100, 255),
@@ -115,7 +61,7 @@ static_inline T ProfilerMin(T _v1, T _v2) {
     return _v1 < _v2 ? _v1 : _v2;
 }
 
-METADOT_INLINE void flashColor(ImU32& _drawColor, uint64_t _elapsedTime) {
+ME_INLINE void flashColor(ImU32& _drawColor, uint64_t _elapsedTime) {
     ImVec4 white4 = ImColor(IM_COL32_WHITE);
 
     float msSince = ProfilerClock2ms(_elapsedTime, ProfilerGetClockFrequency());
@@ -126,7 +72,7 @@ METADOT_INLINE void flashColor(ImU32& _drawColor, uint64_t _elapsedTime) {
     _drawColor = ImColor(col4.x + (white4.x - col4.x) * msSince, col4.y + (white4.y - col4.y) * msSince, col4.z + (white4.z - col4.z) * msSince, 255.0f);
 }
 
-METADOT_INLINE void flashColorNamed(ImU32& _drawColor, ProfilerScope& _cs, uint64_t _elapsedTime) {
+ME_INLINE void flashColorNamed(ImU32& _drawColor, ProfilerScope& _cs, uint64_t _elapsedTime) {
     if (s_statClickedName && (strcmp(_cs.m_name, s_statClickedName) == 0) && (_cs.m_level == s_statClickedLevel)) flashColor(_drawColor, _elapsedTime);
 }
 
@@ -143,8 +89,8 @@ struct FrameInfo {
     uint32_t m_size;
 };
 
-METADOT_INLINE struct SortScopes {
-    METADOT_INLINE bool operator()(const ProfilerScope& a, const ProfilerScope& b) const {
+ME_INLINE struct SortScopes {
+    ME_INLINE bool operator()(const ProfilerScope& a, const ProfilerScope& b) const {
         if (a.m_threadID < b.m_threadID) return true;
         if (b.m_threadID < a.m_threadID) return false;
 
@@ -158,33 +104,33 @@ METADOT_INLINE struct SortScopes {
     }
 } customLess;
 
-METADOT_INLINE struct SortFrameInfoChrono {
-    METADOT_INLINE bool operator()(const FrameInfo& a, const FrameInfo& b) const {
+ME_INLINE struct SortFrameInfoChrono {
+    ME_INLINE bool operator()(const FrameInfo& a, const FrameInfo& b) const {
         if (a.m_offset < b.m_offset) return true;
         return false;
     }
 } customChrono;
 
-METADOT_INLINE struct SortFrameInfoDesc {
-    METADOT_INLINE bool operator()(const FrameInfo& a, const FrameInfo& b) const {
+ME_INLINE struct SortFrameInfoDesc {
+    ME_INLINE bool operator()(const FrameInfo& a, const FrameInfo& b) const {
         if (a.m_time > b.m_time) return true;
         return false;
     }
 } customDesc;
 
-METADOT_INLINE struct SortFrameInfoAsc {
-    METADOT_INLINE bool operator()(const FrameInfo& a, const FrameInfo& b) const {
+ME_INLINE struct SortFrameInfoAsc {
+    ME_INLINE bool operator()(const FrameInfo& a, const FrameInfo& b) const {
         if (a.m_time < b.m_time) return true;
         return false;
     }
 } customAsc;
 
-METADOT_INLINE struct sortExcusive {
-    METADOT_INLINE bool operator()(const ProfilerScope& a, const ProfilerScope& b) const { return (a.m_stats->m_exclusiveTimeTotal > b.m_stats->m_exclusiveTimeTotal); }
+ME_INLINE struct sortExcusive {
+    ME_INLINE bool operator()(const ProfilerScope& a, const ProfilerScope& b) const { return (a.m_stats->m_exclusiveTimeTotal > b.m_stats->m_exclusiveTimeTotal); }
 } customLessExc;
 
-METADOT_INLINE struct sortInclusive {
-    METADOT_INLINE bool operator()(const ProfilerScope& a, const ProfilerScope& b) const { return (a.m_stats->m_inclusiveTimeTotal > b.m_stats->m_inclusiveTimeTotal); }
+ME_INLINE struct sortInclusive {
+    ME_INLINE bool operator()(const ProfilerScope& a, const ProfilerScope& b) const { return (a.m_stats->m_inclusiveTimeTotal > b.m_stats->m_inclusiveTimeTotal); }
 } customLessInc;
 
 void ProfilerDrawFrameNavigation(FrameInfo* _infos, uint32_t _numInfos);
@@ -222,7 +168,6 @@ private:
     EditorView* view_editing = nullptr;
     ImGuiWidget::FileBrowser fileDialog;
     ImGuiID dockspace_id;
-    ImGuiConsole* console_imgui;
 
 private:
     static void (*RendererShutdownFunction)();

@@ -20,10 +20,7 @@
 
 #include "core/core.hpp"
 #include "core/cpp/name.hpp"
-#include "core/cpp/static_relfection.hpp"
-
-
-
+#include "meta/static_relfection.hpp"
 
 #ifdef __cplusplus
 extern "C" {
@@ -218,7 +215,6 @@ typedef struct _METADOT_CREFLECT_TypeInfo METADOT_CREFLECT_TypeInfo;
 }
 #endif
 
-
 namespace Meta {
 template <typename Str>
 struct Typeof;
@@ -247,10 +243,10 @@ constexpr auto attr_init(Str, Value &&v) {
         return T{std::forward<Value>(v)};
 }
 
-#define TYPEOF_REGISTER(X)                                                     \
-    template <>                                                                \
-    struct Meta::Typeof<typename MetaEngine::StaticRefl::TypeInfo<X>::TName> { \
-        using type = X;                                                        \
+#define TYPEOF_REGISTER(X)                                                    \
+    template <>                                                               \
+    struct Meta::Typeof<typename ME::meta::static_refl::TypeInfo<X>::TName> { \
+        using type = X;                                                       \
     }
 
 namespace IamAfuckingNamespace {
@@ -467,7 +463,7 @@ struct at<typelist<T, TS...>, 0> {
 
 template <typename T, typename... TS, size_t I>
 struct at<typelist<T, TS...>, I> {
-    METADOT_STATIC_ASSERT(I < (1 + sizeof...(TS)), "Out of bounds access");
+    ME_STATIC_ASSERT(I < (1 + sizeof...(TS)), "Out of bounds access");
     using type = typename at<typelist<TS...>, I - 1>::type;
 };
 
@@ -530,7 +526,7 @@ struct find_ancestors<typelist<>, DESTLIST> {
 
 template <typename TL, typename T>
 struct find_ancestors {
-    METADOT_STATIC_ASSERT(is_typelist<TL>::value, "The first parameter is not a typelist");
+    ME_STATIC_ASSERT(is_typelist<TL>::value, "The first parameter is not a typelist");
 
     template <typename U>
     using base_of_T = typename std::is_base_of<U, T>::type;
@@ -544,7 +540,7 @@ using namespace tmp;
 
 template <typename TL>
 struct hierarchy_iterator {
-    METADOT_STATIC_ASSERT(is_typelist<TL>::value, "Not a typelist");
+    ME_STATIC_ASSERT(is_typelist<TL>::value, "Not a typelist");
     inline static void exec(void *_p) {
         using target_t = typename pop_front<TL>::type;
         if (auto ptr = static_cast<target_t *>(_p)) {
@@ -620,7 +616,7 @@ struct struct_member_count_impl2<T, std::index_sequence<I...>>
 template <class T>
 struct StructMemberCount : detail::struct_member_count_impl2<T> {};
 
-#include "preprocesserflat.hpp"
+#include "enum_pp.hpp"
 
 namespace detail {
 

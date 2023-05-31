@@ -11,6 +11,7 @@
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
+#include "core/utility.hpp"
 #include "ecs/ecs.hpp"
 #include "engine/engine.h"
 #include "game.hpp"
@@ -19,8 +20,8 @@
 #include "libs/imgui/imgui.h"
 #include "scripting/lua/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
-#include "ui/imgui/imgui_layer.hpp"
 #include "ui/imgui/imgui_impl.hpp"
+#include "ui/imgui/imgui_layer.hpp"
 #include "ui/ui.hpp"
 #include "world_generator.cpp"
 
@@ -227,7 +228,8 @@ void OptionsUI__DrawAudio(Game *game) {
     // }
 
     // std::vector<std::vector<std::string>> disp = {
-    //         {"bus:/Master", "Master"}, {"bus:/Master/Underwater/Music", "Music"}, {"bus:/Master/GUI", "GUI"}, {"bus:/Master/Underwater/Player", "Player"}, {"bus:/Master/Underwater/World", "World"}};
+    //         {"bus:/Master", "Master"}, {"bus:/Master/Underwater/Music", "Music"}, {"bus:/Master/GUI", "GUI"}, {"bus:/Master/Underwater/Player", "Player"}, {"bus:/Master/Underwater/World",
+    //         "World"}};
 
     // for (auto &v : disp) {
     //     F32 volume = 0;
@@ -427,7 +429,7 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
         game->GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / 3 / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * 3,
                                        Render.target, &global.audio, generator);
         game->GameIsolate_.world->metadata.worldName = std::string(gameUI.MainMenuUI__worldNameBuf);
-        game->GameIsolate_.world->metadata.lastOpenedTime = metadot_gettime() / 1000;
+        game->GameIsolate_.world->metadata.lastOpenedTime = ME_gettime() / 1000;
         game->GameIsolate_.world->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
         game->GameIsolate_.world->metadata.save(wpStr);
 
@@ -489,7 +491,7 @@ void MainMenuUI__reset(Game *game) {
 }
 
 void MainMenuUI__DrawWorldLists(Game *game) {
-    long long now = metadot_gettime();
+    long long now = ME_gettime();
     if (now - gameUI.MainMenuUI__lastRefresh > 3000) {
         MainMenuUI__RefreshWorlds(game);
         gameUI.MainMenuUI__lastRefresh = now;
@@ -545,7 +547,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
                 game->GameIsolate_.world = MetaEngine::CreateScope<World>();
                 game->GameIsolate_.world->init(METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
                                                (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, Render.target, &global.audio);
-                game->GameIsolate_.world->metadata.lastOpenedTime = metadot_gettime() / 1000;
+                game->GameIsolate_.world->metadata.lastOpenedTime = ME_gettime() / 1000;
                 game->GameIsolate_.world->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
                 game->GameIsolate_.world->metadata.save(game->GameIsolate_.world->worldName);
 

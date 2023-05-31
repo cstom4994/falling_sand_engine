@@ -6,8 +6,8 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include "core/macros.h"
-#include "log.h"
+#include "core/basic_types.h"
+#include "core/macros.hpp"
 
 #define METADOT_INT8_MAX 0x7F
 #define METADOT_UINT8_MAX 0xFF
@@ -55,10 +55,14 @@ typedef struct Pixel {
 #else
 #define METADOT_BUG(...)
 #endif
-#define METADOT_TRACE(...) log_trace(__VA_ARGS__)
-#define METADOT_INFO(...) log_info(__VA_ARGS__)
-#define METADOT_WARN(...) log_warn(__VA_ARGS__)
-#define METADOT_ERROR(...) log_error(__VA_ARGS__)
+// #define METADOT_TRACE(...) log_trace(__VA_ARGS__)
+// #define METADOT_INFO(...) log_info(__VA_ARGS__)
+// #define METADOT_WARN(...) log_warn(__VA_ARGS__)
+// #define METADOT_ERROR(...) log_error(__VA_ARGS__)
+#define METADOT_TRACE(...)
+#define METADOT_INFO(...)
+#define METADOT_WARN(...)
+#define METADOT_ERROR(...)
 #define METADOT_LOG_SCOPE_FUNCTION(_c)
 #define METADOT_LOG_SCOPE_F(...)
 
@@ -187,7 +191,7 @@ typedef struct Pixel {
 #define NOMINMAX WINDOWS_IS_ANNOYING_AINT_IT
 #endif
 
-#ifdef METADOT_PLATFORM_WINDOWS
+#ifdef ME_PLATFORM_WINDOWS
 #define METADOT_CDECL __cdecl
 #else
 #define METADOT_CDECL
@@ -249,7 +253,7 @@ constexpr typename metadot_remove_reference<T>::type &&metadot_move(T &&arg) noe
 // avoid defining this class if someone already included <initializer_list> before including
 // cute framework <cute.h>.
 
-#ifdef METADOT_PLATFORM_WINDOWS
+#ifdef ME_PLATFORM_WINDOWS
 
 #if !defined(_INITIALIZER_LIST_) && !defined(_INITIALIZER_LIST) && !defined(_LIBCPP_INITIALIZER_LIST)
 #define _INITIALIZER_LIST_        // MSVC
@@ -294,11 +298,11 @@ constexpr const T *end(initializer_list<T> list) noexcept {
 
 #endif
 
-#else  // METADOT_PLATFORM_WINDOWS
+#else  // ME_PLATFORM_WINDOWS
 
 #include <initializer_list>
 
-#endif  // METADOT_PLATFORM_WINDOWS
+#endif  // ME_PLATFORM_WINDOWS
 
 template <typename T>
 using METAENGINE_InitializerList = std::initializer_list<T>;
@@ -314,7 +318,7 @@ using remove_reference = metadot_remove_reference<T>;
 #endif
 
 // Not sure where to put this... Here is good I guess.
-METADOT_INLINE uint64_t metadot_fnv1a(const void *data, int size) {
+ME_INLINE uint64_t metadot_fnv1a(const void *data, int size) {
     const char *s = (const char *)data;
     uint64_t h = 14695981039346656037ULL;
     char c = 0;

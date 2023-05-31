@@ -592,8 +592,8 @@ bool ImGui_ImplOpenGL3_CreateDeviceObjects() {
     int glsl_version = 130;
     sscanf(bd->GlslVersionString, "#version %d", &glsl_version);
 
-    char *vertex_shader = metadot_fs_readfilestring(METADOT_RESLOC("data/shaders/imgui_common.vert"));
-    char *fragment_shader = metadot_fs_readfilestring(METADOT_RESLOC("data/shaders/imgui_common.frag"));
+    char *vertex_shader = ME_fs_readfilestring(METADOT_RESLOC("data/shaders/imgui_common.vert"));
+    char *fragment_shader = ME_fs_readfilestring(METADOT_RESLOC("data/shaders/imgui_common.frag"));
 
     // Create shaders
     GLuint vert_handle = glCreateShader(GL_VERTEX_SHADER);
@@ -606,8 +606,8 @@ bool ImGui_ImplOpenGL3_CreateDeviceObjects() {
     glCompileShader(frag_handle);
     CheckShader(frag_handle, "fragment shader");
 
-    metadot_fs_freestring(vertex_shader);
-    metadot_fs_freestring(fragment_shader);
+    ME_fs_freestring(vertex_shader);
+    ME_fs_freestring(fragment_shader);
 
     // Link
     bd->ShaderHandle = glCreateProgram();

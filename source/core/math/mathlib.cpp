@@ -19,7 +19,7 @@ F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap, int y_wrap, int z_wrap) { retur
 
 #pragma region NewMATH
 
-F32 NewMaths::vec22angle(vec2 v2) { return atan2f(v2.y, v2.x); }
+F32 NewMaths::vec22angle(MEvec2 v2) { return atan2f(v2.y, v2.x); }
 
 F32 NewMaths::clamp(F32 input, F32 min, F32 max) {
     if (input < min)
@@ -236,7 +236,7 @@ static NewMaths::v2 rand_vector(F32 length) { return NewMaths::v2(NewMaths::rand
 
 // --------------- Vector Functions ---------------
 
-vec3 NewMaths::NormalizeVector(vec3 v) {
+MEvec3 NewMaths::NormalizeVector(MEvec3 v) {
     F32 l = sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
     if (l == 0) return VECTOR3_ZERO;
 
@@ -246,37 +246,37 @@ vec3 NewMaths::NormalizeVector(vec3 v) {
     return v;
 }
 
-vec3 NewMaths::Add(vec3 a, vec3 b) {
+MEvec3 NewMaths::Add(MEvec3 a, MEvec3 b) {
     a.x += b.x;
     a.y += b.y;
     a.z += b.z;
     return a;
 }
 
-vec3 NewMaths::Subtract(vec3 a, vec3 b) {
+MEvec3 NewMaths::Subtract(MEvec3 a, MEvec3 b) {
     a.x -= b.x;
     a.y -= b.y;
     a.z -= b.z;
     return a;
 }
 
-vec3 NewMaths::ScalarMult(vec3 v, F32 s) { return vec3 {v.x * s, v.y * s, v.z * s}; }
+MEvec3 NewMaths::ScalarMult(MEvec3 v, F32 s) { return MEvec3{v.x * s, v.y * s, v.z * s}; }
 
-F64 NewMaths::Distance(vec3 a, vec3 b) {
-    vec3 AMinusB = Subtract(a, b);
+F64 NewMaths::Distance(MEvec3 a, MEvec3 b) {
+    MEvec3 AMinusB = Subtract(a, b);
     return sqrt(UTIL_dot(AMinusB, AMinusB));
 }
 
-vec3 NewMaths::VectorProjection(vec3 a, vec3 b) {
+MEvec3 NewMaths::VectorProjection(MEvec3 a, MEvec3 b) {
     // https://en.wikipedia.org/wiki/Vector_projection
-    vec3 normalizedB = NormalizeVector(b);
+    MEvec3 normalizedB = NormalizeVector(b);
     F64 a1 = UTIL_dot(a, normalizedB);
     return ScalarMult(normalizedB, a1);
 }
 
-vec3 NewMaths::Reflection(vec3 *v1, vec3 *v2) {
+MEvec3 NewMaths::Reflection(MEvec3 *v1, MEvec3 *v2) {
     F32 dotpr = UTIL_dot(*v2, *v1);
-    vec3 result;
+    MEvec3 result;
     result.x = v2->x * 2 * dotpr;
     result.y = v2->y * 2 * dotpr;
     result.z = v2->z * 2 * dotpr;
@@ -288,9 +288,9 @@ vec3 NewMaths::Reflection(vec3 *v1, vec3 *v2) {
     return result;
 }
 
-vec3 NewMaths::RotatePoint(vec3 p, vec3 r, vec3 pivot) { return Add(RotateVector(Subtract(p, pivot), EulerAnglesToMatrix3x3(r)), pivot); }
+MEvec3 NewMaths::RotatePoint(MEvec3 p, MEvec3 r, MEvec3 pivot) { return Add(RotateVector(Subtract(p, pivot), EulerAnglesToMatrix3x3(r)), pivot); }
 
-F64 NewMaths::DistanceFromPointToLine2D(vec3 lP1, vec3 lP2, vec3 p) {
+F64 NewMaths::DistanceFromPointToLine2D(MEvec3 lP1, MEvec3 lP2, MEvec3 p) {
     // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
     return fabsf((lP2.y - lP1.y) * p.x - (lP2.x - lP1.x) * p.y + lP2.x * lP1.y - lP2.y * lP1.x) / Distance(lP1, lP2);
 }
@@ -322,8 +322,8 @@ NewMaths::Matrix3x3 NewMaths::Identity() {
 }
 
 // Based on the article: Extracting Euler Angles from a Rotation Matrix - Mike Day, Insomniac Games
-vec3 NewMaths::Matrix3x3ToEulerAngles(Matrix3x3 m) {
-    vec3 rotation = VECTOR3_ZERO;
+MEvec3 NewMaths::Matrix3x3ToEulerAngles(Matrix3x3 m) {
+    MEvec3 rotation = VECTOR3_ZERO;
     rotation.x = atan2(m.m[1][2], m.m[2][2]);
 
     F32 c2 = sqrt(m.m[0][0] * m.m[0][0] + m.m[0][1] * m.m[0][1]);
@@ -336,7 +336,7 @@ vec3 NewMaths::Matrix3x3ToEulerAngles(Matrix3x3 m) {
     return ScalarMult(rotation, 180.0 / PI);
 }
 
-NewMaths::Matrix3x3 NewMaths::EulerAnglesToMatrix3x3(vec3 rotation) {
+NewMaths::Matrix3x3 NewMaths::EulerAnglesToMatrix3x3(MEvec3 rotation) {
 
     F32 s1 = sin(rotation.x * PI / 180.0);
     F32 c1 = cos(rotation.x * PI / 180.0);
@@ -351,8 +351,8 @@ NewMaths::Matrix3x3 NewMaths::EulerAnglesToMatrix3x3(vec3 rotation) {
 }
 
 // Vectors are interpreted as rows
-inline vec3 NewMaths::RotateVector(vec3 v, Matrix3x3 m) {
-    return vec3 {v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0], v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1], v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2]};
+inline MEvec3 NewMaths::RotateVector(MEvec3 v, Matrix3x3 m) {
+    return MEvec3{v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0], v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1], v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2]};
 }
 
 NewMaths::Matrix3x3 NewMaths::MultiplyMatrix3x3(Matrix3x3 a, Matrix3x3 b) {
@@ -369,9 +369,9 @@ NewMaths::Matrix3x3 NewMaths::MultiplyMatrix3x3(Matrix3x3 a, Matrix3x3 b) {
     }
 
     return r;
-} 
+}
 
-NewMaths::Matrix4x4 NewMaths::Identity4x4() { return Matrix4x4 {{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}}; }
+NewMaths::Matrix4x4 NewMaths::Identity4x4() { return Matrix4x4{{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}}; }
 
 NewMaths::Matrix4x4 NewMaths::GetProjectionMatrix(F32 rightPlane, F32 leftPlane, F32 topPlane, F32 bottomPlane, F32 nearPlane, F32 farPlane) {
     Matrix4x4 matrix = {{{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}};
@@ -487,7 +487,6 @@ uint32_t pcg32_boundedrand(uint32_t bound) { return pcg32_boundedrand_r(&pcg32_g
 
 #pragma endregion PCG
 
-
 #pragma region Poro
 
 namespace MetaEngine {
@@ -563,7 +562,7 @@ bool IsPointInsidePolygon(const CVector2<int> &point, const std::vector<CVector2
  * edges which are entirely to one side of the test ray.
  *
  * Input 2D polygon _pgon_ with _numverts_ number of vertices and test point
- * _point_, returns 1 if inside, 0 if outside.	WINDING and CONVEX can be
+ * _point_, returns 1 if inside, 0 if outside.  WINDING and CONVEX can be
  * defined for this test.
  */
 // int CrossingsTest( const std::vector< types::vector2 >& pgon, numverts, point )
@@ -701,11 +700,11 @@ bool TestLineAABB(const CVector2<PointType> &p0, const CVector2<PointType> &p1, 
     typedef CVector2<PointType> Point;
     typedef CVector2<PointType> Vector;
 
-    // Point	rect_center = ( rect_min + rect_max ) * 0.5f;
+    // Point    rect_center = ( rect_min + rect_max ) * 0.5f;
     const Vector rect_extents(rect_max - rect_min);
     const Vector line_halfwidth(p1 - p0);
     const Point line_midpoint(p0 + p1 - rect_min - rect_max);
-    // line_midpoint = line_midpoint - rect_center;		// Translate box and segment to origin
+    // line_midpoint = line_midpoint - rect_center;     // Translate box and segment to origin
 
     // Try world coordinate axes as separating axes
     float adx = abs(line_halfwidth.x);

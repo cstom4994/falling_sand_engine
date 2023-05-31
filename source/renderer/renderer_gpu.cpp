@@ -9,7 +9,7 @@
 
 #include "core/const.h"
 #include "core/core.h"
-#include "core/macros.h"
+#include "core/macros.hpp"
 #include "core/sdl_wrapper.h"
 #include "libs/external/stb_image.h"
 #include "renderer_gpu.h"

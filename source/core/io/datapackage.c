@@ -34,6 +34,8 @@ typedef unsigned __int64 uint64_t;
 
 #include "libs/external/mman.h"
 
+#define datapack_error_pf printf
+
 #define DATAPACK_GATHER_BUFLEN 8192
 #define DATAPACK_MAGIC "yzx"
 #define DATAPACK_MAGIC_LENGTH 3
@@ -504,7 +506,7 @@ datapack_node *datapack_map_va(char *fmt, va_list ap) {
                 lparen_level++;
                 break;
             default:
-                METADOT_ERROR("Datapack: unsupported option %c\n", *c);
+                datapack_error_pf("Datapack: unsupported option %c\n", *c);
                 goto fail;
         }
         c++;
@@ -519,7 +521,7 @@ datapack_node *datapack_map_va(char *fmt, va_list ap) {
     return root;
 
 fail:
-    METADOT_ERROR("Datapack: failed to parse %s\n", fmt);
+    datapack_error_pf("Datapack: failed to parse %s\n", fmt);
     datapack_free(root);
     return NULL;
 }
@@ -527,7 +529,7 @@ fail:
 static int datapack_unmap_file(datapack_mmap_rec *mr) {
 
     if (munmap(mr->text, mr->text_sz) == -1) {
-        METADOT_ERROR("Datapack: Failed to munmap: %s\n", strerror(errno));
+        datapack_error_pf("Datapack: Failed to munmap: %s\n", strerror(errno));
     }
     close(mr->fd);
     mr->text = NULL;
@@ -945,7 +947,7 @@ int datapack_dump(datapack_node *r, int mode, ...) {
     struct stat sbuf;
 
     if (((datapack_root_data *)(r->data))->flags & DATAPACK_RDONLY) { /* unusual */
-        METADOT_ERROR("Datapack: error: datapack_dump called for a loaded datapack\n");
+        datapack_error_pf("Datapack: error: datapack_dump called for a loaded datapack\n");
         return -1;
     }
 
@@ -960,10 +962,10 @@ int datapack_dump(datapack_node *r, int mode, ...) {
         else {
             rc = datapack_dump_to_mem(r, buf, sz);
             if (msync(buf, sz, MS_SYNC) == -1) {
-                METADOT_ERROR("Datapack: msync failed on fd %d: %s\n", fd, strerror(errno));
+                datapack_error_pf("Datapack: msync failed on fd %d: %s\n", fd, strerror(errno));
             }
             if (munmap(buf, sz) == -1) {
-                METADOT_ERROR("Datapack: munmap failed on fd %d: %s\n", fd, strerror(errno));
+                datapack_error_pf("Datapack: munmap failed on fd %d: %s\n", fd, strerror(errno));
             }
             close(fd);
         }
@@ -979,11 +981,11 @@ int datapack_dump(datapack_node *r, int mode, ...) {
                 bufv += rc;
             } else if (rc == -1) {
                 if (errno == EINTR || errno == EAGAIN) continue;
-                METADOT_ERROR("Datapack: error writing to fd %d: %s\n", fd, strerror(errno));
+                datapack_error_pf("Datapack: error writing to fd %d: %s\n", fd, strerror(errno));
                 /* attempt to rewind partial write to a regular file */
                 if (fstat(fd, &sbuf) == 0 && S_ISREG(sbuf.st_mode)) {
                     if (ftruncate(fd, sbuf.st_size - (bufv - (char *)buf)) == -1) {
-                        METADOT_ERROR("Datapack: can't rewind: %s\n", strerror(errno));
+                        datapack_error_pf("Datapack: can't rewind: %s\n", strerror(errno));
                     }
                 }
                 free(buf);
@@ -997,7 +999,7 @@ int datapack_dump(datapack_node *r, int mode, ...) {
             pa_addr = (void *)va_arg(ap, void *);
             pa_sz = va_arg(ap, size_t);
             if (pa_sz < sz) {
-                METADOT_ERROR("Datapack: datapack_dump: buffer too small, need %d bytes\n", sz);
+                datapack_error_pf("Datapack: datapack_dump: buffer too small, need %d bytes\n", sz);
                 return -1;
             }
             rc = datapack_dump_to_mem(r, pa_addr, sz);
@@ -1013,7 +1015,7 @@ int datapack_dump(datapack_node *r, int mode, ...) {
         sz_out = va_arg(ap, size_t *);
         *sz_out = sz;
     } else {
-        METADOT_ERROR("Datapack: unsupported datapack_dump mode %d\n", mode);
+        datapack_error_pf("Datapack: unsupported datapack_dump mode %d\n", mode);
         rc = -1;
     }
     va_end(ap);
@@ -1233,7 +1235,7 @@ char *datapack_peek(int mode, ...) {
 
     va_start(ap, mode);
     if ((mode & DATAPACK_FXLENS) && (mode & DATAPACK_DATAPEEK)) {
-        METADOT_ERROR("Datapack: DATAPACK_FXLENS and DATAPACK_DATAPEEK mutually exclusive\n");
+        datapack_error_pf("Datapack: DATAPACK_FXLENS and DATAPACK_DATAPEEK mutually exclusive\n");
         goto fail;
     }
     if (mode & DATAPACK_FILE)
@@ -1242,7 +1244,7 @@ char *datapack_peek(int mode, ...) {
         addr = va_arg(ap, void *);
         sz = va_arg(ap, size_t);
     } else {
-        METADOT_ERROR("Datapack: unsupported datapack_peek mode %d\n", mode);
+        datapack_error_pf("Datapack: unsupported datapack_peek mode %d\n", mode);
         goto fail;
     }
     if (mode & DATAPACK_DATAPEEK) {
@@ -1257,7 +1259,7 @@ char *datapack_peek(int mode, ...) {
 
     if (mode & DATAPACK_FILE) {
         if (datapack_mmap_file(filename, &mr) != 0) {
-            METADOT_ERROR("Datapack: datapack_peek failed for file %s\n", filename);
+            datapack_error_pf("Datapack: datapack_peek failed for file %s\n", filename);
             goto fail;
         }
         addr = mr.text;
@@ -1318,14 +1320,14 @@ char *datapack_peek(int mode, ...) {
 
         datapeek_flen = strlen(datapeek_f);
         if (strspn(datapeek_f, datapack_datapeek_ok_chars) < datapeek_flen) {
-            METADOT_ERROR("Datapack: invalid DATAPACK_DATAPEEK format: %s\n", datapeek_f);
+            datapack_error_pf("Datapack: invalid DATAPACK_DATAPEEK format: %s\n", datapeek_f);
             datapack_hook.free(fmt_cpy);
             fmt_cpy = NULL; /* fail */
             goto fail;
         }
 
         if (strncmp(&fmt[first_atom], datapeek_f, datapeek_flen) != 0) {
-            METADOT_ERROR("Datapack: DATAPACK_DATAPEEK format mismatches datapack iamge\n");
+            datapack_error_pf("Datapack: DATAPACK_DATAPEEK format mismatches datapack iamge\n");
             datapack_hook.free(fmt_cpy);
             fmt_cpy = NULL; /* fail */
             goto fail;
@@ -1337,7 +1339,7 @@ char *datapack_peek(int mode, ...) {
             datapeek_p = va_arg(ap, void *);
             if (*datapeek_c == 's') { /* special handling for strings */
                 if ((uintptr_t)dv - (uintptr_t)addr + sizeof(uint32_t) > sz) {
-                    METADOT_ERROR("Datapack: datapack_peek: datapack has insufficient length\n");
+                    datapack_error_pf("Datapack: datapack_peek: datapack has insufficient length\n");
                     datapack_hook.free(fmt_cpy);
                     fmt_cpy = NULL; /* fail */
                     goto fail;
@@ -1350,7 +1352,7 @@ char *datapack_peek(int mode, ...) {
                     datapeek_s = NULL;
                 else {
                     if ((uintptr_t)dv - (uintptr_t)addr + datapeek_ssz - 1 > sz) {
-                        METADOT_ERROR("Datapack: datapack_peek: datapack has insufficient length\n");
+                        datapack_error_pf("Datapack: datapack_peek: datapack has insufficient length\n");
                         datapack_hook.free(fmt_cpy);
                         fmt_cpy = NULL; /* fail */
                         goto fail;
@@ -1365,7 +1367,7 @@ char *datapack_peek(int mode, ...) {
             } else {
                 datapeek_csz = datapack_size_for(*datapeek_c);
                 if ((uintptr_t)dv - (uintptr_t)addr + datapeek_csz > sz) {
-                    METADOT_ERROR("Datapack: datapack_peek: datapack has insufficient length\n");
+                    datapack_error_pf("Datapack: datapack_peek: datapack has insufficient length\n");
                     datapack_hook.free(fmt_cpy);
                     fmt_cpy = NULL; /* fail */
                     goto fail;
@@ -1454,13 +1456,13 @@ int datapack_load(datapack_node *r, int mode, ...) {
     } else if (mode & DATAPACK_FD) {
         fd = va_arg(ap, int);
     } else {
-        METADOT_ERROR("Datapack: unsupported datapack_load mode %d\n", mode);
+        datapack_error_pf("Datapack: unsupported datapack_load mode %d\n", mode);
         return -1;
     }
     va_end(ap);
 
     if (r->type != DATAPACK_TYPE_ROOT) {
-        METADOT_ERROR("Datapack: error: datapack_load to non-root node\n");
+        datapack_error_pf("Datapack: error: datapack_load to non-root node\n");
         return -1;
     }
     if (((datapack_root_data *)(r->data))->flags & (DATAPACK_WRONLY | DATAPACK_RDONLY)) {
@@ -1469,16 +1471,16 @@ int datapack_load(datapack_node *r, int mode, ...) {
     }
     if (mode & DATAPACK_FILE) {
         if (datapack_mmap_file(filename, &((datapack_root_data *)(r->data))->mmap) != 0) {
-            METADOT_ERROR("Datapack: datapack_load failed for file %s\n", filename);
+            datapack_error_pf("Datapack: datapack_load failed for file %s\n", filename);
             return -1;
         }
         if ((rc = datapack_sanity(r, (mode & DATAPACK_EXCESS_OK))) != 0) {
             if (rc == ERR_FMT_MISMATCH) {
-                METADOT_ERROR("Datapack: %s: format signature mismatch\n", filename);
+                datapack_error_pf("Datapack: %s: format signature mismatch\n", filename);
             } else if (rc == ERR_FLEN_MISMATCH) {
-                METADOT_ERROR("Datapack: %s: array lengths mismatch\n", filename);
+                datapack_error_pf("Datapack: %s: array lengths mismatch\n", filename);
             } else {
-                METADOT_ERROR("Datapack: %s: not a valid datapack file\n", filename);
+                datapack_error_pf("Datapack: %s: not a valid datapack file\n", filename);
             }
             datapack_unmap_file(&((datapack_root_data *)(r->data))->mmap);
             return -1;
@@ -1489,9 +1491,9 @@ int datapack_load(datapack_node *r, int mode, ...) {
         ((datapack_root_data *)(r->data))->mmap.text_sz = sz;
         if ((rc = datapack_sanity(r, (mode & DATAPACK_EXCESS_OK))) != 0) {
             if (rc == ERR_FMT_MISMATCH) {
-                METADOT_ERROR("Datapack: format signature mismatch\n");
+                datapack_error_pf("Datapack: format signature mismatch\n");
             } else {
-                METADOT_ERROR("Datapack: not a valid datapack file\n");
+                datapack_error_pf("Datapack: not a valid datapack file\n");
             }
             return -1;
         }
@@ -1504,7 +1506,7 @@ int datapack_load(datapack_node *r, int mode, ...) {
         } else
             return -1;
     } else {
-        METADOT_ERROR("Datapack: invalid datapack_load mode %d\n", mode);
+        datapack_error_pf("Datapack: invalid datapack_load mode %d\n", mode);
         return -1;
     }
     /* this applies to DATAPACK_MEM or DATAPACK_FILE */
@@ -1518,7 +1520,7 @@ int datapack_Alen(datapack_node *r, int i) {
 
     n = datapack_find_i(r, i);
     if (n == NULL) {
-        METADOT_ERROR("Datapack: invalid index %d to datapack_unpack\n", i);
+        datapack_error_pf("Datapack: invalid index %d to datapack_unpack\n", i);
         return -1;
     }
     if (n->type != DATAPACK_TYPE_ARY) return -1;
@@ -1698,18 +1700,18 @@ static int datapack_mmap_output_file(char *filename, size_t sz, void **text_out)
 #endif
 
     if (fd == -1) {
-        METADOT_ERROR("Datapack: Couldn't open file %s: %s\n", filename, strerror(errno));
+        datapack_error_pf("Datapack: Couldn't open file %s: %s\n", filename, strerror(errno));
         return -1;
     }
 
     text = mmap(0, sz, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (text == MAP_FAILED) {
-        METADOT_ERROR("Datapack: Failed to mmap %s: %s\n", filename, strerror(errno));
+        datapack_error_pf("Datapack: Failed to mmap %s: %s\n", filename, strerror(errno));
         close(fd);
         return -1;
     }
     if (ftruncate(fd, sz) == -1) {
-        METADOT_ERROR("Datapack: ftruncate failed: %s\n", strerror(errno));
+        datapack_error_pf("Datapack: ftruncate failed: %s\n", strerror(errno));
         munmap(text, sz);
         close(fd);
         return -1;
@@ -1722,13 +1724,13 @@ static int datapack_mmap_file(char *filename, datapack_mmap_rec *mr) {
     struct stat stat_buf;
 
     if ((mr->fd = open(filename, O_RDONLY)) == -1) {
-        METADOT_ERROR("Datapack: Couldn't open file %s: %s\n", filename, strerror(errno));
+        datapack_error_pf("Datapack: Couldn't open file %s: %s\n", filename, strerror(errno));
         return -1;
     }
 
     if (fstat(mr->fd, &stat_buf) == -1) {
         close(mr->fd);
-        METADOT_ERROR("Datapack: Couldn't stat file %s: %s\n", filename, strerror(errno));
+        datapack_error_pf("Datapack: Couldn't stat file %s: %s\n", filename, strerror(errno));
         return -1;
     }
 
@@ -1736,7 +1738,7 @@ static int datapack_mmap_file(char *filename, datapack_mmap_rec *mr) {
     mr->text = mmap(0, stat_buf.st_size, PROT_READ, MAP_PRIVATE, mr->fd, 0);
     if (mr->text == MAP_FAILED) {
         close(mr->fd);
-        METADOT_ERROR("Datapack: Failed to mmap %s: %s\n", filename, strerror(errno));
+        datapack_error_pf("Datapack: Failed to mmap %s: %s\n", filename, strerror(errno));
         return -1;
     }
 
@@ -1755,7 +1757,7 @@ int datapack_pack(datapack_node *r, int i) {
 
     n = datapack_find_i(r, i);
     if (n == NULL) {
-        METADOT_ERROR("Datapack: invalid index %d to datapack_pack\n", i);
+        datapack_error_pf("Datapack: invalid index %d to datapack_pack\n", i);
         return -1;
     }
 
@@ -1927,7 +1929,7 @@ int datapack_unpack(datapack_node *r, int i) {
 
     n = datapack_find_i(r, i);
     if (n == NULL) {
-        METADOT_ERROR("Datapack: invalid index %d to datapack_unpack\n", i);
+        datapack_error_pf("Datapack: invalid index %d to datapack_unpack\n", i);
         return -1;
     }
 
@@ -2128,7 +2130,7 @@ static void datapack_fatal(const char *fmt, ...) {
     vsnprintf(exit_msg, 100, fmt, ap);
     va_end(ap);
 
-    METADOT_ERROR("Datapack: %s", exit_msg);
+    datapack_error_pf("Datapack: %s", exit_msg);
     exit(-1);
 }
 
@@ -2187,13 +2189,13 @@ static int datapack_gather_blocking(int fd, void **img, size_t *sz) {
     } while ((rc == -1 && (errno == EINTR || errno == EAGAIN)) || (rc > 0 && i < 8));
 
     if (rc < 0) {
-        METADOT_ERROR("Datapack: datapack_gather_fd_blocking failed: %s\n", strerror(errno));
+        datapack_error_pf("Datapack: datapack_gather_fd_blocking failed: %s\n", strerror(errno));
         return -1;
     } else if (rc == 0) {
-        /* METADOT_ERROR("Datapack: datapack_gather_fd_blocking: eof\n"); */
+        /* datapack_error_pf("Datapack: datapack_gather_fd_blocking: eof\n"); */
         return 0;
     } else if (i != 8) {
-        METADOT_ERROR("Datapack: internal error\n");
+        datapack_error_pf("Datapack: internal error\n");
         return -1;
     }
 
@@ -2201,7 +2203,7 @@ static int datapack_gather_blocking(int fd, void **img, size_t *sz) {
         memcpy(&datapacklen, &preamble[4], 4);
         if (datapack_needs_endian_swap(preamble)) datapack_byteswap(&datapacklen, 4);
     } else {
-        METADOT_ERROR("Datapack: datapack_gather_fd_blocking: non-datapack input\n");
+        datapack_error_pf("Datapack: datapack_gather_fd_blocking: non-datapack input\n");
         return -1;
     }
 
@@ -2209,7 +2211,7 @@ static int datapack_gather_blocking(int fd, void **img, size_t *sz) {
      * and read it in
      */
     if (datapack_hook.gather_max > 0 && datapacklen > datapack_hook.gather_max) {
-        METADOT_ERROR("Datapack: datapack exceeds max length %d\n", datapack_hook.gather_max);
+        datapack_error_pf("Datapack: datapack exceeds max length %d\n", datapack_hook.gather_max);
         return -2;
     }
     *sz = datapacklen;
@@ -2225,15 +2227,15 @@ static int datapack_gather_blocking(int fd, void **img, size_t *sz) {
     } while ((rc == -1 && (errno == EINTR || errno == EAGAIN)) || (rc > 0 && i < datapacklen));
 
     if (rc < 0) {
-        METADOT_ERROR("Datapack: datapack_gather_fd_blocking failed: %s\n", strerror(errno));
+        datapack_error_pf("Datapack: datapack_gather_fd_blocking failed: %s\n", strerror(errno));
         datapack_hook.free(*img);
         return -1;
     } else if (rc == 0) {
-        /* METADOT_ERROR("Datapack: datapack_gather_fd_blocking: eof\n"); */
+        /* datapack_error_pf("Datapack: datapack_gather_fd_blocking: eof\n"); */
         datapack_hook.free(*img);
         return 0;
     } else if (i != datapacklen) {
-        METADOT_ERROR("Datapack: internal error\n");
+        datapack_error_pf("Datapack: internal error\n");
         datapack_hook.free(*img);
         return -1;
     }
@@ -2256,7 +2258,7 @@ static int datapack_gather_nonblocking(int fd, datapack_gather_t **gs, datapack_
             if (errno == EAGAIN)
                 return 1; /* nothing to read right now */
             else {
-                METADOT_ERROR("Datapack: datapack_gather failed: %s\n", strerror(errno));
+                datapack_error_pf("Datapack: datapack_gather failed: %s\n", strerror(errno));
                 if (*gs) {
                     datapack_hook.free((*gs)->img);
                     datapack_hook.free(*gs);
@@ -2266,7 +2268,7 @@ static int datapack_gather_nonblocking(int fd, datapack_gather_t **gs, datapack_
             }
         } else if (rc == 0) {
             if (*gs) {
-                METADOT_ERROR("Datapack: datapack_gather: partial datapack image precedes EOF\n");
+                datapack_error_pf("Datapack: datapack_gather: partial datapack image precedes EOF\n");
                 datapack_hook.free((*gs)->img);
                 datapack_hook.free(*gs);
                 *gs = NULL;
@@ -2280,7 +2282,7 @@ static int datapack_gather_nonblocking(int fd, datapack_gather_t **gs, datapack_
                     datapack_hook.free((*gs)->img);
                     datapack_hook.free((*gs));
                     *gs = NULL;
-                    METADOT_ERROR("Datapack: datapack exceeds max length %d\n", datapack_hook.gather_max);
+                    datapack_error_pf("Datapack: datapack exceeds max length %d\n", datapack_hook.gather_max);
                     return -2; /* error, caller should close fd */
                 }
                 if ((img = datapack_hook.realloc((*gs)->img, catlen)) == NULL) {
@@ -2298,7 +2300,7 @@ static int datapack_gather_nonblocking(int fd, datapack_gather_t **gs, datapack_
             keep_looping = (datapack + 8 < img + catlen) ? 1 : 0;
             while (keep_looping) {
                 if (strncmp("datapack", datapack, 3) != 0) {
-                    METADOT_ERROR("Datapack: datapack prefix invalid\n");
+                    datapack_error_pf("Datapack: datapack prefix invalid\n");
                     if (img != buf) datapack_hook.free(img);
                     datapack_hook.free(*gs);
                     *gs = NULL;
@@ -2318,7 +2320,7 @@ static int datapack_gather_nonblocking(int fd, datapack_gather_t **gs, datapack_
             }
             /* check if app callback requested closure of datapack source */
             if (cbrc < 0) {
-                METADOT_ERROR("Datapack: datapack_fd_gather aborted by app callback\n");
+                datapack_error_pf("Datapack: datapack_fd_gather aborted by app callback\n");
                 if (img != buf) datapack_hook.free(img);
                 if (*gs) datapack_hook.free(*gs);
                 *gs = NULL;
@@ -2366,7 +2368,7 @@ static int datapack_gather_mem(char *buf, size_t len, datapack_gather_t **gs, da
             datapack_hook.free((*gs)->img);
             datapack_hook.free((*gs));
             *gs = NULL;
-            METADOT_ERROR("Datapack: datapack exceeds max length %d\n", datapack_hook.gather_max);
+            datapack_error_pf("Datapack: datapack exceeds max length %d\n", datapack_hook.gather_max);
             return -2; /* error, caller should stop accepting input from source*/
         }
         if ((img = datapack_hook.realloc((*gs)->img, catlen)) == NULL) {
@@ -2384,7 +2386,7 @@ static int datapack_gather_mem(char *buf, size_t len, datapack_gather_t **gs, da
     keep_looping = (datapack + 8 < img + catlen) ? 1 : 0;
     while (keep_looping) {
         if (strncmp("datapack", datapack, 3) != 0) {
-            METADOT_ERROR("Datapack: datapack prefix invalid\n");
+            datapack_error_pf("Datapack: datapack prefix invalid\n");
             if (img != buf) datapack_hook.free(img);
             datapack_hook.free(*gs);
             *gs = NULL;
@@ -2404,7 +2406,7 @@ static int datapack_gather_mem(char *buf, size_t len, datapack_gather_t **gs, da
     }
     /* check if app callback requested closure of datapack source */
     if (cbrc < 0) {
-        METADOT_ERROR("Datapack: datapack_mem_gather aborted by app callback\n");
+        datapack_error_pf("Datapack: datapack_mem_gather aborted by app callback\n");
         if (img != buf) datapack_hook.free(img);
         if (*gs) datapack_hook.free(*gs);
         *gs = NULL;

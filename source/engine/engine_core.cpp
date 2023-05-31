@@ -4,6 +4,7 @@
 
 #include "core/core.h"
 #include "core/cpp/utils.hpp"
+#include "core/utility.hpp"
 
 engine_core Core;
 windows Screen;
@@ -18,7 +19,7 @@ void GameExited() {}
 int InitCore() { return METADOT_OK; }
 
 bool InitTime() {
-    Time.startTime = metadot_gettime();
+    Time.startTime = ME_gettime();
     Time.lastTime = Time.startTime;
     Time.lastTickTime = Time.lastTime;
     Time.lastCheckTime = Time.lastTime;
@@ -40,7 +41,7 @@ bool InitScreen(int windowWidth, int windowHeight, int scale, int maxFPS) {
 }
 
 void UpdateTime() {
-    Time.now = metadot_gettime();
+    Time.now = ME_gettime();
     Time.deltaTime = Time.now - Time.lastTime;
 }
 
@@ -102,7 +103,7 @@ void ProcessTickTime() {
     for (int i = 1; i < TraceTimeNum; i++) {
         Time.frameTimesTrace[i - 1] = Time.frameTimesTrace[i];
     }
-    Time.frameTimesTrace[TraceTimeNum - 1] = (U16)(metadot_gettime() - Time.now);
+    Time.frameTimesTrace[TraceTimeNum - 1] = (U16)(ME_gettime() - Time.now);
 
     Time.lastTime = Time.now;
 }

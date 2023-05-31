@@ -31,7 +31,7 @@
 #include "scripting/lua/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
 
-#ifndef METADOT_PLATFORM_WINDOWS
+#ifndef ME_PLATFORM_WINDOWS
 #include <dirent.h>
 #include <unistd.h>
 #define f_mkdir mkdir

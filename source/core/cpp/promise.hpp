@@ -600,11 +600,11 @@ struct Task {
 #if METADOT_PROMISE_MULTITHREAD
 struct Mutex {
 public:
-    METADOT_INLINE Mutex();
-    METADOT_INLINE void lock();
-    METADOT_INLINE void unlock();
-    METADOT_INLINE void lock(size_t lock_count);
-    METADOT_INLINE void unlock(size_t lock_count);
+    ME_INLINE Mutex();
+    ME_INLINE void lock();
+    ME_INLINE void unlock();
+    ME_INLINE void lock(size_t lock_count);
+    ME_INLINE void unlock(size_t lock_count);
     inline size_t lock_count() const { return lock_count_; }
     std::condition_variable_any cond_;
 
@@ -618,8 +618,8 @@ private:
  * Task state in TaskList always be kPending
  */
 struct PromiseHolder {
-    METADOT_INLINE PromiseHolder();
-    METADOT_INLINE ~PromiseHolder();
+    ME_INLINE PromiseHolder();
+    ME_INLINE ~PromiseHolder();
     std::list<std::weak_ptr<SharedPromise>> owners_;
     std::list<std::shared_ptr<Task>> pendingTasks_;
     TaskState state_;
@@ -628,11 +628,11 @@ struct PromiseHolder {
     std::shared_ptr<Mutex> mutex_;
 #endif
 
-    METADOT_INLINE void dump() const;
-    METADOT_INLINE static any *getUncaughtExceptionHandler();
-    METADOT_INLINE static any *getDefaultUncaughtExceptionHandler();
-    METADOT_INLINE static void onUncaughtException(const any &arg);
-    METADOT_INLINE static void handleUncaughtException(const any &onUncaughtException);
+    ME_INLINE void dump() const;
+    ME_INLINE static any *getUncaughtExceptionHandler();
+    ME_INLINE static any *getDefaultUncaughtExceptionHandler();
+    ME_INLINE static void onUncaughtException(const any &arg);
+    ME_INLINE static void handleUncaughtException(const any &onUncaughtException);
 };
 
 // Check if ...ARGS only has one any type
@@ -641,9 +641,9 @@ struct is_one_any : public std::is_same<typename tuple_remove_cvref<std::tuple<A
 
 struct SharedPromise {
     std::shared_ptr<PromiseHolder> promiseHolder_;
-    METADOT_INLINE void dump() const;
+    ME_INLINE void dump() const;
 #if METADOT_PROMISE_MULTITHREAD
-    METADOT_INLINE std::shared_ptr<Mutex> obtainLock() const;
+    ME_INLINE std::shared_ptr<Mutex> obtainLock() const;
 #endif
 };
 
@@ -659,15 +659,15 @@ public:
         reject(any{std::vector<any>{std::forward<ARGS>(args)...}});
     }
 
-    METADOT_INLINE void resolve(const any &arg) const;
-    METADOT_INLINE void reject(const any &arg) const;
+    ME_INLINE void resolve(const any &arg) const;
+    ME_INLINE void reject(const any &arg) const;
 
-    METADOT_INLINE Promise getPromise() const;
+    ME_INLINE Promise getPromise() const;
 
 private:
     friend class Promise;
-    friend METADOT_INLINE Promise newPromise(const std::function<void(Defer &defer)> &run);
-    METADOT_INLINE Defer(const std::shared_ptr<Task> &task);
+    friend ME_INLINE Promise newPromise(const std::function<void(Defer &defer)> &run);
+    ME_INLINE Defer(const std::shared_ptr<Task> &task);
     std::shared_ptr<Task> task_;
     std::shared_ptr<SharedPromise> sharedPromise_;
 };
@@ -684,25 +684,25 @@ public:
         reject(any{std::vector<any>{std::forward<ARGS>(args)...}});
     }
 
-    METADOT_INLINE void doContinue() const;
-    METADOT_INLINE void doBreak(const any &arg) const;
-    METADOT_INLINE void reject(const any &arg) const;
+    ME_INLINE void doContinue() const;
+    ME_INLINE void doBreak(const any &arg) const;
+    ME_INLINE void reject(const any &arg) const;
 
-    METADOT_INLINE Promise getPromise() const;
+    ME_INLINE Promise getPromise() const;
 
 private:
-    friend METADOT_INLINE Promise doWhile(const std::function<void(DeferLoop &loop)> &run);
-    METADOT_INLINE DeferLoop(const Defer &cb);
+    friend ME_INLINE Promise doWhile(const std::function<void(DeferLoop &loop)> &run);
+    ME_INLINE DeferLoop(const Defer &cb);
     Defer defer_;
 };
 
 class Promise {
 public:
-    METADOT_INLINE Promise &then(const any &deferOrPromiseOrOnResolved);
-    METADOT_INLINE Promise &then(const any &onResolved, const any &onRejected);
-    METADOT_INLINE Promise &fail(const any &onRejected);
-    METADOT_INLINE Promise &always(const any &onAlways);
-    METADOT_INLINE Promise &finally(const any &onFinally);
+    ME_INLINE Promise &then(const any &deferOrPromiseOrOnResolved);
+    ME_INLINE Promise &then(const any &onResolved, const any &onRejected);
+    ME_INLINE Promise &fail(const any &onRejected);
+    ME_INLINE Promise &always(const any &onAlways);
+    ME_INLINE Promise &finally(const any &onFinally);
 
     template <typename... ARGS, typename std::enable_if<!is_one_any<ARGS...>::value>::type *dummy = nullptr>
     inline void resolve(ARGS &&...args) const {
@@ -713,20 +713,20 @@ public:
         reject(any{std::vector<any>{std::forward<ARGS>(args)...}});
     }
 
-    METADOT_INLINE void resolve(const any &arg) const;
-    METADOT_INLINE void reject(const any &arg) const;
+    ME_INLINE void resolve(const any &arg) const;
+    ME_INLINE void reject(const any &arg) const;
 
-    METADOT_INLINE void clear();
-    METADOT_INLINE operator bool() const;
+    ME_INLINE void clear();
+    ME_INLINE operator bool() const;
 
-    METADOT_INLINE void dump() const;
+    ME_INLINE void dump() const;
 
     std::shared_ptr<SharedPromise> sharedPromise_;
 };
 
-METADOT_INLINE Promise newPromise(const std::function<void(Defer &defer)> &run);
-METADOT_INLINE Promise newPromise();
-METADOT_INLINE Promise doWhile(const std::function<void(DeferLoop &loop)> &run);
+ME_INLINE Promise newPromise(const std::function<void(Defer &defer)> &run);
+ME_INLINE Promise newPromise();
+ME_INLINE Promise doWhile(const std::function<void(DeferLoop &loop)> &run);
 template <typename... ARGS>
 inline Promise resolve(ARGS &&...args) {
     return newPromise([&args...](Defer &defer) { defer.resolve(std::forward<ARGS>(args)...); });
@@ -740,7 +740,7 @@ inline Promise reject(ARGS &&...args) {
 /* Returns a promise that resolves when all of the promises in the iterable
    argument have resolved, or rejects with the reason of the first passed
    promise that rejects. */
-METADOT_INLINE Promise all(const std::list<Promise> &promise_list);
+ME_INLINE Promise all(const std::list<Promise> &promise_list);
 template <typename METADOT_PROMISE_LIST, typename std::enable_if<is_iterable<METADOT_PROMISE_LIST>::value && !std::is_same<METADOT_PROMISE_LIST, std::list<Promise>>::value>::type *dummy = nullptr>
 inline Promise all(const METADOT_PROMISE_LIST &promise_list) {
     std::list<Promise> copy_list = {std::begin(promise_list), std::end(promise_list)};
@@ -754,7 +754,7 @@ inline Promise all(PROMISE0 defer0, METADOT_PROMISE_LIST... promise_list) {
 /* returns a promise that resolves or rejects as soon as one of
 the promises in the iterable resolves or rejects, with the value
 or reason from that promise. */
-METADOT_INLINE Promise race(const std::list<Promise> &promise_list);
+ME_INLINE Promise race(const std::list<Promise> &promise_list);
 template <typename METADOT_PROMISE_LIST, typename std::enable_if<is_iterable<METADOT_PROMISE_LIST>::value && !std::is_same<METADOT_PROMISE_LIST, std::list<Promise>>::value>::type *dummy = nullptr>
 inline Promise race(const METADOT_PROMISE_LIST &promise_list) {
     std::list<Promise> copy_list = {std::begin(promise_list), std::end(promise_list)};
@@ -765,7 +765,7 @@ inline Promise race(PROMISE0 defer0, METADOT_PROMISE_LIST... promise_list) {
     return race(std::list<Promise>{defer0, promise_list...});
 }
 
-METADOT_INLINE Promise raceAndReject(const std::list<Promise> &promise_list);
+ME_INLINE Promise raceAndReject(const std::list<Promise> &promise_list);
 template <typename METADOT_PROMISE_LIST, typename std::enable_if<is_iterable<METADOT_PROMISE_LIST>::value && !std::is_same<METADOT_PROMISE_LIST, std::list<Promise>>::value>::type *dummy = nullptr>
 inline Promise raceAndReject(const METADOT_PROMISE_LIST &promise_list) {
     std::list<Promise> copy_list = {std::begin(promise_list), std::end(promise_list)};
@@ -776,7 +776,7 @@ inline Promise raceAndReject(PROMISE0 defer0, METADOT_PROMISE_LIST... promise_li
     return raceAndReject(std::list<Promise>{defer0, promise_list...});
 }
 
-METADOT_INLINE Promise raceAndResolve(const std::list<Promise> &promise_list);
+ME_INLINE Promise raceAndResolve(const std::list<Promise> &promise_list);
 template <typename METADOT_PROMISE_LIST, typename std::enable_if<is_iterable<METADOT_PROMISE_LIST>::value && !std::is_same<METADOT_PROMISE_LIST, std::list<Promise>>::value>::type *dummy = nullptr>
 inline Promise raceAndResolve(const METADOT_PROMISE_LIST &promise_list) {
     std::list<Promise> copy_list = {std::begin(promise_list), std::end(promise_list)};

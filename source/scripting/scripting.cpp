@@ -23,6 +23,7 @@
 #include "game_resources.hpp"
 #include "internal/builtin_lpeg.h"
 // #include "libs/lua/ffi.h"
+#include "core/utility.hpp"
 #include "meta/meta.hpp"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua/lua_wrapper.hpp"
@@ -100,7 +101,7 @@ static int metadot_run_lua_file_script(lua_State *L) {
     std::string string = lua_tostring(L, 1);
     auto &LuaCore = Scripting::GetSingletonPtr()->Lua->s_lua;
     METADOT_ASSERT_E(&LuaCore);
-    if (SUtil::startsWith(string, "Script:")) SUtil::replaceWith(string, "Script:", METADOT_RESLOC("data/scripts/"));
+    if (ME_str_starts_with(string, "Script:")) ME_str_replace_with(string, "Script:", METADOT_RESLOC("data/scripts/"));
     RunScriptFromFile(string.c_str());
     return 0;
 }

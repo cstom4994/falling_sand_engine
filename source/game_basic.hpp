@@ -83,7 +83,7 @@ METAENGINE_GUI_DEFINE_END
 // };
 
 // template <>
-// struct MetaEngine::StaticRefl::TypeInfo<IGameObject> : TypeInfoBase<IGameObject> {
+// struct ME::meta::static_refl::TypeInfo<IGameObject> : TypeInfoBase<IGameObject> {
 //     static constexpr AttrList attrs = {};
 //     static constexpr FieldList fields = {};
 // };

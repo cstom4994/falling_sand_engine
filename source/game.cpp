@@ -22,12 +22,13 @@
 #include "core/debug.hpp"
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
-#include "core/macros.h"
+#include "core/macros.hpp"
 #include "core/math/mathlib.hpp"
 #include "core/platform.h"
 #include "core/profiler/profiler.h"
 #include "core/sdl_wrapper.h"
 #include "core/threadpool.hpp"
+#include "core/utility.hpp"
 #include "engine/engine.h"
 #include "event/applicationevent.hpp"
 #include "game_basic.hpp"
@@ -37,11 +38,11 @@
 #include "game_ui.hpp"
 #include "game_utils/cells.h"
 #include "game_utils/mdplot.h"
+#include "libs/glad/glad.h"
 #include "libs/imgui/imgui.h"
 #include "meta/meta.hpp"
 #include "reflectionflat.hpp"
 #include "renderer/gpu.hpp"
-#include "libs/glad/glad.h"
 #include "renderer/renderer_gpu.h"
 #include "scripting/scripting.hpp"
 #include "world_generator.cpp"
@@ -88,7 +89,7 @@ int Game::init(int argc, char *argv[]) {
     // Load splash screen
     DrawSplash();
 
-    setEventCallback(METADOT_BIND_EVENT_FN(onEvent));
+    setEventCallback(ME_BIND_EVENT_FN(onEvent));
 
     // Initialize Gameplay script system before scripting system initialization
     METADOT_INFO("Loading gameplay script...");
@@ -405,7 +406,7 @@ int Game::run(int argc, char *argv[]) {
     InitFPS();
     objectDelete = new U8[GameIsolate_.world->width * GameIsolate_.world->height];
 
-    fadeInStart = metadot_gettime();
+    fadeInStart = ME_gettime();
     fadeInLength = 250;
     fadeInWaitFrames = 5;
 
@@ -705,7 +706,7 @@ int Game::run(int argc, char *argv[]) {
 
                         auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
-                        pl->startThrow = metadot_gettime();
+                        pl->startThrow = ME_gettime();
                     }
                 } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
                     ControlSystem::mmouse_down = true;
@@ -1269,13 +1270,13 @@ void Game::updateFrameEarly() {
             GameIsolate_.world->player = 0;
         } else {
 
-            vec4 pl_transform{-GameIsolate_.world->loadZone.x + GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w / 2.0f,
-                              -GameIsolate_.world->loadZone.y + GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h / 2.0f, 10, 20};
+            MEvec4 pl_transform{-GameIsolate_.world->loadZone.x + GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w / 2.0f,
+                                -GameIsolate_.world->loadZone.y + GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h / 2.0f, 10, 20};
 
             b2PolygonShape sh;
             sh.SetAsBox(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
-            RigidBody *rb = GameIsolate_.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.pos.x + pl_transform.rect.x / 2.0f - 0.5,
-                                                              pl_transform.pos.y + pl_transform.rect.y / 2.0f - 0.5, 0, sh, 1, 1, NULL);
+            RigidBody *rb =
+                    GameIsolate_.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.x + pl_transform.z / 2.0f - 0.5, pl_transform.y + pl_transform.w / 2.0f - 0.5, 0, sh, 1, 1, NULL);
             rb->body->SetGravityScale(0);
             rb->body->SetLinearDamping(0);
             rb->body->SetAngularDamping(0);
@@ -1297,7 +1298,7 @@ void Game::updateFrameEarly() {
             auto player = GameIsolate_.world->Reg().create_entity();
             MetaEngine::ECS::entity_filler(player)
                     .component<Controlable>()
-                    .component<WorldEntity>(true, pl_transform.pos.x, pl_transform.pos.y, 0.0f, 0.0f, (int)pl_transform.rect.x, (int)pl_transform.rect.y, rb, std::string("玩家"))
+                    .component<WorldEntity>(true, pl_transform.x, pl_transform.y, 0.0f, 0.0f, (int)pl_transform.z, (int)pl_transform.w, rb, std::string("玩家"))
                     .component<Player>();
 
             auto pl = GameIsolate_.world->Reg().find_component<Player>(player);
@@ -1467,8 +1468,8 @@ void Game::updateFrameEarly() {
 
 void Game::onEvent(MetaEngine::Event &e) {
     MetaEngine::EventDispatcher dispatcher(e);
-    dispatcher.Dispatch<MetaEngine::WindowCloseEvent>(METADOT_BIND_EVENT_FN(onWindowClose));
-    dispatcher.Dispatch<MetaEngine::WindowResizeEvent>(METADOT_BIND_EVENT_FN(onWindowResize));
+    dispatcher.Dispatch<MetaEngine::WindowCloseEvent>(ME_BIND_EVENT_FN(onWindowClose));
+    dispatcher.Dispatch<MetaEngine::WindowResizeEvent>(ME_BIND_EVENT_FN(onWindowResize));
 }
 
 bool Game::onWindowClose(MetaEngine::WindowCloseEvent &e) { return true; }
@@ -1566,7 +1567,7 @@ void Game::tick() {
                 METAENGINE_Color col = {0xff, 0xff, 0x80, outlineAlpha};
                 R_SetShapeBlendMode(R_BLEND_NORMAL_FACTOR_ALPHA);  // SDL_BLENDMODE_BLEND
                 for (auto &l : cur->outline) {
-                    vec2 *vec = new vec2[l.GetNumPoints()];
+                    MEvec2 *vec = new MEvec2[l.GetNumPoints()];
                     for (int j = 0; j < l.GetNumPoints(); j++) {
                         vec[j] = {(F32)l.GetPoint(j).x / Screen.gameScale, (F32)l.GetPoint(j).y / Screen.gameScale};
                     }
@@ -2719,7 +2720,7 @@ void Game::renderLate() {
             F32 arX = (F32)Screen.windowWidth / (bg->layers[0]->surface[0]->w);
             F32 arY = (F32)Screen.windowHeight / (bg->layers[0]->surface[0]->h);
 
-            F64 time = metadot_gettime() / 1000.0;
+            F64 time = ME_gettime() / 1000.0;
 
             R_SetShapeBlendMode(R_BLEND_NORMAL);
 
@@ -2860,7 +2861,7 @@ void Game::renderLate() {
         bool needToRerenderLighting = false;
 
         static long long lastLightingForceRefresh = 0;
-        long long now = metadot_gettime();
+        long long now = ME_gettime();
         if (now - lastLightingForceRefresh > 100) {
             lastLightingForceRefresh = now;
             needToRerenderLighting = true;
@@ -3040,7 +3041,7 @@ void Game::renderOverlays() {
         //            b2PolygonShape* poly = (b2PolygonShape*)shape;
         //            b2Vec2* verts = poly->m_vertices;
 
-        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, Screen.gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((metadot_gettime() / 1000.0), 360)*/, 0, 0);
+        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, Screen.gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((ME_gettime() / 1000.0), 360)*/, 0, 0);
 
         //            break;
         //        }
@@ -3069,7 +3070,7 @@ void Game::renderOverlays() {
         //            b2PolygonShape* poly = (b2PolygonShape*)shape;
         //            b2Vec2* verts = poly->m_vertices;
 
-        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, Screen.gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((metadot_gettime() / 1000.0), 360)*/, 0, 0);
+        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, Screen.gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((ME_gettime() / 1000.0), 360)*/, 0, 0);
 
         //            break;
         //        }
@@ -3098,7 +3099,7 @@ void Game::renderOverlays() {
         //            b2PolygonShape* poly = (b2PolygonShape*)shape;
         //            b2Vec2* verts = poly->m_vertices;
 
-        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, Screen.gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((metadot_gettime() / 1000.0), 360)*/, 0, 0);
+        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, Screen.gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((ME_gettime() / 1000.0), 360)*/, 0, 0);
 
         //            break;
         //        }
@@ -3130,7 +3131,7 @@ void Game::renderOverlays() {
                 R_Rectangle(Render.target, x, y, x + CHUNK_W * Screen.gameScale, y + CHUNK_H * Screen.gameScale, {50, 50, 0, 255});
 
                 // for(int i = 0; i < ch->polys.size(); i++) {
-                //     Drawing::drawPolygon(target, col, ch->polys[i].m_vertices, (int)x, (int)y, Screen.gameScale, ch->polys[i].m_count, 0/* + fmod((metadot_gettime() / 1000.0), 360)*/, 0, 0);
+                //     Drawing::drawPolygon(target, col, ch->polys[i].m_vertices, (int)x, (int)y, Screen.gameScale, ch->polys[i].m_count, 0/* + fmod((ME_gettime() / 1000.0), 360)*/, 0, 0);
                 // }
             }
         }

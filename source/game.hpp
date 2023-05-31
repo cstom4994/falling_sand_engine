@@ -21,7 +21,7 @@
 #include "core/cpp/utils.hpp"
 #include "core/debug.hpp"
 #include "core/io/filesystem.h"
-#include "core/macros.h"
+#include "core/macros.hpp"
 #include "cvar.hpp"
 #include "event/applicationevent.hpp"
 #include "event/event.hpp"

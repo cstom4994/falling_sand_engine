@@ -256,7 +256,7 @@ void UISystem::UIRendererDraw() {
 
 void UISystem::UIRendererDrawImGui() { uidata->imgui->Draw(); }
 
-F32 BoxDistence(metadot_rect box, vec2 A) {
+F32 BoxDistence(metadot_rect box, MEvec2 A) {
     if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;
     return 0;
 }
@@ -421,9 +421,9 @@ bool UISystem::UIIsMouseOnControls() {
     return false;
 }
 
-void UISystem::DrawPoint(vec3 pos, float size, Texture *texture, U8 r, U8 g, U8 b) {
-    vec3 min = {pos.x - size, pos.y - size, 0};
-    vec3 max = {pos.x + size, pos.y + size, 0};
+void UISystem::DrawPoint(MEvec3 pos, float size, Texture *texture, U8 r, U8 g, U8 b) {
+    MEvec3 min = {pos.x - size, pos.y - size, 0};
+    MEvec3 max = {pos.x + size, pos.y + size, 0};
 
     if (texture) {
         // DrawRectangleTextured(min, max, texture, r, g, b);
@@ -432,7 +432,7 @@ void UISystem::DrawPoint(vec3 pos, float size, Texture *texture, U8 r, U8 g, U8 
     }
 }
 
-void UISystem::DrawLine(vec3 min, vec3 max, float thickness, U8 r, U8 g, U8 b) { R_Line(Render.target, min.x, min.y, max.x, max.y, {r, g, b, 255}); }
+void UISystem::DrawLine(MEvec3 min, MEvec3 max, float thickness, U8 r, U8 g, U8 b) { R_Line(Render.target, min.x, min.y, max.x, max.y, {r, g, b, 255}); }
 
 void UISystem::Create() { UIRendererInit(); }
 

@@ -15,7 +15,7 @@
 #include <string_view>
 
 #include "core/core.h"
-#include "core/macros.h"
+#include "core/macros.hpp"
 
 struct AllocationMap;
 
@@ -158,22 +158,22 @@ void METADOT_CDECL metadot_memory_pool_free(METAENGINE_MemoryPool *pool, void *e
 
 namespace MetaEngine {
 
-METADOT_INLINE void *aligned_alloc(size_t size, int alignment) { return metadot_aligned_alloc(size, alignment); }
-METADOT_INLINE void aligned_free(void *ptr) { return metadot_aligned_free(ptr); }
+ME_INLINE void *aligned_alloc(size_t size, int alignment) { return metadot_aligned_alloc(size, alignment); }
+ME_INLINE void aligned_free(void *ptr) { return metadot_aligned_free(ptr); }
 
 using Arena = METAENGINE_Arena;
 
-METADOT_INLINE void arena_init(METAENGINE_Arena *arena, int alignment, int block_size) { metadot_arena_init(arena, alignment, block_size); }
-METADOT_INLINE void *arena_alloc(METAENGINE_Arena *arena, size_t size) { return metadot_arena_alloc(arena, size); }
-METADOT_INLINE void arena_reset(METAENGINE_Arena *arena) { return metadot_arena_reset(arena); }
+ME_INLINE void arena_init(METAENGINE_Arena *arena, int alignment, int block_size) { metadot_arena_init(arena, alignment, block_size); }
+ME_INLINE void *arena_alloc(METAENGINE_Arena *arena, size_t size) { return metadot_arena_alloc(arena, size); }
+ME_INLINE void arena_reset(METAENGINE_Arena *arena) { return metadot_arena_reset(arena); }
 
 using MemoryPool = METAENGINE_MemoryPool;
 
-METADOT_INLINE MemoryPool *make_memory_pool(int element_size, int element_count, int alignment) { return metadot_make_memory_pool(element_size, element_count, alignment); }
-METADOT_INLINE void destroy_memory_pool(MemoryPool *pool) { metadot_destroy_memory_pool(pool); }
-METADOT_INLINE void *memory_pool_alloc(MemoryPool *pool) { return metadot_memory_pool_alloc(pool); }
-METADOT_INLINE void *MemoryPoolry_alloc(MemoryPool *pool) { return METAENGINE_MemoryPoolry_alloc(pool); }
-METADOT_INLINE void memory_pool_free(MemoryPool *pool, void *element) { return metadot_memory_pool_free(pool, element); }
+ME_INLINE MemoryPool *make_memory_pool(int element_size, int element_count, int alignment) { return metadot_make_memory_pool(element_size, element_count, alignment); }
+ME_INLINE void destroy_memory_pool(MemoryPool *pool) { metadot_destroy_memory_pool(pool); }
+ME_INLINE void *memory_pool_alloc(MemoryPool *pool) { return metadot_memory_pool_alloc(pool); }
+ME_INLINE void *MemoryPoolry_alloc(MemoryPool *pool) { return METAENGINE_MemoryPoolry_alloc(pool); }
+ME_INLINE void memory_pool_free(MemoryPool *pool, void *element) { return metadot_memory_pool_free(pool, element); }
 
 }  // namespace MetaEngine
 

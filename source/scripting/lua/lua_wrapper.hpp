@@ -10,12 +10,12 @@
 #define _METADOT_LUAWRAPPER_HPP_
 
 #include "core/core.hpp"
-#include "core/macros.h"
-#include "meta/meta.hpp"
-#include "libs/lua/lua.hpp"
 #include "core/cpp/name.hpp"
 #include "core/cpp/type.hpp"
-#include "preprocesserflat.hpp"
+#include "core/macros.hpp"
+#include "libs/lua/lua.hpp"
+#include "lua_wrapper_pp.hpp"
+#include "meta/meta.hpp"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -938,7 +938,7 @@ void RegisterGlobal(lua_State *L, const char *name, T &&what) {
 #define METAENGINE_LUAWRAPPER_CLASS_MAX_BASE_CLASSES 9
 #endif
 
-#if defined(__GNUC__) || defined(__clang__) && (!defined(_MSC_VER) && !defined(METADOT_PLATFORM_WINDOWS))
+#if defined(__GNUC__) || defined(__clang__) && (!defined(_MSC_VER) && !defined(ME_PLATFORM_WINDOWS))
 #define METAENGINE_LUAWRAPPER_USE_CXX_ABI_DEMANGLE
 #endif
 
@@ -1273,7 +1273,7 @@ struct is_object {
 template <class T>
 struct decay {
 private:
-    ///@ If T is a reference type, the type referrered to by T.	Otherwise, T.
+    ///@ If T is a reference type, the type referrered to by T. Otherwise, T.
     typedef typename std::remove_reference<T>::type U;
 
 public:
@@ -2032,7 +2032,7 @@ struct PointerConverter {
         // unreachable
         // if (to_type == from->type())
         //{
-        //	return static_cast<TO*>(from->get());
+        //  return static_cast<TO*>(from->get());
         //}
         std::map<convert_map_key, std::vector<convert_function_type>>::const_iterator match = function_map_.find(convert_map_key(to_type.name(), from->type().name()));
         if (match != function_map_.end()) {
@@ -2046,7 +2046,7 @@ struct PointerConverter {
         // unreachable
         // if (to_type == from->type())
         //{
-        //	return static_cast<const TO*>(from->cget());
+        //  return static_cast<const TO*>(from->cget());
         //}
         std::map<convert_map_key, std::vector<convert_function_type>>::const_iterator match = function_map_.find(convert_map_key(to_type.name(), from->type().name()));
         if (match != function_map_.end()) {
@@ -2059,11 +2059,11 @@ struct PointerConverter {
     MetaEngine::Ref<TO> get_shared_pointer(ObjectSharedPointerWrapper *from) const {
         const std::type_info &to_type = metatableType<MetaEngine::Ref<typename traits::decay<TO>::type>>();
         // unreachable
-        //			if (to_type == from->type())
-        //			{
-        //				return
+        //          if (to_type == from->type())
+        //          {
+        //              return
         // std::static_pointer_cast<TO>(from->object());
-        //			}
+        //          }
         const std::type_info &from_type = from->shared_ptr_type();
         std::map<convert_map_key, std::vector<shared_ptr_convert_function_type>>::const_iterator match = shared_ptr_function_map_.find(convert_map_key(to_type.name(), from_type.name()));
         if (match != shared_ptr_function_map_.end()) {
@@ -5548,7 +5548,7 @@ struct FunctionInvokerType {
 
 template <typename T>
 inline FunctionInvokerType<fntuple::tuple<T>> function(T f) {
-    METADOT_STATIC_ASSERT(nativefunction::is_callable<typename traits::decay<T>::type>::value, "argument need callable");
+    ME_STATIC_ASSERT(nativefunction::is_callable<typename traits::decay<T>::type>::value, "argument need callable");
     return FunctionInvokerType<fntuple::tuple<T>>(fntuple::tuple<T>(f));
 }
 
@@ -5707,78 +5707,76 @@ struct OverloadFunctionImpl<F, void> : LuaWrapper::FunctionImpl {
 }  // namespace LuaWrapper
 
 #define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REP(N) getArgument<N - 1, F>(state)
-#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REPEAT(N) METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REP)
-#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_INVOKE(N, FNAME, MINARG, MAXARG)                                                                 \
-    if (argcount == METAENGINE_LUAWRAPPER_PP_ADD(MINARG, METAENGINE_LUAWRAPPER_PP_DEC(N))) {                                                              \
-        return FNAME(METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REPEAT(METAENGINE_LUAWRAPPER_PP_ADD(MINARG, METAENGINE_LUAWRAPPER_PP_DEC(N)))); \
+#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REPEAT(N) ME_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REP)
+#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_INVOKE(N, FNAME, MINARG, MAXARG)                                                 \
+    if (argcount == ME_LUAWRAPPER_PP_ADD(MINARG, ME_LUAWRAPPER_PP_DEC(N))) {                                                              \
+        return FNAME(METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REPEAT(ME_LUAWRAPPER_PP_ADD(MINARG, ME_LUAWRAPPER_PP_DEC(N)))); \
     }
 
-#define METAENGINE_LUAWRAPPER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, FNAME, MINARG, MAXARG, CREATE_FN)                                                                                             \
-                                                                                                                                                                                                       \
-    struct GENERATE_NAME {                                                                                                                                                                             \
-        template <typename F>                                                                                                                                                                          \
-        struct Function : LuaWrapper::OverloadFunctionImpl<F> {                                                                                                                                        \
-            typedef typename LuaWrapper::OverloadFunctionImpl<F>::result_type result_type;                                                                                                             \
-            virtual result_type invoke_type(lua_State *state) {                                                                                                                                        \
-                using namespace LuaWrapper::nativefunction;                                                                                                                                            \
-                int argcount = lua_gettop(state);                                                                                                                                                      \
-                METAENGINE_LUAWRAPPER_PP_REPEAT_DEF_VA_ARG(METAENGINE_LUAWRAPPER_PP_INC(METAENGINE_LUAWRAPPER_PP_SUB(MAXARG, MINARG)), METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_INVOKE, FNAME, \
-                                                           MINARG, MAXARG)                                                                                                                             \
-                throw LuaWrapper::LuaTypeMismatch("argument count mismatch");                                                                                                                          \
-            }                                                                                                                                                                                          \
-            virtual int minArgCount() const { return MINARG; }                                                                                                                                         \
-            virtual int maxArgCount() const { return MAXARG; }                                                                                                                                         \
-        };                                                                                                                                                                                             \
-        template <typename F>                                                                                                                                                                          \
-        LuaWrapper::PolymorphicInvoker::holder_type create(F) {                                                                                                                                        \
-            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                              \
-            return LuaWrapper::PolymorphicInvoker::holder_type(ptr);                                                                                                                                   \
-        }                                                                                                                                                                                              \
-        template <typename F>                                                                                                                                                                          \
-        LuaWrapper::PolymorphicInvoker::holder_type create() {                                                                                                                                         \
-            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                              \
-            return LuaWrapper::PolymorphicInvoker::holder_type(ptr);                                                                                                                                   \
-        }                                                                                                                                                                                              \
-        LuaWrapper::PolymorphicInvoker operator()() { return CREATE_FN; }                                                                                                                              \
-                                                                                                                                                                                                       \
+#define METAENGINE_LUAWRAPPER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, FNAME, MINARG, MAXARG, CREATE_FN)                                                                                     \
+                                                                                                                                                                                               \
+    struct GENERATE_NAME {                                                                                                                                                                     \
+        template <typename F>                                                                                                                                                                  \
+        struct Function : LuaWrapper::OverloadFunctionImpl<F> {                                                                                                                                \
+            typedef typename LuaWrapper::OverloadFunctionImpl<F>::result_type result_type;                                                                                                     \
+            virtual result_type invoke_type(lua_State *state) {                                                                                                                                \
+                using namespace LuaWrapper::nativefunction;                                                                                                                                    \
+                int argcount = lua_gettop(state);                                                                                                                                              \
+                ME_LUAWRAPPER_PP_REPEAT_DEF_VA_ARG(ME_LUAWRAPPER_PP_INC(ME_LUAWRAPPER_PP_SUB(MAXARG, MINARG)), METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_INVOKE, FNAME, MINARG, MAXARG) \
+                throw LuaWrapper::LuaTypeMismatch("argument count mismatch");                                                                                                                  \
+            }                                                                                                                                                                                  \
+            virtual int minArgCount() const { return MINARG; }                                                                                                                                 \
+            virtual int maxArgCount() const { return MAXARG; }                                                                                                                                 \
+        };                                                                                                                                                                                     \
+        template <typename F>                                                                                                                                                                  \
+        LuaWrapper::PolymorphicInvoker::holder_type create(F) {                                                                                                                                \
+            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                      \
+            return LuaWrapper::PolymorphicInvoker::holder_type(ptr);                                                                                                                           \
+        }                                                                                                                                                                                      \
+        template <typename F>                                                                                                                                                                  \
+        LuaWrapper::PolymorphicInvoker::holder_type create() {                                                                                                                                 \
+            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                      \
+            return LuaWrapper::PolymorphicInvoker::holder_type(ptr);                                                                                                                           \
+        }                                                                                                                                                                                      \
+        LuaWrapper::PolymorphicInvoker operator()() { return CREATE_FN; }                                                                                                                      \
+                                                                                                                                                                                               \
     } GENERATE_NAME;
 
 #define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REP(N) getArgument<N, F>(state)
-#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REPEAT(N) METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REP)
-#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_INVOKE(N, FNAME, MINARG, MAXARG)                                                                                            \
-    if (argcount == 1 + METAENGINE_LUAWRAPPER_PP_ADD(MINARG, METAENGINE_LUAWRAPPER_PP_DEC(N))) {                                                                                            \
-        return (getArgument<0, F>(state)).FNAME(METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REPEAT(METAENGINE_LUAWRAPPER_PP_ADD(MINARG, METAENGINE_LUAWRAPPER_PP_DEC(N)))); \
+#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REPEAT(N) ME_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REP)
+#define METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_INVOKE(N, FNAME, MINARG, MAXARG)                                                                            \
+    if (argcount == 1 + ME_LUAWRAPPER_PP_ADD(MINARG, ME_LUAWRAPPER_PP_DEC(N))) {                                                                                            \
+        return (getArgument<0, F>(state)).FNAME(METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REPEAT(ME_LUAWRAPPER_PP_ADD(MINARG, ME_LUAWRAPPER_PP_DEC(N)))); \
     }
 
-#define METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, CLASS, FNAME, MINARG, MAXARG, CREATE_FN)                                                                               \
-                                                                                                                                                                                                       \
-    struct GENERATE_NAME {                                                                                                                                                                             \
-        template <typename F>                                                                                                                                                                          \
-        struct Function : LuaWrapper::OverloadFunctionImpl<F> {                                                                                                                                        \
-            typedef typename LuaWrapper::OverloadFunctionImpl<F>::result_type result_type;                                                                                                             \
-            virtual result_type invoke_type(lua_State *state) {                                                                                                                                        \
-                using namespace LuaWrapper::nativefunction;                                                                                                                                            \
-                int argcount = lua_gettop(state);                                                                                                                                                      \
-                METAENGINE_LUAWRAPPER_PP_REPEAT_DEF_VA_ARG(METAENGINE_LUAWRAPPER_PP_INC(METAENGINE_LUAWRAPPER_PP_SUB(MAXARG, MINARG)), METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_INVOKE, \
-                                                           FNAME, MINARG, MAXARG)                                                                                                                      \
-                throw LuaWrapper::LuaTypeMismatch("argument count mismatch");                                                                                                                          \
-            }                                                                                                                                                                                          \
-            virtual int minArgCount() const { return MINARG + 1; }                                                                                                                                     \
-            virtual int maxArgCount() const { return MAXARG + 1; }                                                                                                                                     \
-        };                                                                                                                                                                                             \
-        template <typename F>                                                                                                                                                                          \
-        LuaWrapper::PolymorphicMemberInvoker::holder_type create(F f) {                                                                                                                                \
-            METAENGINE_LUAWRAPPER_UNUSED(f);                                                                                                                                                           \
-            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                              \
-            return LuaWrapper::PolymorphicMemberInvoker::holder_type(ptr);                                                                                                                             \
-        }                                                                                                                                                                                              \
-        template <typename F>                                                                                                                                                                          \
-        LuaWrapper::PolymorphicMemberInvoker::holder_type create() {                                                                                                                                   \
-            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                              \
-            return LuaWrapper::PolymorphicMemberInvoker::holder_type(ptr);                                                                                                                             \
-        }                                                                                                                                                                                              \
-        LuaWrapper::PolymorphicMemberInvoker operator()() { return CREATE_FN; }                                                                                                                        \
-                                                                                                                                                                                                       \
+#define METAENGINE_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, CLASS, FNAME, MINARG, MAXARG, CREATE_FN)                                                                              \
+                                                                                                                                                                                                      \
+    struct GENERATE_NAME {                                                                                                                                                                            \
+        template <typename F>                                                                                                                                                                         \
+        struct Function : LuaWrapper::OverloadFunctionImpl<F> {                                                                                                                                       \
+            typedef typename LuaWrapper::OverloadFunctionImpl<F>::result_type result_type;                                                                                                            \
+            virtual result_type invoke_type(lua_State *state) {                                                                                                                                       \
+                using namespace LuaWrapper::nativefunction;                                                                                                                                           \
+                int argcount = lua_gettop(state);                                                                                                                                                     \
+                ME_LUAWRAPPER_PP_REPEAT_DEF_VA_ARG(ME_LUAWRAPPER_PP_INC(ME_LUAWRAPPER_PP_SUB(MAXARG, MINARG)), METAENGINE_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_INVOKE, FNAME, MINARG, MAXARG) \
+                throw LuaWrapper::LuaTypeMismatch("argument count mismatch");                                                                                                                         \
+            }                                                                                                                                                                                         \
+            virtual int minArgCount() const { return MINARG + 1; }                                                                                                                                    \
+            virtual int maxArgCount() const { return MAXARG + 1; }                                                                                                                                    \
+        };                                                                                                                                                                                            \
+        template <typename F>                                                                                                                                                                         \
+        LuaWrapper::PolymorphicMemberInvoker::holder_type create(F f) {                                                                                                                               \
+            METAENGINE_LUAWRAPPER_UNUSED(f);                                                                                                                                                          \
+            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                             \
+            return LuaWrapper::PolymorphicMemberInvoker::holder_type(ptr);                                                                                                                            \
+        }                                                                                                                                                                                             \
+        template <typename F>                                                                                                                                                                         \
+        LuaWrapper::PolymorphicMemberInvoker::holder_type create() {                                                                                                                                  \
+            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                             \
+            return LuaWrapper::PolymorphicMemberInvoker::holder_type(ptr);                                                                                                                            \
+        }                                                                                                                                                                                             \
+        LuaWrapper::PolymorphicMemberInvoker operator()() { return CREATE_FN; }                                                                                                                       \
+                                                                                                                                                                                                      \
     } GENERATE_NAME;
 
 /// @brief Generate wrapper function object for count based overloads with
@@ -5857,7 +5855,7 @@ public:
 private:
     struct DataHolderBase {
         virtual int pushToLua(lua_State *data) const = 0;
-        //			virtual DataHolderBase * clone(void) = 0;
+        //          virtual DataHolderBase * clone(void) = 0;
         virtual ~DataHolderBase() {}
     };
     template <typename Type>
@@ -6148,13 +6146,13 @@ typedef MemberFunctionBinder mem_fun_binder;  // for backward conpatible
 
 namespace LuaWrapper {
 
-#define METAENGINE_LUAWRAPPER_PP_STRUCT_TDEF_REP(N) METAENGINE_LUAWRAPPER_PP_CAT(class A, N) = void
-#define METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(N) METAENGINE_LUAWRAPPER_PP_REPEAT_ARG(N, METAENGINE_LUAWRAPPER_PP_STRUCT_TDEF_REP)
+#define ME_LUAWRAPPER_PP_STRUCT_TDEF_REP(N) ME_LUAWRAPPER_PP_CAT(class A, N) = void
+#define ME_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(N) ME_LUAWRAPPER_PP_REPEAT_ARG(N, ME_LUAWRAPPER_PP_STRUCT_TDEF_REP)
 
-template <METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(METAENGINE_LUAWRAPPER_CLASS_MAX_BASE_CLASSES)>
+template <ME_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(METAENGINE_LUAWRAPPER_CLASS_MAX_BASE_CLASSES)>
 struct MultipleBase {};
-#undef METAENGINE_LUAWRAPPER_PP_STRUCT_TDEF_REP
-#undef METAENGINE_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT
+#undef ME_LUAWRAPPER_PP_STRUCT_TDEF_REP
+#undef ME_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT
 }  // namespace LuaWrapper
 
 namespace LuaWrapper {
@@ -6376,20 +6374,20 @@ public:
     UserdataMetatable() {
         addStaticFunction("__gc", &class_userdata::destructor<ObjectWrapperBase>);
 
-        METADOT_STATIC_ASSERT(is_registerable<class_type>::value || !traits::is_std_vector<class_type>::value,
-                              "std::vector is binding to lua-table by default.If "
-                              "you wants register for std::vector yourself,"
-                              "please define METAENGINE_LUAWRAPPER_NO_STD_VECTOR_TO_TABLE");
+        ME_STATIC_ASSERT(is_registerable<class_type>::value || !traits::is_std_vector<class_type>::value,
+                         "std::vector is binding to lua-table by default.If "
+                         "you wants register for std::vector yourself,"
+                         "please define METAENGINE_LUAWRAPPER_NO_STD_VECTOR_TO_TABLE");
 
-        METADOT_STATIC_ASSERT(is_registerable<class_type>::value || !traits::is_std_map<class_type>::value,
-                              "std::map is binding to lua-table by default.If you "
-                              "wants register for std::map yourself,"
-                              "please define METAENGINE_LUAWRAPPER_NO_STD_MAP_TO_TABLE");
+        ME_STATIC_ASSERT(is_registerable<class_type>::value || !traits::is_std_map<class_type>::value,
+                         "std::map is binding to lua-table by default.If you "
+                         "wants register for std::map yourself,"
+                         "please define METAENGINE_LUAWRAPPER_NO_STD_MAP_TO_TABLE");
 
         // can not register push specialized class
-        METADOT_STATIC_ASSERT(is_registerable<class_type>::value,
-                              "Can not register specialized of type conversion "
-                              "class. e.g. std::tuple");
+        ME_STATIC_ASSERT(is_registerable<class_type>::value,
+                         "Can not register specialized of type conversion "
+                         "class. e.g. std::tuple");
     }
 
     bool pushCreateMetatable(lua_State *state) const {
@@ -7317,7 +7315,7 @@ class State {
     bool created_;
 
     // non copyable
-    METADOT_MAKE_MOVEONLY(State);
+    ME_MAKE_MOVEONLY(State);
     // State(const State &);
     // State &operator=(const State &);
 
@@ -7746,13 +7744,13 @@ ref_tuple<std::tuple<Args &...>, std::tuple<Args...>> tie(Args &...va) {
 }  // namespace LuaWrapper
 
 /// @brief start define binding
-#define METAENGINE_LUAWRAPPER_BINDINGS(MODULE_NAME)                                                                                                                                                \
-                                                                                                                                                                                                   \
-    void METAENGINE_LUAWRAPPER_PP_CAT(LuaWrapper_bind_internal_, MODULE_NAME)();                                                                                                                   \
-                                                                                                                                                                                                   \
-    int METAENGINE_LUAWRAPPER_PP_CAT(luaopen_, MODULE_NAME)(lua_State * L) { return LuaWrapper::detail::bind_internal(L, &METAENGINE_LUAWRAPPER_PP_CAT(LuaWrapper_bind_internal_, MODULE_NAME)); } \
-                                                                                                                                                                                                   \
-    void METAENGINE_LUAWRAPPER_PP_CAT(LuaWrapper_bind_internal_, MODULE_NAME)()
+#define METAENGINE_LUAWRAPPER_BINDINGS(MODULE_NAME)                                                                                                                                \
+                                                                                                                                                                                   \
+    void ME_LUAWRAPPER_PP_CAT(LuaWrapper_bind_internal_, MODULE_NAME)();                                                                                                           \
+                                                                                                                                                                                   \
+    int ME_LUAWRAPPER_PP_CAT(luaopen_, MODULE_NAME)(lua_State * L) { return LuaWrapper::detail::bind_internal(L, &ME_LUAWRAPPER_PP_CAT(LuaWrapper_bind_internal_, MODULE_NAME)); } \
+                                                                                                                                                                                   \
+    void ME_LUAWRAPPER_PP_CAT(LuaWrapper_bind_internal_, MODULE_NAME)()
 
 namespace LuaWrapper {
 namespace detail {

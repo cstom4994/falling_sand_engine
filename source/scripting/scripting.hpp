@@ -9,7 +9,7 @@
 
 #include "core/cpp/csingleton.h"
 #include "core/cpp/struct.hpp"
-#include "core/macros.h"
+#include "core/macros.hpp"
 #include "engine/engine.h"
 #include "scripting/lua/lua_wrapper.hpp"
 
@@ -18,12 +18,12 @@ struct lua_State;
 #pragma region struct_as
 
 template <typename T>
-METADOT_INLINE void struct_as(std::string &s, const char *table, const char *key, const T &value) {
+ME_INLINE void struct_as(std::string &s, const char *table, const char *key, const T &value) {
     s += MetaEngine::Format("{0}.{1} = {2}\n", table, key, value);
 }
 
 template <>
-METADOT_INLINE void struct_as(std::string &s, const char *table, const char *key, const std::string &value) {
+ME_INLINE void struct_as(std::string &s, const char *table, const char *key, const std::string &value) {
     s += MetaEngine::Format("{0}.{1} = \"{2}\"\n", table, key, value);
 }
 
