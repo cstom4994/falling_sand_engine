@@ -1,5 +1,5 @@
-#ifndef _METADOT_TABLEINTERFACE_H
-#define _METADOT_TABLEINTERFACE_H
+#ifndef ME_TABLEINTERFACE_H
+#define ME_TABLEINTERFACE_H
 
 #include "lua_error.h"
 #include "scripting/lua/lua_wrapper.hpp"
@@ -41,4 +41,4 @@ public:
     std::string getNextString();
 };
 
-#endif  // _METADOT_TABLEINTERFACE_H
+#endif  // ME_TABLEINTERFACE_H

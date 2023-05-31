@@ -8,7 +8,7 @@
 #include "libs/imgui/imgui_internal.h"
 
 #if defined(_WIN32)
-#define _METADOT_IMM32
+#define ME_IMM32
 #else
 #include <sys/stat.h>
 #endif
@@ -57,15 +57,15 @@
 #define METAENGINE_GUI_STRUCT_TO_TUPLE MetaEngine::BuiltinPFR::pfr::structure_tie
 
 namespace ImGui {
-//		IMGUI::AUTO()
-//		=============
+//      IMGUI::AUTO()
+//      =============
 
 // This is the function that this libary implements. (It's just a wrapper around the class ImGui::Auto_t<AnyType>)
 template <typename AnyType>
 void Auto(AnyType &anything, const std::string &name = std::string());
 
-//		HELPER FUNCTIONS
-//		================
+//      HELPER FUNCTIONS
+//      ================
 
 // same as std::as_const in c++17
 template <class T>
@@ -120,14 +120,14 @@ void AutoTuple(const std::string &name, const std::tuple<Args...> &tpl);
 template <typename T, std::size_t N>
 using c_array_t = T[N];  // so arrays are regular types and can be used in macro
 
-// template<typename Container> inline std::size_t AutoContainerSize(Container &cont, std::enable_if_t< std::is_array_v<Container>>*=0){	return sizeof(Container) /
+// template<typename Container> inline std::size_t AutoContainerSize(Container &cont, std::enable_if_t< std::is_array_v<Container>>*=0){    return sizeof(Container) /
 // sizeof(decltype(*std::begin(cont)));} template<typename Container> inline std::size_t AutoContainerSize(Container &cont, std::enable_if_t<!std::is_array_v<Container>> *= 0) { return cont.size(); }
 
 }  // namespace detail
 #pragma endregion
 
-//		PRIMARY TEMPLATE
-//		================
+//      PRIMARY TEMPLATE
+//      ================
 // This implements the struct to tuple scenario
 template <typename AnyType>
 struct Auto_t {
@@ -153,8 +153,8 @@ inline void ImGui::Auto(AnyType &anything, const std::string &name) {
     ImGui::Auto_t<AnyType>::Auto(anything, name);
 }
 
-//		HELPER FUNCTIONS
-//		================
+//      HELPER FUNCTIONS
+//      ================
 
 #pragma region UTILS
 
@@ -312,8 +312,8 @@ void ImGui::detail::AutoTuple(const std::string &name,
 
 #pragma endregion
 
-//		HELPER MACROS
-//		=============
+//      HELPER MACROS
+//      =============
 
 #define UNPACK(...) __VA_ARGS__  // for unpacking parentheses. It is needed for macro arguments with commmas
 // Enclose templatespec, AND typespec in parentheses in this version. Useful if there are commas in the argument.
@@ -363,8 +363,8 @@ void ImGui::detail::AutoTuple(const std::string &name,
 #define METAENGINE_GUI_NULLPTR_COLOR ImVec4(1.0, 0.5, 0.5, 1.0)
 #endif
 
-//		SPECIALIZATIONS
-//		===============
+//      SPECIALIZATIONS
+//      ===============
 
 #pragma region STRINGS
 

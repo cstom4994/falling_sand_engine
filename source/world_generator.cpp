@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_GENERATOR_WORLD_CPP_
-#define _METADOT_GENERATOR_WORLD_CPP_
+#ifndef ME_GENERATOR_WORLD_CPP_
+#define ME_GENERATOR_WORLD_CPP_
 
 #include "core/global.hpp"
 #include "game.hpp"

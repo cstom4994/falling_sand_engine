@@ -4,8 +4,8 @@
 // Polypartition (MIT) by Ivan Fratric
 // MarchingSquares(Tom Gibara) (MIT) by Juha Reunanen
 
-#ifndef _METADOT_MATH_HPP_
-#define _METADOT_MATH_HPP_
+#ifndef ME_MATH_HPP
+#define ME_MATH_HPP
 
 #include <cassert>
 #include <list>

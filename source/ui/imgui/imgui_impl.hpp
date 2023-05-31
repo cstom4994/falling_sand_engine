@@ -5,8 +5,8 @@
 // https://github.com/mekhontsev/imgui_md (MIT) by mekhontsev
 // https://github.com/ocornut/imgui (MIT) by Omar Cornut
 
-#ifndef _METADOT_IMGUIHELPER_HPP_
-#define _METADOT_IMGUIHELPER_HPP_
+#ifndef ME_IMGUIHELPER_HPP
+#define ME_IMGUIHELPER_HPP
 
 #include <algorithm>
 #include <array>
@@ -32,7 +32,7 @@
 #include "imgui_helper.hpp"
 
 #if defined(_WIN32)
-#define _METADOT_IMM32
+#define ME_IMM32
 #else
 #include <sys/stat.h>
 #endif

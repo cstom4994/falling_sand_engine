@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_GAMEUI_HPP_
-#define _METADOT_GAMEUI_HPP_
+#ifndef ME_GAMEUI_HPP
+#define ME_GAMEUI_HPP
 
 #include <vector>
 

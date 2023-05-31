@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_CORE_HPP_
-#define _METADOT_CORE_HPP_
+#ifndef ME_CORE_HPP
+#define ME_CORE_HPP
 
 #include <algorithm>
 #include <array>
@@ -199,16 +199,16 @@ struct MarkdownData {
 METADOT_STRUCT(MarkdownData, data);
 
 #if defined(IGNORE_DEPRECATED_WARNING)
-#define _METADOT_DEPRECATED_
+#define ME_DEPRECATED_
 #elif defined(_MSC_VER)
-#define _METADOT_DEPRECATED_ __declspec(deprecated)
+#define ME_DEPRECATED_ __declspec(deprecated)
 #elif defined(__GNUC__)
-#define _METADOT_DEPRECATED_ __attribute__((deprecated))
+#define ME_DEPRECATED_ __attribute__((deprecated))
 #else
-#define _METADOT_DEPRECATED_
+#define ME_DEPRECATED_
 #endif
 
-#define _METADOT_OVERRIDE_ override
+#define ME_OVERRIDE_ override
 
 #define MAKE_ENUM_FLAGS(TEnum, TBase)                                               \
     enum class TEnum;                                                               \

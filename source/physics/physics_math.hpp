@@ -1,7 +1,7 @@
 
 
-#ifndef _METADOT_PM_HPP_
-#define _METADOT_PM_HPP_
+#ifndef ME_PM_HPP
+#define ME_PM_HPP
 
 #include <cfloat>
 #include <cmath>

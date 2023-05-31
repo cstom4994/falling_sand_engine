@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_SHADERS_HPP_
-#define _METADOT_SHADERS_HPP_
+#ifndef ME_SHADERS_HPP
+#define ME_SHADERS_HPP
 
 #include <stdlib.h>
 

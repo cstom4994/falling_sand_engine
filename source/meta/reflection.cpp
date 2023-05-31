@@ -11,7 +11,7 @@
 #include "core/core.h"
 #include "core/dbgtools.h"
 #include "core/memory.h"
-#include "core/utility.hpp"
+#include "core/utils/utility.hpp"
 
 //#define STB_DS_IMPLEMENTATION
 #include "libs/external/stb_ds.h"

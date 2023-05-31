@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_DEBUGIMPL_HPP_
-#define _METADOT_DEBUGIMPL_HPP_
+#ifndef ME_DEBUGIMPL_HPP
+#define ME_DEBUGIMPL_HPP
 
 #include "core/core.hpp"
 #include "core/macros.hpp"

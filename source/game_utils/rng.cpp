@@ -4,7 +4,7 @@
 
 #include "core/cpp/utils.hpp"
 #include "core/mathlib.hpp"
-#include "core/utility.hpp"
+#include "core/utils/utility.hpp"
 
 RNG* RNG_Create() {
     pcg32_random_t rng;

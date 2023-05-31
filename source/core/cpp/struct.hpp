@@ -1,6 +1,6 @@
 
-#ifndef _METADOT_STRUCT_HPP_
-#define _METADOT_STRUCT_HPP_
+#ifndef ME_STRUCT_HPP
+#define ME_STRUCT_HPP
 
 #include <type_traits>
 #include <utility>

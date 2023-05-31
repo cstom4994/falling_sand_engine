@@ -1,6 +1,6 @@
 
-#ifndef _METADOT_PROPERTY_HPP_
-#define _METADOT_PROPERTY_HPP_
+#ifndef ME_PROPERTY_HPP
+#define ME_PROPERTY_HPP
 
 #include <functional>
 #include <list>

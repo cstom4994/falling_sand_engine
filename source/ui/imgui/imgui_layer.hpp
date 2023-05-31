@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_IMGUILAYER_HPP_
-#define _METADOT_IMGUILAYER_HPP_
+#ifndef ME_IMGUILAYER_HPP
+#define ME_IMGUILAYER_HPP
 
 #include <inttypes.h>
 

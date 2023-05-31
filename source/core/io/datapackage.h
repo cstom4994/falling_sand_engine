@@ -1,6 +1,6 @@
 
-#ifndef _METADOT_DATAPACKAGE_H_
-#define _METADOT_DATAPACKAGE_H_
+#ifndef ME_DATAPACKAGE_H
+#define ME_DATAPACKAGE_H
 
 #include <stdarg.h>
 #include <stddef.h>

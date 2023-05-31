@@ -1,5 +1,5 @@
-#ifndef _METADOT_TTF_H_
-#define _METADOT_TTF_H_
+#ifndef ME_TTF_H
+#define ME_TTF_H
 
 #include "libs/imgui/imstb_truetype.h"
 

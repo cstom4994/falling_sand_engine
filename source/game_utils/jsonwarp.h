@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_CJSON_WARPPER_H_
-#define _METADOT_CJSON_WARPPER_H_
+#ifndef ME_CJSON_WARPPER_H
+#define ME_CJSON_WARPPER_H
 
 #include <iterator>
 #include <string>

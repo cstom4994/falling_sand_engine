@@ -11,7 +11,7 @@
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
-#include "core/utility.hpp"
+#include "core/utils/utility.hpp"
 #include "ecs/ecs.hpp"
 #include "engine/engine.h"
 #include "game.hpp"

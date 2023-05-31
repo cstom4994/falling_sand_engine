@@ -1,5 +1,5 @@
-#ifndef _METADOT_CPP_TFUNC_HPP_
-#define _METADOT_CPP_TFUNC_HPP_
+#ifndef ME_CPP_TFUNC_HPP
+#define ME_CPP_TFUNC_HPP
 
 #include <tuple>
 

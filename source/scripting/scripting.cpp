@@ -23,7 +23,7 @@
 #include "game_resources.hpp"
 #include "internal/builtin_lpeg.h"
 // #include "libs/lua/ffi.h"
-#include "core/utility.hpp"
+#include "core/utils/utility.hpp"
 #include "meta/reflection.hpp"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua/lua_wrapper.hpp"

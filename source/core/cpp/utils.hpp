@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_CPP_TUTIL_HPP_
-#define _METADOT_CPP_TUTIL_HPP_
+#ifndef ME_CPP_TUTIL_HPP
+#define ME_CPP_TUTIL_HPP
 
 #include <algorithm>
 #include <bitset>

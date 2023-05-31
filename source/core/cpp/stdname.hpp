@@ -1,5 +1,5 @@
-#ifndef _METADOT_CPP_STDNAME_HPP_
-#define _METADOT_CPP_STDNAME_HPP_
+#ifndef ME_CPP_STDNAME_HPP
+#define ME_CPP_STDNAME_HPP
 
 #include <deque>
 #include <forward_list>

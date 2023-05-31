@@ -1,6 +1,6 @@
 
-#ifndef _METADOT_CVAR_HPP_
-#define _METADOT_CVAR_HPP_
+#ifndef ME_CVAR_HPP
+#define ME_CVAR_HPP
 
 #include "core/core.hpp"
 #include "meta/reflection.hpp"

@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_GAMERESOURCES_HPP_
-#define _METADOT_GAMERESOURCES_HPP_
+#ifndef ME_GAMERESOURCES_HPP
+#define ME_GAMERESOURCES_HPP
 
 #include "core/core.h"
 #include "core/sdl_wrapper.h"

@@ -1,6 +1,6 @@
 
-#ifndef _METADOT_C_LIST_H_
-#define _METADOT_C_LIST_H_
+#ifndef ME_C_LIST_H_
+#define ME_C_LIST_H_
 
 // Generic list implementation
 // In this implementation, every new element added is copied to the list, not just referenced

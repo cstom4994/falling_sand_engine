@@ -1,5 +1,5 @@
-#ifndef _METADOT_CPP_TNAME_HPP_
-#define _METADOT_CPP_TNAME_HPP_
+#ifndef ME_CPP_TNAME_HPP
+#define ME_CPP_TNAME_HPP
 
 #include <cassert>
 #include <cstring>

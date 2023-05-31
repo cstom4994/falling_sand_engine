@@ -1,5 +1,5 @@
-#ifndef _METADOT_CPP_SI_HPP_
-#define _METADOT_CPP_SI_HPP_
+#ifndef ME_CPP_SI_HPP
+#define ME_CPP_SI_HPP
 
 #include "templatelist.hpp"
 

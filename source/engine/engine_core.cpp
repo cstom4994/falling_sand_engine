@@ -4,7 +4,7 @@
 
 #include "core/core.h"
 #include "core/cpp/utils.hpp"
-#include "core/utility.hpp"
+#include "core/utils/utility.hpp"
 
 engine_core Core;
 windows Screen;

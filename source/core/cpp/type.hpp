@@ -1,5 +1,5 @@
-#ifndef _METADOT_CPP_TYPE_HPP_
-#define _METADOT_CPP_TYPE_HPP_
+#ifndef ME_CPP_TYPE_HPP
+#define ME_CPP_TYPE_HPP
 
 #include <compare>
 

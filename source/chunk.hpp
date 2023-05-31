@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_CHUNK_HPP_
-#define _METADOT_CHUNK_HPP_
+#ifndef ME_CHUNK_HPP
+#define ME_CHUNK_HPP
 
 #include <fstream>
 #include <iostream>

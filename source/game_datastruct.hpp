@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_GAMEDATASTRUCT_HPP_
-#define _METADOT_GAMEDATASTRUCT_HPP_
+#ifndef ME_GAMEDATASTRUCT_HPP
+#define ME_GAMEDATASTRUCT_HPP
 
 #include <functional>
 #include <memory>

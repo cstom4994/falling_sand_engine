@@ -23,7 +23,7 @@
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
 #include "core/macros.hpp"
-#include "core/utility.hpp"
+#include "core/utils/utility.hpp"
 #include "engine/engine.h"
 #include "game.hpp"
 #include "game_datastruct.hpp"

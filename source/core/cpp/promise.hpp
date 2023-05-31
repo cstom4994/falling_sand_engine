@@ -1,6 +1,6 @@
 
-#ifndef _METADOT_PROMISE_HPP_
-#define _METADOT_PROMISE_HPP_
+#ifndef ME_PROMISE_HPP
+#define ME_PROMISE_HPP
 
 #include "core/core.hpp"
 

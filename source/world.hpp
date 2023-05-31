@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_WORLD_HPP_
-#define _METADOT_WORLD_HPP_
+#ifndef ME_WORLD_HPP
+#define ME_WORLD_HPP
 
 #include <deque>
 #include <future>

@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_THREADPOOL_HPP_
-#define _METADOT_THREADPOOL_HPP_
+#ifndef ME_THREADPOOL_HPP
+#define ME_THREADPOOL_HPP
 
 #include <atomic>
 #include <exception>

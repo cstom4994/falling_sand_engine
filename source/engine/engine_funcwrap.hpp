@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_ENGINEFUNCWRAP_HPP_
-#define _METADOT_ENGINEFUNCWRAP_HPP_
+#ifndef ME_ENGINEFUNCWRAP_HPP
+#define ME_ENGINEFUNCWRAP_HPP
 
 struct lua_State;
 

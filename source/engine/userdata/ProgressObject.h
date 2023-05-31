@@ -1,5 +1,5 @@
-#ifndef _METADOT_PROGRESSOBJECT_H
-#define _METADOT_PROGRESSOBJECT_H
+#ifndef ME_PROGRESSOBJECT_H
+#define ME_PROGRESSOBJECT_H
 
 namespace MetaEngine::net {
 class ProgressObject {
@@ -16,4 +16,4 @@ public:
 };
 }  // namespace MetaEngine::net
 
-#endif  // _METADOT_PROGRESSOBJECT_H
+#endif  // ME_PROGRESSOBJECT_H

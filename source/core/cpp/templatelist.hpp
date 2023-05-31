@@ -1,5 +1,5 @@
-#ifndef _METADOT_CPP_TLIST_HPP_
-#define _METADOT_CPP_TLIST_HPP_
+#ifndef ME_CPP_TLIST_HPP
+#define ME_CPP_TLIST_HPP
 
 #include "typelist.hpp"
 

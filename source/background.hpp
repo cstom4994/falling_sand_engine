@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_BACKGROUND_HPP_
-#define _METADOT_BACKGROUND_HPP_
+#ifndef ME_BACKGROUND_HPP
+#define ME_BACKGROUND_HPP
 
 #include <memory>
 #include <string>

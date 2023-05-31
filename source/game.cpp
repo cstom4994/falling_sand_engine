@@ -28,7 +28,7 @@
 #include "core/profiler/profiler.h"
 #include "core/sdl_wrapper.h"
 #include "core/threadpool.hpp"
-#include "core/utility.hpp"
+#include "core/utils/utility.hpp"
 #include "engine/engine.h"
 #include "event/applicationevent.hpp"
 #include "game_basic.hpp"

@@ -1,5 +1,5 @@
-#ifndef _METADOT_LUAERROR_H
-#define _METADOT_LUAERROR_H
+#ifndef ME_LUAERROR_H
+#define ME_LUAERROR_H
 
 
 #include <string>

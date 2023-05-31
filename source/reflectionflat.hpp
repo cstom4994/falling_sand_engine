@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_REFLECTIONFLAT_HPP_
-#define _METADOT_REFLECTIONFLAT_HPP_
+#ifndef ME_REFLECTIONFLAT_HPP
+#define ME_REFLECTIONFLAT_HPP
 
 #include <array>
 #include <vector>

@@ -7,7 +7,7 @@
 
 #include "core/core.h"
 #include "core/platform.h"
-#include "core/utility.hpp"
+#include "core/utils/utility.hpp"
 #include "libs/lz4/lz4.h"
 
 typedef struct pack_item {

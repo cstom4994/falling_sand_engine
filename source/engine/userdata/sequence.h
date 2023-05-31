@@ -1,9 +1,9 @@
-#ifndef _METADOT_SEQUENCE_H
-#define _METADOT_SEQUENCE_H
+#ifndef ME_SEQUENCE_H
+#define ME_SEQUENCE_H
 
 #include <cstdlib>
 
-#include "core/util/TableInterface.h"
+#include "core/utils/tableinterface.h"
 #include "scripting/lua/lua_wrapper.hpp"
 
 class Sequence {
@@ -28,4 +28,4 @@ public:
     size_t getLoopPoint() const { return loopPoint; }
 };
 
-#endif  // _METADOT_SEQUENCE_H
+#endif  // ME_SEQUENCE_H

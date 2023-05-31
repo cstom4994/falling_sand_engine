@@ -13,7 +13,7 @@
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
 #include "core/macros.hpp"
-#include "core/utility.hpp"
+#include "core/utils/utility.hpp"
 #include "cvar.hpp"
 #include "game.hpp"
 #include "game_resources.hpp"

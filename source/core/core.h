@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_CORE_H_
-#define _METADOT_CORE_H_
+#ifndef ME_CORE_H
+#define ME_CORE_H
 
 #include <assert.h>
 #include <stdint.h>

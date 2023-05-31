@@ -1,7 +1,7 @@
 // Copyright(c) 2023, KaoruXun All rights reserved.
 
-#ifndef ME_CPP_TUTIL_HPP
-#define ME_CPP_TUTIL_HPP
+#ifndef ME_UTILS_HPP
+#define ME_UTILS_HPP
 
 #include <algorithm>
 #include <atomic>

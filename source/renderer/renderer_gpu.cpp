@@ -11,7 +11,7 @@
 #include "core/core.h"
 #include "core/macros.hpp"
 #include "core/sdl_wrapper.h"
-#include "core/utility.hpp"
+#include "core/utils/utility.hpp"
 #include "libs/external/stb_image.h"
 #include "renderer_gpu.h"
 

@@ -1,6 +1,6 @@
 
-#ifndef _METADOT_CPP_TTYPELIST_HPP_
-#define _METADOT_CPP_TTYPELIST_HPP_
+#ifndef ME_CPP_TTYPELIST_HPP
+#define ME_CPP_TTYPELIST_HPP
 
 #include <cstddef>
 

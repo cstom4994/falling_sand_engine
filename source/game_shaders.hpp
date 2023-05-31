@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_GAMESHADERS_HPP_
-#define _METADOT_GAMESHADERS_HPP_
+#ifndef ME_GAMESHADERS_HPP
+#define ME_GAMESHADERS_HPP
 
 #include "core/core.hpp"
 #include "game_datastruct.hpp"

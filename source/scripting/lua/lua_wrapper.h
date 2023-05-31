@@ -1,6 +1,6 @@
 
-#ifndef _METADOT_LUAWRAPPER_H_
-#define _METADOT_LUAWRAPPER_H_
+#ifndef ME_LUAWRAPPER_H
+#define ME_LUAWRAPPER_H
 
 #include "core/core.h"
 #include "libs/lua/lua.hpp"

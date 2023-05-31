@@ -1,10 +1,10 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_MDPLOT_H_
-#define _METADOT_MDPLOT_H_
+#ifndef ME_MDPLOT_H
+#define ME_MDPLOT_H
 
 #include "core/core.hpp"
-#include "core/utility.hpp"
+#include "core/utils/utility.hpp"
 #include "libs/imgui/md4c.h"
 
 #define MDPLOT_PARSER_TEST(...) METADOT_BUG(__VA_ARGS__)

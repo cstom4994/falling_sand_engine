@@ -1,7 +1,7 @@
 
 
-#ifndef _ME_MACROS_HPP_
-#define _ME_MACROS_HPP_
+#ifndef _ME_MACROS_HPP
+#define _ME_MACROS_HPP
 
 #if defined(NDEBUG) && !defined(_DEBUG)
 #define ME_RELEASE

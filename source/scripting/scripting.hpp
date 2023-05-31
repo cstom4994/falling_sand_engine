@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_SCRIPTING_HPP_
-#define _METADOT_SCRIPTING_HPP_
+#ifndef ME_SCRIPTING_HPP
+#define ME_SCRIPTING_HPP
 
 #include <functional>
 #include <map>
@@ -10,7 +10,7 @@
 #include "core/cpp/csingleton.h"
 #include "core/cpp/struct.hpp"
 #include "core/macros.hpp"
-#include "core/utility.hpp"
+#include "core/utils/utility.hpp"
 #include "engine/engine.h"
 #include "scripting/lua/lua_wrapper.hpp"
 

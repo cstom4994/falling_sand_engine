@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_ALLOC_HPP_
-#define _METADOT_ALLOC_HPP_
+#ifndef ME_ALLOC_HPP
+#define ME_ALLOC_HPP
 
 #include <stdbool.h>
 #include <stddef.h>

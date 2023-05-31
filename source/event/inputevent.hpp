@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_CONTROLS_HPP_
-#define _METADOT_CONTROLS_HPP_
+#ifndef ME_CONTROLS_HPP
+#define ME_CONTROLS_HPP
 
 #include <cstdio>
 #include <map>

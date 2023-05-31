@@ -1,7 +1,7 @@
 // Copyright(c) 2023, KaoruXun All rights reserved.
 
-#ifndef ME_MATH_HPP
-#define ME_MATH_HPP
+#ifndef ME_MATH_BASE_HPP
+#define ME_MATH_BASE_HPP
 
 #include <assert.h>
 #include <float.h>

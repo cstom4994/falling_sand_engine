@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_GAME_HPP_
-#define _METADOT_GAME_HPP_
+#ifndef ME_GAME_HPP
+#define ME_GAME_HPP
 
 // #define b2_maxTranslation 10.0f
 // #define b2_maxTranslationSquared (b2_maxTranslation * b2_maxTranslation)

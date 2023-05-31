@@ -1,6 +1,6 @@
 
-#ifndef _METADOT_NPC_HPP_
-#define _METADOT_NPC_HPP_
+#ifndef ME_NPC_HPP
+#define ME_NPC_HPP
 
 #include <deque>
 #include <stack>

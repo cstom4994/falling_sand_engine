@@ -1,7 +1,7 @@
 
 
-#ifndef _METADOT_TASK_HPP_
-#define _METADOT_TASK_HPP_
+#ifndef ME_TASK_HPP
+#define ME_TASK_HPP
 
 #include <atomic>
 #include <chrono>

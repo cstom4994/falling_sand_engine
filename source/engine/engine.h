@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_ENGINE_H_
-#define _METADOT_ENGINE_H_
+#ifndef ME_ENGINE_H
+#define ME_ENGINE_H
 
 #include <math.h>
 #include <stdio.h>
@@ -11,7 +11,7 @@
 
 #include "core/cpp/utils.hpp"
 #include "core/platform.h"
-#include "core/utility.hpp"
+#include "core/utils/utility.hpp"
 #include "engine/engine_core.h"
 #include "renderer/gpu.hpp"
 

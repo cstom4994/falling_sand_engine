@@ -3,8 +3,8 @@
 // Boost.pfr code by BoostOrg distributed under the Boost Software License, Version 1.0.
 // https://github.com/boostorg/pfr
 
-#ifndef _METADOT_PFR_HPP_
-#define _METADOT_PFR_HPP_
+#ifndef ME_PFR_HPP
+#define ME_PFR_HPP
 
 #if defined(_MSC_VER)
 #if _MSC_VER <= 1900

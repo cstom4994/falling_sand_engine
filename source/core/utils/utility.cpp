@@ -11,7 +11,7 @@
 #include "core/memory.h"
 #include "core/platform.h"
 #include "scripting/scripting.hpp"
-//#include "runtime/ui/ui.hpp"
+// #include "runtime/ui/ui.hpp"
 
 #define TIME_COUNT(x) std::chrono::time_point_cast<std::chrono::microseconds>(x).time_since_epoch().count()
 

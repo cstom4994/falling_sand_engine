@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_SDLWRAPPER_H_
-#define _METADOT_SDLWRAPPER_H_
+#ifndef ME_SDLWRAPPER_H
+#define ME_SDLWRAPPER_H
 
 // SDL 2.0.5+
 #include <SDL.h>

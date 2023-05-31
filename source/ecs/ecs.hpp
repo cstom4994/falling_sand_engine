@@ -1,6 +1,6 @@
 
-#ifndef _METADOT_ECS_HPP_
-#define _METADOT_ECS_HPP_
+#ifndef ME_ECS_HPP
+#define ME_ECS_HPP
 
 #include <algorithm>
 #include <cassert>

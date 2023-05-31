@@ -1,6 +1,6 @@
 
-#ifndef _METADOT_EVENT_H_
-#define _METADOT_EVENT_H_
+#ifndef ME_EVENT_HPP
+#define ME_EVENT_HPP
 
 #include <functional>
 #include <sstream>

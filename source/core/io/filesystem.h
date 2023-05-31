@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_FILESYSTEM_HPP_
-#define _METADOT_FILESYSTEM_HPP_
+#ifndef ME_FILESYSTEM_HPP
+#define ME_FILESYSTEM_HPP
 
 #include <cstring>
 #include <string_view>

@@ -1,6 +1,6 @@
 
-#ifndef _METADOT_DBGTOOLS_H_
-#define _METADOT_DBGTOOLS_H_
+#ifndef ME_DBGTOOLS_H
+#define ME_DBGTOOLS_H
 
 #ifdef __cplusplus
 extern "C" {

@@ -3,8 +3,8 @@
 /// Implementation - Introspection (In development)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifndef _METADOT_GPU_HPP_
-#define _METADOT_GPU_HPP_
+#ifndef ME_GPU_HPP
+#define ME_GPU_HPP
 
 #include <algorithm>
 #include <cinttypes>

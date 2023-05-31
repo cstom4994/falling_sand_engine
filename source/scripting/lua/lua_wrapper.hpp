@@ -6,8 +6,8 @@
 // accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef _METADOT_LUAWRAPPER_HPP_
-#define _METADOT_LUAWRAPPER_HPP_
+#ifndef ME_LUAWRAPPER_HPP
+#define ME_LUAWRAPPER_HPP
 
 #include "core/core.hpp"
 #include "core/cpp/name.hpp"

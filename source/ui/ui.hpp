@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_UI_HPP_
-#define _METADOT_UI_HPP_
+#ifndef ME_UI_HPP
+#define ME_UI_HPP
 
 #include <functional>
 #include <map>

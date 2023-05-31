@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_ENGINECORE_H_
-#define _METADOT_ENGINECORE_H_
+#ifndef ME_ENGINECORE_H
+#define ME_ENGINECORE_H
 
 #include <stdlib.h>
 #include <time.h>

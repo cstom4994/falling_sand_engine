@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_GAMESCRIPTWRAP_HPP_
-#define _METADOT_GAMESCRIPTWRAP_HPP_
+#ifndef ME_GAMESCRIPTWRAP_HPP
+#define ME_GAMESCRIPTWRAP_HPP
 
 #include <cstddef>
 #include <string>

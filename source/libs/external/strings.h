@@ -1,5 +1,5 @@
-#ifndef _METADOT_COMPAT_STRINGS_H_
-#define _METADOT_COMPAT_STRINGS_H_
+#ifndef ME_COMPAT_STRINGS_H_
+#define ME_COMPAT_STRINGS_H_
 
 #ifndef _WIN32
 

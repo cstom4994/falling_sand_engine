@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef _METADOT_CONST_H_
-#define _METADOT_CONST_H_
+#ifndef ME_CONST_H
+#define ME_CONST_H
 
 #include "core/macros.hpp"
 
