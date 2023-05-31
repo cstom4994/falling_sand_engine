@@ -515,8 +515,8 @@ int metadot_bind_image(lua_State *L) {
     lua_pushcfunction(L, freeImage);
     lua_settable(L, -3);
 
-    metadot_load(L, imageLib_m, engine_funcs_name_image_internal);
-    metadot_load(L, imageLib, engine_funcs_name_image);
+    ME_load(L, imageLib_m, engine_funcs_name_image_internal);
+    ME_load(L, imageLib, engine_funcs_name_image);
 
     return 1;
 }
@@ -803,7 +803,7 @@ static const luaL_Reg gpuLib[] = {{"setPaletteColor", gpu_set_palette_color},
 int metadot_bind_gpu(lua_State *L) {
     translateStack = new int[32];
 
-    metadot_load(L, gpuLib, engine_funcs_name_gpu);
+    ME_load(L, gpuLib, engine_funcs_name_gpu);
 
     return 1;
 }
@@ -1543,8 +1543,8 @@ int metadot_bind_fs(lua_State *L) {
     lua_pushcfunction(L, fsObjCloseHandle);
     lua_settable(L, -3);
 
-    metadot_load(L, fsLib_m, engine_funcs_name_fs_internal);
-    metadot_load(L, fsLib, engine_funcs_name_fs);
+    ME_load(L, fsLib_m, engine_funcs_name_fs_internal);
+    ME_load(L, fsLib, engine_funcs_name_fs);
 
     return 1;
 }
@@ -2259,7 +2259,7 @@ static const luaL_Reg export_functions[] = {
 int metadot_bind_lz4(lua_State *L) {
     int table_index;
 
-    metadot_load(L, export_functions, engine_funcs_name_lz4);
+    ME_load(L, export_functions, engine_funcs_name_lz4);
 
     table_index = lua_gettop(L);
 
@@ -2919,7 +2919,7 @@ int metadot_bind_cstructcore(lua_State *L) {
             {"typeid", ltypeid},
             {NULL, NULL},
     };
-    metadot_load(L, l, engine_funcs_name_csc);
+    ME_load(L, l, engine_funcs_name_csc);
     return 1;
 }
 
@@ -2936,7 +2936,7 @@ int metadot_bind_cstructtest(lua_State *L) {
             {"NULL", NULL},
             {NULL, NULL},
     };
-    metadot_load(L, l, engine_funcs_name_cst);
+    ME_load(L, l, engine_funcs_name_cst);
     lua_pushlightuserdata(L, NULL);
     lua_setfield(L, -2, "NULL");
     return 1;

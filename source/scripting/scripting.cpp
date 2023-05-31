@@ -22,7 +22,7 @@
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "internal/builtin_lpeg.h"
-#include "libs/lua/ffi.h"
+// #include "libs/lua/ffi.h"
 #include "meta/meta.hpp"
 #include "renderer/renderer_gpu.h"
 #include "scripting/lua/lua_wrapper.hpp"
@@ -215,7 +215,7 @@ static void InitLua(LuaCore *lc) {
     lua_register(lc->L, "exit", metadot_exit);
     lua_register(lc->L, "ls", ls);
 
-    metadot_debug_setup(lc->L, "debugger", "dbg", NULL, NULL);
+    ME_debug_setup(lc->L, "debugger", "dbg", NULL, NULL);
 
     metadot_bind_image(lc->L);
     metadot_bind_gpu(lc->L);
@@ -226,8 +226,8 @@ static void InitLua(LuaCore *lc) {
 
     LoadImGuiBindings(lc->L);
 
-    metadot_preload_auto(lc->L, luaopen_ffi, "ffi");
-    metadot_preload_auto(lc->L, luaopen_lpeg, "lpeg");
+    // metadot_preload_auto(lc->L, luaopen_ffi, "ffi");
+    ME_preload_auto(lc->L, luaopen_lpeg, "lpeg");
 
 #define REGISTER_LUAFUNC(_f) lc->s_lua[#_f] = LuaWrapper::function(_f)
 
@@ -269,7 +269,7 @@ static void EndLua(LuaCore *_struct) {}
 
 void RunScriptInConsole(LuaCore *_struct, const char *c) {
     luaL_loadstring(_struct->L, c);
-    auto result = metadot_debug_pcall(_struct->L, 0, LUA_MULTRET, 0);
+    auto result = ME_debug_pcall(_struct->L, 0, LUA_MULTRET, 0);
     if (result != LUA_OK) {
         print_error(_struct->L);
         return;
@@ -284,7 +284,7 @@ void RunScriptFromFile(const char *filePath) {
         print_error(Scripting::GetSingletonPtr()->Lua->L);
         return;
     }
-    result = metadot_debug_pcall(Scripting::GetSingletonPtr()->Lua->L, 0, LUA_MULTRET, 0);
+    result = ME_debug_pcall(Scripting::GetSingletonPtr()->Lua->L, 0, LUA_MULTRET, 0);
 
     if (result != LUA_OK) {
         print_error(Scripting::GetSingletonPtr()->Lua->L);

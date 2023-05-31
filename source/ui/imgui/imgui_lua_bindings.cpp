@@ -10,9 +10,9 @@
 #include "libs/imgui/imgui_internal.h"
 
 extern "C" {
-#include "libs/lua/host/lauxlib.h"
-#include "libs/lua/host/lua.h"
-#include "libs/lua/host/lualib.h"
+#include "libs/lua/lauxlib.h"
+#include "libs/lua/lua.h"
+#include "libs/lua/lualib.h"
 }
 
 // THIS IS FOR LUA 5.3 although you can make a few changes for other versions

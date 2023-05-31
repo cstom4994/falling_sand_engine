@@ -52,6 +52,6 @@ void ResponseHandle::initMetatable(lua_State *L) {
     lua_pushcfunction(L, luaClose);
     lua_settable(L, -3);
 
-    metadot_load(L, luaBinding, NULL);
+    ME_load(L, luaBinding, NULL);
 }
 }  // namespace MetaEngine::net

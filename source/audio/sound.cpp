@@ -148,7 +148,7 @@
 #elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
 
 #ifndef SDL_h_
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #endif
 #ifndef _WIN32
 #include <alloca.h>

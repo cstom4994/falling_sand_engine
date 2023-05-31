@@ -51,9 +51,9 @@ out vec2 texCoord;\n\
 \
 void main(void)\n\
 {\n\
-	color = gpu_Color;\n\
-	texCoord = vec2(gpu_TexCoord);\n\
-	gl_Position = gpu_ModelViewProjectionMatrix * vec4(gpu_Vertex, 0.0, 1.0);\n\
+    color = gpu_Color;\n\
+    texCoord = vec2(gpu_TexCoord);\n\
+    gl_Position = gpu_ModelViewProjectionMatrix * vec4(gpu_Vertex, 0.0, 1.0);\n\
 }"
 
 #define R_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE \
@@ -67,8 +67,8 @@ out vec4 color;\n\
 \
 void main(void)\n\
 {\n\
-	color = gpu_Color;\n\
-	gl_Position = gpu_ModelViewProjectionMatrix * vec4(gpu_Vertex, 0.0, 1.0);\n\
+    color = gpu_Color;\n\
+    gl_Position = gpu_ModelViewProjectionMatrix * vec4(gpu_Vertex, 0.0, 1.0);\n\
 }"
 
 #define R_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE \

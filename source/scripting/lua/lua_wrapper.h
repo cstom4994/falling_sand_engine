@@ -3,27 +3,25 @@
 #define _METADOT_LUAWRAPPER_H_
 
 #include "core/core.h"
-#include "libs/lua/host/lauxlib.h"
-#include "libs/lua/host/lua.h"
-#include "libs/lua/host/lualib.h"
+#include "libs/lua/lua.hpp"
 
 #ifdef METADOT_PLATFORM_WINDOWS
 #define strerror_r(errno, buf, len) strerror_s(buf, len, errno)
 #endif
 
-struct LuaMemBlock {
+struct lua_mem_block {
     void *ptr;
     size_t size;
 };
 
-struct LuaAllocator {
-    struct LuaMemBlock *blocks;
+struct lua_allocator {
+    struct lua_mem_block *blocks;
     size_t nb_blocks, size_blocks;
     size_t total_allocated;
 };
 
-struct LuaAllocator *new_allocator(void);
-void delete_allocator(struct LuaAllocator *alloc);
+struct lua_allocator *new_allocator(void);
+void delete_allocator(struct lua_allocator *alloc);
 
 void *lua_simple_alloc(void *ud, void *ptr, size_t osize, size_t nsize);
 void *lua_alloc(void *ud, void *ptr, size_t osize, size_t nsize);
@@ -805,244 +803,15 @@ void luaA_function_register_type(lua_State *L, void *src_func, luaA_Func auto_fu
 
 #pragma endregion LuaA
 
-#pragma region LuaCS
+void ME_debug_setup(lua_State *lua, const char *name, const char *globalName, lua_CFunction readFunc, lua_CFunction writeFunc);
+int ME_debug_pcall(lua_State *lua, int nargs, int nresults, int msgh);
 
-#include <assert.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+#define ME_debug_dofile(lua, filename) (luaL_loadfile(lua, filename) || ME_debug_pcall(lua, 0, LUA_MULTRET, 0))
 
-enum luacstruct_type {
-    LUACS_TINT8,
-    LUACS_TINT16,
-    LUACS_TINT32,
-    LUACS_TINT64,
-    LUACS_TUINT8,
-    LUACS_TUINT16,
-    LUACS_TUINT32,
-    LUACS_TUINT64,
-    LUACS_TENUM,
-    LUACS_TBOOL,
-    LUACS_TSTRING,
-    LUACS_TSTRPTR,
-    LUACS_TBYTEARRAY,
-    LUACS_TOBJREF,
-    LUACS_TOBJENT,
-    LUACS_TEXTREF,
-    LUACS_TARRAY,
-    LUACS_TMETHOD,
-    LUACS_TCONST
-};
-
-#define LUACS_FREADONLY 0x01
-#define LUACS_FENDIANBIG 0x02
-#define LUACS_FENDIANLITTLE 0x04
-#define LUACS_FENDIAN (LUACS_FENDIANBIG | LUACS_FENDIANLITTLE)
-
-int luacs_newstruct0(lua_State *, const char *, const char *);
-int luacs_declare_method(lua_State *, const char *, int (*)(lua_State *));
-int luacs_declare_const(lua_State *, const char *, int);
-int luacs_delstruct(lua_State *, const char *);
-int luacs_declare_field(lua_State *, enum luacstruct_type, const char *, const char *, size_t, int, int, unsigned);
-int luacs_newobject(lua_State *, const char *, void *);
-void *luacs_object_pointer(lua_State *, int, const char *);
-int luacs_object_typename(lua_State *);
-void *luacs_checkobject(lua_State *, int, const char *);
-int luacs_newenum0(lua_State *, const char *, size_t);
-int luacs_newenumval(lua_State *, const char *, intmax_t);
-int luacs_delenum(lua_State *, const char *);
-int luacs_enum_declare_value(lua_State *, const char *, intmax_t);
-int luacs_checkenumval(lua_State *, int, const char *);
-int luacs_newarray(lua_State *, enum luacstruct_type, const char *, size_t, int, unsigned, void *);
-int luacs_newarraytype(lua_State *, const char *, enum luacstruct_type, const char *, size_t, int, unsigned);
-
-#define luacs_newstruct(_L, _typename)                   \
-    do {                                                 \
-        { struct _typename; /* check valid for type */ } \
-        luacs_newstruct0((_L), #_typename, NULL);        \
-    } while (0 /*CONSTCOND*/)
-#define luacs_newenum(_L, _enumname)                              \
-    do {                                                          \
-        { enum _enumname; /* check valid for enum */ }            \
-        luacs_newenum0((_L), #_enumname, sizeof(enum _enumname)); \
-    } while (0 /*CONSTCOND*/)
-#define validintwidth(_w) ((_w) == 1 || (_w) == 2 || (_w) == 4 || (_w) == 8)
-#define luacs_int_field(_L, _type, _field, _flags)                                                                                        \
-    do {                                                                                                                                  \
-        static_assert(validintwidth(sizeof((struct _type *)0)->_field), "`" #_field "' is an unsupported int type");                      \
-        enum luacstruct_type _itype;                                                                                                      \
-        switch (sizeof(((struct _type *)0)->_field)) {                                                                                    \
-            case 1:                                                                                                                       \
-                _itype = LUACS_TINT8;                                                                                                     \
-                break;                                                                                                                    \
-            case 2:                                                                                                                       \
-                _itype = LUACS_TINT16;                                                                                                    \
-                break;                                                                                                                    \
-            case 4:                                                                                                                       \
-                _itype = LUACS_TINT32;                                                                                                    \
-                break;                                                                                                                    \
-            case 8:                                                                                                                       \
-                _itype = LUACS_TINT64;                                                                                                    \
-                break;                                                                                                                    \
-        }                                                                                                                                 \
-        luacs_declare_field((_L), _itype, NULL, #_field, sizeof(((struct _type *)0)->_field), offsetof(struct _type, _field), 0, _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_unsigned_field(_L, _type, _field, _flags)                                                                                   \
-    do {                                                                                                                                  \
-        static_assert(validintwidth(sizeof((struct _type *)0)->_field), "`" #_field "' is an unsupported int type");                      \
-        enum luacstruct_type _itype;                                                                                                      \
-        switch (sizeof(((struct _type *)0)->_field)) {                                                                                    \
-            case 1:                                                                                                                       \
-                _itype = LUACS_TUINT8;                                                                                                    \
-                break;                                                                                                                    \
-            case 2:                                                                                                                       \
-                _itype = LUACS_TUINT16;                                                                                                   \
-                break;                                                                                                                    \
-            case 4:                                                                                                                       \
-                _itype = LUACS_TUINT32;                                                                                                   \
-                break;                                                                                                                    \
-            case 8:                                                                                                                       \
-                _itype = LUACS_TUINT64;                                                                                                   \
-                break;                                                                                                                    \
-        }                                                                                                                                 \
-        luacs_declare_field((_L), _itype, NULL, #_field, sizeof(((struct _type *)0)->_field), offsetof(struct _type, _field), 0, _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_enum_field(_L, _type, _etype, _field, _flags)                                                                                       \
-    do {                                                                                                                                          \
-        static_assert(validintwidth(sizeof((struct _type *)0)->_field), "`" #_field "' is an unsupported int type");                              \
-        luacs_declare_field((_L), LUACS_TENUM, #_etype, #_field, sizeof(((struct _type *)0)->_field), offsetof(struct _type, _field), 0, _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_bool_field(_L, _type, _field, _flags)                                                                                            \
-    do {                                                                                                                                       \
-        static_assert(sizeof(bool) == sizeof(((struct _type *)0)->_field), "`" #_field "' is not a bool value");                               \
-        luacs_declare_field((_L), LUACS_TBOOL, NULL, #_field, sizeof(((struct _type *)0)->_field), offsetof(struct _type, _field), 0, _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_bytearray_field(_L, _type, _field, _flags)                                                                                            \
-    do {                                                                                                                                            \
-        luacs_declare_field((_L), LUACS_TBYTEARRAY, NULL, #_field, sizeof(((struct _type *)0)->_field), offsetof(struct _type, _field), 0, _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_string_field(_L, _type, _field, _flags)                                                                                            \
-    do {                                                                                                                                         \
-        luacs_declare_field((_L), LUACS_TSTRING, NULL, #_field, sizeof(((struct _type *)0)->_field), offsetof(struct _type, _field), 0, _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_strptr_field(_L, _type, _field, _flags)                                                                                            \
-    do {                                                                                                                                         \
-        static_assert(sizeof(char *) == sizeof(((struct _type *)0)->_field), "`" #_field "' is not a pointer value");                            \
-        luacs_declare_field((_L), LUACS_TSTRPTR, NULL, #_field, sizeof(((struct _type *)0)->_field), offsetof(struct _type, _field), 0, _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_objref_field(_L, _type, _tname, _field, _flags)                                                                                       \
-    do {                                                                                                                                            \
-        static_assert(sizeof(void *) == sizeof(((struct _type *)0)->_field), "`" #_field "' is not a pointer value");                               \
-        luacs_declare_field((_L), LUACS_TOBJREF, #_tname, #_field, sizeof(((struct _type *)0)->_field), offsetof(struct _type, _field), 0, _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_nested_field(_L, _type, _tname, _field, _flags)                                                                                       \
-    do {                                                                                                                                            \
-        luacs_declare_field((_L), LUACS_TOBJENT, #_tname, #_field, sizeof(((struct _type *)0)->_field), offsetof(struct _type, _field), 0, _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_extref_field(_L, _type, _field, _flags)                                                                                            \
-    do {                                                                                                                                         \
-        luacs_declare_field((_L), LUACS_TEXTREF, NULL, #_field, sizeof(((struct _type *)0)->_field), offsetof(struct _type, _field), 0, _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_pseudo_field(_L, _type, _field, _flags)                             \
-    do {                                                                          \
-        luacs_declare_field((_L), LUACS_TEXTREF, NULL, #_field, 0, 0, 0, _flags); \
-    } while (0 /*CONSTCOND*/)
-
-#define _nitems(_x) (sizeof(_x) / sizeof((_x)[0]))
-
-#define luacs_int_array_field(_L, _type, _field, _flags)                                                                                                                        \
-    do {                                                                                                                                                                        \
-        static_assert(validintwidth(sizeof((struct _type *)0)->_field[0]), "`" #_field "' is an unsupported int type");                                                         \
-        enum luacstruct_type _itype;                                                                                                                                            \
-        switch (sizeof(((struct _type *)0)->_field[0])) {                                                                                                                       \
-            case 1:                                                                                                                                                             \
-                _itype = LUACS_TINT8;                                                                                                                                           \
-                break;                                                                                                                                                          \
-            case 2:                                                                                                                                                             \
-                _itype = LUACS_TINT16;                                                                                                                                          \
-                break;                                                                                                                                                          \
-            case 4:                                                                                                                                                             \
-                _itype = LUACS_TINT32;                                                                                                                                          \
-                break;                                                                                                                                                          \
-            case 8:                                                                                                                                                             \
-                _itype = LUACS_TINT64;                                                                                                                                          \
-                break;                                                                                                                                                          \
-        }                                                                                                                                                                       \
-        luacs_declare_field((_L), _itype, NULL, #_field, sizeof(((struct _type *)0)->_field[0]), offsetof(struct _type, _field), _nitems(((struct _type *)0)->_field), _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_unsigned_array_field(_L, _type, _field, _flags)                                                                                                                   \
-    do {                                                                                                                                                                        \
-        static_assert(validintwidth(sizeof((struct _type *)0)->_field[0]), "`" #_field "' is an unsupported int type");                                                         \
-        enum luacstruct_type _itype;                                                                                                                                            \
-        switch (sizeof(((struct _type *)0)->_field[0])) {                                                                                                                       \
-            case 1:                                                                                                                                                             \
-                _itype = LUACS_TUINT8;                                                                                                                                          \
-                break;                                                                                                                                                          \
-            case 2:                                                                                                                                                             \
-                _itype = LUACS_TUINT16;                                                                                                                                         \
-                break;                                                                                                                                                          \
-            case 4:                                                                                                                                                             \
-                _itype = LUACS_TUINT32;                                                                                                                                         \
-                break;                                                                                                                                                          \
-            case 8:                                                                                                                                                             \
-                _itype = LUACS_TUINT64;                                                                                                                                         \
-                break;                                                                                                                                                          \
-        }                                                                                                                                                                       \
-        luacs_declare_field((_L), _itype, NULL, #_field, sizeof(((struct _type *)0)->_field[0]), offsetof(struct _type, _field), _nitems(((struct _type *)0)->_field), _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_enum_array_field(_L, _type, _etype, _field, _flags)                                                                                                                    \
-    do {                                                                                                                                                                             \
-        static_assert(validintwidth(sizeof((struct _type *)0)->_field[0]), "`" #_field "' is an unsupported int type");                                                              \
-        luacs_declare_field((_L), LUACS_TENUM, #_etype, #_field, sizeof(((struct _type *)0)->_field), offsetof(struct _type, _field), _nitems(((struct _type *)0)->_field), _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_bool_array_field(_L, _type, _field, _flags)                                                                                                                            \
-    do {                                                                                                                                                                             \
-        static_assert(sizeof(bool) == sizeof(((struct _type *)0)->_field[0]), "`" #_field "' is not a bool value");                                                                  \
-        luacs_declare_field((_L), LUACS_TBOOL, NULL, #_field, sizeof(((struct _type *)0)->_field[0]), offsetof(struct _type, _field), _nitems(((struct _type *)0)->_field), _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_bytearray_array_field(_L, _type, _field, _flags)                                                                                                                            \
-    do {                                                                                                                                                                                  \
-        luacs_declare_field((_L), LUACS_TBYTEARRAY, NULL, #_field, sizeof(((struct _type *)0)->_field[0]), offsetof(struct _type, _field), _nitems(((struct _type *)0)->_field), _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_string_array_field(_L, _type, _field, _flags)                                                                                                                            \
-    do {                                                                                                                                                                               \
-        luacs_declare_field((_L), LUACS_TSTRING, NULL, #_field, sizeof(((struct _type *)0)->_field[0]), offsetof(struct _type, _field), _nitems(((struct _type *)0)->_field), _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_strptr_array_field(_L, _type, _field, _flags)                                                                                                                            \
-    do {                                                                                                                                                                               \
-        static_assert(sizeof(char *) == sizeof(((struct _type *)0)->_field[0]), "`" #_field "' is not a pointer value");                                                               \
-        luacs_declare_field((_L), LUACS_TSTRPTR, NULL, #_field, sizeof(((struct _type *)0)->_field[0]), offsetof(struct _type, _field), _nitems(((struct _type *)0)->_field), _flags); \
-    } while (0 /*CONSTCOND*/)
-
-#define luacs_objref_array_field(_L, _type, _tname, _field, _flags)                                                                                                                       \
-    do {                                                                                                                                                                                  \
-        static_assert(sizeof(void *) == sizeof(((struct _type *)0)->_field[0]), "`" #_field "' is not a pointer value");                                                                  \
-        luacs_declare_field((_L), LUACS_TOBJREF, #_tname, #_field, sizeof(((struct _type *)0)->_field[0]), offsetof(struct _type, _field), _nitems(((struct _type *)0)->_field), _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_nested_array_field(_L, _type, _tname, _field, _flags)                                                                                                                       \
-    do {                                                                                                                                                                                  \
-        luacs_declare_field((_L), LUACS_TOBJENT, #_tname, #_field, sizeof(((struct _type *)0)->_field[0]), offsetof(struct _type, _field), _nitems(((struct _type *)0)->_field), _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_extref_array_field(_L, _type, _field, _flags)                                                                                                                            \
-    do {                                                                                                                                                                               \
-        luacs_declare_field((_L), LUACS_TEXTREF, NULL, #_field, sizeof(((struct _type *)0)->_field[0]), offsetof(struct _type, _field), _nitems(((struct _type *)0)->_field), _flags); \
-    } while (0 /*CONSTCOND*/)
-#define luacs_array_array_field(_L, _type, _tname, _field, _flags)                                                                                                                       \
-    do {                                                                                                                                                                                 \
-        luacs_declare_field((_L), LUACS_TARRAY, #_tname, #_field, sizeof(((struct _type *)0)->_field[0]), offsetof(struct _type, _field), _nitems(((struct _type *)0)->_field), _flags); \
-    } while (0 /*CONSTCOND*/)
-
-#pragma endregion LuaCS
-
-void metadot_debug_setup(lua_State *lua, const char *name, const char *globalName, lua_CFunction readFunc, lua_CFunction writeFunc);
-int metadot_debug_pcall(lua_State *lua, int nargs, int nresults, int msgh);
-
-#define metadot_debug_dofile(lua, filename) (luaL_loadfile(lua, filename) || metadot_debug_pcall(lua, 0, LUA_MULTRET, 0))
-
-int metadot_preload(lua_State *L, lua_CFunction f, const char *name);
-int metadot_preload_auto(lua_State *L, lua_CFunction f, const char *name);
-void metadot_load(lua_State *L, const luaL_Reg *l, const char *name);
-void metadot_loadover(lua_State *L, const luaL_Reg *l, const char *name);
+int ME_preload(lua_State *L, lua_CFunction f, const char *name);
+int ME_preload_auto(lua_State *L, lua_CFunction f, const char *name);
+void ME_load(lua_State *L, const luaL_Reg *l, const char *name);
+void ME_loadover(lua_State *L, const luaL_Reg *l, const char *name);
 
 #pragma region LuaMemSafe
 
@@ -1050,22 +819,22 @@ void metadot_loadover(lua_State *L, const luaL_Reg *l, const char *name);
 #define SAFELUA_FINISHED (-1)
 
 /** Open a new Lua state that can be canceled */
-lua_State *metadot_safelua_open(void);
+lua_State *ME_safelua_open(void);
 /** Close the Lua state and free resources */
-void metadot_safelua_close(lua_State *state);
+void ME_safelua_close(lua_State *state);
 
 /** Type for the cancel callback, used to check if this thread should stop */
-typedef int (*metadot_safelua_CancelCheck)(lua_State *, void *);
+typedef int (*ME_safelua_CancelCheck)(lua_State *, void *);
 
 /** Type for the handler callback, used to free some resource */
-typedef void (*metadot_safelua_Handler)(int, void *);
+typedef void (*ME_safelua_Handler)(int, void *);
 
-int metadot_safelua_pcallk(lua_State *state, int nargs, int nresults, int errfunc, int ctx, lua_CFunction k, metadot_safelua_CancelCheck cancel, void *canceludata);
-void metadot_safelua_checkcancel(lua_State *state);
-void metadot_safelua_cancel(lua_State *state);
-int metadot_safelua_shouldcancel(lua_State *state);
-void metadot_safelua_add_handler(lua_State *state, metadot_safelua_Handler handler, void *handlerudata);
-int metadot_safelua_remove_handler(lua_State *state, metadot_safelua_Handler handler, void *handlerudata);
+int ME_safelua_pcallk(lua_State *state, int nargs, int nresults, int errfunc, int ctx, lua_KFunction k, ME_safelua_CancelCheck cancel, void *canceludata);
+void ME_safelua_checkcancel(lua_State *state);
+void ME_safelua_cancel(lua_State *state);
+int ME_safelua_shouldcancel(lua_State *state);
+void ME_safelua_add_handler(lua_State *state, ME_safelua_Handler handler, void *handlerudata);
+int ME_safelua_remove_handler(lua_State *state, ME_safelua_Handler handler, void *handlerudata);
 
 #pragma endregion LuaMemSafe
 
