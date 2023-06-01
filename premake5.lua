@@ -78,18 +78,7 @@ do
     targetdir "output"
     debugdir "output/../"
 
-    -- if is_os("macosx") then
-    -- 	add_files("source/core/**.m")
-    -- end
-
-    files {"source/*.cpp", "source/core/**.c", "source/core/**.cpp", "source/event/**.cpp", "source/game_utils/**.cpp",
-           "source/internal/**.c", "source/physics/**.cpp", "source/audio/**.cpp", "source/meta/*.cpp",
-           "source/ui/**.cpp", "source/engine/**.cpp", "source/renderer/**.cpp", "source/scripting/**.c",
-           "source/scripting/**.cpp"}
-
-    files {"source/utility/**.cpp", "source/utility/**.hpp", "source/utility/**.h"}
-
-    files {"source/**.h", "source/**.hpp"}
+    files {"source/engine/**.cpp","source/engine/**.c", "source/engine/**.h", "source/engine/**.hpp"}
 
     links {"MetaDotLibs", "SDL2", "ffi", win32_libs}
 end

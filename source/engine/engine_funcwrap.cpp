@@ -17,19 +17,19 @@
 #include <string>
 #include <vector>
 
-#include "core/const.h"
-#include "core/global.hpp"
-#include "core/platform.h"
-#include "core/sdl_wrapper.h"
+#include "engine/core/const.h"
+#include "engine/core/global.hpp"
+#include "engine/core/platform.h"
+#include "engine/core/sdl_wrapper.h"
 #include "engine/engine.h"
 #include "game.hpp"
 #include "libs/lz4/lz4.h"
 #include "libs/lz4/lz4frame.h"
 #include "libs/lz4/lz4hc.h"
-#include "renderer/renderer_gpu.h"
-#include "scripting/lua_wrapper.hpp"
-#include "scripting/lua_wrapper_base.hpp"
-#include "scripting/scripting.hpp"
+#include "engine/renderer/renderer_gpu.h"
+#include "engine/scripting/lua_wrapper.hpp"
+#include "engine/scripting/lua_wrapper_base.hpp"
+#include "engine/scripting/scripting.hpp"
 
 #ifndef ME_PLATFORM_WINDOWS
 #include <dirent.h>

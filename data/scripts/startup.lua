@@ -22,7 +22,6 @@ content = i18n("welcome")
 
 add_packagepath(METADOT_RESLOC("data/scripts/samples"))
 
--- runf("Script:tests/test_lpeg.lua")
 -- runf("Script:tests/test_ffi.lua")
 -- runf("Script:tests/test_lz4.lua")
 -- runf("Script:tests/test_csv.lua")

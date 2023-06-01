@@ -8,9 +8,9 @@
 
 #include <string>
 
-#include "core/core.hpp"
-#include "core/cpp/utils.hpp"
-#include "core/sdl_wrapper.h"
+#include "engine/core/core.hpp"
+#include "engine/core/cpp/utils.hpp"
+#include "engine/core/sdl_wrapper.h"
 
 typedef struct engine_core {
     C_Window *window;

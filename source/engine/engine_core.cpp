@@ -2,9 +2,9 @@
 
 #include "engine/engine_core.h"
 
-#include "core/core.hpp"
-#include "core/cpp/utils.hpp"
-#include "core/utils/utility.hpp"
+#include "engine/core/core.hpp"
+#include "engine/core/cpp/utils.hpp"
+#include "engine/core/utils/utility.hpp"
 
 engine_core Core;
 windows Screen;

@@ -9,11 +9,11 @@
 #include <string.h>
 #include <time.h>
 
-#include "core/cpp/utils.hpp"
-#include "core/platform.h"
-#include "core/utils/utility.hpp"
+#include "engine/core/cpp/utils.hpp"
+#include "engine/core/platform.h"
+#include "engine/core/utils/utility.hpp"
 #include "engine/engine_core.h"
-#include "renderer/gpu.hpp"
+#include "engine/renderer/gpu.hpp"
 
 #define IMPLENGINE()             \
     extern engine_core Core;     \

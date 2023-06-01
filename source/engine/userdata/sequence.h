@@ -3,8 +3,8 @@
 
 #include <cstdlib>
 
-#include "core/utils/tableinterface.h"
-#include "scripting/lua_wrapper.hpp"
+#include "engine/core/utils/tableinterface.h"
+#include "engine/scripting/lua_wrapper.hpp"
 
 class Sequence {
 private:

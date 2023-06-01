@@ -4,12 +4,12 @@
 
 #include <cstdlib>
 
-#include "core/memory.h"
-#include "core/core.hpp"
-#include "core/global.hpp"
-#include "core/io/filesystem.h"
+#include "engine/core/memory.h"
+#include "engine/core/core.hpp"
+#include "engine/core/global.hpp"
+#include "engine/core/io/filesystem.h"
 #include "engine/engine_core.h"
-#include "core/platform.h"
+#include "engine/core/platform.h"
 #include "game.hpp"
 #include "game_resources.hpp"
 
