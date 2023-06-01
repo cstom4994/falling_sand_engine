@@ -20,22 +20,22 @@
 IMPLENGINE();
 
 // Color definitions
-METAENGINE_Color bgPanelColor = {0.02, 0.02, 0.05};
-METAENGINE_Color bgLightColor = {0.2, 0.2, 0.35};
-METAENGINE_Color bgMediumColor = {0.1, 0.1, 0.15};
+ME_Color bgPanelColor = {0.02, 0.02, 0.05};
+ME_Color bgLightColor = {0.2, 0.2, 0.35};
+ME_Color bgMediumColor = {0.1, 0.1, 0.15};
 
-METAENGINE_Color fieldColor = {0.2, 0.2, 0.2};
-METAENGINE_Color fieldEditingColor = {0.3, 0.3, 0.3};
-METAENGINE_Color buttonOverColor = {0.3, 0.3, 0.4};
+ME_Color fieldColor = {0.2, 0.2, 0.2};
+ME_Color fieldEditingColor = {0.3, 0.3, 0.3};
+ME_Color buttonOverColor = {0.3, 0.3, 0.4};
 
-METAENGINE_Color scrollbarInactiveColor = {0.3, 0.3, 0.3};
-METAENGINE_Color scrollbarOverColor = {0.5, 0.5, 0.5};
+ME_Color scrollbarInactiveColor = {0.3, 0.3, 0.3};
+ME_Color scrollbarOverColor = {0.5, 0.5, 0.5};
 
-METAENGINE_Color menuTabColor = {0.05, 0.05, 0.10};
-METAENGINE_Color menuActiveTabColor = {0.15, 0.15, 0.2};
+ME_Color menuTabColor = {0.05, 0.05, 0.10};
+ME_Color menuActiveTabColor = {0.15, 0.15, 0.2};
 
-METAENGINE_Color brightWhite = {250.0f / 255.0f, 250.0f / 255.0f, 250.0f / 255.0f};
-METAENGINE_Color lightWhite = {200.0f / 255.0f, 200.0f / 255.0f, 200.0f / 255.0f};
+ME_Color brightWhite = {250.0f / 255.0f, 250.0f / 255.0f, 250.0f / 255.0f};
+ME_Color lightWhite = {200.0f / 255.0f, 200.0f / 255.0f, 200.0f / 255.0f};
 
 void UISystem::UIRendererInit() {
     // UIData

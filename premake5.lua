@@ -5,7 +5,7 @@ workspace "Sandbox"
 configurations {"Debug", "Release"}
 
 buildoptions {"/utf-8", "/Zc:__cplusplus", "/permissive", "/bigobj"}
-disablewarnings {"4267", "4244", "4305", "4018", "4800", "5030", "5222", "4554", "4002", "4099"}
+disablewarnings {"4005", "4267", "4244", "4305", "4018", "4800", "5030", "5222", "4554", "4002", "4099"}
 
 cppdialect "C++20"
 cdialect "C17"

@@ -14,6 +14,7 @@
 #include "core/utils/utility.hpp"
 #include "libs/external/stb_image.h"
 #include "renderer_gpu.h"
+#include "renderer_opengl.h"
 
 void gpu_init_renderer_register(void);
 void gpu_free_renderer_register(void);
@@ -171,13 +172,13 @@ static bool gpu_initialized_SDL = R_false;
 void R_SetCurrentRenderer(R_RendererID id) {
     gpu_current_renderer = R_GetRenderer(id);
 
-    if (gpu_current_renderer != NULL) gpu_current_renderer->impl->SetAsCurrent(gpu_current_renderer);
+    if (gpu_current_renderer != NULL) SetAsCurrent(gpu_current_renderer);
 }
 
 void R_ResetRendererState(void) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->ResetRendererState(gpu_current_renderer);
+    ResetRendererState(gpu_current_renderer);
 }
 
 void R_SetCoordinateMode(bool use_math_coords) {
@@ -398,7 +399,7 @@ R_Target *R_InitRendererByID(R_RendererID renderer_request, Uint16 w, Uint16 h, 
 
     R_SetCurrentRenderer(renderer->id);
 
-    screen = renderer->impl->Init(renderer, renderer_request, w, h, SDL_flags);
+    screen = Init(renderer, renderer_request, w, h, SDL_flags);
     if (screen == NULL) {
         R_PushErrorCode("R_InitRendererByID", R_ERROR_BACKEND_ERROR, "Renderer %s failed to initialize properly", renderer->id.name);
         // Init failed, destroy the renderer...
@@ -419,7 +420,7 @@ bool R_IsFeatureEnabled(R_FeatureEnum feature) {
 R_Target *R_CreateTargetFromWindow(Uint32 windowID) {
     if (gpu_current_renderer == NULL) return NULL;
 
-    return gpu_current_renderer->impl->CreateTargetFromWindow(gpu_current_renderer, windowID, NULL);
+    return CreateTargetFromWindow(gpu_current_renderer, windowID, NULL);
 }
 
 R_Target *R_CreateAliasTarget(R_Target *target) {
@@ -427,19 +428,19 @@ R_Target *R_CreateAliasTarget(R_Target *target) {
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) return NULL;
 
-    return gpu_current_renderer->impl->CreateAliasTarget(gpu_current_renderer, target);
+    return CreateAliasTarget(gpu_current_renderer, target);
 }
 
 void R_MakeCurrent(R_Target *target, Uint32 windowID) {
     if (gpu_current_renderer == NULL) return;
 
-    gpu_current_renderer->impl->MakeCurrent(gpu_current_renderer, target, windowID);
+    MakeCurrent(gpu_current_renderer, target, windowID);
 }
 
 bool R_SetFullscreen(bool enable_fullscreen, bool use_desktop_resolution) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return R_false;
 
-    return gpu_current_renderer->impl->SetFullscreen(gpu_current_renderer, enable_fullscreen, use_desktop_resolution);
+    return SetFullscreen(gpu_current_renderer, enable_fullscreen, use_desktop_resolution);
 }
 
 bool R_GetFullscreen(void) {
@@ -458,13 +459,13 @@ R_Target *R_GetActiveTarget(void) {
 bool R_SetActiveTarget(R_Target *target) {
     if (gpu_current_renderer == NULL) return R_false;
 
-    return gpu_current_renderer->impl->SetActiveTarget(gpu_current_renderer, target);
+    return SetActiveTarget(gpu_current_renderer, target);
 }
 
 bool R_AddDepthBuffer(R_Target *target) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL || target == NULL) return R_false;
 
-    return gpu_current_renderer->impl->AddDepthBuffer(gpu_current_renderer, target);
+    return AddDepthBuffer(gpu_current_renderer, target);
 }
 
 void R_SetDepthTest(R_Target *target, bool enable) {
@@ -482,7 +483,7 @@ void R_SetDepthFunction(R_Target *target, R_ComparisonEnum compare_operation) {
 bool R_SetWindowResolution(Uint16 w, Uint16 h) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL || w == 0 || h == 0) return R_false;
 
-    return gpu_current_renderer->impl->SetWindowResolution(gpu_current_renderer, w, h);
+    return SetWindowResolution(gpu_current_renderer, w, h);
 }
 
 void R_GetVirtualResolution(R_Target *target, Uint16 *w, Uint16 *h) {
@@ -502,7 +503,7 @@ void R_SetVirtualResolution(R_Target *target, Uint16 w, Uint16 h) {
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
     if (w == 0 || h == 0) return;
 
-    gpu_current_renderer->impl->SetVirtualResolution(gpu_current_renderer, target, w, h);
+    SetVirtualResolution(gpu_current_renderer, target, w, h);
 }
 
 void R_UnsetVirtualResolution(R_Target *target) {
@@ -510,7 +511,7 @@ void R_UnsetVirtualResolution(R_Target *target) {
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
 
-    gpu_current_renderer->impl->UnsetVirtualResolution(gpu_current_renderer, target);
+    UnsetVirtualResolution(gpu_current_renderer, target);
 }
 
 void R_SetImageVirtualResolution(R_Image *image, Uint16 w, Uint16 h) {
@@ -566,7 +567,7 @@ void R_SetErrorQueueMax(unsigned int max) {
 void R_CloseCurrentRenderer(void) {
     if (gpu_current_renderer == NULL) return;
 
-    gpu_current_renderer->impl->Quit(gpu_current_renderer);
+    Quit(gpu_current_renderer);
     R_FreeRenderer(gpu_current_renderer);
 }
 
@@ -577,7 +578,7 @@ void R_Quit(void) {
 
     if (gpu_current_renderer == NULL) return;
 
-    gpu_current_renderer->impl->Quit(gpu_current_renderer);
+    Quit(gpu_current_renderer);
     R_FreeRenderer(gpu_current_renderer);
     // FIXME: Free all renderers
     gpu_current_renderer = NULL;
@@ -716,8 +717,8 @@ metadot_rect R_MakeRect(float x, float y, float w, float h) {
     return r;
 }
 
-METAENGINE_Color R_MakeColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
-    METAENGINE_Color c;
+ME_Color R_MakeColor(U8 r, U8 g, U8 b, U8 a) {
+    ME_Color c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -758,7 +759,7 @@ R_Camera R_SetCamera(R_Target *target, R_Camera *cam) {
     MAKE_CURRENT_IF_NONE(target);
     if (gpu_current_renderer->current_context_target == NULL) return R_GetDefaultCamera();
     // TODO: Remove from renderer and flush here
-    return gpu_current_renderer->impl->SetCamera(gpu_current_renderer, target, cam);
+    return SetCamera(gpu_current_renderer, target, cam);
 }
 
 void R_EnableCamera(R_Target *target, bool use_camera) {
@@ -775,43 +776,43 @@ bool R_IsCameraEnabled(R_Target *target) {
 R_Image *R_CreateImage(Uint16 w, Uint16 h, R_FormatEnum format) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return NULL;
 
-    return gpu_current_renderer->impl->CreateImage(gpu_current_renderer, w, h, format);
+    return CreateImage(gpu_current_renderer, w, h, format);
 }
 
 R_Image *R_CreateImageUsingTexture(R_TextureHandle handle, bool take_ownership) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return NULL;
 
-    return gpu_current_renderer->impl->CreateImageUsingTexture(gpu_current_renderer, handle, take_ownership);
+    return CreateImageUsingTexture(gpu_current_renderer, handle, take_ownership);
 }
 
 R_Image *R_CreateAliasImage(R_Image *image) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return NULL;
 
-    return gpu_current_renderer->impl->CreateAliasImage(gpu_current_renderer, image);
+    return CreateAliasImage(gpu_current_renderer, image);
 }
 
 R_Image *R_CopyImage(R_Image *image) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return NULL;
 
-    return gpu_current_renderer->impl->CopyImage(gpu_current_renderer, image);
+    return CopyImage(gpu_current_renderer, image);
 }
 
 void R_UpdateImage(R_Image *image, const metadot_rect *image_rect, void *surface, const metadot_rect *surface_rect) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->UpdateImage(gpu_current_renderer, image, image_rect, surface, surface_rect);
+    UpdateImage(gpu_current_renderer, image, image_rect, surface, surface_rect);
 }
 
 void R_UpdateImageBytes(R_Image *image, const metadot_rect *image_rect, const unsigned char *bytes, int bytes_per_row) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->UpdateImageBytes(gpu_current_renderer, image, image_rect, bytes, bytes_per_row);
+    UpdateImageBytes(gpu_current_renderer, image, image_rect, bytes, bytes_per_row);
 }
 
 bool R_ReplaceImage(R_Image *image, void *surface, const metadot_rect *surface_rect) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return R_false;
 
-    return gpu_current_renderer->impl->ReplaceImage(gpu_current_renderer, image, surface, surface_rect);
+    return ReplaceImage(gpu_current_renderer, image, surface, surface_rect);
 }
 
 static SDL_Surface *gpu_copy_raw_surface_data(unsigned char *data, int width, int height, int channels) {
@@ -872,17 +873,17 @@ static SDL_Surface *gpu_copy_raw_surface_data(unsigned char *data, int width, in
 
     // Copy row-by-row in case the pitch doesn't match
     for (i = 0; i < height; ++i) {
-        memcpy((Uint8 *)result->pixels + i * result->pitch, data + channels * width * i, channels * width);
+        memcpy((U8 *)result->pixels + i * result->pitch, data + channels * width * i, channels * width);
     }
 
     if (result != NULL && result->format->palette != NULL) {
         // SDL_CreateRGBSurface has no idea what palette to use, so it uses a blank one.
         // We'll at least create a grayscale one, but it's not ideal...
         // Better would be to get the palette from stbi, but stbi doesn't do that!
-        METAENGINE_Color colors[256];
+        ME_Color colors[256];
 
         for (i = 0; i < 256; i++) {
-            colors[i].r = colors[i].g = colors[i].b = (Uint8)i;
+            colors[i].r = colors[i].g = colors[i].b = (U8)i;
         }
 
         /* Set palette */
@@ -902,13 +903,13 @@ static const char *get_filename_ext(const char *filename) {
 R_Image *R_CopyImageFromSurface(void *surface) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return NULL;
 
-    return gpu_current_renderer->impl->CopyImageFromSurface(gpu_current_renderer, surface, NULL);
+    return CopyImageFromSurface(gpu_current_renderer, surface, NULL);
 }
 
 R_Image *R_CopyImageFromSurfaceRect(void *surface, metadot_rect *surface_rect) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return NULL;
 
-    return gpu_current_renderer->impl->CopyImageFromSurface(gpu_current_renderer, surface, surface_rect);
+    return CopyImageFromSurface(gpu_current_renderer, surface, surface_rect);
 }
 
 R_Image *R_CopyImageFromTarget(R_Target *target) {
@@ -916,7 +917,7 @@ R_Image *R_CopyImageFromTarget(R_Target *target) {
     MAKE_CURRENT_IF_NONE(target);
     if (gpu_current_renderer->current_context_target == NULL) return NULL;
 
-    return gpu_current_renderer->impl->CopyImageFromTarget(gpu_current_renderer, target);
+    return CopyImageFromTarget(gpu_current_renderer, target);
 }
 
 void *R_CopySurfaceFromTarget(R_Target *target) {
@@ -924,19 +925,19 @@ void *R_CopySurfaceFromTarget(R_Target *target) {
     MAKE_CURRENT_IF_NONE(target);
     if (gpu_current_renderer->current_context_target == NULL) return NULL;
 
-    return gpu_current_renderer->impl->CopySurfaceFromTarget(gpu_current_renderer, target);
+    return CopySurfaceFromTarget(gpu_current_renderer, target);
 }
 
 void *R_CopySurfaceFromImage(R_Image *image) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return NULL;
 
-    return gpu_current_renderer->impl->CopySurfaceFromImage(gpu_current_renderer, image);
+    return CopySurfaceFromImage(gpu_current_renderer, image);
 }
 
 void R_FreeImage(R_Image *image) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->FreeImage(gpu_current_renderer, image);
+    FreeImage(gpu_current_renderer, image);
 }
 
 R_Target *R_GetContextTarget(void) {
@@ -956,13 +957,13 @@ R_Target *R_LoadTarget(R_Image *image) {
 R_Target *R_GetTarget(R_Image *image) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return NULL;
 
-    return gpu_current_renderer->impl->GetTarget(gpu_current_renderer, image);
+    return GetTarget(gpu_current_renderer, image);
 }
 
 void R_FreeTarget(R_Target *target) {
     if (gpu_current_renderer == NULL) return;
 
-    gpu_current_renderer->impl->FreeTarget(gpu_current_renderer, target);
+    FreeTarget(gpu_current_renderer, target);
 }
 
 void R_Blit(R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y) {
@@ -973,7 +974,7 @@ void R_Blit(R_Image *image, metadot_rect *src_rect, R_Target *target, float x, f
     if (image == NULL) RETURN_ERROR(R_ERROR_NULL_ARGUMENT, "image");
     if (target == NULL) RETURN_ERROR(R_ERROR_NULL_ARGUMENT, "target");
 
-    gpu_current_renderer->impl->Blit(gpu_current_renderer, image, src_rect, target, x, y);
+    Blit(gpu_current_renderer, image, src_rect, target, x, y);
 }
 
 void R_BlitRotate(R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float degrees) {
@@ -984,7 +985,7 @@ void R_BlitRotate(R_Image *image, metadot_rect *src_rect, R_Target *target, floa
     if (image == NULL) RETURN_ERROR(R_ERROR_NULL_ARGUMENT, "image");
     if (target == NULL) RETURN_ERROR(R_ERROR_NULL_ARGUMENT, "target");
 
-    gpu_current_renderer->impl->BlitRotate(gpu_current_renderer, image, src_rect, target, x, y, degrees);
+    BlitRotate(gpu_current_renderer, image, src_rect, target, x, y, degrees);
 }
 
 void R_BlitScale(R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float scaleX, float scaleY) {
@@ -995,7 +996,7 @@ void R_BlitScale(R_Image *image, metadot_rect *src_rect, R_Target *target, float
     if (image == NULL) RETURN_ERROR(R_ERROR_NULL_ARGUMENT, "image");
     if (target == NULL) RETURN_ERROR(R_ERROR_NULL_ARGUMENT, "target");
 
-    gpu_current_renderer->impl->BlitScale(gpu_current_renderer, image, src_rect, target, x, y, scaleX, scaleY);
+    BlitScale(gpu_current_renderer, image, src_rect, target, x, y, scaleX, scaleY);
 }
 
 void R_BlitTransform(R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float degrees, float scaleX, float scaleY) {
@@ -1006,7 +1007,7 @@ void R_BlitTransform(R_Image *image, metadot_rect *src_rect, R_Target *target, f
     if (image == NULL) RETURN_ERROR(R_ERROR_NULL_ARGUMENT, "image");
     if (target == NULL) RETURN_ERROR(R_ERROR_NULL_ARGUMENT, "target");
 
-    gpu_current_renderer->impl->BlitTransform(gpu_current_renderer, image, src_rect, target, x, y, degrees, scaleX, scaleY);
+    BlitTransform(gpu_current_renderer, image, src_rect, target, x, y, degrees, scaleX, scaleY);
 }
 
 void R_BlitTransformX(R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY) {
@@ -1017,7 +1018,7 @@ void R_BlitTransformX(R_Image *image, metadot_rect *src_rect, R_Target *target, 
     if (image == NULL) RETURN_ERROR(R_ERROR_NULL_ARGUMENT, "image");
     if (target == NULL) RETURN_ERROR(R_ERROR_NULL_ARGUMENT, "target");
 
-    gpu_current_renderer->impl->BlitTransformX(gpu_current_renderer, image, src_rect, target, x, y, pivot_x, pivot_y, degrees, scaleX, scaleY);
+    BlitTransformX(gpu_current_renderer, image, src_rect, target, x, y, pivot_x, pivot_y, degrees, scaleX, scaleY);
 }
 
 void R_BlitRect(R_Image *image, metadot_rect *src_rect, R_Target *target, metadot_rect *dest_rect) {
@@ -1105,13 +1106,13 @@ void R_PrimitiveBatchV(R_Image *image, R_Target *target, R_PrimitiveEnum primiti
 
     if (num_vertices == 0) return;
 
-    gpu_current_renderer->impl->PrimitiveBatchV(gpu_current_renderer, image, target, primitive_type, num_vertices, values, num_indices, indices, flags);
+    PrimitiveBatchV(gpu_current_renderer, image, target, primitive_type, num_vertices, values, num_indices, indices, flags);
 }
 
 void R_GenerateMipmaps(R_Image *image) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->GenerateMipmaps(gpu_current_renderer, image);
+    GenerateMipmaps(gpu_current_renderer, image);
 }
 
 metadot_rect R_SetClipRect(R_Target *target, metadot_rect rect) {
@@ -1120,22 +1121,22 @@ metadot_rect R_SetClipRect(R_Target *target, metadot_rect rect) {
         return r;
     }
 
-    return gpu_current_renderer->impl->SetClip(gpu_current_renderer, target, (Sint16)rect.x, (Sint16)rect.y, (Uint16)rect.w, (Uint16)rect.h);
+    return SetClip(gpu_current_renderer, target, (I16)rect.x, (I16)rect.y, (Uint16)rect.w, (Uint16)rect.h);
 }
 
-metadot_rect R_SetClip(R_Target *target, Sint16 x, Sint16 y, Uint16 w, Uint16 h) {
+metadot_rect R_SetClip(R_Target *target, I16 x, I16 y, Uint16 w, Uint16 h) {
     if (target == NULL || gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) {
         metadot_rect r = {0, 0, 0, 0};
         return r;
     }
 
-    return gpu_current_renderer->impl->SetClip(gpu_current_renderer, target, x, y, w, h);
+    return SetClip(gpu_current_renderer, target, x, y, w, h);
 }
 
 void R_UnsetClip(R_Target *target) {
     if (target == NULL || gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->UnsetClip(gpu_current_renderer, target);
+    UnsetClip(gpu_current_renderer, target);
 }
 
 /* Adapted from SDL_IntersectRect() */
@@ -1189,14 +1190,14 @@ bool R_IntersectClipRect(R_Target *target, metadot_rect B, metadot_rect *result)
     return R_IntersectRect(target->clip_rect, B, result);
 }
 
-void R_SetColor(R_Image *image, METAENGINE_Color color) {
+void R_SetColor(R_Image *image, ME_Color color) {
     if (image == NULL) return;
 
     image->color = color;
 }
 
-void R_SetRGB(R_Image *image, Uint8 r, Uint8 g, Uint8 b) {
-    METAENGINE_Color c;
+void R_SetRGB(R_Image *image, U8 r, U8 g, U8 b) {
+    ME_Color c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -1207,8 +1208,8 @@ void R_SetRGB(R_Image *image, Uint8 r, Uint8 g, Uint8 b) {
     image->color = c;
 }
 
-void R_SetRGBA(R_Image *image, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
-    METAENGINE_Color c;
+void R_SetRGBA(R_Image *image, U8 r, U8 g, U8 b, U8 a) {
+    ME_Color c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -1220,21 +1221,21 @@ void R_SetRGBA(R_Image *image, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
 }
 
 void R_UnsetColor(R_Image *image) {
-    METAENGINE_Color c = {255, 255, 255, 255};
+    ME_Color c = {255, 255, 255, 255};
     if (image == NULL) return;
 
     image->color = c;
 }
 
-void R_SetTargetColor(R_Target *target, METAENGINE_Color color) {
+void R_SetTargetColor(R_Target *target, ME_Color color) {
     if (target == NULL) return;
 
     target->use_color = 1;
     target->color = color;
 }
 
-void R_SetTargetRGB(R_Target *target, Uint8 r, Uint8 g, Uint8 b) {
-    METAENGINE_Color c;
+void R_SetTargetRGB(R_Target *target, U8 r, U8 g, U8 b) {
+    ME_Color c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -1246,8 +1247,8 @@ void R_SetTargetRGB(R_Target *target, Uint8 r, Uint8 g, Uint8 b) {
     target->color = c;
 }
 
-void R_SetTargetRGBA(R_Target *target, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
-    METAENGINE_Color c;
+void R_SetTargetRGBA(R_Target *target, U8 r, U8 g, U8 b, U8 a) {
+    ME_Color c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -1260,7 +1261,7 @@ void R_SetTargetRGBA(R_Target *target, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
 }
 
 void R_UnsetTargetColor(R_Target *target) {
-    METAENGINE_Color c = {255, 255, 255, 255};
+    ME_Color c = {255, 255, 255, 255};
     if (target == NULL) return;
 
     target->use_color = R_false;
@@ -1410,7 +1411,7 @@ void R_SetImageFilter(R_Image *image, R_FilterEnum filter) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
     if (image == NULL) return;
 
-    gpu_current_renderer->impl->SetImageFilter(gpu_current_renderer, image, filter);
+    SetImageFilter(gpu_current_renderer, image, filter);
 }
 
 void R_SetDefaultAnchor(float anchor_x, float anchor_y) {
@@ -1459,21 +1460,21 @@ void R_SetWrapMode(R_Image *image, R_WrapEnum wrap_mode_x, R_WrapEnum wrap_mode_
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
     if (image == NULL) return;
 
-    gpu_current_renderer->impl->SetWrapMode(gpu_current_renderer, image, wrap_mode_x, wrap_mode_y);
+    SetWrapMode(gpu_current_renderer, image, wrap_mode_x, wrap_mode_y);
 }
 
 R_TextureHandle R_GetTextureHandle(R_Image *image) {
     if (image == NULL || image->renderer == NULL) return 0;
-    return image->renderer->impl->GetTextureHandle(image->renderer, image);
+    return GetTextureHandle(image->renderer, image);
 }
 
-METAENGINE_Color R_GetPixel(R_Target *target, Sint16 x, Sint16 y) {
+ME_Color R_GetPixel(R_Target *target, I16 x, I16 y) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) {
-        METAENGINE_Color c = {0, 0, 0, 0};
+        ME_Color c = {0, 0, 0, 0};
         return c;
     }
 
-    return gpu_current_renderer->impl->GetPixel(gpu_current_renderer, target, x, y);
+    return GetPixel(gpu_current_renderer, target, x, y);
 }
 
 void R_Clear(R_Target *target) {
@@ -1481,51 +1482,51 @@ void R_Clear(R_Target *target) {
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
 
-    gpu_current_renderer->impl->ClearRGBA(gpu_current_renderer, target, 0, 0, 0, 0);
+    ClearRGBA(gpu_current_renderer, target, 0, 0, 0, 0);
 }
 
-void R_ClearColor(R_Target *target, METAENGINE_Color color) {
+void R_ClearColor(R_Target *target, ME_Color color) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
 
-    gpu_current_renderer->impl->ClearRGBA(gpu_current_renderer, target, color.r, color.g, color.b, GET_ALPHA(color));
+    ClearRGBA(gpu_current_renderer, target, color.r, color.g, color.b, GET_ALPHA(color));
 }
 
-void R_ClearRGB(R_Target *target, Uint8 r, Uint8 g, Uint8 b) {
+void R_ClearRGB(R_Target *target, U8 r, U8 g, U8 b) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
 
-    gpu_current_renderer->impl->ClearRGBA(gpu_current_renderer, target, r, g, b, 255);
+    ClearRGBA(gpu_current_renderer, target, r, g, b, 255);
 }
 
-void R_ClearRGBA(R_Target *target, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+void R_ClearRGBA(R_Target *target, U8 r, U8 g, U8 b, U8 a) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
 
-    gpu_current_renderer->impl->ClearRGBA(gpu_current_renderer, target, r, g, b, a);
+    ClearRGBA(gpu_current_renderer, target, r, g, b, a);
 }
 
 void R_FlushBlitBuffer(void) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->FlushBlitBuffer(gpu_current_renderer);
+    FlushBlitBuffer(gpu_current_renderer);
 }
 
 void R_Flip(R_Target *target) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
 
     if (target != NULL && target->context == NULL) {
-        gpu_current_renderer->impl->FlushBlitBuffer(gpu_current_renderer);
+        FlushBlitBuffer(gpu_current_renderer);
         return;
     }
 
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
 
-    gpu_current_renderer->impl->Flip(gpu_current_renderer, target);
+    Flip(gpu_current_renderer, target);
 }
 
 // Shader API
@@ -1533,19 +1534,19 @@ void R_Flip(R_Target *target) {
 Uint32 R_CompileShader(R_ShaderEnum shader_type, const char *shader_source) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return 0;
 
-    return gpu_current_renderer->impl->CompileShader(gpu_current_renderer, shader_type, shader_source);
+    return CompileShader(gpu_current_renderer, shader_type, shader_source);
 }
 
 bool R_LinkShaderProgram(Uint32 program_object) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return R_false;
 
-    return gpu_current_renderer->impl->LinkShaderProgram(gpu_current_renderer, program_object);
+    return LinkShaderProgram(gpu_current_renderer, program_object);
 }
 
 Uint32 R_CreateShaderProgram(void) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return 0;
 
-    return gpu_current_renderer->impl->CreateShaderProgram(gpu_current_renderer);
+    return CreateShaderProgram(gpu_current_renderer);
 }
 
 Uint32 R_LinkShaders(Uint32 shader_object1, Uint32 shader_object2) {
@@ -1563,38 +1564,38 @@ Uint32 R_LinkManyShaders(Uint32 *shader_objects, int count) {
 
     if ((gpu_current_renderer->enabled_features & R_FEATURE_BASIC_SHADERS) != R_FEATURE_BASIC_SHADERS) return 0;
 
-    p = gpu_current_renderer->impl->CreateShaderProgram(gpu_current_renderer);
+    p = CreateShaderProgram(gpu_current_renderer);
 
-    for (i = 0; i < count; i++) gpu_current_renderer->impl->AttachShader(gpu_current_renderer, p, shader_objects[i]);
+    for (i = 0; i < count; i++) AttachShader(gpu_current_renderer, p, shader_objects[i]);
 
-    if (gpu_current_renderer->impl->LinkShaderProgram(gpu_current_renderer, p)) return p;
+    if (LinkShaderProgram(gpu_current_renderer, p)) return p;
 
-    gpu_current_renderer->impl->FreeShaderProgram(gpu_current_renderer, p);
+    FreeShaderProgram(gpu_current_renderer, p);
     return 0;
 }
 
 void R_FreeShader(Uint32 shader_object) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->FreeShader(gpu_current_renderer, shader_object);
+    FreeShader(gpu_current_renderer, shader_object);
 }
 
 void R_FreeShaderProgram(Uint32 program_object) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->FreeShaderProgram(gpu_current_renderer, program_object);
+    FreeShaderProgram(gpu_current_renderer, program_object);
 }
 
 void R_AttachShader(Uint32 program_object, Uint32 shader_object) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->AttachShader(gpu_current_renderer, program_object, shader_object);
+    AttachShader(gpu_current_renderer, program_object, shader_object);
 }
 
 void R_DetachShader(Uint32 program_object, Uint32 shader_object) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->DetachShader(gpu_current_renderer, program_object, shader_object);
+    DetachShader(gpu_current_renderer, program_object, shader_object);
 }
 
 bool R_IsDefaultShaderProgram(Uint32 program_object) {
@@ -1609,25 +1610,25 @@ bool R_IsDefaultShaderProgram(Uint32 program_object) {
 void R_ActivateShaderProgram(Uint32 program_object, R_ShaderBlock *block) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->ActivateShaderProgram(gpu_current_renderer, program_object, block);
+    ActivateShaderProgram(gpu_current_renderer, program_object, block);
 }
 
 void R_DeactivateShaderProgram(void) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->DeactivateShaderProgram(gpu_current_renderer);
+    DeactivateShaderProgram(gpu_current_renderer);
 }
 
 const char *R_GetShaderMessage(void) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return NULL;
 
-    return gpu_current_renderer->impl->GetShaderMessage(gpu_current_renderer);
+    return GetShaderMessage(gpu_current_renderer);
 }
 
 int R_GetAttributeLocation(Uint32 program_object, const char *attrib_name) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return 0;
 
-    return gpu_current_renderer->impl->GetAttributeLocation(gpu_current_renderer, program_object, attrib_name);
+    return GetAttributeLocation(gpu_current_renderer, program_object, attrib_name);
 }
 
 R_AttributeFormat R_MakeAttributeFormat(int num_elems_per_vertex, R_TypeEnum type, bool normalize, int stride_bytes, int offset_bytes) {
@@ -1652,7 +1653,7 @@ R_Attribute R_MakeAttribute(int location, void *values, R_AttributeFormat format
 int R_GetUniformLocation(Uint32 program_object, const char *uniform_name) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return 0;
 
-    return gpu_current_renderer->impl->GetUniformLocation(gpu_current_renderer, program_object, uniform_name);
+    return GetUniformLocation(gpu_current_renderer, program_object, uniform_name);
 }
 
 R_ShaderBlock R_LoadShaderBlock(Uint32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name) {
@@ -1665,7 +1666,7 @@ R_ShaderBlock R_LoadShaderBlock(Uint32 program_object, const char *position_name
         return b;
     }
 
-    return gpu_current_renderer->impl->LoadShaderBlock(gpu_current_renderer, program_object, position_name, texcoord_name, color_name, modelViewMatrix_name);
+    return LoadShaderBlock(gpu_current_renderer, program_object, position_name, texcoord_name, color_name, modelViewMatrix_name);
 }
 
 void R_SetShaderBlock(R_ShaderBlock block) {
@@ -1690,116 +1691,116 @@ R_ShaderBlock R_GetShaderBlock(void) {
 void R_SetShaderImage(R_Image *image, int location, int image_unit) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetShaderImage(gpu_current_renderer, image, location, image_unit);
+    SetShaderImage(gpu_current_renderer, image, location, image_unit);
 }
 
 void R_GetUniformiv(Uint32 program_object, int location, int *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->GetUniformiv(gpu_current_renderer, program_object, location, values);
+    GetUniformiv(gpu_current_renderer, program_object, location, values);
 }
 
 void R_SetUniformi(int location, int value) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetUniformi(gpu_current_renderer, location, value);
+    SetUniformi(gpu_current_renderer, location, value);
 }
 
 void R_SetUniformiv(int location, int num_elements_per_value, int num_values, int *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetUniformiv(gpu_current_renderer, location, num_elements_per_value, num_values, values);
+    SetUniformiv(gpu_current_renderer, location, num_elements_per_value, num_values, values);
 }
 
 void R_GetUniformuiv(Uint32 program_object, int location, unsigned int *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->GetUniformuiv(gpu_current_renderer, program_object, location, values);
+    GetUniformuiv(gpu_current_renderer, program_object, location, values);
 }
 
 void R_SetUniformui(int location, unsigned int value) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetUniformui(gpu_current_renderer, location, value);
+    SetUniformui(gpu_current_renderer, location, value);
 }
 
 void R_SetUniformuiv(int location, int num_elements_per_value, int num_values, unsigned int *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetUniformuiv(gpu_current_renderer, location, num_elements_per_value, num_values, values);
+    SetUniformuiv(gpu_current_renderer, location, num_elements_per_value, num_values, values);
 }
 
 void R_GetUniformfv(Uint32 program_object, int location, float *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->GetUniformfv(gpu_current_renderer, program_object, location, values);
+    GetUniformfv(gpu_current_renderer, program_object, location, values);
 }
 
 void R_SetUniformf(int location, float value) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetUniformf(gpu_current_renderer, location, value);
+    SetUniformf(gpu_current_renderer, location, value);
 }
 
 void R_SetUniformfv(int location, int num_elements_per_value, int num_values, float *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetUniformfv(gpu_current_renderer, location, num_elements_per_value, num_values, values);
+    SetUniformfv(gpu_current_renderer, location, num_elements_per_value, num_values, values);
 }
 
 // Same as R_GetUniformfv()
 void R_GetUniformMatrixfv(Uint32 program_object, int location, float *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->GetUniformfv(gpu_current_renderer, program_object, location, values);
+    GetUniformfv(gpu_current_renderer, program_object, location, values);
 }
 
 void R_SetUniformMatrixfv(int location, int num_matrices, int num_rows, int num_columns, bool transpose, float *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetUniformMatrixfv(gpu_current_renderer, location, num_matrices, num_rows, num_columns, transpose, values);
+    SetUniformMatrixfv(gpu_current_renderer, location, num_matrices, num_rows, num_columns, transpose, values);
 }
 
 void R_SetAttributef(int location, float value) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetAttributef(gpu_current_renderer, location, value);
+    SetAttributef(gpu_current_renderer, location, value);
 }
 
 void R_SetAttributei(int location, int value) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetAttributei(gpu_current_renderer, location, value);
+    SetAttributei(gpu_current_renderer, location, value);
 }
 
 void R_SetAttributeui(int location, unsigned int value) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetAttributeui(gpu_current_renderer, location, value);
+    SetAttributeui(gpu_current_renderer, location, value);
 }
 
 void R_SetAttributefv(int location, int num_elements, float *value) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetAttributefv(gpu_current_renderer, location, num_elements, value);
+    SetAttributefv(gpu_current_renderer, location, num_elements, value);
 }
 
 void R_SetAttributeiv(int location, int num_elements, int *value) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetAttributeiv(gpu_current_renderer, location, num_elements, value);
+    SetAttributeiv(gpu_current_renderer, location, num_elements, value);
 }
 
 void R_SetAttributeuiv(int location, int num_elements, unsigned int *value) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetAttributeuiv(gpu_current_renderer, location, num_elements, value);
+    SetAttributeuiv(gpu_current_renderer, location, num_elements, value);
 }
 
 void R_SetAttributeSource(int num_values, R_Attribute source) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
-    gpu_current_renderer->impl->SetAttributeSource(gpu_current_renderer, num_values, source);
+    SetAttributeSource(gpu_current_renderer, num_values, source);
 }
 
 // gpu_strcasecmp()
@@ -1846,10 +1847,6 @@ int gpu_strcasecmp(const char *s1, const char *s2) {
 
     return 0;
 }
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 R_MatrixStack *R_CreateMatrixStack(void) {
     R_MatrixStack *stack = (R_MatrixStack *)malloc(sizeof(R_MatrixStack));
@@ -2419,125 +2416,125 @@ void R_GetModelViewProjection(float *result) {
 
 float R_SetLineThickness(float thickness) {
     CHECK_RENDERER_RETURN(1.0f);
-    return renderer->impl->SetLineThickness(renderer, thickness);
+    return SetLineThickness(renderer, thickness);
 }
 
 float R_GetLineThickness(void) {
     CHECK_RENDERER_RETURN(1.0f);
-    return renderer->impl->GetLineThickness(renderer);
+    return GetLineThickness(renderer);
 }
 
-void R_DrawPixel(R_Target *target, float x, float y, METAENGINE_Color color) {
+void R_DrawPixel(R_Target *target, float x, float y, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->DrawPixel(renderer, target, x, y, color);
+    DrawPixel(renderer, target, x, y, color);
 }
 
-void R_Line(R_Target *target, float x1, float y1, float x2, float y2, METAENGINE_Color color) {
+void R_Line(R_Target *target, float x1, float y1, float x2, float y2, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->Line(renderer, target, x1, y1, x2, y2, color);
+    Line(renderer, target, x1, y1, x2, y2, color);
 }
 
-void R_Arc(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, METAENGINE_Color color) {
+void R_Arc(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->Arc(renderer, target, x, y, radius, start_angle, end_angle, color);
+    Arc(renderer, target, x, y, radius, start_angle, end_angle, color);
 }
 
-void R_ArcFilled(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, METAENGINE_Color color) {
+void R_ArcFilled(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->ArcFilled(renderer, target, x, y, radius, start_angle, end_angle, color);
+    ArcFilled(renderer, target, x, y, radius, start_angle, end_angle, color);
 }
 
-void R_Circle(R_Target *target, float x, float y, float radius, METAENGINE_Color color) {
+void R_Circle(R_Target *target, float x, float y, float radius, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->Circle(renderer, target, x, y, radius, color);
+    Circle(renderer, target, x, y, radius, color);
 }
 
-void R_CircleFilled(R_Target *target, float x, float y, float radius, METAENGINE_Color color) {
+void R_CircleFilled(R_Target *target, float x, float y, float radius, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->CircleFilled(renderer, target, x, y, radius, color);
+    CircleFilled(renderer, target, x, y, radius, color);
 }
 
-void R_Ellipse(R_Target *target, float x, float y, float rx, float ry, float degrees, METAENGINE_Color color) {
+void R_Ellipse(R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->Ellipse(renderer, target, x, y, rx, ry, degrees, color);
+    Ellipse(renderer, target, x, y, rx, ry, degrees, color);
 }
 
-void R_EllipseFilled(R_Target *target, float x, float y, float rx, float ry, float degrees, METAENGINE_Color color) {
+void R_EllipseFilled(R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->EllipseFilled(renderer, target, x, y, rx, ry, degrees, color);
+    EllipseFilled(renderer, target, x, y, rx, ry, degrees, color);
 }
 
-void R_Sector(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, METAENGINE_Color color) {
+void R_Sector(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->Sector(renderer, target, x, y, inner_radius, outer_radius, start_angle, end_angle, color);
+    Sector(renderer, target, x, y, inner_radius, outer_radius, start_angle, end_angle, color);
 }
 
-void R_SectorFilled(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, METAENGINE_Color color) {
+void R_SectorFilled(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->SectorFilled(renderer, target, x, y, inner_radius, outer_radius, start_angle, end_angle, color);
+    SectorFilled(renderer, target, x, y, inner_radius, outer_radius, start_angle, end_angle, color);
 }
 
-void R_Tri(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, METAENGINE_Color color) {
+void R_Tri(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->Tri(renderer, target, x1, y1, x2, y2, x3, y3, color);
+    Tri(renderer, target, x1, y1, x2, y2, x3, y3, color);
 }
 
-void R_TriFilled(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, METAENGINE_Color color) {
+void R_TriFilled(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->TriFilled(renderer, target, x1, y1, x2, y2, x3, y3, color);
+    TriFilled(renderer, target, x1, y1, x2, y2, x3, y3, color);
 }
 
-void R_Rectangle(R_Target *target, float x1, float y1, float x2, float y2, METAENGINE_Color color) {
+void R_Rectangle(R_Target *target, float x1, float y1, float x2, float y2, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->Rectangle(renderer, target, x1, y1, x2, y2, color);
+    Rectangle(renderer, target, x1, y1, x2, y2, color);
 }
 
-void R_Rectangle2(R_Target *target, metadot_rect rect, METAENGINE_Color color) {
+void R_Rectangle2(R_Target *target, metadot_rect rect, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->Rectangle(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
+    Rectangle(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 }
 
-void R_RectangleFilled(R_Target *target, float x1, float y1, float x2, float y2, METAENGINE_Color color) {
+void R_RectangleFilled(R_Target *target, float x1, float y1, float x2, float y2, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->RectangleFilled(renderer, target, x1, y1, x2, y2, color);
+    RectangleFilled(renderer, target, x1, y1, x2, y2, color);
 }
 
-void R_RectangleFilled2(R_Target *target, metadot_rect rect, METAENGINE_Color color) {
+void R_RectangleFilled2(R_Target *target, metadot_rect rect, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->RectangleFilled(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
+    RectangleFilled(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 }
 
-void R_RectangleRound(R_Target *target, float x1, float y1, float x2, float y2, float radius, METAENGINE_Color color) {
+void R_RectangleRound(R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->RectangleRound(renderer, target, x1, y1, x2, y2, radius, color);
+    RectangleRound(renderer, target, x1, y1, x2, y2, radius, color);
 }
 
-void R_RectangleRound2(R_Target *target, metadot_rect rect, float radius, METAENGINE_Color color) {
+void R_RectangleRound2(R_Target *target, metadot_rect rect, float radius, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->RectangleRound(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, radius, color);
+    RectangleRound(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, radius, color);
 }
 
-void R_RectangleRoundFilled(R_Target *target, float x1, float y1, float x2, float y2, float radius, METAENGINE_Color color) {
+void R_RectangleRoundFilled(R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->RectangleRoundFilled(renderer, target, x1, y1, x2, y2, radius, color);
+    RectangleRoundFilled(renderer, target, x1, y1, x2, y2, radius, color);
 }
 
-void R_RectangleRoundFilled2(R_Target *target, metadot_rect rect, float radius, METAENGINE_Color color) {
+void R_RectangleRoundFilled2(R_Target *target, metadot_rect rect, float radius, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->RectangleRoundFilled(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, radius, color);
+    RectangleRoundFilled(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, radius, color);
 }
 
-void R_Polygon(R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color) {
+void R_Polygon(R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->Polygon(renderer, target, num_vertices, vertices, color);
+    Polygon(renderer, target, num_vertices, vertices, color);
 }
 
-void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color, bool close_loop) {
+void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color, bool close_loop) {
     CHECK_RENDERER();
-    renderer->impl->Polyline(renderer, target, num_vertices, vertices, color, close_loop);
+    Polyline(renderer, target, num_vertices, vertices, color, close_loop);
 }
 
-void R_PolygonFilled(R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color) {
+void R_PolygonFilled(R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color) {
     CHECK_RENDERER();
-    renderer->impl->PolygonFilled(renderer, target, num_vertices, vertices, color);
+    PolygonFilled(renderer, target, num_vertices, vertices, color);
 }

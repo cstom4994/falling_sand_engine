@@ -1564,7 +1564,7 @@ void Game::tick() {
 
             U8 outlineAlpha = (U8)(cur->hover * 255);
             if (outlineAlpha > 0) {
-                METAENGINE_Color col = {0xff, 0xff, 0x80, outlineAlpha};
+                ME_Color col = {0xff, 0xff, 0x80, outlineAlpha};
                 R_SetShapeBlendMode(R_BLEND_NORMAL_FACTOR_ALPHA);  // SDL_BLENDMODE_BLEND
                 for (auto &l : cur->outline) {
                     MEvec2 *vec = new MEvec2[l.GetNumPoints()];
@@ -2711,7 +2711,7 @@ void Game::renderLate() {
         BackgroundObject *bg = GameIsolate_.backgrounds->Get("TEST_OVERWORLD");
         if (!bg->layers.empty() && GameIsolate_.globaldef.draw_background && Screen.gameScale <= bg->layers[0]->surface.size() && GameIsolate_.world->loadZone.y > -5 * CHUNK_H) {
             R_SetShapeBlendMode(R_BLEND_SET);
-            METAENGINE_Color col = {static_cast<U8>((bg->solid >> 16) & 0xff), static_cast<U8>((bg->solid >> 8) & 0xff), static_cast<U8>((bg->solid >> 0) & 0xff), 0xff};
+            ME_Color col = {static_cast<U8>((bg->solid >> 16) & 0xff), static_cast<U8>((bg->solid >> 8) & 0xff), static_cast<U8>((bg->solid >> 0) & 0xff), 0xff};
             R_ClearColor(Render.target, col);
 
             metadot_rect *dst = new metadot_rect;
@@ -2983,7 +2983,7 @@ void Game::renderOverlays() {
 
     if (GameIsolate_.globaldef.draw_load_zones) {
 
-        METAENGINE_Color col = {0xff, 0x00, 0x00, 0x20};
+        ME_Color col = {0xff, 0x00, 0x00, 0x20};
         R_SetShapeBlendMode(R_BLEND_NORMAL);
 
         metadot_rect r3 = metadot_rect{(F32)(0), (F32)(0), (F32)((global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale)), (F32)(Screen.windowHeight)};
@@ -3183,7 +3183,7 @@ void Game::renderOverlays() {
                 Chunk *m = p2.second;
                 r.x = centerX + m->x * chSize - pchx;
                 r.y = centerY + m->y * chSize - pchy;
-                METAENGINE_Color col;
+                ME_Color col;
                 if (m->generationPhase == -1) {
                     col = {0x60, 0x60, 0x60, 0xff};
                 } else if (m->generationPhase == 0) {
@@ -3348,7 +3348,7 @@ ReadyToMerge ({16})
         for (int i = 0; i < TraceTimeNum; i++) {
             int h = Time.frameTimesTrace[i];
 
-            METAENGINE_Color col;
+            ME_Color col;
             if (h <= (int)(1000 / 144.0)) {
                 col = {0x00, 0xff, 0x00, 0xff};
             } else if (h <= (int)(1000 / 60.0)) {

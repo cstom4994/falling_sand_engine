@@ -196,12 +196,6 @@ typedef struct Pixel {
 
 #include <stdlib.h>
 
-#ifndef __cplusplus
-#include <stdbool.h>
-#endif
-
-#ifdef __cplusplus
-
 // -------------------------------------------------------------------------------------------------
 // Avoid including <utility> header to reduce compile times.
 
@@ -292,8 +286,6 @@ using initializer_list = METAENGINE_InitializerList<T>;
 template <typename T>
 using remove_reference = metadot_remove_reference<T>;
 }  // namespace MetaEngine
-
-#endif
 
 // Not sure where to put this... Here is good I guess.
 ME_INLINE uint64_t metadot_fnv1a(const void *data, int size) {

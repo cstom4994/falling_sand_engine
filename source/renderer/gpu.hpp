@@ -31,10 +31,10 @@ const char *GLEnumToString(GLenum e);
 class Drawing {
 public:
     static MEvec2 rotate_point(float cx, float cy, float angle, MEvec2 p);
-    static void drawPolygon(R_Target *renderer, METAENGINE_Color col, MEvec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
+    static void drawPolygon(R_Target *renderer, ME_Color col, MEvec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
     static U32 darkenColor(U32 col, float brightness);
-    static void drawText(std::string text, METAENGINE_Color col, int x, int y);
-    static void drawTextWithPlate(R_Target *target, std::string text, METAENGINE_Color col, int x, int y, METAENGINE_Color backcolor = {77, 77, 77, 140});
+    static void drawText(std::string text, ME_Color col, int x, int y);
+    static void drawTextWithPlate(R_Target *target, std::string text, ME_Color col, int x, int y, ME_Color backcolor = {77, 77, 77, 140});
 };
 
 namespace Detail {
@@ -108,16 +108,16 @@ public:
 
     PVec2 transform(const PVec2 &pt);
 
-    void DrawPolygon(const PVec2 *vertices, I32 vertexCount, const METAENGINE_Color &color);
-    void DrawSolidPolygon(const PVec2 *vertices, I32 vertexCount, const METAENGINE_Color &color);
-    void DrawCircle(const PVec2 &center, float radius, const METAENGINE_Color &color);
-    void DrawSolidCircle(const PVec2 &center, float radius, const PVec2 &axis, const METAENGINE_Color &color);
-    void DrawSegment(const PVec2 &p1, const PVec2 &p2, const METAENGINE_Color &color);
+    void DrawPolygon(const PVec2 *vertices, I32 vertexCount, const ME_Color &color);
+    void DrawSolidPolygon(const PVec2 *vertices, I32 vertexCount, const ME_Color &color);
+    void DrawCircle(const PVec2 &center, float radius, const ME_Color &color);
+    void DrawSolidCircle(const PVec2 &center, float radius, const PVec2 &axis, const ME_Color &color);
+    void DrawSegment(const PVec2 &p1, const PVec2 &p2, const ME_Color &color);
     void DrawTransform(const PTransform &xf);
-    void DrawPoint(const PVec2 &p, float size, const METAENGINE_Color &color);
+    void DrawPoint(const PVec2 &p, float size, const ME_Color &color);
     void DrawString(int x, int y, const char *string, ...);
     void DrawString(const PVec2 &p, const char *string, ...);
-    void DrawAABB(b2AABB *aabb, const METAENGINE_Color &color);
+    void DrawAABB(b2AABB *aabb, const ME_Color &color);
 };
 #endif
 

@@ -4219,7 +4219,7 @@ public:
 
 struct b2AABB;
 struct b2BodyDef;
-struct METAENGINE_Color;
+struct ME_Color;
 struct b2JointDef;
 class b2Body;
 class b2Fixture;
@@ -4405,7 +4405,7 @@ private:
     void Solve(const b2TimeStep &step);
     void SolveTOI(const b2TimeStep &step);
 
-    void DrawShape(b2Fixture *shape, const PTransform &xf, const METAENGINE_Color &color);
+    void DrawShape(b2Fixture *shape, const PTransform &xf, const ME_Color &color);
 
     b2BlockAllocator m_blockAllocator;
     b2StackAllocator m_stackAllocator;

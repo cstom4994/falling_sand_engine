@@ -111,7 +111,7 @@ static_inline void fast_upload_texture(const void *pixels, metadot_rect update_r
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
 
-static void row_upload_texture(const unsigned char *pixels, metadot_rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
+void row_upload_texture(const unsigned char *pixels, metadot_rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
     unsigned int i;
     unsigned int h = (unsigned int)update_rect.h;
     (void)bytes_per_pixel;
@@ -126,7 +126,7 @@ static void row_upload_texture(const unsigned char *pixels, metadot_rect update_
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
 
-static void copy_upload_texture(const unsigned char *pixels, metadot_rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
+void copy_upload_texture(const unsigned char *pixels, metadot_rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
     unsigned int i;
     unsigned int h = (unsigned int)update_rect.h;
     unsigned int w = ((unsigned int)update_rect.w) * bytes_per_pixel;
@@ -149,7 +149,7 @@ static void copy_upload_texture(const unsigned char *pixels, metadot_rect update
     }
 }
 
-static void (*slow_upload_texture)(const unsigned char *pixels, metadot_rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel) = NULL;
+void (*slow_upload_texture)(const unsigned char *pixels, metadot_rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel) = NULL;
 
 static_inline void upload_texture(const void *pixels, metadot_rect update_rect, Uint32 format, int alignment, int row_length, unsigned int pitch, int bytes_per_pixel) {
     (void)pitch;
@@ -188,22 +188,22 @@ static_inline void upload_new_texture(void *pixels, metadot_rect update_rect, Ui
 #define glGenFramebuffersPROC glGenFramebuffers
 #define glGenerateMipmapPROC glGenerateMipmap
 #else
-static void GLAPIENTRY glBindFramebufferNOOP(GLenum target, GLuint framebuffer) {
+void GLAPIENTRY glBindFramebufferNOOP(GLenum target, GLuint framebuffer) {
     (void)target;
     (void)framebuffer;
     METADOT_ERROR("{}: Unsupported operation", __func__);
 }
-static GLenum GLAPIENTRY glCheckFramebufferStatusNOOP(GLenum target) {
+GLenum GLAPIENTRY glCheckFramebufferStatusNOOP(GLenum target) {
     (void)target;
     METADOT_ERROR("{}: Unsupported operation", __func__);
     return 0;
 }
-static void GLAPIENTRY glDeleteFramebuffersNOOP(GLsizei n, const GLuint *framebuffers) {
+void GLAPIENTRY glDeleteFramebuffersNOOP(GLsizei n, const GLuint *framebuffers) {
     (void)n;
     (void)framebuffers;
     METADOT_ERROR("{}: Unsupported operation", __func__);
 }
-static void GLAPIENTRY glFramebufferTexture2DNOOP(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) {
+void GLAPIENTRY glFramebufferTexture2DNOOP(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) {
     (void)target;
     (void)attachment;
     (void)textarget;
@@ -211,25 +211,25 @@ static void GLAPIENTRY glFramebufferTexture2DNOOP(GLenum target, GLenum attachme
     (void)level;
     METADOT_ERROR("{}: Unsupported operation", __func__);
 }
-static void GLAPIENTRY glGenFramebuffersNOOP(GLsizei n, GLuint *ids) {
+void GLAPIENTRY glGenFramebuffersNOOP(GLsizei n, GLuint *ids) {
     (void)n;
     (void)ids;
     METADOT_ERROR("{}: Unsupported operation", __func__);
 }
-static void GLAPIENTRY glGenerateMipmapNOOP(GLenum target) {
+void GLAPIENTRY glGenerateMipmapNOOP(GLenum target) {
     (void)target;
     METADOT_ERROR("{}: Unsupported operation", __func__);
 }
 
-static void(GLAPIENTRY *glBindFramebufferPROC)(GLenum target, GLuint framebuffer) = glBindFramebufferNOOP;
-static GLenum(GLAPIENTRY *glCheckFramebufferStatusPROC)(GLenum target) = glCheckFramebufferStatusNOOP;
-static void(GLAPIENTRY *glDeleteFramebuffersPROC)(GLsizei n, const GLuint *framebuffers) = glDeleteFramebuffersNOOP;
-static void(GLAPIENTRY *glFramebufferTexture2DPROC)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) = glFramebufferTexture2DNOOP;
-static void(GLAPIENTRY *glGenFramebuffersPROC)(GLsizei n, GLuint *ids) = glGenFramebuffersNOOP;
-static void(GLAPIENTRY *glGenerateMipmapPROC)(GLenum target) = glGenerateMipmapNOOP;
+void(GLAPIENTRY *glBindFramebufferPROC)(GLenum target, GLuint framebuffer) = glBindFramebufferNOOP;
+GLenum(GLAPIENTRY *glCheckFramebufferStatusPROC)(GLenum target) = glCheckFramebufferStatusNOOP;
+void(GLAPIENTRY *glDeleteFramebuffersPROC)(GLsizei n, const GLuint *framebuffers) = glDeleteFramebuffersNOOP;
+void(GLAPIENTRY *glFramebufferTexture2DPROC)(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) = glFramebufferTexture2DNOOP;
+void(GLAPIENTRY *glGenFramebuffersPROC)(GLsizei n, GLuint *ids) = glGenFramebuffersNOOP;
+void(GLAPIENTRY *glGenerateMipmapPROC)(GLenum target) = glGenerateMipmapNOOP;
 #endif
 
-static void init_features(R_Renderer *renderer) {
+void init_features(R_Renderer *renderer) {
     // Reset supported features
     renderer->enabled_features = 0;
 
@@ -387,7 +387,7 @@ static void init_features(R_Renderer *renderer) {
 #endif
 }
 
-static void extBindFramebuffer(R_Renderer *renderer, GLuint handle) {
+void extBindFramebuffer(R_Renderer *renderer, GLuint handle) {
     if (renderer->enabled_features & R_FEATURE_RENDER_TARGETS) glBindFramebufferPROC(GL_FRAMEBUFFER, handle);
 }
 
@@ -401,11 +401,11 @@ static_inline unsigned int getNearestPowerOf2(unsigned int n) {
     return x;
 }
 
-static void bindTexture(R_Renderer *renderer, R_Image *image) {
+void bindTexture(R_Renderer *renderer, R_Image *image) {
     // Bind the texture to which subsequent calls refer
     if (image != ((R_CONTEXT_DATA *)renderer->current_context_target->context->data)->last_image) {
         GLuint handle = ((R_IMAGE_DATA *)image->data)->handle;
-        renderer->impl->FlushBlitBuffer(renderer);
+        FlushBlitBuffer(renderer);
 
         glBindTexture(GL_TEXTURE_2D, handle);
         ((R_CONTEXT_DATA *)renderer->current_context_target->context->data)->last_image = image;
@@ -414,17 +414,17 @@ static void bindTexture(R_Renderer *renderer, R_Image *image) {
 
 static_inline void flushAndBindTexture(R_Renderer *renderer, GLuint handle) {
     // Bind the texture to which subsequent calls refer
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
 
     glBindTexture(GL_TEXTURE_2D, handle);
     ((R_CONTEXT_DATA *)renderer->current_context_target->context->data)->last_image = NULL;
 }
 
 // Only for window targets, which have their own contexts.
-static void makeContextCurrent(R_Renderer *renderer, R_Target *target) {
+void makeContextCurrent(R_Renderer *renderer, R_Target *target) {
     if (target == NULL || target->context == NULL || renderer->current_context_target == target) return;
 
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
 
     SDL_GL_MakeCurrent(SDL_GetWindowFromID(target->context->windowID), target->context->context);
 
@@ -432,7 +432,7 @@ static void makeContextCurrent(R_Renderer *renderer, R_Target *target) {
 }
 
 // Binds the target's framebuffer.  Returns false if it can't be bound, true if it is bound or already bound.
-static bool SetActiveTarget(R_Renderer *renderer, R_Target *target) {
+bool SetActiveTarget(R_Renderer *renderer, R_Target *target) {
     makeContextCurrent(renderer, target);
 
     if (target == NULL || renderer->current_context_target == NULL) return false;
@@ -441,7 +441,7 @@ static bool SetActiveTarget(R_Renderer *renderer, R_Target *target) {
         // Bind the FBO
         if (target != renderer->current_context_target->context->active_target) {
             GLuint handle = ((R_TARGET_DATA *)target->data)->handle;
-            renderer->impl->FlushBlitBuffer(renderer);
+            FlushBlitBuffer(renderer);
 
             extBindFramebuffer(renderer, handle);
             renderer->current_context_target->context->active_target = target;
@@ -456,7 +456,7 @@ static bool SetActiveTarget(R_Renderer *renderer, R_Target *target) {
 
 static_inline void flushAndBindFramebuffer(R_Renderer *renderer, GLuint handle) {
     // Bind the FBO
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
 
     extBindFramebuffer(renderer, handle);
     renderer->current_context_target->context->active_target = NULL;
@@ -464,13 +464,13 @@ static_inline void flushAndBindFramebuffer(R_Renderer *renderer, GLuint handle) 
 
 static_inline void flushBlitBufferIfCurrentTexture(R_Renderer *renderer, R_Image *image) {
     if (image == ((R_CONTEXT_DATA *)renderer->current_context_target->context->data)->last_image) {
-        renderer->impl->FlushBlitBuffer(renderer);
+        FlushBlitBuffer(renderer);
     }
 }
 
 static_inline void flushAndClearBlitBufferIfCurrentTexture(R_Renderer *renderer, R_Image *image) {
     if (image == ((R_CONTEXT_DATA *)renderer->current_context_target->context->data)->last_image) {
-        renderer->impl->FlushBlitBuffer(renderer);
+        FlushBlitBuffer(renderer);
         ((R_CONTEXT_DATA *)renderer->current_context_target->context->data)->last_image = NULL;
     }
 }
@@ -481,12 +481,12 @@ static_inline bool isCurrentTarget(R_Renderer *renderer, R_Target *target) {
 
 static_inline void flushAndClearBlitBufferIfCurrentFramebuffer(R_Renderer *renderer, R_Target *target) {
     if (target == renderer->current_context_target->context->active_target || renderer->current_context_target->context->active_target == NULL) {
-        renderer->impl->FlushBlitBuffer(renderer);
+        FlushBlitBuffer(renderer);
         renderer->current_context_target->context->active_target = NULL;
     }
 }
 
-static bool growBlitBuffer(R_CONTEXT_DATA *cdata, unsigned int minimum_vertices_needed) {
+bool growBlitBuffer(R_CONTEXT_DATA *cdata, unsigned int minimum_vertices_needed) {
     unsigned int new_max_num_vertices;
     float *new_buffer;
 
@@ -526,7 +526,7 @@ static bool growBlitBuffer(R_CONTEXT_DATA *cdata, unsigned int minimum_vertices_
     return true;
 }
 
-static bool growIndexBuffer(R_CONTEXT_DATA *cdata, unsigned int minimum_vertices_needed) {
+bool growIndexBuffer(R_CONTEXT_DATA *cdata, unsigned int minimum_vertices_needed) {
     unsigned int new_max_num_vertices;
     unsigned short *new_indices;
 
@@ -564,7 +564,7 @@ static bool growIndexBuffer(R_CONTEXT_DATA *cdata, unsigned int minimum_vertices
     return true;
 }
 
-static void setClipRect(R_Renderer *renderer, R_Target *target) {
+void setClipRect(R_Renderer *renderer, R_Target *target) {
     if (target->use_clip_rect) {
         R_Target *context_target = renderer->current_context_target;
         glEnable(GL_SCISSOR_TEST);
@@ -582,12 +582,12 @@ static void setClipRect(R_Renderer *renderer, R_Target *target) {
     }
 }
 
-static void unsetClipRect(R_Renderer *renderer, R_Target *target) {
+void unsetClipRect(R_Renderer *renderer, R_Target *target) {
     (void)renderer;
     if (target->use_clip_rect) glDisable(GL_SCISSOR_TEST);
 }
 
-static void changeDepthTest(R_Renderer *renderer, bool enable) {
+void changeDepthTest(R_Renderer *renderer, bool enable) {
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)renderer->current_context_target->context->data;
     if (cdata->last_depth_test == enable) return;
 
@@ -600,7 +600,7 @@ static void changeDepthTest(R_Renderer *renderer, bool enable) {
     // glEnable(GL_ALPHA_TEST);
 }
 
-static void changeDepthWrite(R_Renderer *renderer, bool enable) {
+void changeDepthWrite(R_Renderer *renderer, bool enable) {
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)renderer->current_context_target->context->data;
     if (cdata->last_depth_write == enable) return;
 
@@ -608,7 +608,7 @@ static void changeDepthWrite(R_Renderer *renderer, bool enable) {
     glDepthMask(enable);
 }
 
-static void changeDepthFunction(R_Renderer *renderer, R_ComparisonEnum compare_operation) {
+void changeDepthFunction(R_Renderer *renderer, R_ComparisonEnum compare_operation) {
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)renderer->current_context_target->context->data;
     if (cdata->last_depth_function == compare_operation) return;
 
@@ -616,15 +616,15 @@ static void changeDepthFunction(R_Renderer *renderer, R_ComparisonEnum compare_o
     glDepthFunc(compare_operation);
 }
 
-static void prepareToRenderToTarget(R_Renderer *renderer, R_Target *target) {
+void prepareToRenderToTarget(R_Renderer *renderer, R_Target *target) {
     // Set up the camera
-    renderer->impl->SetCamera(renderer, target, &target->camera);
+    SetCamera(renderer, target, &target->camera);
     changeDepthTest(renderer, target->use_depth_test);
     changeDepthWrite(renderer, target->use_depth_write);
     changeDepthFunction(renderer, target->depth_function);
 }
 
-static void changeColor(R_Renderer *renderer, SDL_Color color) {
+void changeColor(R_Renderer *renderer, SDL_Color color) {
 #ifdef R_USE_BUFFER_PIPELINE
     (void)renderer;
     (void)color;
@@ -632,18 +632,18 @@ static void changeColor(R_Renderer *renderer, SDL_Color color) {
 #else
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)renderer->current_context_target->context->data;
     if (cdata->last_color.r != color.r || cdata->last_color.g != color.g || cdata->last_color.b != color.b || GET_ALPHA(cdata->last_color) != GET_ALPHA(color)) {
-        renderer->impl->FlushBlitBuffer(renderer);
+        FlushBlitBuffer(renderer);
         cdata->last_color = color;
         glColor4f(color.r / 255.01f, color.g / 255.01f, color.b / 255.01f, GET_ALPHA(color) / 255.01f);
     }
 #endif
 }
 
-static void changeBlending(R_Renderer *renderer, bool enable) {
+void changeBlending(R_Renderer *renderer, bool enable) {
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)renderer->current_context_target->context->data;
     if (cdata->last_use_blending == enable) return;
 
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
 
     if (enable)
         glEnable(GL_BLEND);
@@ -653,10 +653,10 @@ static void changeBlending(R_Renderer *renderer, bool enable) {
     cdata->last_use_blending = enable;
 }
 
-static void forceChangeBlendMode(R_Renderer *renderer, R_BlendMode mode) {
+void forceChangeBlendMode(R_Renderer *renderer, R_BlendMode mode) {
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)renderer->current_context_target->context->data;
 
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
 
     cdata->last_blend_mode = mode;
 
@@ -687,7 +687,7 @@ static void forceChangeBlendMode(R_Renderer *renderer, R_BlendMode mode) {
     }
 }
 
-static void changeBlendMode(R_Renderer *renderer, R_BlendMode mode) {
+void changeBlendMode(R_Renderer *renderer, R_BlendMode mode) {
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)renderer->current_context_target->context->data;
     if (cdata->last_blend_mode.source_color == mode.source_color && cdata->last_blend_mode.dest_color == mode.dest_color && cdata->last_blend_mode.source_alpha == mode.source_alpha &&
         cdata->last_blend_mode.dest_alpha == mode.dest_alpha && cdata->last_blend_mode.color_equation == mode.color_equation && cdata->last_blend_mode.alpha_equation == mode.alpha_equation)
@@ -697,7 +697,7 @@ static void changeBlendMode(R_Renderer *renderer, R_BlendMode mode) {
 }
 
 // If 0 is returned, there is no valid shader.
-static Uint32 get_proper_program_id(R_Renderer *renderer, Uint32 program_object) {
+Uint32 get_proper_program_id(R_Renderer *renderer, Uint32 program_object) {
     R_Context *context = renderer->current_context_target->context;
     if (context->default_textured_shader_program == 0)  // No shaders loaded!
         return 0;
@@ -707,7 +707,7 @@ static Uint32 get_proper_program_id(R_Renderer *renderer, Uint32 program_object)
     return program_object;
 }
 
-static void applyTexturing(R_Renderer *renderer) {
+void applyTexturing(R_Renderer *renderer) {
     R_Context *context = renderer->current_context_target->context;
     if (context->use_texturing != ((R_CONTEXT_DATA *)context->data)->last_use_texturing) {
         ((R_CONTEXT_DATA *)context->data)->last_use_texturing = context->use_texturing;
@@ -720,10 +720,10 @@ static void applyTexturing(R_Renderer *renderer) {
     }
 }
 
-static void changeTexturing(R_Renderer *renderer, bool enable) {
+void changeTexturing(R_Renderer *renderer, bool enable) {
     R_Context *context = renderer->current_context_target->context;
     if (enable != ((R_CONTEXT_DATA *)context->data)->last_use_texturing) {
-        renderer->impl->FlushBlitBuffer(renderer);
+        FlushBlitBuffer(renderer);
 
         ((R_CONTEXT_DATA *)context->data)->last_use_texturing = enable;
 #ifndef R_SKIP_ENABLE_TEXTURE_2D
@@ -735,16 +735,16 @@ static void changeTexturing(R_Renderer *renderer, bool enable) {
     }
 }
 
-static void enableTexturing(R_Renderer *renderer) {
+void enableTexturing(R_Renderer *renderer) {
     if (!renderer->current_context_target->context->use_texturing) {
-        renderer->impl->FlushBlitBuffer(renderer);
+        FlushBlitBuffer(renderer);
         renderer->current_context_target->context->use_texturing = 1;
     }
 }
 
-static void disableTexturing(R_Renderer *renderer) {
+void disableTexturing(R_Renderer *renderer) {
     if (renderer->current_context_target->context->use_texturing) {
-        renderer->impl->FlushBlitBuffer(renderer);
+        FlushBlitBuffer(renderer);
         renderer->current_context_target->context->use_texturing = 0;
     }
 }
@@ -752,7 +752,7 @@ static void disableTexturing(R_Renderer *renderer) {
 #define MIX_COLOR_COMPONENT_NORMALIZED_RESULT(a, b) ((a) / 255.0f * (b) / 255.0f)
 #define MIX_COLOR_COMPONENT(a, b) ((Uint8)(((a) / 255.0f * (b) / 255.0f) * 255))
 
-static SDL_Color get_complete_mod_color(R_Renderer *renderer, R_Target *target, R_Image *image) {
+SDL_Color get_complete_mod_color(R_Renderer *renderer, R_Target *target, R_Image *image) {
     (void)renderer;
     SDL_Color color = {255, 255, 255, 255};
     if (target->use_color) {
@@ -772,12 +772,12 @@ static SDL_Color get_complete_mod_color(R_Renderer *renderer, R_Target *target, 
         return color;
 }
 
-static void prepareToRenderImage(R_Renderer *renderer, R_Target *target, R_Image *image) {
+void prepareToRenderImage(R_Renderer *renderer, R_Target *target, R_Image *image) {
     R_Context *context = renderer->current_context_target->context;
 
     enableTexturing(renderer);
     if (GL_TRIANGLES != ((R_CONTEXT_DATA *)context->data)->last_shape) {
-        renderer->impl->FlushBlitBuffer(renderer);
+        FlushBlitBuffer(renderer);
         ((R_CONTEXT_DATA *)context->data)->last_shape = GL_TRIANGLES;
     }
 
@@ -787,15 +787,15 @@ static void prepareToRenderImage(R_Renderer *renderer, R_Target *target, R_Image
     changeBlendMode(renderer, image->blend_mode);
 
     // If we're using the untextured shader, switch it.
-    if (context->current_shader_program == context->default_untextured_shader_program) renderer->impl->ActivateShaderProgram(renderer, context->default_textured_shader_program, NULL);
+    if (context->current_shader_program == context->default_untextured_shader_program) ActivateShaderProgram(renderer, context->default_textured_shader_program, NULL);
 }
 
-static void prepareToRenderShapes(R_Renderer *renderer, unsigned int shape) {
+void prepareToRenderShapes(R_Renderer *renderer, unsigned int shape) {
     R_Context *context = renderer->current_context_target->context;
 
     disableTexturing(renderer);
     if (shape != ((R_CONTEXT_DATA *)context->data)->last_shape) {
-        renderer->impl->FlushBlitBuffer(renderer);
+        FlushBlitBuffer(renderer);
         ((R_CONTEXT_DATA *)context->data)->last_shape = shape;
     }
 
@@ -805,10 +805,10 @@ static void prepareToRenderShapes(R_Renderer *renderer, unsigned int shape) {
     changeBlendMode(renderer, context->shapes_blend_mode);
 
     // If we're using the textured shader, switch it.
-    if (context->current_shader_program == context->default_textured_shader_program) renderer->impl->ActivateShaderProgram(renderer, context->default_untextured_shader_program, NULL);
+    if (context->current_shader_program == context->default_textured_shader_program) ActivateShaderProgram(renderer, context->default_untextured_shader_program, NULL);
 }
 
-static void forceChangeViewport(R_Target *target, metadot_rect viewport) {
+void forceChangeViewport(R_Target *target, metadot_rect viewport) {
     float y;
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)(R_GetContextTarget()->context->data);
 
@@ -826,7 +826,7 @@ static void forceChangeViewport(R_Target *target, metadot_rect viewport) {
     glViewport((GLint)viewport.x, (GLint)y, (GLsizei)viewport.w, (GLsizei)viewport.h);
 }
 
-static void changeViewport(R_Target *target) {
+void changeViewport(R_Target *target) {
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)(R_GetContextTarget()->context->data);
 
     if (cdata->last_viewport.x == target->viewport.x && cdata->last_viewport.y == target->viewport.y && cdata->last_viewport.w == target->viewport.w && cdata->last_viewport.h == target->viewport.h)
@@ -835,25 +835,25 @@ static void changeViewport(R_Target *target) {
     forceChangeViewport(target, target->viewport);
 }
 
-static void applyTargetCamera(R_Target *target) {
+void applyTargetCamera(R_Target *target) {
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)R_GetContextTarget()->context->data;
 
     cdata->last_camera = target->camera;
     cdata->last_camera_inverted = (target->image != NULL);
 }
 
-static bool equal_cameras(R_Camera a, R_Camera b) {
+bool equal_cameras(R_Camera a, R_Camera b) {
     return (a.x == b.x && a.y == b.y && a.z == b.z && a.angle == b.angle && a.zoom_x == b.zoom_x && a.zoom_y == b.zoom_y && a.use_centered_origin == b.use_centered_origin);
 }
 
-static void changeCamera(R_Target *target) {
+void changeCamera(R_Target *target) {
     // R_CONTEXT_DATA* cdata = (R_CONTEXT_DATA*)R_GetContextTarget()->context->data;
 
     // if(cdata->last_camera_target != target || !equal_cameras(cdata->last_camera, target->camera))
     { applyTargetCamera(target); }
 }
 
-static void get_camera_matrix(R_Target *target, float *result) {
+void get_camera_matrix(R_Target *target, float *result) {
     float offsetX, offsetY;
 
     R_MatrixIdentity(result);
@@ -873,7 +873,7 @@ static void get_camera_matrix(R_Target *target, float *result) {
 }
 
 #ifdef R_APPLY_TRANSFORMS_TO_GL_STACK
-static void applyTransforms(R_Target *target) {
+void applyTransforms(R_Target *target) {
     float *p = R_GetTopMatrix(&target->projection_matrix);
     float *m = R_GetTopMatrix(&target->model_matrix);
     float mv[16];
@@ -897,7 +897,7 @@ static void applyTransforms(R_Target *target) {
 }
 #endif
 
-static R_Target *Init(R_Renderer *renderer, R_RendererID renderer_request, Uint16 w, Uint16 h, R_WindowFlagEnum SDL_flags) {
+R_Target *Init(R_Renderer *renderer, R_RendererID renderer_request, Uint16 w, Uint16 h, R_WindowFlagEnum SDL_flags) {
     R_InitFlagEnum R_flags;
     SDL_Window *window;
 
@@ -984,11 +984,11 @@ static R_Target *Init(R_Renderer *renderer, R_RendererID renderer_request, Uint1
     renderer->enabled_features = 0xFFFFFFFF;  // Pretend to support them all if using incompatible headers
 
     // Create or re-init the current target.  This also creates the GL context and initializes enabled_features.
-    if (renderer->impl->CreateTargetFromWindow(renderer, get_window_id(window), renderer->current_context_target) == NULL) return NULL;
+    if (CreateTargetFromWindow(renderer, get_window_id(window), renderer->current_context_target) == NULL) return NULL;
 
     // If the dimensions of the window don't match what we asked for, then set up a virtual resolution to pretend like they are.
     if (!(R_flags & R_INIT_DISABLE_AUTO_VIRTUAL_RESOLUTION) && w != 0 && h != 0 && (w != renderer->current_context_target->w || h != renderer->current_context_target->h)) {
-        renderer->impl->SetVirtualResolution(renderer, renderer->current_context_target, w, h);
+        SetVirtualResolution(renderer, renderer->current_context_target, w, h);
     }
 
 // Init glVertexAttrib workaround
@@ -1003,9 +1003,9 @@ static R_Target *Init(R_Renderer *renderer, R_RendererID renderer_request, Uint1
     return renderer->current_context_target;
 }
 
-static bool IsFeatureEnabled(R_Renderer *renderer, R_FeatureEnum feature) { return ((renderer->enabled_features & feature) == feature); }
+bool IsFeatureEnabled(R_Renderer *renderer, R_FeatureEnum feature) { return ((renderer->enabled_features & feature) == feature); }
 
-static bool get_GL_version(int *major, int *minor) {
+bool get_GL_version(int *major, int *minor) {
     const char *version_string;
 #ifdef R_USE_OPENGL
     // OpenGL < 3.0 doesn't have GL_MAJOR_VERSION.  Check via version string instead.
@@ -1046,7 +1046,7 @@ static bool get_GL_version(int *major, int *minor) {
 #endif
 }
 
-static bool get_GLSL_version(int *version) {
+bool get_GLSL_version(int *version) {
 #ifndef R_DISABLE_SHADERS
     const char *version_string;
     int major, minor;
@@ -1077,9 +1077,9 @@ static bool get_GLSL_version(int *version) {
     return true;
 }
 
-static bool get_API_versions(R_Renderer *renderer) { return (get_GL_version(&renderer->id.major_version, &renderer->id.minor_version) && get_GLSL_version(&renderer->max_shader_version)); }
+bool get_API_versions(R_Renderer *renderer) { return (get_GL_version(&renderer->id.major_version, &renderer->id.minor_version) && get_GLSL_version(&renderer->max_shader_version)); }
 
-static void update_stored_dimensions(R_Target *target) {
+void update_stored_dimensions(R_Target *target) {
     bool is_fullscreen;
     SDL_Window *window;
 
@@ -1095,7 +1095,7 @@ static void update_stored_dimensions(R_Target *target) {
     }
 }
 
-static R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R_Target *target) {
+R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R_Target *target) {
     bool created = false;  // Make a new one or repurpose an existing target?
     R_CONTEXT_DATA *cdata;
     SDL_Window *window;
@@ -1241,7 +1241,7 @@ static R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R
     }
 #endif
 
-    renderer->impl->MakeCurrent(renderer, target, target->context->windowID);
+    MakeCurrent(renderer, target, target->context->windowID);
 
     framebuffer_handle = 0;
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &framebuffer_handle);
@@ -1308,7 +1308,7 @@ static R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R
     // Set up default projection matrix
     R_ResetProjection(target);
 
-    renderer->impl->SetLineThickness(renderer, 1.0f);
+    SetLineThickness(renderer, 1.0f);
 
 #ifdef R_USE_BUFFER_PIPELINE
 // Create vertex array container and buffer
@@ -1333,7 +1333,7 @@ static R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R
         const char *untextured_fragment_shader_source = R_DEFAULT_UNTEXTURED_FRAGMENT_SHADER_SOURCE;
 
         // Textured shader
-        v = renderer->impl->CompileShader(renderer, R_VERTEX_SHADER, textured_vertex_shader_source);
+        v = CompileShader(renderer, R_VERTEX_SHADER, textured_vertex_shader_source);
 
         if (!v) {
             R_PushErrorCode("R_CreateTargetFromWindow", R_ERROR_BACKEND_ERROR, "Failed to load default textured vertex shader: %s.", R_GetShaderMessage());
@@ -1341,7 +1341,7 @@ static R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R
             return NULL;
         }
 
-        f = renderer->impl->CompileShader(renderer, R_FRAGMENT_SHADER, textured_fragment_shader_source);
+        f = CompileShader(renderer, R_FRAGMENT_SHADER, textured_fragment_shader_source);
 
         if (!f) {
             R_PushErrorCode("R_CreateTargetFromWindow", R_ERROR_BACKEND_ERROR, "Failed to load default textured fragment shader: %s.", R_GetShaderMessage());
@@ -1349,10 +1349,10 @@ static R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R
             return NULL;
         }
 
-        p = renderer->impl->CreateShaderProgram(renderer);
-        renderer->impl->AttachShader(renderer, p, v);
-        renderer->impl->AttachShader(renderer, p, f);
-        renderer->impl->LinkShaderProgram(renderer, p);
+        p = CreateShaderProgram(renderer);
+        AttachShader(renderer, p, v);
+        AttachShader(renderer, p, f);
+        LinkShaderProgram(renderer, p);
 
         if (!p) {
             R_PushErrorCode("R_CreateTargetFromWindow", R_ERROR_BACKEND_ERROR, "Failed to link default textured shader program: %s.", R_GetShaderMessage());
@@ -1368,7 +1368,7 @@ static R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R
         target->context->default_textured_shader_block = R_LoadShaderBlock(p, "gpu_Vertex", "gpu_TexCoord", "gpu_Color", "gpu_ModelViewProjectionMatrix");
 
         // Untextured shader
-        v = renderer->impl->CompileShader(renderer, R_VERTEX_SHADER, untextured_vertex_shader_source);
+        v = CompileShader(renderer, R_VERTEX_SHADER, untextured_vertex_shader_source);
 
         if (!v) {
             R_PushErrorCode("R_CreateTargetFromWindow", R_ERROR_BACKEND_ERROR, "Failed to load default untextured vertex shader: %s.", R_GetShaderMessage());
@@ -1376,7 +1376,7 @@ static R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R
             return NULL;
         }
 
-        f = renderer->impl->CompileShader(renderer, R_FRAGMENT_SHADER, untextured_fragment_shader_source);
+        f = CompileShader(renderer, R_FRAGMENT_SHADER, untextured_fragment_shader_source);
 
         if (!f) {
             R_PushErrorCode("R_CreateTargetFromWindow", R_ERROR_BACKEND_ERROR, "Failed to load default untextured fragment shader: %s.", R_GetShaderMessage());
@@ -1384,10 +1384,10 @@ static R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R
             return NULL;
         }
 
-        p = renderer->impl->CreateShaderProgram(renderer);
-        renderer->impl->AttachShader(renderer, p, v);
-        renderer->impl->AttachShader(renderer, p, f);
-        renderer->impl->LinkShaderProgram(renderer, p);
+        p = CreateShaderProgram(renderer);
+        AttachShader(renderer, p, v);
+        AttachShader(renderer, p, f);
+        LinkShaderProgram(renderer, p);
 
         if (!p) {
             R_PushErrorCode("R_CreateTargetFromWindow", R_ERROR_BACKEND_ERROR, "Failed to link default untextured shader program: %s.", R_GetShaderMessage());
@@ -1435,7 +1435,7 @@ static R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R
     return target;
 }
 
-static R_Target *CreateAliasTarget(R_Renderer *renderer, R_Target *target) {
+R_Target *CreateAliasTarget(R_Renderer *renderer, R_Target *target) {
     R_Target *result;
     (void)renderer;
 
@@ -1467,7 +1467,7 @@ static R_Target *CreateAliasTarget(R_Renderer *renderer, R_Target *target) {
     return result;
 }
 
-static void MakeCurrent(R_Renderer *renderer, R_Target *target, Uint32 windowID) {
+void MakeCurrent(R_Renderer *renderer, R_Target *target, Uint32 windowID) {
     SDL_Window *window;
 
     if (target == NULL || target->context == NULL) return;
@@ -1481,7 +1481,7 @@ static void MakeCurrent(R_Renderer *renderer, R_Target *target, Uint32 windowID)
 
         // Reset window mapping, base size, and camera if the target's window was changed
         if (target->context->windowID != windowID) {
-            renderer->impl->FlushBlitBuffer(renderer);
+            FlushBlitBuffer(renderer);
 
             // Update the window mappings
             R_RemoveWindowMapping(windowID);
@@ -1504,13 +1504,13 @@ static void MakeCurrent(R_Renderer *renderer, R_Target *target, Uint32 windowID)
     }
 }
 
-static void SetAsCurrent(R_Renderer *renderer) {
+void SetAsCurrent(R_Renderer *renderer) {
     if (renderer->current_context_target == NULL) return;
 
-    renderer->impl->MakeCurrent(renderer, renderer->current_context_target, renderer->current_context_target->context->windowID);
+    MakeCurrent(renderer, renderer->current_context_target, renderer->current_context_target->context->windowID);
 }
 
-static void ResetRendererState(R_Renderer *renderer) {
+void ResetRendererState(R_Renderer *renderer) {
     R_Target *target;
     R_CONTEXT_DATA *cdata;
 
@@ -1559,7 +1559,7 @@ static void ResetRendererState(R_Renderer *renderer) {
         extBindFramebuffer(renderer, ((R_TARGET_DATA *)target->data)->handle);
 }
 
-static bool AddDepthBuffer(R_Renderer *renderer, R_Target *target) {
+bool AddDepthBuffer(R_Renderer *renderer, R_Target *target) {
 #if defined(R_USE_GLES) && R_GLES_MAJOR_VERSION == 1
     R_PushErrorCode("R_AddDepthBuffer", R_ERROR_USER_ERROR, "Not supported in GL ES 1.1.");
     return false;
@@ -1573,7 +1573,7 @@ static bool AddDepthBuffer(R_Renderer *renderer, R_Target *target) {
         return false;
     }
 
-    if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, target)) FlushBlitBuffer(renderer);
 
     if (!SetActiveTarget(renderer, target)) {
         R_PushErrorCode("R_AddDepthBuffer", R_ERROR_BACKEND_ERROR, "Failed to bind target framebuffer.");
@@ -1601,11 +1601,11 @@ static bool AddDepthBuffer(R_Renderer *renderer, R_Target *target) {
 #endif
 }
 
-static bool SetWindowResolution(R_Renderer *renderer, Uint16 w, Uint16 h) {
+bool SetWindowResolution(R_Renderer *renderer, Uint16 w, Uint16 h) {
     R_Target *target = renderer->current_context_target;
 
     bool isCurrent = isCurrentTarget(renderer, target);
-    if (isCurrent) renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrent) FlushBlitBuffer(renderer);
 
     // Don't need to resize (only update internals) when resolution isn't changing.
     get_target_window_dimensions(target, &target->context->window_w, &target->context->window_h);
@@ -1658,13 +1658,13 @@ static bool SetWindowResolution(R_Renderer *renderer, Uint16 w, Uint16 h) {
     return 1;
 }
 
-static void SetVirtualResolution(R_Renderer *renderer, R_Target *target, Uint16 w, Uint16 h) {
+void SetVirtualResolution(R_Renderer *renderer, R_Target *target, Uint16 w, Uint16 h) {
     bool isCurrent;
 
     if (target == NULL) return;
 
     isCurrent = isCurrentTarget(renderer, target);
-    if (isCurrent) renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrent) FlushBlitBuffer(renderer);
 
     target->w = w;
     target->h = h;
@@ -1675,13 +1675,13 @@ static void SetVirtualResolution(R_Renderer *renderer, R_Target *target, Uint16 
     R_ResetProjection(target);
 }
 
-static void UnsetVirtualResolution(R_Renderer *renderer, R_Target *target) {
+void UnsetVirtualResolution(R_Renderer *renderer, R_Target *target) {
     bool isCurrent;
 
     if (target == NULL) return;
 
     isCurrent = isCurrentTarget(renderer, target);
-    if (isCurrent) renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrent) FlushBlitBuffer(renderer);
 
     target->w = target->base_w;
     target->h = target->base_h;
@@ -1693,12 +1693,12 @@ static void UnsetVirtualResolution(R_Renderer *renderer, R_Target *target) {
     R_ResetProjection(target);
 }
 
-static void Quit(R_Renderer *renderer) {
-    renderer->impl->FreeTarget(renderer, renderer->current_context_target);
+void Quit(R_Renderer *renderer) {
+    FreeTarget(renderer, renderer->current_context_target);
     renderer->current_context_target = NULL;
 }
 
-static bool SetFullscreen(R_Renderer *renderer, bool enable_fullscreen, bool use_desktop_resolution) {
+bool SetFullscreen(R_Renderer *renderer, bool enable_fullscreen, bool use_desktop_resolution) {
     R_Target *target = renderer->current_context_target;
 
     SDL_Window *window = SDL_GetWindowFromID(target->context->windowID);
@@ -1761,7 +1761,7 @@ static bool SetFullscreen(R_Renderer *renderer, bool enable_fullscreen, bool use
     return is_fullscreen;
 }
 
-static R_Camera SetCamera(R_Renderer *renderer, R_Target *target, R_Camera *cam) {
+R_Camera SetCamera(R_Renderer *renderer, R_Target *target, R_Camera *cam) {
     R_Camera new_camera;
     R_Camera old_camera;
 
@@ -1778,7 +1778,7 @@ static R_Camera SetCamera(R_Renderer *renderer, R_Target *target, R_Camera *cam)
     old_camera = target->camera;
 
     if (!equal_cameras(new_camera, old_camera)) {
-        if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
+        if (isCurrentTarget(renderer, target)) FlushBlitBuffer(renderer);
 
         target->camera = new_camera;
     }
@@ -1786,7 +1786,7 @@ static R_Camera SetCamera(R_Renderer *renderer, R_Target *target, R_Camera *cam)
     return old_camera;
 }
 
-static GLuint CreateUninitializedTexture(R_Renderer *renderer) {
+GLuint CreateUninitializedTexture(R_Renderer *renderer) {
     GLuint handle;
 
     glGenTextures(1, &handle);
@@ -1808,7 +1808,7 @@ static GLuint CreateUninitializedTexture(R_Renderer *renderer) {
     return handle;
 }
 
-static R_Image *CreateUninitializedImage(R_Renderer *renderer, Uint16 w, Uint16 h, R_FormatEnum format) {
+R_Image *CreateUninitializedImage(R_Renderer *renderer, Uint16 w, Uint16 h, R_FormatEnum format) {
     GLuint handle, num_layers, bytes_per_pixel;
     GLenum gl_format;
     R_Image *result;
@@ -1938,7 +1938,7 @@ static R_Image *CreateUninitializedImage(R_Renderer *renderer, Uint16 w, Uint16 
     return result;
 }
 
-static R_Image *CreateImage(R_Renderer *renderer, Uint16 w, Uint16 h, R_FormatEnum format) {
+R_Image *CreateImage(R_Renderer *renderer, Uint16 w, Uint16 h, R_FormatEnum format) {
     R_Image *result;
     GLenum internal_format;
     static unsigned char *zero_buffer = NULL;
@@ -1984,7 +1984,7 @@ static R_Image *CreateImage(R_Renderer *renderer, Uint16 w, Uint16 h, R_FormatEn
     return result;
 }
 
-static R_Image *CreateImageUsingTexture(R_Renderer *renderer, R_TextureHandle handle, bool take_ownership) {
+R_Image *CreateImageUsingTexture(R_Renderer *renderer, R_TextureHandle handle, bool take_ownership) {
 #ifdef R_DISABLE_TEXTURE_GETS
     R_PushErrorCode("R_CreateImageUsingTexture", R_ERROR_UNSUPPORTED_FUNCTION, "Renderer %s does not support this function", renderer->id.name);
     return NULL;
@@ -2179,7 +2179,7 @@ static R_Image *CreateImageUsingTexture(R_Renderer *renderer, R_TextureHandle ha
 #endif
 }
 
-static R_Image *CreateAliasImage(R_Renderer *renderer, R_Image *image) {
+R_Image *CreateAliasImage(R_Renderer *renderer, R_Image *image) {
     R_Image *result;
     (void)renderer;
 
@@ -2197,10 +2197,10 @@ static R_Image *CreateAliasImage(R_Renderer *renderer, R_Image *image) {
     return result;
 }
 
-static bool readTargetPixels(R_Renderer *renderer, R_Target *source, GLint format, GLubyte *pixels) {
+bool readTargetPixels(R_Renderer *renderer, R_Target *source, GLint format, GLubyte *pixels) {
     if (source == NULL) return false;
 
-    if (isCurrentTarget(renderer, source)) renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, source)) FlushBlitBuffer(renderer);
 
     if (SetActiveTarget(renderer, source)) {
         glReadPixels(0, 0, source->base_w, source->base_h, format, GL_UNSIGNED_BYTE, pixels);
@@ -2209,7 +2209,7 @@ static bool readTargetPixels(R_Renderer *renderer, R_Target *source, GLint forma
     return false;
 }
 
-static bool readImagePixels(R_Renderer *renderer, R_Image *source, GLint format, GLubyte *pixels) {
+bool readImagePixels(R_Renderer *renderer, R_Image *source, GLint format, GLubyte *pixels) {
 #ifdef R_USE_GLES
     bool created_target;
     bool result;
@@ -2222,7 +2222,7 @@ static bool readImagePixels(R_Renderer *renderer, R_Image *source, GLint format,
     // Load up the target
     created_target = false;
     if (source->target == NULL) {
-        renderer->impl->GetTarget(renderer, source);
+        GetTarget(renderer, source);
         created_target = true;
     }
     // Get the data
@@ -2230,7 +2230,7 @@ static bool readImagePixels(R_Renderer *renderer, R_Image *source, GLint format,
     // FIXME: I should force it to use the texture dims.
     result = readTargetPixels(renderer, source->target, format, pixels);
     // Free the target
-    if (created_target) renderer->impl->FreeTarget(renderer, source->target);
+    if (created_target) FreeTarget(renderer, source->target);
     return result;
 #else
     // Bind the texture temporarily
@@ -2244,14 +2244,14 @@ static bool readImagePixels(R_Renderer *renderer, R_Image *source, GLint format,
 #endif
 }
 
-static unsigned char *getRawTargetData(R_Renderer *renderer, R_Target *target) {
+unsigned char *getRawTargetData(R_Renderer *renderer, R_Target *target) {
     int bytes_per_pixel;
     unsigned char *data;
     int pitch;
     unsigned char *copy;
     int y;
 
-    if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, target)) FlushBlitBuffer(renderer);
 
     bytes_per_pixel = 4;
     if (target->image != NULL) bytes_per_pixel = target->image->bytes_per_pixel;
@@ -2279,10 +2279,10 @@ static unsigned char *getRawTargetData(R_Renderer *renderer, R_Target *target) {
     return data;
 }
 
-static unsigned char *getRawImageData(R_Renderer *renderer, R_Image *image) {
+unsigned char *getRawImageData(R_Renderer *renderer, R_Image *image) {
     unsigned char *data;
 
-    if (image->target != NULL && isCurrentTarget(renderer, image->target)) renderer->impl->FlushBlitBuffer(renderer);
+    if (image->target != NULL && isCurrentTarget(renderer, image->target)) FlushBlitBuffer(renderer);
 
     data = (unsigned char *)malloc(image->texture_w * image->texture_h * image->bytes_per_pixel);
 
@@ -2295,7 +2295,7 @@ static unsigned char *getRawImageData(R_Renderer *renderer, R_Image *image) {
     return data;
 }
 
-static void *CopySurfaceFromTarget(R_Renderer *renderer, R_Target *target) {
+void *CopySurfaceFromTarget(R_Renderer *renderer, R_Target *target) {
     unsigned char *data;
     SDL_Surface *result;
     SDL_PixelFormat *format;
@@ -2341,7 +2341,7 @@ static void *CopySurfaceFromTarget(R_Renderer *renderer, R_Target *target) {
     return result;
 }
 
-static void *CopySurfaceFromImage(R_Renderer *renderer, R_Image *image) {
+void *CopySurfaceFromImage(R_Renderer *renderer, R_Image *image) {
     unsigned char *data;
     SDL_Surface *result;
     SDL_PixelFormat *format;
@@ -2400,7 +2400,7 @@ static void *CopySurfaceFromImage(R_Renderer *renderer, R_Image *image) {
 // The surfaceFormatResult is used to specify what direct conversion format the surface pixels are in (source format).
 #ifdef R_USE_GLES
 // OpenGLES does not do direct conversion.  Internal format (glFormat) and original format (surfaceFormatResult) must be the same.
-static int compareFormats(R_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, GLenum *surfaceFormatResult) {
+int compareFormats(R_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, GLenum *surfaceFormatResult) {
     SDL_PixelFormat *format = surface->format;
     switch (glFormat) {
             // 3-channel formats
@@ -2452,7 +2452,7 @@ static int compareFormats(R_Renderer *renderer, GLenum glFormat, SDL_Surface *su
 }
 #else
 // GL_RGB/GL_RGBA and Surface format
-static int compareFormats(R_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, GLenum *surfaceFormatResult) {
+int compareFormats(R_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, GLenum *surfaceFormatResult) {
     SDL_PixelFormat *format = surface->format;
     switch (glFormat) {
             // 3-channel formats
@@ -2513,7 +2513,7 @@ static int compareFormats(R_Renderer *renderer, GLenum glFormat, SDL_Surface *su
 #endif
 
 // Adapted from SDL_AllocFormat()
-static SDL_PixelFormat *AllocFormat(GLenum glFormat) {
+SDL_PixelFormat *AllocFormat(GLenum glFormat) {
     // Yes, I need to do the whole thing myself... :(
     Uint8 channels;
     Uint32 Rmask, Gmask, Bmask, Amask = 0, mask;
@@ -2606,10 +2606,10 @@ static SDL_PixelFormat *AllocFormat(GLenum glFormat) {
     return result;
 }
 
-static void FreeFormat(SDL_PixelFormat *format) { free(format); }
+void FreeFormat(SDL_PixelFormat *format) { free(format); }
 
 // Returns NULL on failure.  Returns the original surface if no copy is needed.  Returns a new surface converted to the right format otherwise.
-static SDL_Surface *copySurfaceIfNeeded(R_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, GLenum *surfaceFormatResult) {
+SDL_Surface *copySurfaceIfNeeded(R_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, GLenum *surfaceFormatResult) {
     // If format doesn't match, we need to do a copy
     int format_compare = compareFormats(renderer, glFormat, surface, surfaceFormatResult);
 
@@ -2629,7 +2629,7 @@ static SDL_Surface *copySurfaceIfNeeded(R_Renderer *renderer, GLenum glFormat, S
     return surface;
 }
 
-static R_Image *gpu_copy_image_pixels_only(R_Renderer *renderer, R_Image *image) {
+R_Image *gpu_copy_image_pixels_only(R_Renderer *renderer, R_Image *image) {
     R_Image *result = NULL;
 
     if (image == NULL) return NULL;
@@ -2644,7 +2644,7 @@ static R_Image *gpu_copy_image_pixels_only(R_Renderer *renderer, R_Image *image)
             {
                 R_Target *target;
 
-                result = renderer->impl->CreateImage(renderer, image->texture_w, image->texture_h, image->format);
+                result = CreateImage(renderer, image->texture_w, image->texture_h, image->format);
                 if (result == NULL) {
                     R_PushErrorCode("R_CopyImage", R_ERROR_BACKEND_ERROR, "Failed to create new image.");
                     return NULL;
@@ -2677,7 +2677,7 @@ static R_Image *gpu_copy_image_pixels_only(R_Renderer *renderer, R_Image *image)
                         R_UnsetImageVirtualResolution(image);
                     }
 
-                    renderer->impl->Blit(renderer, image, NULL, target, (float)(image->w / 2), (float)(image->h / 2));
+                    Blit(renderer, image, NULL, target, (float)(image->w / 2), (float)(image->h / 2));
 
                     // Restore the saved settings
                     R_SetColor(image, ToEngineColor(color));
@@ -2739,7 +2739,7 @@ static R_Image *gpu_copy_image_pixels_only(R_Renderer *renderer, R_Image *image)
     return result;
 }
 
-static R_Image *CopyImage(R_Renderer *renderer, R_Image *image) {
+R_Image *CopyImage(R_Renderer *renderer, R_Image *image) {
     R_Image *result = NULL;
 
     if (image == NULL) return NULL;
@@ -2761,7 +2761,7 @@ static R_Image *CopyImage(R_Renderer *renderer, R_Image *image) {
     return result;
 }
 
-static void UpdateImage(R_Renderer *renderer, R_Image *image, const metadot_rect *image_rect, void *surface, const metadot_rect *surface_rect) {
+void UpdateImage(R_Renderer *renderer, R_Image *image, const metadot_rect *image_rect, void *surface, const metadot_rect *surface_rect) {
     R_IMAGE_DATA *data;
     GLenum original_format;
 
@@ -2831,7 +2831,7 @@ static void UpdateImage(R_Renderer *renderer, R_Image *image, const metadot_rect
     }
 
     changeTexturing(renderer, 1);
-    if (image->target != NULL && isCurrentTarget(renderer, image->target)) renderer->impl->FlushBlitBuffer(renderer);
+    if (image->target != NULL && isCurrentTarget(renderer, image->target)) FlushBlitBuffer(renderer);
     bindTexture(renderer, image);
     alignment = 8;
     while (newSurface->pitch % alignment) alignment >>= 1;
@@ -2850,7 +2850,7 @@ static void UpdateImage(R_Renderer *renderer, R_Image *image, const metadot_rect
     if (surface != newSurface) SDL_FreeSurface(newSurface);
 }
 
-static void UpdateImageBytes(R_Renderer *renderer, R_Image *image, const metadot_rect *image_rect, const unsigned char *bytes, int bytes_per_row) {
+void UpdateImageBytes(R_Renderer *renderer, R_Image *image, const metadot_rect *image_rect, const unsigned char *bytes, int bytes_per_row) {
     R_IMAGE_DATA *data;
     GLenum original_format;
 
@@ -2889,7 +2889,7 @@ static void UpdateImageBytes(R_Renderer *renderer, R_Image *image, const metadot
     }
 
     changeTexturing(renderer, 1);
-    if (image->target != NULL && isCurrentTarget(renderer, image->target)) renderer->impl->FlushBlitBuffer(renderer);
+    if (image->target != NULL && isCurrentTarget(renderer, image->target)) FlushBlitBuffer(renderer);
     bindTexture(renderer, image);
     alignment = 8;
     while (bytes_per_row % alignment) alignment >>= 1;
@@ -2897,7 +2897,7 @@ static void UpdateImageBytes(R_Renderer *renderer, R_Image *image, const metadot
     upload_texture(bytes, updateRect, original_format, alignment, bytes_per_row / image->bytes_per_pixel, bytes_per_row, image->bytes_per_pixel);
 }
 
-static bool ReplaceImage(R_Renderer *renderer, R_Image *image, void *surface, const metadot_rect *surface_rect) {
+bool ReplaceImage(R_Renderer *renderer, R_Image *image, void *surface, const metadot_rect *surface_rect) {
     R_IMAGE_DATA *data;
     metadot_rect sourceRect;
     SDL_Surface *newSurface;
@@ -3079,7 +3079,7 @@ static_inline Uint32 getPixel(SDL_Surface *Surface, int x, int y) {
     return 0;  // FIXME: Handle errors better
 }
 
-static R_Image *CopyImageFromSurface(R_Renderer *renderer, void *surface, const metadot_rect *surface_rect) {
+R_Image *CopyImageFromSurface(R_Renderer *renderer, void *surface, const metadot_rect *surface_rect) {
     R_FormatEnum format;
     R_Image *image;
     int sw, sh;
@@ -3107,15 +3107,15 @@ static R_Image *CopyImageFromSurface(R_Renderer *renderer, void *surface, const 
         format = R_FORMAT_RGBA;
     }
 
-    image = renderer->impl->CreateImage(renderer, (Uint16)sw, (Uint16)sh, format);
+    image = CreateImage(renderer, (Uint16)sw, (Uint16)sh, format);
     if (image == NULL) return NULL;
 
-    renderer->impl->UpdateImage(renderer, image, NULL, surface, surface_rect);
+    UpdateImage(renderer, image, NULL, surface, surface_rect);
 
     return image;
 }
 
-static R_Image *CopyImageFromTarget(R_Renderer *renderer, R_Target *target) {
+R_Image *CopyImageFromTarget(R_Renderer *renderer, R_Target *target) {
     R_Image *result;
 
     if (target == NULL) return NULL;
@@ -3123,15 +3123,15 @@ static R_Image *CopyImageFromTarget(R_Renderer *renderer, R_Target *target) {
     if (target->image != NULL) {
         result = gpu_copy_image_pixels_only(renderer, target->image);
     } else {
-        SDL_Surface *surface = (SDL_Surface *)renderer->impl->CopySurfaceFromTarget(renderer, target);
-        result = renderer->impl->CopyImageFromSurface(renderer, surface, NULL);
+        SDL_Surface *surface = (SDL_Surface *)CopySurfaceFromTarget(renderer, target);
+        result = CopyImageFromSurface(renderer, surface, NULL);
         SDL_FreeSurface(surface);
     }
 
     return result;
 }
 
-static void FreeImage(R_Renderer *renderer, R_Image *image) {
+void FreeImage(R_Renderer *renderer, R_Image *image) {
     R_IMAGE_DATA *data;
 
     if (image == NULL) return;
@@ -3148,7 +3148,7 @@ static void FreeImage(R_Renderer *renderer, R_Image *image) {
 
         // Freeing it will decrement the refcount.  If this is the only increment, it will be freed.  This means R_LoadTarget() needs to be paired with R_FreeTarget().
         target->refcount++;
-        renderer->impl->FreeTarget(renderer, target);
+        FreeTarget(renderer, target);
     }
 
     flushAndClearBlitBufferIfCurrentTexture(renderer, image);
@@ -3168,7 +3168,7 @@ static void FreeImage(R_Renderer *renderer, R_Image *image) {
     free(image);
 }
 
-static R_Target *GetTarget(R_Renderer *renderer, R_Image *image) {
+R_Target *GetTarget(R_Renderer *renderer, R_Image *image) {
     GLuint handle;
     GLenum status;
     R_Target *result;
@@ -3242,7 +3242,7 @@ static R_Target *GetTarget(R_Renderer *renderer, R_Image *image) {
     return result;
 }
 
-static void FreeTargetData(R_Renderer *renderer, R_TARGET_DATA *data) {
+void FreeTargetData(R_Renderer *renderer, R_TARGET_DATA *data) {
     if (data == NULL) return;
 
     if (data->refcount > 1) {
@@ -3259,7 +3259,7 @@ static void FreeTargetData(R_Renderer *renderer, R_TARGET_DATA *data) {
     free(data);
 }
 
-static void FreeContext(R_Context *context) {
+void FreeContext(R_Context *context) {
     R_CONTEXT_DATA *cdata;
 
     if (context == NULL) return;
@@ -3292,7 +3292,7 @@ static void FreeContext(R_Context *context) {
     free(context);
 }
 
-static void FreeTarget(R_Renderer *renderer, R_Target *target) {
+void FreeTarget(R_Renderer *renderer, R_Target *target) {
     if (target == NULL) return;
 
     if (target->refcount > 1) {
@@ -3304,7 +3304,7 @@ static void FreeTarget(R_Renderer *renderer, R_Target *target) {
 
     // Prepare to work in this target's context, if it has one
     if (target == renderer->current_context_target)
-        renderer->impl->FlushBlitBuffer(renderer);
+        FlushBlitBuffer(renderer);
     else if (target->context_target != NULL) {
         R_MakeCurrent(target->context_target, target->context_target->context->windowID);
     }
@@ -3423,7 +3423,7 @@ static void FreeTarget(R_Renderer *renderer, R_Target *target) {
     SET_UNTEXTURED_VERTEX(x2, y2, r, g, b, a);              \
     SET_RELATIVE_INDEXED_VERTEX(-2);
 
-static void Blit(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y) {
+void Blit(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y) {
     Uint32 tex_w, tex_h;
     float w;
     float h;
@@ -3529,10 +3529,10 @@ static void Blit(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R
     cdata = (R_CONTEXT_DATA *)renderer->current_context_target->context->data;
 
     if (cdata->blit_buffer_num_vertices + 4 >= cdata->blit_buffer_max_num_vertices) {
-        if (!growBlitBuffer(cdata, cdata->blit_buffer_num_vertices + 4)) renderer->impl->FlushBlitBuffer(renderer);
+        if (!growBlitBuffer(cdata, cdata->blit_buffer_num_vertices + 4)) FlushBlitBuffer(renderer);
     }
     if (cdata->index_buffer_num_vertices + 6 >= cdata->index_buffer_max_num_vertices) {
-        if (!growIndexBuffer(cdata, cdata->index_buffer_num_vertices + 6)) renderer->impl->FlushBlitBuffer(renderer);
+        if (!growIndexBuffer(cdata, cdata->index_buffer_num_vertices + 6)) FlushBlitBuffer(renderer);
     }
 
     blit_buffer = cdata->blit_buffer;
@@ -3573,7 +3573,7 @@ static void Blit(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R
     cdata->blit_buffer_num_vertices += R_BLIT_BUFFER_VERTICES_PER_SPRITE;
 }
 
-static void BlitRotate(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float degrees) {
+void BlitRotate(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float degrees) {
     float w, h;
     if (image == NULL) {
         R_PushErrorCode("R_BlitRotate", R_ERROR_NULL_ARGUMENT, "image");
@@ -3586,10 +3586,10 @@ static void BlitRotate(R_Renderer *renderer, R_Image *image, metadot_rect *src_r
 
     w = (src_rect == NULL ? image->w : src_rect->w);
     h = (src_rect == NULL ? image->h : src_rect->h);
-    renderer->impl->BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x, h * image->anchor_y, degrees, 1.0f, 1.0f);
+    BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x, h * image->anchor_y, degrees, 1.0f, 1.0f);
 }
 
-static void BlitScale(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float scaleX, float scaleY) {
+void BlitScale(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float scaleX, float scaleY) {
     float w, h;
     if (image == NULL) {
         R_PushErrorCode("R_BlitScale", R_ERROR_NULL_ARGUMENT, "image");
@@ -3602,10 +3602,10 @@ static void BlitScale(R_Renderer *renderer, R_Image *image, metadot_rect *src_re
 
     w = (src_rect == NULL ? image->w : src_rect->w);
     h = (src_rect == NULL ? image->h : src_rect->h);
-    renderer->impl->BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x, h * image->anchor_y, 0.0f, scaleX, scaleY);
+    BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x, h * image->anchor_y, 0.0f, scaleX, scaleY);
 }
 
-static void BlitTransform(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float degrees, float scaleX, float scaleY) {
+void BlitTransform(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float degrees, float scaleX, float scaleY) {
     float w, h;
     if (image == NULL) {
         R_PushErrorCode("R_BlitTransform", R_ERROR_NULL_ARGUMENT, "image");
@@ -3618,10 +3618,10 @@ static void BlitTransform(R_Renderer *renderer, R_Image *image, metadot_rect *sr
 
     w = (src_rect == NULL ? image->w : src_rect->w);
     h = (src_rect == NULL ? image->h : src_rect->h);
-    renderer->impl->BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x, h * image->anchor_y, degrees, scaleX, scaleY);
+    BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x, h * image->anchor_y, degrees, scaleX, scaleY);
 }
 
-static void BlitTransformX(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY) {
+void BlitTransformX(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY) {
     Uint32 tex_w, tex_h;
     float x1, y1, x2, y2;
     float dx1, dy1, dx2, dy2, dx3, dy3, dx4, dy4;
@@ -3773,10 +3773,10 @@ static void BlitTransformX(R_Renderer *renderer, R_Image *image, metadot_rect *s
     cdata = (R_CONTEXT_DATA *)renderer->current_context_target->context->data;
 
     if (cdata->blit_buffer_num_vertices + 4 >= cdata->blit_buffer_max_num_vertices) {
-        if (!growBlitBuffer(cdata, cdata->blit_buffer_num_vertices + 4)) renderer->impl->FlushBlitBuffer(renderer);
+        if (!growBlitBuffer(cdata, cdata->blit_buffer_num_vertices + 4)) FlushBlitBuffer(renderer);
     }
     if (cdata->index_buffer_num_vertices + 6 >= cdata->index_buffer_max_num_vertices) {
-        if (!growIndexBuffer(cdata, cdata->index_buffer_num_vertices + 6)) renderer->impl->FlushBlitBuffer(renderer);
+        if (!growIndexBuffer(cdata, cdata->index_buffer_num_vertices + 6)) FlushBlitBuffer(renderer);
     }
 
     blit_buffer = cdata->blit_buffer;
@@ -3832,7 +3832,7 @@ static_inline int sizeof_R_type(R_TypeEnum type) {
     return 0;
 }
 
-static void refresh_attribute_data(R_CONTEXT_DATA *cdata) {
+void refresh_attribute_data(R_CONTEXT_DATA *cdata) {
     int i;
     for (i = 0; i < 16; i++) {
         R_AttributeSource *a = &cdata->shader_attributes[i];
@@ -3858,7 +3858,7 @@ static void refresh_attribute_data(R_CONTEXT_DATA *cdata) {
     }
 }
 
-static void upload_attribute_data(R_CONTEXT_DATA *cdata, int num_vertices) {
+void upload_attribute_data(R_CONTEXT_DATA *cdata, int num_vertices) {
     int i;
     for (i = 0; i < 16; i++) {
         R_AttributeSource *a = &cdata->shader_attributes[i];
@@ -3888,7 +3888,7 @@ static void upload_attribute_data(R_CONTEXT_DATA *cdata, int num_vertices) {
     }
 }
 
-static void disable_attribute_data(R_CONTEXT_DATA *cdata) {
+void disable_attribute_data(R_CONTEXT_DATA *cdata) {
     int i;
     for (i = 0; i < 16; i++) {
         R_AttributeSource *a = &cdata->shader_attributes[i];
@@ -3901,7 +3901,7 @@ static void disable_attribute_data(R_CONTEXT_DATA *cdata) {
 
 #endif
 
-static int get_lowest_attribute_num_values(R_CONTEXT_DATA *cdata, int cap) {
+int get_lowest_attribute_num_values(R_CONTEXT_DATA *cdata, int cap) {
     int lowest = cap;
 
 #ifdef R_USE_BUFFER_PIPELINE
@@ -3947,10 +3947,10 @@ static_inline void submit_buffer_data(int bytes, float *values, int bytes_indice
 #endif
 }
 
-static void SetAttributefv(R_Renderer *renderer, int location, int num_elements, float *value);
+void SetAttributefv(R_Renderer *renderer, int location, int num_elements, float *value);
 
 #ifdef R_USE_BUFFER_PIPELINE
-static void gpu_upload_modelviewprojection(R_Target *dest, R_Context *context) {
+void gpu_upload_modelviewprojection(R_Target *dest, R_Context *context) {
     if (context->current_shader_block.modelViewProjection_loc >= 0) {
         float mvp[16];
 
@@ -3978,8 +3978,8 @@ static void gpu_upload_modelviewprojection(R_Target *dest, R_Context *context) {
 #endif
 
 // Assumes the right format
-static void PrimitiveBatchV(R_Renderer *renderer, R_Image *image, R_Target *target, R_PrimitiveEnum primitive_type, unsigned short num_vertices, void *values, unsigned int num_indices,
-                            unsigned short *indices, R_BatchFlagEnum flags) {
+void PrimitiveBatchV(R_Renderer *renderer, R_Image *image, R_Target *target, R_PrimitiveEnum primitive_type, unsigned short num_vertices, void *values, unsigned int num_indices,
+                     unsigned short *indices, R_BatchFlagEnum flags) {
     R_Context *context;
     R_CONTEXT_DATA *cdata;
     int stride;
@@ -4035,7 +4035,7 @@ static void PrimitiveBatchV(R_Renderer *renderer, R_Image *image, R_Target *targ
     context = renderer->current_context_target->context;
     cdata = (R_CONTEXT_DATA *)context->data;
 
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
 
     if (cdata->index_buffer_num_vertices + num_indices >= cdata->index_buffer_max_num_vertices) {
         growBlitBuffer(cdata, cdata->index_buffer_num_vertices + num_indices);
@@ -4260,12 +4260,12 @@ static void PrimitiveBatchV(R_Renderer *renderer, R_Image *image, R_Target *targ
     unsetClipRect(renderer, target);
 }
 
-static void GenerateMipmaps(R_Renderer *renderer, R_Image *image) {
+void GenerateMipmaps(R_Renderer *renderer, R_Image *image) {
 #ifndef __IPHONEOS__
     GLint filter;
     if (image == NULL) return;
 
-    if (image->target != NULL && isCurrentTarget(renderer, image->target)) renderer->impl->FlushBlitBuffer(renderer);
+    if (image->target != NULL && isCurrentTarget(renderer, image->target)) FlushBlitBuffer(renderer);
     bindTexture(renderer, image);
     glGenerateMipmapPROC(GL_TEXTURE_2D);
     image->has_mipmaps = true;
@@ -4275,14 +4275,14 @@ static void GenerateMipmaps(R_Renderer *renderer, R_Image *image) {
 #endif
 }
 
-static metadot_rect SetClip(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y, Uint16 w, Uint16 h) {
+metadot_rect SetClip(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y, Uint16 w, Uint16 h) {
     metadot_rect r;
     if (target == NULL) {
         r.x = r.y = r.w = r.h = 0;
         return r;
     }
 
-    if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, target)) FlushBlitBuffer(renderer);
     target->use_clip_rect = true;
 
     r = target->clip_rect;
@@ -4295,15 +4295,15 @@ static metadot_rect SetClip(R_Renderer *renderer, R_Target *target, Sint16 x, Si
     return r;
 }
 
-static void UnsetClip(R_Renderer *renderer, R_Target *target) {
+void UnsetClip(R_Renderer *renderer, R_Target *target) {
     if (target == NULL) return;
 
-    if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, target)) FlushBlitBuffer(renderer);
     // Leave the clip rect values intact so they can still be useful as storage
     target->use_clip_rect = false;
 }
 
-static void swizzle_for_format(SDL_Color *color, GLenum format, unsigned char pixel[4]) {
+void swizzle_for_format(SDL_Color *color, GLenum format, unsigned char pixel[4]) {
     switch (format) {
         case GL_LUMINANCE:
             color->b = color->g = color->r = pixel[0];
@@ -4364,13 +4364,13 @@ static void swizzle_for_format(SDL_Color *color, GLenum format, unsigned char pi
     }
 }
 
-static METAENGINE_Color GetPixel(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y) {
+ME_Color GetPixel(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y) {
     SDL_Color result = {0, 0, 0, 0};
     if (target == NULL) return ToEngineColor(result);
     if (renderer != target->renderer) return ToEngineColor(result);
     if (x < 0 || y < 0 || x >= target->w || y >= target->h) return ToEngineColor(result);
 
-    if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, target)) FlushBlitBuffer(renderer);
     if (SetActiveTarget(renderer, target)) {
         unsigned char pixels[4];
         GLenum format = ((R_TARGET_DATA *)target->data)->format;
@@ -4382,7 +4382,7 @@ static METAENGINE_Color GetPixel(R_Renderer *renderer, R_Target *target, Sint16 
     return ToEngineColor(result);
 }
 
-static void SetImageFilter(R_Renderer *renderer, R_Image *image, R_FilterEnum filter) {
+void SetImageFilter(R_Renderer *renderer, R_Image *image, R_FilterEnum filter) {
     GLenum minFilter, magFilter;
 
     if (image == NULL) {
@@ -4429,7 +4429,7 @@ static void SetImageFilter(R_Renderer *renderer, R_Image *image, R_FilterEnum fi
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
 }
 
-static void SetWrapMode(R_Renderer *renderer, R_Image *image, R_WrapEnum wrap_mode_x, R_WrapEnum wrap_mode_y) {
+void SetWrapMode(R_Renderer *renderer, R_Image *image, R_WrapEnum wrap_mode_x, R_WrapEnum wrap_mode_y) {
     GLenum wrap_x, wrap_y;
 
     if (image == NULL) {
@@ -4491,18 +4491,18 @@ static void SetWrapMode(R_Renderer *renderer, R_Image *image, R_WrapEnum wrap_mo
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap_y);
 }
 
-static R_TextureHandle GetTextureHandle(R_Renderer *renderer, R_Image *image) {
+R_TextureHandle GetTextureHandle(R_Renderer *renderer, R_Image *image) {
     (void)renderer;
     return ((R_IMAGE_DATA *)image->data)->handle;
 }
 
-static void ClearRGBA(R_Renderer *renderer, R_Target *target, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+void ClearRGBA(R_Renderer *renderer, R_Target *target, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
     if (target == NULL) return;
     if (renderer != target->renderer) return;
 
     makeContextCurrent(renderer, target);
 
-    if (isCurrentTarget(renderer, target)) renderer->impl->FlushBlitBuffer(renderer);
+    if (isCurrentTarget(renderer, target)) FlushBlitBuffer(renderer);
     if (SetActiveTarget(renderer, target)) {
         setClipRect(renderer, target);
 
@@ -4513,7 +4513,7 @@ static void ClearRGBA(R_Renderer *renderer, R_Target *target, Uint8 r, Uint8 g, 
     }
 }
 
-static void DoPartialFlush(R_Renderer *renderer, R_Target *dest, R_Context *context, unsigned short num_vertices, float *blit_buffer, unsigned int num_indices, unsigned short *index_buffer) {
+void DoPartialFlush(R_Renderer *renderer, R_Target *dest, R_Context *context, unsigned short num_vertices, float *blit_buffer, unsigned int num_indices, unsigned short *index_buffer) {
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)context->data;
     (void)renderer;
     (void)num_vertices;
@@ -4608,7 +4608,7 @@ static void DoPartialFlush(R_Renderer *renderer, R_Target *dest, R_Context *cont
 #endif
 }
 
-static void DoUntexturedFlush(R_Renderer *renderer, R_Target *dest, R_Context *context, unsigned short num_vertices, float *blit_buffer, unsigned int num_indices, unsigned short *index_buffer) {
+void DoUntexturedFlush(R_Renderer *renderer, R_Target *dest, R_Context *context, unsigned short num_vertices, float *blit_buffer, unsigned int num_indices, unsigned short *index_buffer) {
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)context->data;
     (void)renderer;
     (void)num_vertices;
@@ -4695,7 +4695,7 @@ static void DoUntexturedFlush(R_Renderer *renderer, R_Target *dest, R_Context *c
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-static void FlushBlitBuffer(R_Renderer *renderer) {
+void FlushBlitBuffer(R_Renderer *renderer) {
     R_Context *context;
     R_CONTEXT_DATA *cdata;
     if (renderer->current_context_target == NULL) return;
@@ -4750,8 +4750,8 @@ static void FlushBlitBuffer(R_Renderer *renderer) {
     }
 }
 
-static void Flip(R_Renderer *renderer, R_Target *target) {
-    renderer->impl->FlushBlitBuffer(renderer);
+void Flip(R_Renderer *renderer, R_Target *target) {
+    FlushBlitBuffer(renderer);
 
     if (target != NULL && target->context != NULL) {
         makeContextCurrent(renderer, target);
@@ -4771,10 +4771,10 @@ static void Flip(R_Renderer *renderer, R_Target *target) {
 // On some platforms (e.g. Android), it might not be possible to just create a rwops and get the expected #included files.
 // To do it, I might want to add an optional argument that specifies a base directory to prepend to #include file names.
 
-static Uint32 GetShaderSourceSize(const char *filename);
-static Uint32 GetShaderSource(const char *filename, char *result);
+Uint32 GetShaderSourceSize(const char *filename);
+Uint32 GetShaderSource(const char *filename, char *result);
 
-static void read_until_end_of_comment(SDL_RWops *rwops, char multiline) {
+void read_until_end_of_comment(SDL_RWops *rwops, char multiline) {
     char buffer;
     while (SDL_RWread(rwops, &buffer, 1, 1) > 0) {
         if (!multiline) {
@@ -4788,7 +4788,7 @@ static void read_until_end_of_comment(SDL_RWops *rwops, char multiline) {
     }
 }
 
-static Uint32 GetShaderSourceSize_RW(SDL_RWops *shader_source) {
+Uint32 GetShaderSourceSize_RW(SDL_RWops *shader_source) {
     Uint32 size;
     char last_char;
     char buffer[512];
@@ -4850,7 +4850,7 @@ static Uint32 GetShaderSourceSize_RW(SDL_RWops *shader_source) {
     return size;
 }
 
-static Uint32 GetShaderSource_RW(SDL_RWops *shader_source, char *result) {
+Uint32 GetShaderSource_RW(SDL_RWops *shader_source, char *result) {
     Uint32 size;
     char last_char;
     char buffer[512];
@@ -4925,7 +4925,7 @@ static Uint32 GetShaderSource_RW(SDL_RWops *shader_source, char *result) {
     return size;
 }
 
-static Uint32 GetShaderSource(const char *filename, char *result) {
+Uint32 GetShaderSource(const char *filename, char *result) {
     SDL_RWops *rwops;
     Uint32 size;
 
@@ -4938,7 +4938,7 @@ static Uint32 GetShaderSource(const char *filename, char *result) {
     return size;
 }
 
-static Uint32 GetShaderSourceSize(const char *filename) {
+Uint32 GetShaderSourceSize(const char *filename) {
     SDL_RWops *rwops;
     Uint32 result;
 
@@ -4951,7 +4951,7 @@ static Uint32 GetShaderSourceSize(const char *filename) {
     return result;
 }
 
-static Uint32 compile_shader_source(R_ShaderEnum shader_type, const char *shader_source) {
+Uint32 compile_shader_source(R_ShaderEnum shader_type, const char *shader_source) {
     // Create the proper new shader object
     GLuint shader_object = 0;
     (void)shader_type;
@@ -5003,15 +5003,15 @@ static Uint32 compile_shader_source(R_ShaderEnum shader_type, const char *shader
     return shader_object;
 }
 
-static Uint32 CompileShaderInternal(R_Renderer *renderer, R_ShaderEnum shader_type, const char *shader_source) { return compile_shader_source(shader_type, shader_source); }
+Uint32 CompileShaderInternal(R_Renderer *renderer, R_ShaderEnum shader_type, const char *shader_source) { return compile_shader_source(shader_type, shader_source); }
 
-static Uint32 CompileShader(R_Renderer *renderer, R_ShaderEnum shader_type, const char *shader_source) {
+Uint32 CompileShader(R_Renderer *renderer, R_ShaderEnum shader_type, const char *shader_source) {
     Uint32 size = (Uint32)strlen(shader_source);
     if (size == 0) return 0;
-    return renderer->impl->CompileShaderInternal(renderer, shader_type, shader_source);
+    return CompileShaderInternal(renderer, shader_type, shader_source);
 }
 
-static Uint32 CreateShaderProgram(R_Renderer *renderer) {
+Uint32 CreateShaderProgram(R_Renderer *renderer) {
 #ifndef R_DISABLE_SHADERS
     GLuint p;
 
@@ -5026,7 +5026,7 @@ static Uint32 CreateShaderProgram(R_Renderer *renderer) {
 #endif
 }
 
-static bool LinkShaderProgram(R_Renderer *renderer, Uint32 program_object) {
+bool LinkShaderProgram(R_Renderer *renderer, Uint32 program_object) {
 #ifndef R_DISABLE_SHADERS
     int linked;
 
@@ -5057,7 +5057,7 @@ static bool LinkShaderProgram(R_Renderer *renderer, Uint32 program_object) {
 #endif
 }
 
-static void FreeShader(R_Renderer *renderer, Uint32 shader_object) {
+void FreeShader(R_Renderer *renderer, Uint32 shader_object) {
     (void)renderer;
     (void)shader_object;
 #ifndef R_DISABLE_SHADERS
@@ -5065,7 +5065,7 @@ static void FreeShader(R_Renderer *renderer, Uint32 shader_object) {
 #endif
 }
 
-static void FreeShaderProgram(R_Renderer *renderer, Uint32 program_object) {
+void FreeShaderProgram(R_Renderer *renderer, Uint32 program_object) {
     (void)renderer;
     (void)program_object;
 #ifndef R_DISABLE_SHADERS
@@ -5073,7 +5073,7 @@ static void FreeShaderProgram(R_Renderer *renderer, Uint32 program_object) {
 #endif
 }
 
-static void AttachShader(R_Renderer *renderer, Uint32 program_object, Uint32 shader_object) {
+void AttachShader(R_Renderer *renderer, Uint32 program_object, Uint32 shader_object) {
     (void)renderer;
     (void)program_object;
     (void)shader_object;
@@ -5082,7 +5082,7 @@ static void AttachShader(R_Renderer *renderer, Uint32 program_object, Uint32 sha
 #endif
 }
 
-static void DetachShader(R_Renderer *renderer, Uint32 program_object, Uint32 shader_object) {
+void DetachShader(R_Renderer *renderer, Uint32 program_object, Uint32 shader_object) {
     (void)renderer;
     (void)program_object;
     (void)shader_object;
@@ -5091,7 +5091,7 @@ static void DetachShader(R_Renderer *renderer, Uint32 program_object, Uint32 sha
 #endif
 }
 
-static void ActivateShaderProgram(R_Renderer *renderer, Uint32 program_object, R_ShaderBlock *block) {
+void ActivateShaderProgram(R_Renderer *renderer, Uint32 program_object, R_ShaderBlock *block) {
     R_Target *target = renderer->current_context_target;
     (void)block;
 #ifndef R_DISABLE_SHADERS
@@ -5106,7 +5106,7 @@ static void ActivateShaderProgram(R_Renderer *renderer, Uint32 program_object, R
             program_object = target->context->default_untextured_shader_program;
         }
 
-        renderer->impl->FlushBlitBuffer(renderer);
+        FlushBlitBuffer(renderer);
         glUseProgram(program_object);
 
         {
@@ -5133,14 +5133,14 @@ static void ActivateShaderProgram(R_Renderer *renderer, Uint32 program_object, R
     target->context->current_shader_program = program_object;
 }
 
-static void DeactivateShaderProgram(R_Renderer *renderer) { renderer->impl->ActivateShaderProgram(renderer, 0, NULL); }
+void DeactivateShaderProgram(R_Renderer *renderer) { ActivateShaderProgram(renderer, 0, NULL); }
 
-static const char *GetShaderMessage(R_Renderer *renderer) {
+const char *GetShaderMessage(R_Renderer *renderer) {
     (void)renderer;
     return shader_message;
 }
 
-static int GetAttributeLocation(R_Renderer *renderer, Uint32 program_object, const char *attrib_name) {
+int GetAttributeLocation(R_Renderer *renderer, Uint32 program_object, const char *attrib_name) {
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return -1;
     program_object = get_proper_program_id(renderer, program_object);
@@ -5154,7 +5154,7 @@ static int GetAttributeLocation(R_Renderer *renderer, Uint32 program_object, con
 #endif
 }
 
-static int GetUniformLocation(R_Renderer *renderer, Uint32 program_object, const char *uniform_name) {
+int GetUniformLocation(R_Renderer *renderer, Uint32 program_object, const char *uniform_name) {
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return -1;
     program_object = get_proper_program_id(renderer, program_object);
@@ -5168,7 +5168,7 @@ static int GetUniformLocation(R_Renderer *renderer, Uint32 program_object, const
 #endif
 }
 
-static R_ShaderBlock LoadShaderBlock(R_Renderer *renderer, Uint32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name) {
+R_ShaderBlock LoadShaderBlock(R_Renderer *renderer, Uint32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name) {
     R_ShaderBlock b;
     program_object = get_proper_program_id(renderer, program_object);
     if (program_object == 0 || !IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) {
@@ -5182,34 +5182,34 @@ static R_ShaderBlock LoadShaderBlock(R_Renderer *renderer, Uint32 program_object
     if (position_name == NULL)
         b.position_loc = -1;
     else
-        b.position_loc = renderer->impl->GetAttributeLocation(renderer, program_object, position_name);
+        b.position_loc = GetAttributeLocation(renderer, program_object, position_name);
 
     if (texcoord_name == NULL)
         b.texcoord_loc = -1;
     else
-        b.texcoord_loc = renderer->impl->GetAttributeLocation(renderer, program_object, texcoord_name);
+        b.texcoord_loc = GetAttributeLocation(renderer, program_object, texcoord_name);
 
     if (color_name == NULL)
         b.color_loc = -1;
     else
-        b.color_loc = renderer->impl->GetAttributeLocation(renderer, program_object, color_name);
+        b.color_loc = GetAttributeLocation(renderer, program_object, color_name);
 
     if (modelViewMatrix_name == NULL)
         b.modelViewProjection_loc = -1;
     else
-        b.modelViewProjection_loc = renderer->impl->GetUniformLocation(renderer, program_object, modelViewMatrix_name);
+        b.modelViewProjection_loc = GetUniformLocation(renderer, program_object, modelViewMatrix_name);
 
     return b;
 }
 
-static void SetShaderImage(R_Renderer *renderer, R_Image *image, int location, int image_unit) {
+void SetShaderImage(R_Renderer *renderer, R_Image *image, int location, int image_unit) {
 // TODO: OpenGL 1 needs to check for ARB_multitexture to use glActiveTexture().
 #ifndef R_DISABLE_SHADERS
     Uint32 new_texture;
 
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
 
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0 || image_unit < 0) return;
 
     new_texture = 0;
@@ -5230,7 +5230,7 @@ static void SetShaderImage(R_Renderer *renderer, R_Image *image, int location, i
     (void)image_unit;
 }
 
-static void GetUniformiv(R_Renderer *renderer, Uint32 program_object, int location, int *values) {
+void GetUniformiv(R_Renderer *renderer, Uint32 program_object, int location, int *values) {
     (void)renderer;
     (void)program_object;
     (void)location;
@@ -5243,20 +5243,20 @@ static void GetUniformiv(R_Renderer *renderer, Uint32 program_object, int locati
 #endif
 }
 
-static void SetUniformi(R_Renderer *renderer, int location, int value) {
+void SetUniformi(R_Renderer *renderer, int location, int value) {
     (void)renderer;
     (void)location;
     (void)value;
 
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
     glUniform1i(location, value);
 #endif
 }
 
-static void SetUniformiv(R_Renderer *renderer, int location, int num_elements_per_value, int num_values, int *values) {
+void SetUniformiv(R_Renderer *renderer, int location, int num_elements_per_value, int num_values, int *values) {
     (void)renderer;
     (void)location;
     (void)num_elements_per_value;
@@ -5265,7 +5265,7 @@ static void SetUniformiv(R_Renderer *renderer, int location, int num_elements_pe
 
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
     switch (num_elements_per_value) {
         case 1:
@@ -5284,7 +5284,7 @@ static void SetUniformiv(R_Renderer *renderer, int location, int num_elements_pe
 #endif
 }
 
-static void GetUniformuiv(R_Renderer *renderer, Uint32 program_object, int location, unsigned int *values) {
+void GetUniformuiv(R_Renderer *renderer, Uint32 program_object, int location, unsigned int *values) {
     (void)renderer;
     (void)program_object;
     (void)location;
@@ -5302,14 +5302,14 @@ static void GetUniformuiv(R_Renderer *renderer, Uint32 program_object, int locat
 #endif
 }
 
-static void SetUniformui(R_Renderer *renderer, int location, unsigned int value) {
+void SetUniformui(R_Renderer *renderer, int location, unsigned int value) {
     (void)renderer;
     (void)location;
     (void)value;
 
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 #if defined(R_USE_GLES) && R_GLES_MAJOR_VERSION < 3
     glUniform1i(location, (int)value);
@@ -5319,7 +5319,7 @@ static void SetUniformui(R_Renderer *renderer, int location, unsigned int value)
 #endif
 }
 
-static void SetUniformuiv(R_Renderer *renderer, int location, int num_elements_per_value, int num_values, unsigned int *values) {
+void SetUniformuiv(R_Renderer *renderer, int location, int num_elements_per_value, int num_values, unsigned int *values) {
     (void)renderer;
     (void)location;
     (void)num_elements_per_value;
@@ -5328,7 +5328,7 @@ static void SetUniformuiv(R_Renderer *renderer, int location, int num_elements_p
 
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 #if defined(R_USE_GLES) && R_GLES_MAJOR_VERSION < 3
     switch (num_elements_per_value) {
@@ -5364,7 +5364,7 @@ static void SetUniformuiv(R_Renderer *renderer, int location, int num_elements_p
 #endif
 }
 
-static void GetUniformfv(R_Renderer *renderer, Uint32 program_object, int location, float *values) {
+void GetUniformfv(R_Renderer *renderer, Uint32 program_object, int location, float *values) {
     (void)renderer;
     (void)program_object;
     (void)location;
@@ -5377,20 +5377,20 @@ static void GetUniformfv(R_Renderer *renderer, Uint32 program_object, int locati
 #endif
 }
 
-static void SetUniformf(R_Renderer *renderer, int location, float value) {
+void SetUniformf(R_Renderer *renderer, int location, float value) {
     (void)renderer;
     (void)location;
     (void)value;
 
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
     glUniform1f(location, value);
 #endif
 }
 
-static void SetUniformfv(R_Renderer *renderer, int location, int num_elements_per_value, int num_values, float *values) {
+void SetUniformfv(R_Renderer *renderer, int location, int num_elements_per_value, int num_values, float *values) {
     (void)renderer;
     (void)location;
     (void)num_elements_per_value;
@@ -5399,7 +5399,7 @@ static void SetUniformfv(R_Renderer *renderer, int location, int num_elements_pe
 
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
     switch (num_elements_per_value) {
         case 1:
@@ -5418,7 +5418,7 @@ static void SetUniformfv(R_Renderer *renderer, int location, int num_elements_pe
 #endif
 }
 
-static void SetUniformMatrixfv(R_Renderer *renderer, int location, int num_matrices, int num_rows, int num_columns, bool transpose, float *values) {
+void SetUniformMatrixfv(R_Renderer *renderer, int location, int num_matrices, int num_rows, int num_columns, bool transpose, float *values) {
     (void)renderer;
     (void)location;
     (void)num_matrices;
@@ -5429,7 +5429,7 @@ static void SetUniformMatrixfv(R_Renderer *renderer, int location, int num_matri
 
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
     if (num_rows < 2 || num_rows > 4 || num_columns < 2 || num_columns > 4) {
         R_PushErrorCode("R_SetUniformMatrixfv", R_ERROR_DATA_ERROR, "Given invalid dimensions (%dx%d)", num_rows, num_columns);
@@ -5478,14 +5478,14 @@ static void SetUniformMatrixfv(R_Renderer *renderer, int location, int num_matri
 #endif
 }
 
-static void SetAttributef(R_Renderer *renderer, int location, float value) {
+void SetAttributef(R_Renderer *renderer, int location, float value) {
     (void)renderer;
     (void)location;
     (void)value;
 
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 
 #ifdef R_USE_OPENGL
@@ -5501,14 +5501,14 @@ static void SetAttributef(R_Renderer *renderer, int location, float value) {
 #endif
 }
 
-static void SetAttributei(R_Renderer *renderer, int location, int value) {
+void SetAttributei(R_Renderer *renderer, int location, int value) {
     (void)renderer;
     (void)location;
     (void)value;
 
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 
 #ifdef R_USE_OPENGL
@@ -5524,14 +5524,14 @@ static void SetAttributei(R_Renderer *renderer, int location, int value) {
 #endif
 }
 
-static void SetAttributeui(R_Renderer *renderer, int location, unsigned int value) {
+void SetAttributeui(R_Renderer *renderer, int location, unsigned int value) {
     (void)renderer;
     (void)location;
     (void)value;
 
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 
 #ifdef R_USE_OPENGL
@@ -5547,7 +5547,7 @@ static void SetAttributeui(R_Renderer *renderer, int location, unsigned int valu
 #endif
 }
 
-static void SetAttributefv(R_Renderer *renderer, int location, int num_elements, float *value) {
+void SetAttributefv(R_Renderer *renderer, int location, int num_elements, float *value) {
     (void)renderer;
     (void)location;
     (void)num_elements;
@@ -5555,7 +5555,7 @@ static void SetAttributefv(R_Renderer *renderer, int location, int num_elements,
 
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 
 #ifdef R_USE_OPENGL
@@ -5584,14 +5584,14 @@ static void SetAttributefv(R_Renderer *renderer, int location, int num_elements,
 #endif
 }
 
-static void SetAttributeiv(R_Renderer *renderer, int location, int num_elements, int *value) {
+void SetAttributeiv(R_Renderer *renderer, int location, int num_elements, int *value) {
     (void)renderer;
     (void)location;
     (void)num_elements;
     (void)value;
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 
 #ifdef R_USE_OPENGL
@@ -5620,7 +5620,7 @@ static void SetAttributeiv(R_Renderer *renderer, int location, int num_elements,
 #endif
 }
 
-static void SetAttributeuiv(R_Renderer *renderer, int location, int num_elements, unsigned int *value) {
+void SetAttributeuiv(R_Renderer *renderer, int location, int num_elements, unsigned int *value) {
     (void)renderer;
     (void)location;
     (void)num_elements;
@@ -5628,7 +5628,7 @@ static void SetAttributeuiv(R_Renderer *renderer, int location, int num_elements
 
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
-    renderer->impl->FlushBlitBuffer(renderer);
+    FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 
 #ifdef R_USE_OPENGL
@@ -5657,7 +5657,7 @@ static void SetAttributeuiv(R_Renderer *renderer, int location, int num_elements
 #endif
 }
 
-static void SetAttributeSource(R_Renderer *renderer, int num_values, R_Attribute source) {
+void SetAttributeSource(R_Renderer *renderer, int num_values, R_Attribute source) {
 #ifndef R_DISABLE_SHADERS
     R_CONTEXT_DATA *cdata;
     R_AttributeSource *a;
@@ -5707,6 +5707,7 @@ static void SetAttributeSource(R_Renderer *renderer, int num_values, R_Attribute
     (void)source;
 }
 
+#if 0
 #define SET_COMMON_FUNCTIONS(impl)                            \
     impl->Init = &Init;                                       \
     impl->CreateTargetFromWindow = &CreateTargetFromWindow;   \
@@ -5818,65 +5819,67 @@ static void SetAttributeSource(R_Renderer *renderer, int num_values, R_Attribute
     impl->Polyline = &Polyline;                               \
     impl->PolygonFilled = &PolygonFilled;
 
+#endif
+
 // All shapes start this way for setup and so they can access the blit buffer properly
-#define BEGIN_UNTEXTURED(function_name, shape, num_additional_vertices, num_additional_indices)                                              \
-    R_CONTEXT_DATA *cdata;                                                                                                                   \
-    float *blit_buffer;                                                                                                                      \
-    unsigned short *index_buffer;                                                                                                            \
-    int vert_index;                                                                                                                          \
-    int color_index;                                                                                                                         \
-    float r, g, b, a;                                                                                                                        \
-    unsigned short blit_buffer_starting_index;                                                                                               \
-    if (target == NULL) {                                                                                                                    \
-        R_PushErrorCode(function_name, R_ERROR_NULL_ARGUMENT, "target");                                                                     \
-        return;                                                                                                                              \
-    }                                                                                                                                        \
-    if (renderer != target->renderer) {                                                                                                      \
-        R_PushErrorCode(function_name, R_ERROR_USER_ERROR, "Mismatched renderer");                                                           \
-        return;                                                                                                                              \
-    }                                                                                                                                        \
-                                                                                                                                             \
-    makeContextCurrent(renderer, target);                                                                                                    \
-    if (renderer->current_context_target == NULL) {                                                                                          \
-        R_PushErrorCode(function_name, R_ERROR_USER_ERROR, "NULL context");                                                                  \
-        return;                                                                                                                              \
-    }                                                                                                                                        \
-                                                                                                                                             \
-    if (!SetActiveTarget(renderer, target)) {                                                                                                \
-        R_PushErrorCode(function_name, R_ERROR_BACKEND_ERROR, "Failed to bind framebuffer.");                                                \
-        return;                                                                                                                              \
-    }                                                                                                                                        \
-                                                                                                                                             \
-    prepareToRenderToTarget(renderer, target);                                                                                               \
-    prepareToRenderShapes(renderer, shape);                                                                                                  \
-                                                                                                                                             \
-    cdata = (R_CONTEXT_DATA *)renderer->current_context_target->context->data;                                                               \
-                                                                                                                                             \
-    if (cdata->blit_buffer_num_vertices + (num_additional_vertices) >= cdata->blit_buffer_max_num_vertices) {                                \
-        if (!growBlitBuffer(cdata, cdata->blit_buffer_num_vertices + (num_additional_vertices))) renderer->impl->FlushBlitBuffer(renderer);  \
-    }                                                                                                                                        \
-    if (cdata->index_buffer_num_vertices + (num_additional_indices) >= cdata->index_buffer_max_num_vertices) {                               \
-        if (!growIndexBuffer(cdata, cdata->index_buffer_num_vertices + (num_additional_indices))) renderer->impl->FlushBlitBuffer(renderer); \
-    }                                                                                                                                        \
-                                                                                                                                             \
-    blit_buffer = cdata->blit_buffer;                                                                                                        \
-    index_buffer = cdata->index_buffer;                                                                                                      \
-                                                                                                                                             \
-    vert_index = R_BLIT_BUFFER_VERTEX_OFFSET + cdata->blit_buffer_num_vertices * R_BLIT_BUFFER_FLOATS_PER_VERTEX;                            \
-    color_index = R_BLIT_BUFFER_COLOR_OFFSET + cdata->blit_buffer_num_vertices * R_BLIT_BUFFER_FLOATS_PER_VERTEX;                            \
-                                                                                                                                             \
-    if (target->use_color) {                                                                                                                 \
-        r = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.r, color.r);                                                                 \
-        g = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.g, color.g);                                                                 \
-        b = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.b, color.b);                                                                 \
-        a = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(GET_ALPHA(target->color), GET_ALPHA(color));                                               \
-    } else {                                                                                                                                 \
-        r = color.r / 255.0f;                                                                                                                \
-        g = color.g / 255.0f;                                                                                                                \
-        b = color.b / 255.0f;                                                                                                                \
-        a = GET_ALPHA(color) / 255.0f;                                                                                                       \
-    }                                                                                                                                        \
-    blit_buffer_starting_index = cdata->blit_buffer_num_vertices;                                                                            \
+#define BEGIN_UNTEXTURED(function_name, shape, num_additional_vertices, num_additional_indices)                              \
+    R_CONTEXT_DATA *cdata;                                                                                                   \
+    float *blit_buffer;                                                                                                      \
+    unsigned short *index_buffer;                                                                                            \
+    int vert_index;                                                                                                          \
+    int color_index;                                                                                                         \
+    float r, g, b, a;                                                                                                        \
+    unsigned short blit_buffer_starting_index;                                                                               \
+    if (target == NULL) {                                                                                                    \
+        R_PushErrorCode(function_name, R_ERROR_NULL_ARGUMENT, "target");                                                     \
+        return;                                                                                                              \
+    }                                                                                                                        \
+    if (renderer != target->renderer) {                                                                                      \
+        R_PushErrorCode(function_name, R_ERROR_USER_ERROR, "Mismatched renderer");                                           \
+        return;                                                                                                              \
+    }                                                                                                                        \
+                                                                                                                             \
+    makeContextCurrent(renderer, target);                                                                                    \
+    if (renderer->current_context_target == NULL) {                                                                          \
+        R_PushErrorCode(function_name, R_ERROR_USER_ERROR, "NULL context");                                                  \
+        return;                                                                                                              \
+    }                                                                                                                        \
+                                                                                                                             \
+    if (!SetActiveTarget(renderer, target)) {                                                                                \
+        R_PushErrorCode(function_name, R_ERROR_BACKEND_ERROR, "Failed to bind framebuffer.");                                \
+        return;                                                                                                              \
+    }                                                                                                                        \
+                                                                                                                             \
+    prepareToRenderToTarget(renderer, target);                                                                               \
+    prepareToRenderShapes(renderer, shape);                                                                                  \
+                                                                                                                             \
+    cdata = (R_CONTEXT_DATA *)renderer->current_context_target->context->data;                                               \
+                                                                                                                             \
+    if (cdata->blit_buffer_num_vertices + (num_additional_vertices) >= cdata->blit_buffer_max_num_vertices) {                \
+        if (!growBlitBuffer(cdata, cdata->blit_buffer_num_vertices + (num_additional_vertices))) FlushBlitBuffer(renderer);  \
+    }                                                                                                                        \
+    if (cdata->index_buffer_num_vertices + (num_additional_indices) >= cdata->index_buffer_max_num_vertices) {               \
+        if (!growIndexBuffer(cdata, cdata->index_buffer_num_vertices + (num_additional_indices))) FlushBlitBuffer(renderer); \
+    }                                                                                                                        \
+                                                                                                                             \
+    blit_buffer = cdata->blit_buffer;                                                                                        \
+    index_buffer = cdata->index_buffer;                                                                                      \
+                                                                                                                             \
+    vert_index = R_BLIT_BUFFER_VERTEX_OFFSET + cdata->blit_buffer_num_vertices * R_BLIT_BUFFER_FLOATS_PER_VERTEX;            \
+    color_index = R_BLIT_BUFFER_COLOR_OFFSET + cdata->blit_buffer_num_vertices * R_BLIT_BUFFER_FLOATS_PER_VERTEX;            \
+                                                                                                                             \
+    if (target->use_color) {                                                                                                 \
+        r = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.r, color.r);                                                 \
+        g = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.g, color.g);                                                 \
+        b = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(target->color.b, color.b);                                                 \
+        a = MIX_COLOR_COMPONENT_NORMALIZED_RESULT(GET_ALPHA(target->color), GET_ALPHA(color));                               \
+    } else {                                                                                                                 \
+        r = color.r / 255.0f;                                                                                                \
+        g = color.g / 255.0f;                                                                                                \
+        b = color.b / 255.0f;                                                                                                \
+        a = GET_ALPHA(color) / 255.0f;                                                                                       \
+    }                                                                                                                        \
+    blit_buffer_starting_index = cdata->blit_buffer_num_vertices;                                                            \
     (void)blit_buffer_starting_index;
 
 #define R_CIRCLE_SEGMENT_ANGLE_FACTOR 0.625f
@@ -5890,13 +5893,13 @@ static void SetAttributeSource(R_Renderer *renderer, int num_values, R_Attribute
         dt = 2 * PI / (numSegments - 1);                                                                             \
     }
 
-static float SetLineThickness(R_Renderer *renderer, float thickness) {
+float SetLineThickness(R_Renderer *renderer, float thickness) {
     float old;
 
     if (renderer->current_context_target == NULL) return 1.0f;
 
     old = renderer->current_context_target->context->line_thickness;
-    if (old != thickness) renderer->impl->FlushBlitBuffer(renderer);
+    if (old != thickness) FlushBlitBuffer(renderer);
 
     renderer->current_context_target->context->line_thickness = thickness;
 #ifndef R_SKIP_LINE_WIDTH
@@ -5905,15 +5908,15 @@ static float SetLineThickness(R_Renderer *renderer, float thickness) {
     return old;
 }
 
-static float GetLineThickness(R_Renderer *renderer) { return renderer->current_context_target->context->line_thickness; }
+float GetLineThickness(R_Renderer *renderer) { return renderer->current_context_target->context->line_thickness; }
 
-static void DrawPixel(R_Renderer *renderer, R_Target *target, float x, float y, METAENGINE_Color color) {
+void DrawPixel(R_Renderer *renderer, R_Target *target, float x, float y, ME_Color color) {
     BEGIN_UNTEXTURED("R_DrawPixel", GL_POINTS, 1, 1);
 
     SET_UNTEXTURED_VERTEX(x, y, r, g, b, a);
 }
 
-static void Line(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, METAENGINE_Color color) {
+void Line(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, ME_Color color) {
     float thickness = GetLineThickness(renderer);
 
     float t = thickness / 2;
@@ -5933,9 +5936,9 @@ static void Line(R_Renderer *renderer, R_Target *target, float x1, float y1, flo
 }
 
 // Arc() might call Circle()
-static void Circle(R_Renderer *renderer, R_Target *target, float x, float y, float radius, METAENGINE_Color color);
+void Circle(R_Renderer *renderer, R_Target *target, float x, float y, float radius, ME_Color color);
 
-static void Arc(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, METAENGINE_Color color) {
+void Arc(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color) {
     float dx, dy;
     int i;
 
@@ -6008,9 +6011,9 @@ static void Arc(R_Renderer *renderer, R_Target *target, float x, float y, float 
 }
 
 // ArcFilled() might call CircleFilled()
-static void CircleFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, METAENGINE_Color color);
+void CircleFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, ME_Color color);
 
-static void ArcFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, METAENGINE_Color color) {
+void ArcFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color) {
     float dx, dy;
     int i;
 
@@ -6091,7 +6094,7 @@ static void ArcFilled(R_Renderer *renderer, R_Target *target, float x, float y, 
 Incremental rotation circle algorithm
 */
 
-static void Circle(R_Renderer *renderer, R_Target *target, float x, float y, float radius, METAENGINE_Color color) {
+void Circle(R_Renderer *renderer, R_Target *target, float x, float y, float radius, ME_Color color) {
     float thickness = GetLineThickness(renderer);
     float dx, dy;
     int i;
@@ -6127,7 +6130,7 @@ static void Circle(R_Renderer *renderer, R_Target *target, float x, float y, flo
     LOOP_UNTEXTURED_SEGMENTS();  // back to the beginning
 }
 
-static void CircleFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, METAENGINE_Color color) {
+void CircleFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, ME_Color color) {
     float dt;
     float dx, dy;
     int numSegments;
@@ -6167,7 +6170,7 @@ static void CircleFilled(R_Renderer *renderer, R_Target *target, float x, float 
     SET_INDEXED_VERTEX(1);  // first point
 }
 
-static void Ellipse(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, METAENGINE_Color color) {
+void Ellipse(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color) {
     float thickness = GetLineThickness(renderer);
     float dx, dy;
     int i;
@@ -6218,7 +6221,7 @@ static void Ellipse(R_Renderer *renderer, R_Target *target, float x, float y, fl
     LOOP_UNTEXTURED_SEGMENTS();  // back to the beginning
 }
 
-static void EllipseFilled(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, METAENGINE_Color color) {
+void EllipseFilled(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color) {
     float dx, dy;
     int i;
     float rot_x = cosf(degrees * RAD_PER_DEG);
@@ -6269,7 +6272,7 @@ static void EllipseFilled(R_Renderer *renderer, R_Target *target, float x, float
     SET_INDEXED_VERTEX(1);  // first point
 }
 
-static void Sector(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, METAENGINE_Color color) {
+void Sector(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color) {
     bool circled;
     float dx1, dy1, dx2, dy2, dx3, dy3, dx4, dy4;
 
@@ -6317,7 +6320,7 @@ static void Sector(R_Renderer *renderer, R_Target *target, float x, float y, flo
     }
 }
 
-static void SectorFilled(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, METAENGINE_Color color) {
+void SectorFilled(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color) {
     float t;
     float dt;
     float dx, dy;
@@ -6417,7 +6420,7 @@ static void SectorFilled(R_Renderer *renderer, R_Target *target, float x, float 
     }
 }
 
-static void Tri(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, METAENGINE_Color color) {
+void Tri(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color) {
     BEGIN_UNTEXTURED("R_Tri", GL_LINES, 3, 6);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -6430,7 +6433,7 @@ static void Tri(R_Renderer *renderer, R_Target *target, float x1, float y1, floa
     SET_INDEXED_VERTEX(0);
 }
 
-static void TriFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, METAENGINE_Color color) {
+void TriFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color) {
     BEGIN_UNTEXTURED("R_TriFilled", GL_TRIANGLES, 3, 3);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -6438,7 +6441,7 @@ static void TriFilled(R_Renderer *renderer, R_Target *target, float x1, float y1
     SET_UNTEXTURED_VERTEX(x3, y3, r, g, b, a);
 }
 
-static void Rectangle(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, METAENGINE_Color color) {
+void Rectangle(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, ME_Color color) {
     if (y2 < y1) {
         float y = y1;
         y1 = y2;
@@ -6501,7 +6504,7 @@ static void Rectangle(R_Renderer *renderer, R_Target *target, float x1, float y1
     }
 }
 
-static void RectangleFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, METAENGINE_Color color) {
+void RectangleFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, ME_Color color) {
     BEGIN_UNTEXTURED("R_RectangleFilled", GL_TRIANGLES, 4, 6);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -6519,7 +6522,7 @@ static void RectangleFilled(R_Renderer *renderer, R_Target *target, float x1, fl
     dx = tempx;              \
     ++i;
 
-static void RectangleRound(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, METAENGINE_Color color) {
+void RectangleRound(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color) {
     if (y2 < y1) {
         float temp = y2;
         y2 = y1;
@@ -6621,7 +6624,7 @@ static void RectangleRound(R_Renderer *renderer, R_Target *target, float x1, flo
     }
 }
 
-static void RectangleRoundFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, METAENGINE_Color color) {
+void RectangleRoundFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color) {
     if (y2 < y1) {
         float temp = y2;
         y2 = y1;
@@ -6700,7 +6703,7 @@ static void RectangleRoundFilled(R_Renderer *renderer, R_Target *target, float x
     }
 }
 
-static void Polygon(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color) {
+void Polygon(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color) {
     if (num_vertices < 3) return;
 
     {
@@ -6720,7 +6723,7 @@ static void Polygon(R_Renderer *renderer, R_Target *target, unsigned int num_ver
     }
 }
 
-static void Polyline(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color, bool close_loop) {
+void Polyline(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color, bool close_loop) {
     if (num_vertices < 2) return;
 
     float t = GetLineThickness(renderer) * 0.5f;
@@ -6769,7 +6772,7 @@ static void Polyline(R_Renderer *renderer, R_Target *target, unsigned int num_ve
     }
 }
 
-static void PolygonFilled(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, METAENGINE_Color color) {
+void PolygonFilled(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color) {
     if (num_vertices < 3) return;
 
     {
@@ -6813,9 +6816,9 @@ R_Renderer *R_CreateRenderer_OpenGL_3(R_RendererID request) {
 
     renderer->current_context_target = NULL;
 
-    renderer->impl = (R_RendererImpl *)malloc(sizeof(R_RendererImpl));
-    memset(renderer->impl, 0, sizeof(R_RendererImpl));
-    SET_COMMON_FUNCTIONS(renderer->impl);
+    // renderer->impl = (R_RendererImpl *)malloc(sizeof(R_RendererImpl));
+    // memset(renderer->impl, 0, sizeof(R_RendererImpl));
+    // SET_COMMON_FUNCTIONS(renderer->impl);
 
     return renderer;
 }
@@ -6823,6 +6826,6 @@ R_Renderer *R_CreateRenderer_OpenGL_3(R_RendererID request) {
 void R_FreeRenderer_OpenGL_3(R_Renderer *renderer) {
     if (renderer == NULL) return;
 
-    free(renderer->impl);
+    // free(renderer->impl);
     free(renderer);
 }

@@ -538,7 +538,7 @@ static int gpu_draw_pixel(lua_State *L) {
 
     int color = gpu_getColor(L, 3);
 
-    METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
+    ME_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
 
     R_RectangleFilled(Render.target, off(x, y), off(x + 1, y + 1), colorS);
 
@@ -553,7 +553,7 @@ static int gpu_draw_rectangle(lua_State *L) {
 
     metadot_rect rect = {off(x, y), (float)luaL_checkinteger(L, 3), (float)luaL_checkinteger(L, 4)};
 
-    METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
+    ME_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
     R_RectangleFilled2(Render.target, rect, colorS);
 
     return 0;
@@ -591,7 +591,7 @@ static int gpu_blit_pixels(lua_State *L) {
 
         metadot_rect rect = {off(x + xp, y + yp), 1, 1};
 
-        METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
+        ME_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
         R_RectangleFilled2(Render.target, rect, colorS);
 
         lua_pop(L, 1);
@@ -688,7 +688,7 @@ static int gpu_get_palette(lua_State *L) {
 static int gpu_get_pixel(lua_State *L) {
     auto x = static_cast<Sint16>(luaL_checkinteger(L, 1));
     auto y = static_cast<Sint16>(luaL_checkinteger(L, 2));
-    METAENGINE_Color col = R_GetPixel(TestData::buffer->target, x, y);
+    ME_Color col = R_GetPixel(TestData::buffer->target, x, y);
     for (int i = 0; i < COLOR_LIMIT; i++) {
         U8 *pCol = TestData::palette[i];
         if (col.r == pCol[0] && col.g == pCol[1] && col.b == pCol[2]) {
@@ -704,10 +704,10 @@ static int gpu_get_pixel(lua_State *L) {
 static int gpu_clear(lua_State *L) {
     if (lua_gettop(L) > 0) {
         int color = gpu_getColor(L, 1);
-        METAENGINE_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
+        ME_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
         R_ClearColor(Render.target, colorS);
     } else {
-        METAENGINE_Color colorS = {TestData::palette[0][0], TestData::palette[0][1], TestData::palette[0][2], 255};
+        ME_Color colorS = {TestData::palette[0][0], TestData::palette[0][1], TestData::palette[0][2], 255};
         R_ClearColor(Render.target, colorS);
     }
 
@@ -770,7 +770,7 @@ static int gpu_set_fullscreen(lua_State *L) {
 }
 
 static int gpu_swap(lua_State *L) {
-    METAENGINE_Color colorS = {TestData::palette[0][0], TestData::palette[0][1], TestData::palette[0][2], 255};
+    ME_Color colorS = {TestData::palette[0][0], TestData::palette[0][1], TestData::palette[0][2], 255};
     R_ClearColor(Render.realTarget, colorS);
 
     // TestData::shader::updateShader();

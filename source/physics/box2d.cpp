@@ -1359,7 +1359,7 @@ void b2World::RayCast(b2RayCastCallback *callback, const PVec2 &point1, const PV
     m_contactManager.m_broadPhase.RayCast(&wrapper, input);
 }
 
-void b2World::DrawShape(b2Fixture *fixture, const PTransform &xf, const METAENGINE_Color &color) {
+void b2World::DrawShape(b2Fixture *fixture, const PTransform &xf, const ME_Color &color) {
     switch (fixture->GetType()) {
         case b2Shape::e_circle: {
             b2CircleShape *circle = (b2CircleShape *)fixture->GetShape();
@@ -1427,17 +1427,17 @@ void b2World::DebugDraw() {
             for (b2Fixture *f = b->GetFixtureList(); f; f = f->GetNext()) {
                 if (b->GetType() == b2_dynamicBody && b->m_mass == 0.0f) {
                     // Bad body
-                    DrawShape(f, xf, METAENGINE_Color(1.0f, 0.0f, 0.0f));
+                    DrawShape(f, xf, ME_Color(1.0f, 0.0f, 0.0f));
                 } else if (b->IsEnabled() == false) {
-                    DrawShape(f, xf, METAENGINE_Color(0.5f, 0.5f, 0.3f));
+                    DrawShape(f, xf, ME_Color(0.5f, 0.5f, 0.3f));
                 } else if (b->GetType() == b2_staticBody) {
-                    DrawShape(f, xf, METAENGINE_Color(0.5f, 0.9f, 0.5f));
+                    DrawShape(f, xf, ME_Color(0.5f, 0.9f, 0.5f));
                 } else if (b->GetType() == b2_kinematicBody) {
-                    DrawShape(f, xf, METAENGINE_Color(0.5f, 0.5f, 0.9f));
+                    DrawShape(f, xf, ME_Color(0.5f, 0.5f, 0.9f));
                 } else if (b->IsAwake() == false) {
-                    DrawShape(f, xf, METAENGINE_Color(0.6f, 0.6f, 0.6f));
+                    DrawShape(f, xf, ME_Color(0.6f, 0.6f, 0.6f));
                 } else {
-                    DrawShape(f, xf, METAENGINE_Color(0.9f, 0.7f, 0.7f));
+                    DrawShape(f, xf, ME_Color(0.9f, 0.7f, 0.7f));
                 }
             }
         }
@@ -1450,7 +1450,7 @@ void b2World::DebugDraw() {
     }
 
     if (flags & DebugDraw::e_pairBit) {
-        METAENGINE_Color color(0.3f, 0.9f, 0.9f);
+        ME_Color color(0.3f, 0.9f, 0.9f);
         for (b2Contact *c = m_contactManager.m_contactList; c; c = c->GetNext()) {
             b2Fixture *fixtureA = c->GetFixtureA();
             b2Fixture *fixtureB = c->GetFixtureB();
@@ -1464,7 +1464,7 @@ void b2World::DebugDraw() {
     }
 
     if (flags & DebugDraw::e_aabbBit) {
-        METAENGINE_Color color(0.9f, 0.3f, 0.9f);
+        ME_Color color(0.9f, 0.3f, 0.9f);
         b2BroadPhase *bp = &m_contactManager.m_broadPhase;
 
         for (b2Body *b = m_bodyList; b; b = b->GetNext()) {
@@ -2124,11 +2124,11 @@ void b2WheelJoint::Draw(DebugDraw *draw) const {
 
     PVec2 axis = b2Mul(xfA.q, m_localXAxisA);
 
-    METAENGINE_Color c1(0.7f, 0.7f, 0.7f);
-    METAENGINE_Color c2(0.3f, 0.9f, 0.3f);
-    METAENGINE_Color c3(0.9f, 0.3f, 0.3f);
-    METAENGINE_Color c4(0.3f, 0.3f, 0.9f);
-    METAENGINE_Color c5(0.4f, 0.4f, 0.4f);
+    ME_Color c1(0.7f, 0.7f, 0.7f);
+    ME_Color c2(0.3f, 0.9f, 0.3f);
+    ME_Color c3(0.9f, 0.3f, 0.3f);
+    ME_Color c4(0.3f, 0.3f, 0.9f);
+    ME_Color c5(0.4f, 0.4f, 0.4f);
 
     draw->DrawSegment(pA, pB, c5);
 
@@ -2812,11 +2812,11 @@ void b2RevoluteJoint::Draw(DebugDraw *draw) const {
     PVec2 pA = b2Mul(xfA, m_localAnchorA);
     PVec2 pB = b2Mul(xfB, m_localAnchorB);
 
-    METAENGINE_Color c1(0.7f, 0.7f, 0.7f);
-    METAENGINE_Color c2(0.3f, 0.9f, 0.3f);
-    METAENGINE_Color c3(0.9f, 0.3f, 0.3f);
-    METAENGINE_Color c4(0.3f, 0.3f, 0.9f);
-    METAENGINE_Color c5(0.4f, 0.4f, 0.4f);
+    ME_Color c1(0.7f, 0.7f, 0.7f);
+    ME_Color c2(0.3f, 0.9f, 0.3f);
+    ME_Color c3(0.9f, 0.3f, 0.3f);
+    ME_Color c4(0.3f, 0.3f, 0.9f);
+    ME_Color c5(0.4f, 0.4f, 0.4f);
 
     draw->DrawPoint(pA, 5.0f, c4);
     draw->DrawPoint(pB, 5.0f, c5);
@@ -2839,7 +2839,7 @@ void b2RevoluteJoint::Draw(DebugDraw *draw) const {
         draw->DrawSegment(pB, pB + rhi, c3);
     }
 
-    METAENGINE_Color color(0.5f, 0.8f, 0.8f);
+    ME_Color color(0.5f, 0.8f, 0.8f);
     draw->DrawSegment(xfA.p, pA, color);
     draw->DrawSegment(pA, pB, color);
     draw->DrawSegment(xfB.p, pB, color);
@@ -3641,11 +3641,11 @@ void b2PrismaticJoint::Draw(DebugDraw *draw) const {
 
     PVec2 axis = b2Mul(xfA.q, m_localXAxisA);
 
-    METAENGINE_Color c1(0.7f, 0.7f, 0.7f);
-    METAENGINE_Color c2(0.3f, 0.9f, 0.3f);
-    METAENGINE_Color c3(0.9f, 0.3f, 0.3f);
-    METAENGINE_Color c4(0.3f, 0.3f, 0.9f);
-    METAENGINE_Color c5(0.4f, 0.4f, 0.4f);
+    ME_Color c1(0.7f, 0.7f, 0.7f);
+    ME_Color c2(0.3f, 0.9f, 0.3f);
+    ME_Color c3(0.9f, 0.3f, 0.3f);
+    ME_Color c4(0.3f, 0.3f, 0.9f);
+    ME_Color c5(0.4f, 0.4f, 0.4f);
 
     draw->DrawSegment(pA, pB, c5);
 
@@ -4250,7 +4250,7 @@ void b2Joint::Draw(DebugDraw *draw) const {
     PVec2 p1 = GetAnchorA();
     PVec2 p2 = GetAnchorB();
 
-    METAENGINE_Color color(0.5f, 0.8f, 0.8f);
+    ME_Color color(0.5f, 0.8f, 0.8f);
 
     switch (m_type) {
         case e_distanceJoint:
@@ -4267,7 +4267,7 @@ void b2Joint::Draw(DebugDraw *draw) const {
         } break;
 
         case e_mouseJoint: {
-            METAENGINE_Color c;
+            ME_Color c;
             c.Set(0.0f, 1.0f, 0.0f);
             draw->DrawPoint(p1, 4.0f, c);
             draw->DrawPoint(p2, 4.0f, c);
@@ -5916,10 +5916,10 @@ void b2DistanceJoint::Draw(DebugDraw *draw) const {
     PVec2 axis = pB - pA;
     axis.Normalize();
 
-    METAENGINE_Color c1(0.7f, 0.7f, 0.7f);
-    METAENGINE_Color c2(0.3f, 0.9f, 0.3f);
-    METAENGINE_Color c3(0.9f, 0.3f, 0.3f);
-    METAENGINE_Color c4(0.4f, 0.4f, 0.4f);
+    ME_Color c1(0.7f, 0.7f, 0.7f);
+    ME_Color c2(0.3f, 0.9f, 0.3f);
+    ME_Color c3(0.9f, 0.3f, 0.3f);
+    ME_Color c4(0.4f, 0.4f, 0.4f);
 
     draw->DrawSegment(pA, pB, c4);
 
@@ -7852,18 +7852,18 @@ void b2Rope::SolveBend_PBD_Triangle() {
 }
 
 void b2Rope::Draw(DebugDraw *draw) const {
-    METAENGINE_Color c(0.4f, 0.5f, 0.7f);
-    METAENGINE_Color pg(0.1f, 0.8f, 0.1f);
-    METAENGINE_Color pd(0.7f, 0.2f, 0.4f);
+    ME_Color c(0.4f, 0.5f, 0.7f);
+    ME_Color pg(0.1f, 0.8f, 0.1f);
+    ME_Color pd(0.7f, 0.2f, 0.4f);
 
     for (I32 i = 0; i < m_count - 1; ++i) {
         draw->DrawSegment(m_ps[i], m_ps[i + 1], c);
 
-        const METAENGINE_Color &pc = m_invMasses[i] > 0.0f ? pd : pg;
+        const ME_Color &pc = m_invMasses[i] > 0.0f ? pd : pg;
         draw->DrawPoint(m_ps[i], 5.0f, pc);
     }
 
-    const METAENGINE_Color &pc = m_invMasses[m_count - 1] > 0.0f ? pd : pg;
+    const ME_Color &pc = m_invMasses[m_count - 1] > 0.0f ? pd : pg;
     draw->DrawPoint(m_ps[m_count - 1], 5.0f, pc);
 }
 

@@ -1072,10 +1072,6 @@ typedef MetaEngine::math::CAngle<float> angle;
 
 #pragma region c2
 
-#ifdef __cplusplus
-extern "C" {
-#endif  // __cplusplus
-
 // 2d vector.
 typedef struct METAENGINE_V2 {
     float x;
@@ -1874,10 +1870,6 @@ int METADOT_CDECL metadot_collided(const void *A, const METAENGINE_Transform *ax
 void METADOT_CDECL metadot_collide(const void *A, const METAENGINE_Transform *ax, METAENGINE_ShapeType typeA, const void *B, const METAENGINE_Transform *bx, METAENGINE_ShapeType typeB,
                                    METAENGINE_Manifold *m);
 bool METADOT_CDECL metadot_cast_ray(METAENGINE_Ray A, const void *B, const METAENGINE_Transform *bx, METAENGINE_ShapeType typeB, METAENGINE_Raycast *out);
-
-#ifdef __cplusplus
-}
-#endif  // __cplusplus
 
 //--------------------------------------------------------------------------------------------------
 // C++ API
