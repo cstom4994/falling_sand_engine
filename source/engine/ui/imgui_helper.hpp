@@ -1,20 +1,48 @@
 
-#include <filesystem>
+#ifndef ME_IMGUIHELPER_HPP
+#define ME_IMGUIHELPER_HPP
 
-#include "libs/imgui/imgui.h"
+#include <array>
+#include <cassert>
+#include <deque>
+#include <filesystem>
+#include <forward_list>
+#include <list>
+#include <map>
+#include <set>
+#include <string>
+#include <tuple>
+#include <type_traits>
+#include <typeinfo>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
+
+#include "engine/core/cpp/pfr.hpp"
+
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
+#include "libs/imgui/imgui.h"
 #include "libs/imgui/imgui_internal.h"
+#include "libs/imgui/imgui_stdlib.h"
 
 #if defined(_WIN32)
 #define ME_IMM32
+#include <Windows.h>
+#include <tchar.h>
+// #define GLFW_EXPOSE_NATIVE_WIN32
+// #include <GLFW/glfw3.h>
+// #include <GLFW/glfw3native.h>
+#include "engine/core/sdl_wrapper.h"
 #else
 #include <sys/stat.h>
 #endif
 
-#include "engine/core/core.hpp"
-#include "libs/imgui/md4c.h"
+#include "engine/core/basic_types.h"
+#include "engine/core/macros.hpp"
+#include "engine/core/mathlib.hpp"
 
 #pragma region ImGuiAuto
 
@@ -27,34 +55,8 @@
 #define ME_GUI_TREE_MAX_TUPLE_ELEMENTS 3  // larger values generate less tree nodes
 #endif
 
-#include <tuple>
-#define _TUPLE_
-#include <vector>
-#define _VECTOR_
-#include <deque>
-#define _DEQUE_
-#include <map>
-#define _MAP_
-#include <list>
-#define _LIST_
-#include <forward_list>
-#define _FORWARD_LIST_
-#include <array>
-#define _ARRAY_
-#include <set>
-#define _SET_
-#include <unordered_set>
-#define _UNORDERED_SET_
-#include <unordered_map>
-#define _UNORDERED_MAP_
-
-#include <string>
-#include <tuple>
-#include <type_traits>
-#include <typeinfo>
-
-#include "engine/core/cpp/pfr.hpp"
-#define ME_GUI_STRUCT_TO_TUPLE MetaEngine::BuiltinPFR::pfr::structure_tie
+static_inline ImVec4 vec4_to_imvec4(const MEvec4 &v4) { return {v4.x, v4.y, v4.z, v4.w}; }
+static_inline ImColor vec4_to_imcolor(const MEvec4 &v4) { return {v4.x * 255.0f, v4.y * 255.0f, v4.z * 255.0f, v4.w * 255.0f}; }
 
 namespace ImGui {
 //      IMGUI::AUTO()
@@ -97,8 +99,6 @@ void AutoContainerPopBackButton(Container &cont);
 template <typename Key, typename Value>
 void AutoMapKeyValue(Key &key, Value &value);
 
-#ifdef _TUPLE_  // For tuples
-
 template <class T>
 constexpr std::add_const_t<T> &as_const(T &t) noexcept {
     return t;
@@ -115,7 +115,6 @@ template <typename... Args>
 void AutoTuple(const std::string &name, std::tuple<Args...> &tpl);
 template <typename... Args>
 void AutoTuple(const std::string &name, const std::tuple<Args...> &tpl);
-#endif  // _TUPLE_
 
 template <typename T, std::size_t N>
 using c_array_t = T[N];  // so arrays are regular types and can be used in macro
@@ -132,16 +131,12 @@ using c_array_t = T[N];  // so arrays are regular types and can be used in macro
 template <typename AnyType>
 struct Auto_t {
     static void Auto(AnyType &anything, const std::string &name) {
-#ifndef ME_GUI_STRUCT_TO_TUPLE
-        static_assert(false, "TODO: fix for this compiler! (at least C++14 is required)")
-#endif
-                static_assert(!std::is_reference_v<AnyType> && std::is_copy_constructible_v<std::remove_all_extents_t<AnyType>> && !std::is_polymorphic_v<AnyType> &&
-                                      MetaEngine::BuiltinPFR::pfr::detail::is_aggregate_initializable_n<AnyType, MetaEngine::BuiltinPFR::pfr::detail::detect_fields_count_dispatch<AnyType>(
-                                                                                                                         MetaEngine::BuiltinPFR::pfr::detail::size_t_<sizeof(AnyType) * 8>{},
-                                                                                                                         1L)>::value,  // If the above is not a constexpr expression, you are yousing an
-                                                                                                                                       // invalid type
-                              "This type cannot be converted to a tuple.");
-        auto tuple = ME_GUI_STRUCT_TO_TUPLE(anything);
+        static_assert(!std::is_reference_v<AnyType> && std::is_copy_constructible_v<std::remove_all_extents_t<AnyType>> && !std::is_polymorphic_v<AnyType> &&
+                              ME::pfr::detail::is_aggregate_initializable_n<AnyType, ME::pfr::detail::detect_fields_count_dispatch<AnyType>(ME::pfr::detail::size_t_<sizeof(AnyType) * 8>{},
+                                                                                                                                            1L)>::value,  // If the above is not a constexpr expression,
+                                                                                                                                                          // you are yousing an invalid type
+                      "This type cannot be converted to a tuple.");
+        auto tuple = ME::pfr::structure_tie(anything);
         ImGui::detail::AutoTuple("Struct " + name, tuple);
     }
 };  // ImGui::Auto_t<>::Auto()
@@ -317,23 +312,19 @@ void ImGui::detail::AutoTuple(const std::string &name,
 
 #define UNPACK(...) __VA_ARGS__  // for unpacking parentheses. It is needed for macro arguments with commmas
 // Enclose templatespec, AND typespec in parentheses in this version. Useful if there are commas in the argument.
-#define ME_GUI_DEFINE_BEGIN_P(templatespec, typespec) \
-    namespace ImGui {                                         \
-    UNPACK templatespec struct Auto_t<UNPACK typespec> {      \
+#define ME_GUI_DEFINE_BEGIN_P(templatespec, typespec)    \
+    namespace ImGui {                                    \
+    UNPACK templatespec struct Auto_t<UNPACK typespec> { \
         static void Auto(UNPACK typespec &var, const std::string &name) {
 // If macro arguments have no commmas inside use this version without parentheses
 #define ME_GUI_DEFINE_BEGIN(templatespec, typespec) ME_GUI_DEFINE_BEGIN_P((templatespec), (typespec))  // when there are no commas in types, use this without parentheses
 #define ME_GUI_DEFINE_END \
-    }                             \
-    }                             \
-    ;                             \
+    }                     \
+    }                     \
+    ;                     \
     }
 #define ME_GUI_DEFINE_INLINE_P(template_spec, type_spec, code) ME_GUI_DEFINE_BEGIN_P(template_spec, type_spec) code ME_GUI_DEFINE_END
 #define ME_GUI_DEFINE_INLINE(template_spec, type_spec, code) ME_GUI_DEFINE_INLINE_P((template_spec), (type_spec), code)
-
-#include <string>
-#include <type_traits>
-#include <utility>
 
 #ifndef ME_GUI_INPUT_FLOAT1
 #define ME_GUI_INPUT_FLOAT1 ImGui::DragFloat
@@ -416,7 +407,7 @@ ME_GUI_DEFINE_INLINE(template <>, const bool, ImGui::Auto_t<const std::string>::
 ME_GUI_DEFINE_INLINE(template <>, const ImVec2, ImGui::Text("%s(%f,%f)", (name.empty() ? "" : name + "=").c_str(), var.x, var.y);)
 ME_GUI_DEFINE_INLINE(template <>, const ImVec4, ImGui::Text("%s(%f,%f,%f,%f)", (name.empty() ? "" : name + "=").c_str(), var.x, var.y, var.z, var.w);)
 
-#define INTERNAL_NUM(_c, _imn)                                                                                   \
+#define INTERNAL_NUM(_c, _imn)                                                                           \
     ME_GUI_DEFINE_INLINE(template <>, _c, ImGui::InputScalar(name.c_str(), ImGuiDataType_##_imn, &var);) \
     ME_GUI_DEFINE_INLINE(template <>, const _c, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
 
@@ -460,12 +451,11 @@ if (var != nullptr)
 else
     ImGui::TextColored(ME_GUI_NULLPTR_COLOR, "%s=NULL", name.c_str());
 ME_GUI_DEFINE_END
-#ifdef _ARRAY_
+
 ME_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (std::array<T, N>), ImGui::detail::AutoContainerValues("array " + name, var);)
 ME_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (const std::array<T, N>), ImGui::detail::AutoContainerValues("array " + name, var);)
 ME_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (detail::c_array_t<T, N>), ImGui::detail::AutoContainerValues("Array " + name, *(std::array<T, N> *)(&var));)
 ME_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (const detail::c_array_t<T, N>), ImGui::detail::AutoContainerValues("Array " + name, *(const std::array<T, N> *)(&var));)
-#endif
 
 #pragma endregion
 
@@ -500,7 +490,6 @@ ME_GUI_DEFINE_INLINE(template <typename... Args>, const std::tuple<Args...>, ImG
 #pragma endregion
 
 #pragma region CONTAINERS
-#ifdef _VECTOR_
 ME_GUI_DEFINE_BEGIN(template <typename T>, std::vector<T>)
 if (ImGui::detail::AutoContainerValues<std::vector<T>>("Vector " + name, var)) {
     ImGui::PushID(name.c_str());
@@ -545,9 +534,7 @@ if (ImGui::detail::AutoContainerTreeNode<const std::vector<bool>>("Vector " + na
     ImGui::Unindent();
 }
 ME_GUI_DEFINE_END
-#endif
 
-#ifdef _LIST_
 ME_GUI_DEFINE_BEGIN(template <typename T>, std::list<T>)
 if (ImGui::detail::AutoContainerValues<std::list<T>>("List " + name, var)) {
     ImGui::PushID(name.c_str());
@@ -565,9 +552,7 @@ ME_GUI_DEFINE_END
 ME_GUI_DEFINE_BEGIN(template <typename T>, const std::list<T>)
 ImGui::detail::AutoContainerValues<const std::list<T>>("List " + name, var);
 ME_GUI_DEFINE_END
-#endif  // _LIST_
 
-#ifdef _DEQUE_
 ME_GUI_DEFINE_BEGIN(template <typename T>, std::deque<T>)
 if (ImGui::detail::AutoContainerValues<std::deque<T>>("Deque " + name, var)) {
     ImGui::PushID(name.c_str());
@@ -585,9 +570,7 @@ ME_GUI_DEFINE_END
 ME_GUI_DEFINE_BEGIN(template <typename T>, const std::deque<T>)
 ImGui::detail::AutoContainerValues<const std::deque<T>>("Deque " + name, var);
 ME_GUI_DEFINE_END
-#endif  // _DEQUE_
 
-#ifdef _FORWARD_LIST_
 ME_GUI_DEFINE_BEGIN(template <typename T>, std::forward_list<T>)
 if (ImGui::detail::AutoContainerValues<std::forward_list<T>>("Forward list " + name, var)) {
     ImGui::PushID(name.c_str());
@@ -602,9 +585,7 @@ ME_GUI_DEFINE_END
 ME_GUI_DEFINE_BEGIN(template <typename T>, const std::forward_list<T>)
 ImGui::detail::AutoContainerValues<const std::forward_list<T>>("Forward list " + name, var);
 ME_GUI_DEFINE_END
-#endif  // _FORWARD_LIST_
 
-#ifdef _SET_
 ME_GUI_DEFINE_BEGIN(template <typename T>, std::set<T>)
 ImGui::detail::AutoContainerValues<std::set<T>>("Set " + name, var);
 // todo insert
@@ -612,9 +593,7 @@ ME_GUI_DEFINE_END
 ME_GUI_DEFINE_BEGIN(template <typename T>, const std::set<T>)
 ImGui::detail::AutoContainerValues<const std::set<T>>("Set " + name, var);
 ME_GUI_DEFINE_END
-#endif  // _SET_
 
-#ifdef _UNORDERED_SET_
 ME_GUI_DEFINE_BEGIN(template <typename T>, std::unordered_set<T>)
 ImGui::detail::AutoContainerValues<std::unordered_set<T>>("Unordered set " + name, var);
 // todo insert
@@ -622,9 +601,7 @@ ME_GUI_DEFINE_END
 ME_GUI_DEFINE_BEGIN(template <typename T>, const std::unordered_set<T>)
 ImGui::detail::AutoContainerValues<const std::unordered_set<T>>("Unordered set " + name, var);
 ME_GUI_DEFINE_END
-#endif  // _UNORDERED_SET_
 
-#ifdef _MAP_
 ME_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (std::map<K, V>))
 ImGui::detail::AutoMapContainerValues<std::map<K, V>>("Map " + name, var);
 // todo insert
@@ -632,9 +609,7 @@ ME_GUI_DEFINE_END
 ME_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (const std::map<K, V>))
 ImGui::detail::AutoMapContainerValues<const std::map<K, V>>("Map " + name, var);
 ME_GUI_DEFINE_END
-#endif  // _MAP_
 
-#ifdef _UNORDERED_MAP_
 ME_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (std::unordered_map<K, V>))
 ImGui::detail::AutoMapContainerValues<std::unordered_map<K, V>>("Unordered map " + name, var);
 // todo insert
@@ -642,7 +617,6 @@ ME_GUI_DEFINE_END
 ME_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (const std::unordered_map<K, V>))
 ImGui::detail::AutoMapContainerValues<const std::unordered_map<K, V>>("Unordered map " + name, var);
 ME_GUI_DEFINE_END
-#endif  // _UNORDERED_MAP_
 
 #pragma endregion
 
@@ -654,7 +628,7 @@ ME_GUI_DEFINE_INLINE(template <>, const std::add_pointer_t<void()>, if (ImGui::B
 #pragma endregion
 
 // ME_GUI_DEFINE_BEGIN(template <typename T>, std::vector<T>)
-// if (ImGui::detail::AutoContainerValues<std::vector<T>>("MetaEngineVector " + name, var)) {
+// if (ImGui::detail::AutoContainerValues<std::vector<T>>("MEVector " + name, var)) {
 //     ImGui::PushID(name.c_str());
 //     ImGui::Indent();
 //     ImGui::detail::AutoContainerPushBackButton(var);
@@ -666,177 +640,706 @@ ME_GUI_DEFINE_INLINE(template <>, const std::add_pointer_t<void()>, if (ImGui::B
 // ME_GUI_DEFINE_END
 
 // ME_GUI_DEFINE_BEGIN(template <typename T>, const std::vector<T>)
-// ImGui::detail::AutoContainerValues<const std::vector<T>>("MetaEngineVector " + name, var);
+// ImGui::detail::AutoContainerValues<const std::vector<T>>("MEVector " + name, var);
 // ME_GUI_DEFINE_END
 
 #pragma endregion ImGuiAuto
 
+bool ColorPicker3U32(const char *label, ImU32 *color, ImGuiColorEditFlags flags = 0);
+
 #pragma region ImString
 
-class ImString {
+class ME_imstr {
 
 public:
-    ImString();
-
-    ImString(size_t len);
-
-    ImString(char *string);
-
-    explicit ImString(const char *string);
-
-    ImString(const ImString &other);
-
-    ~ImString();
+    ME_imstr();
+    ME_imstr(size_t len);
+    ME_imstr(char *string);
+    explicit ME_imstr(const char *string);
+    ME_imstr(const ME_imstr &other);
+    ~ME_imstr();
 
     char &operator[](size_t pos);
-
     operator char *();
-
     bool operator==(const char *string);
-
     bool operator!=(const char *string);
+    bool operator==(ME_imstr &string);
+    bool operator!=(const ME_imstr &string);
+    ME_imstr &operator=(const char *string);
+    ME_imstr &operator=(const ME_imstr &other);
 
-    bool operator==(ImString &string);
-
-    bool operator!=(const ImString &string);
-
-    ImString &operator=(const char *string);
-
-    ImString &operator=(const ImString &other);
-
-    inline size_t size() const { return mData ? strlen(mData) + 1 : 0; }
-
+    inline size_t size() const { return m_data ? strlen(m_data) + 1 : 0; }
     void reserve(size_t len);
-
     char *get();
-
     const char *c_str() const;
-
     bool empty() const;
-
     int refcount() const;
-
     void ref();
-
     void unref();
 
 private:
-    char *mData;
-    int *mRefCount;
+    char *m_data;
+    int *m_ref_count;
 };
 
 #pragma endregion ImString
 
-struct ImGuiMarkdown {
-    ImGuiMarkdown();
-    virtual ~ImGuiMarkdown(){};
+ME_INLINE ImVec4 ME_rgba2imvec(int r, int g, int b, int a = 255) {
+    float newr = r / 255.f;
+    float newg = g / 255.f;
+    float newb = b / 255.f;
+    float newa = a / 255.f;
+    return ImVec4(newr, newg, newb, newa);
+}
 
-    int print(const std::string &text);
+namespace ImGui {
+//-----------------------------------------------------------------------------
+// Basic types
+//-----------------------------------------------------------------------------
 
-protected:
-    virtual void BLOCK_DOC(bool);
-    virtual void BLOCK_QUOTE(bool);
-    virtual void BLOCK_UL(const MD_BLOCK_UL_DETAIL *, bool);
-    virtual void BLOCK_OL(const MD_BLOCK_OL_DETAIL *, bool);
-    virtual void BLOCK_LI(const MD_BLOCK_LI_DETAIL *, bool);
-    virtual void BLOCK_HR(bool e);
-    virtual void BLOCK_H(const MD_BLOCK_H_DETAIL *d, bool e);
-    virtual void BLOCK_CODE(const MD_BLOCK_CODE_DETAIL *, bool);
-    virtual void BLOCK_HTML(bool);
-    virtual void BLOCK_P(bool);
-    virtual void BLOCK_TABLE(const MD_BLOCK_TABLE_DETAIL *, bool);
-    virtual void BLOCK_THEAD(bool);
-    virtual void BLOCK_TBODY(bool);
-    virtual void BLOCK_TR(bool);
-    virtual void BLOCK_TH(const MD_BLOCK_TD_DETAIL *, bool);
-    virtual void BLOCK_TD(const MD_BLOCK_TD_DETAIL *, bool);
+struct Link;
+struct MarkdownConfig;
 
-    virtual void SPAN_EM(bool e);
-    virtual void SPAN_STRONG(bool e);
-    virtual void SPAN_A(const MD_SPAN_A_DETAIL *d, bool e);
-    virtual void SPAN_IMG(const MD_SPAN_IMG_DETAIL *, bool);
-    virtual void SPAN_CODE(bool);
-    virtual void SPAN_DEL(bool);
-    virtual void SPAN_LATEXMATH(bool);
-    virtual void SPAN_LATEXMATH_DISPLAY(bool);
-    virtual void SPAN_WIKILINK(const MD_SPAN_WIKILINK_DETAIL *, bool);
-    virtual void SPAN_U(bool);
-
-    ////////////////////////////////////////////////////////////////////////////
-
-    struct image_info {
-        ImTextureID texture_id;
-        ImVec2 size;
-        ImVec2 uv0;
-        ImVec2 uv1;
-        ImVec4 col_tint;
-        ImVec4 col_border;
-    };
-
-    // use m_href to identify image
-    virtual bool get_image(image_info &nfo) const;
-    virtual ImFont *get_font() const;
-    virtual ImVec4 get_color() const;
-
-    // url == m_href
-    virtual void open_url() const;
-
-    // returns true if the term has been processed
-    virtual bool render_entity(const char *str, const char *str_end);
-
-    // returns true if the term has been processed
-    virtual bool render_html(const char *str, const char *str_end);
-
-    // called when '\n' in source text where it is not semantically meaningful
-    virtual void soft_break();
-    ////////////////////////////////////////////////////////////////////////////
-
-    // current state
-    std::string m_href;  // empty if no link/image
-
-    bool m_is_underline = false;
-    bool m_is_strikethrough = false;
-    bool m_is_em = false;
-    bool m_is_strong = false;
-    bool m_is_table_header = false;
-    bool m_is_table_body = false;
-    bool m_is_image = false;
-    unsigned m_hlevel = 0;  // 0 - no heading
-
-private:
-    int text(MD_TEXTTYPE type, const char *str, const char *str_end);
-    int block(MD_BLOCKTYPE type, void *d, bool e);
-    int span(MD_SPANTYPE type, void *d, bool e);
-
-    void render_text(const char *str, const char *str_end);
-
-    void set_font(bool e);
-    void set_color(bool e);
-    void set_href(bool e, const MD_ATTRIBUTE &src);
-
-    // table state
-    ImVec2 m_table_last_pos;
-    int m_table_next_column = 0;
-    ImVector<float> m_table_col_pos;
-    ImVector<float> m_table_row_pos;
-
-    // list state
-    struct list_info {
-        bool is_ol;
-        char delim;
-        unsigned cur_ol;
-    };
-    ImVector<list_info> m_list_stack;
-
-    static void line(ImColor c, bool under);
-
-    MD_PARSER m_md;
+struct MarkdownLinkCallbackData  // for both links and images
+{
+    const char *text;  // text between square brackets []
+    int textLength;
+    const char *link;  // text between brackets ()
+    int linkLength;
+    void *userData;
+    bool isImage;  // true if '!' is detected in front of the link syntax
 };
 
-ME_GUI_DEFINE_BEGIN(template <>, MarkdownData)
-ImGuiMarkdown markdown;
-markdown.print(var.data);
-ME_GUI_DEFINE_END
+struct MarkdownTooltipCallbackData  // for tooltips
+{
+    MarkdownLinkCallbackData linkData;
+    const char *linkIcon;
+};
+
+struct MarkdownImageData {
+    bool isValid = false;                    // if true, will draw the image
+    bool useLinkCallback = false;            // if true, linkCallback will be called when image is clicked
+    ImTextureID user_texture_id = 0;         // see ImGui::Image
+    ImVec2 size = ImVec2(100.0f, 100.0f);    // see ImGui::Image
+    ImVec2 uv0 = ImVec2(0, 0);               // see ImGui::Image
+    ImVec2 uv1 = ImVec2(1, 1);               // see ImGui::Image
+    ImVec4 tint_col = ImVec4(1, 1, 1, 1);    // see ImGui::Image
+    ImVec4 border_col = ImVec4(0, 0, 0, 0);  // see ImGui::Image
+};
+
+enum class MarkdownFormatType {
+    NORMAL_TEXT,
+    HEADING,
+    UNORDERED_LIST,
+    LINK,
+    EMPHASIS,
+};
+
+struct MarkdownFormatInfo {
+    MarkdownFormatType type = MarkdownFormatType::NORMAL_TEXT;
+    int32_t level = 0;         // Set for headings: 1 for H1, 2 for H2 etc.
+    bool itemHovered = false;  // Currently only set for links when mouse hovered, only valid when start_ == false
+    const MarkdownConfig *config = NULL;
+};
+
+typedef void MarkdownLinkCallback(MarkdownLinkCallbackData data);
+typedef void MarkdownTooltipCallback(MarkdownTooltipCallbackData data);
+
+inline void defaultMarkdownTooltipCallback(MarkdownTooltipCallbackData data_) {
+    if (data_.linkData.isImage) {
+        ImGui::SetTooltip("%.*s", data_.linkData.linkLength, data_.linkData.link);
+    } else {
+        ImGui::SetTooltip("%s Open in browser\n%.*s", data_.linkIcon, data_.linkData.linkLength, data_.linkData.link);
+    }
+}
+
+typedef MarkdownImageData MarkdownImageCallback(MarkdownLinkCallbackData data);
+typedef void MarkdownFormalCallback(const MarkdownFormatInfo &markdownFormatInfo_, bool start_);
+
+inline void defaultMarkdownFormatCallback(const MarkdownFormatInfo &markdownFormatInfo_, bool start_);
+
+struct MarkdownHeadingFormat {
+    ImFont *font;    // ImGui font
+    bool separator;  // if true, an underlined separator is drawn after the header
+};
+
+// Configuration struct for Markdown
+// - linkCallback is called when a link is clicked on
+// - linkIcon is a string which encode a "Link" icon, if available in the current font (e.g. linkIcon = ICON_FA_LINK with FontAwesome + IconFontCppHeaders
+// https://github.com/juliettef/IconFontCppHeaders)
+// - headingFormats controls the format of heading H1 to H3, those above H3 use H3 format
+struct MarkdownConfig {
+    static const int NUMHEADINGS = 3;
+
+    MarkdownLinkCallback *linkCallback = NULL;
+    MarkdownTooltipCallback *tooltipCallback = NULL;
+    MarkdownImageCallback *imageCallback = NULL;
+    const char *linkIcon = "";  // icon displayd in link tooltip
+    MarkdownHeadingFormat headingFormats[NUMHEADINGS] = {{NULL, true}, {NULL, true}, {NULL, true}};
+    void *userData = NULL;
+    MarkdownFormalCallback *formatCallback = defaultMarkdownFormatCallback;
+};
+
+//-----------------------------------------------------------------------------
+// External interface
+//-----------------------------------------------------------------------------
+
+inline void Markdown(const char *markdown_, size_t markdownLength_, const MarkdownConfig &mdConfig_);
+
+//-----------------------------------------------------------------------------
+// Internals
+//-----------------------------------------------------------------------------
+
+struct TextRegion;
+struct Line;
+inline void UnderLine(ImColor col_);
+inline void RenderLine(const char *markdown_, Line &line_, TextRegion &textRegion_, const MarkdownConfig &mdConfig_);
+
+struct TextRegion {
+    TextRegion() : indentX(0.0f) {}
+    ~TextRegion() { ResetIndent(); }
+
+    // ImGui::TextWrapped will wrap at the starting position
+    // so to work around this we render using our own wrapping for the first line
+    void RenderTextWrapped(const char *text_, const char *text_end_, bool bIndentToHere_ = false) {
+        float scale = ImGui::GetIO().FontGlobalScale;
+        float widthLeft = GetContentRegionAvail().x;
+        const char *endLine = ImGui::GetFont()->CalcWordWrapPositionA(scale, text_, text_end_, widthLeft);
+        ImGui::TextUnformatted(text_, endLine);
+        if (bIndentToHere_) {
+            float indentNeeded = GetContentRegionAvail().x - widthLeft;
+            if (indentNeeded) {
+                ImGui::Indent(indentNeeded);
+                indentX += indentNeeded;
+            }
+        }
+        widthLeft = GetContentRegionAvail().x;
+        while (endLine < text_end_) {
+            text_ = endLine;
+            if (*text_ == ' ') {
+                ++text_;
+            }  // skip a space at start of line
+            endLine = ImGui::GetFont()->CalcWordWrapPositionA(scale, text_, text_end_, widthLeft);
+            if (text_ == endLine) {
+                endLine++;
+            }
+            ImGui::TextUnformatted(text_, endLine);
+        }
+    }
+
+    void RenderListTextWrapped(const char *text_, const char *text_end_) {
+        ImGui::Bullet();
+        ImGui::SameLine();
+        RenderTextWrapped(text_, text_end_, true);
+    }
+
+    bool RenderLinkText(const char *text_, const char *text_end_, const Link &link_, const char *markdown_, const MarkdownConfig &mdConfig_, const char **linkHoverStart_);
+
+    void RenderLinkTextWrapped(const char *text_, const char *text_end_, const Link &link_, const char *markdown_, const MarkdownConfig &mdConfig_, const char **linkHoverStart_,
+                               bool bIndentToHere_ = false);
+
+    void ResetIndent() {
+        if (indentX > 0.0f) {
+            ImGui::Unindent(indentX);
+        }
+        indentX = 0.0f;
+    }
+
+private:
+    float indentX;
+};
+
+// Text that starts after a new line (or at beginning) and ends with a newline (or at end)
+struct Line {
+    bool isHeading = false;
+    bool isEmphasis = false;
+    bool isUnorderedListStart = false;
+    bool isLeadingSpace = true;  // spaces at start of line
+    int leadSpaceCount = 0;
+    int headingCount = 0;
+    int emphasisCount = 0;
+    int lineStart = 0;
+    int lineEnd = 0;
+    int lastRenderPosition = 0;  // lines may get rendered in multiple pieces
+};
+
+struct TextBlock {  // subset of line
+    int start = 0;
+    int stop = 0;
+    int size() const { return stop - start; }
+};
+
+struct Link {
+    enum LinkState {
+        NO_LINK,
+        HAS_SQUARE_BRACKET_OPEN,
+        HAS_SQUARE_BRACKETS,
+        HAS_SQUARE_BRACKETS_ROUND_BRACKET_OPEN,
+    };
+    LinkState state = NO_LINK;
+    TextBlock text;
+    TextBlock url;
+    bool isImage = false;
+    int num_brackets_open = 0;
+};
+
+struct Emphasis {
+    enum EmphasisState {
+        NONE,
+        LEFT,
+        MIDDLE,
+        RIGHT,
+    };
+    EmphasisState state = NONE;
+    TextBlock text;
+    char sym;
+};
+
+inline void UnderLine(ImColor col_) {
+    ImVec2 min = ImGui::GetItemRectMin();
+    ImVec2 max = ImGui::GetItemRectMax();
+    min.y = max.y;
+    ImGui::GetWindowDrawList()->AddLine(min, max, col_, 1.0f);
+}
+
+inline void RenderLine(const char *markdown_, Line &line_, TextRegion &textRegion_, const MarkdownConfig &mdConfig_) {
+    // indent
+    int indentStart = 0;
+    if (line_.isUnorderedListStart)  // ImGui unordered list render always adds one indent
+    {
+        indentStart = 1;
+    }
+    for (int j = indentStart; j < line_.leadSpaceCount / 2; ++j)  // add indents
+    {
+        ImGui::Indent();
+    }
+
+    // render
+    MarkdownFormatInfo formatInfo;
+    formatInfo.config = &mdConfig_;
+    int textStart = line_.lastRenderPosition + 1;
+    int textSize = line_.lineEnd - textStart;
+    if (line_.isUnorderedListStart)  // render unordered list
+    {
+        formatInfo.type = MarkdownFormatType::UNORDERED_LIST;
+        mdConfig_.formatCallback(formatInfo, true);
+        const char *text = markdown_ + textStart + 1;
+        textRegion_.RenderListTextWrapped(text, text + textSize - 1);
+    } else if (line_.isHeading)  // render heading
+    {
+        formatInfo.level = line_.headingCount;
+        formatInfo.type = MarkdownFormatType::HEADING;
+        mdConfig_.formatCallback(formatInfo, true);
+        const char *text = markdown_ + textStart + 1;
+        textRegion_.RenderTextWrapped(text, text + textSize - 1);
+    } else if (line_.isEmphasis)  // render emphasis
+    {
+        formatInfo.level = line_.emphasisCount;
+        formatInfo.type = MarkdownFormatType::EMPHASIS;
+        mdConfig_.formatCallback(formatInfo, true);
+        const char *text = markdown_ + textStart;
+        textRegion_.RenderTextWrapped(text, text + textSize);
+    } else  // render a normal paragraph chunk
+    {
+        formatInfo.type = MarkdownFormatType::NORMAL_TEXT;
+        mdConfig_.formatCallback(formatInfo, true);
+        const char *text = markdown_ + textStart;
+        textRegion_.RenderTextWrapped(text, text + textSize);
+    }
+    mdConfig_.formatCallback(formatInfo, false);
+
+    // unindent
+    for (int j = indentStart; j < line_.leadSpaceCount / 2; ++j) {
+        ImGui::Unindent();
+    }
+}
+
+// render markdown
+inline void Markdown(const char *markdown_, size_t markdownLength_, const MarkdownConfig &mdConfig_) {
+    static const char *linkHoverStart = NULL;  // we need to preserve status of link hovering between frames
+    ImGuiStyle &style = ImGui::GetStyle();
+    Line line;
+    Link link;
+    Emphasis em;
+    TextRegion textRegion;
+
+    char c = 0;
+    for (int i = 0; i < (int)markdownLength_; ++i) {
+        c = markdown_[i];  // get the character at index
+        if (c == 0) {
+            break;
+        }  // shouldn't happen but don't go beyond 0.
+
+        // If we're at the beginning of the line, count any spaces
+        if (line.isLeadingSpace) {
+            if (c == ' ') {
+                ++line.leadSpaceCount;
+                continue;
+            } else {
+                line.isLeadingSpace = false;
+                line.lastRenderPosition = i - 1;
+                if ((c == '*') && (line.leadSpaceCount >= 2)) {
+                    if (((int)markdownLength_ > i + 1) && (markdown_[i + 1] == ' '))  // space after '*'
+                    {
+                        line.isUnorderedListStart = true;
+                        ++i;
+                        ++line.lastRenderPosition;
+                    }
+                    // carry on processing as could be emphasis
+                } else if (c == '#') {
+                    line.headingCount++;
+                    bool bContinueChecking = true;
+                    int j = i;
+                    while (++j < (int)markdownLength_ && bContinueChecking) {
+                        c = markdown_[j];
+                        switch (c) {
+                            case '#':
+                                line.headingCount++;
+                                break;
+                            case ' ':
+                                line.lastRenderPosition = j - 1;
+                                i = j;
+                                line.isHeading = true;
+                                bContinueChecking = false;
+                                break;
+                            default:
+                                line.isHeading = false;
+                                bContinueChecking = false;
+                                break;
+                        }
+                    }
+                    if (line.isHeading) {
+                        // reset emphasis status, we do not support emphasis around headers for now
+                        em = Emphasis();
+                        continue;
+                    }
+                }
+            }
+        }
+
+        // Test to see if we have a link
+        switch (link.state) {
+            case Link::NO_LINK:
+                if (c == '[' && !line.isHeading)  // we do not support headings with links for now
+                {
+                    link.state = Link::HAS_SQUARE_BRACKET_OPEN;
+                    link.text.start = i + 1;
+                    if (i > 0 && markdown_[i - 1] == '!') {
+                        link.isImage = true;
+                    }
+                }
+                break;
+            case Link::HAS_SQUARE_BRACKET_OPEN:
+                if (c == ']') {
+                    link.state = Link::HAS_SQUARE_BRACKETS;
+                    link.text.stop = i;
+                }
+                break;
+            case Link::HAS_SQUARE_BRACKETS:
+                if (c == '(') {
+                    link.state = Link::HAS_SQUARE_BRACKETS_ROUND_BRACKET_OPEN;
+                    link.url.start = i + 1;
+                    link.num_brackets_open = 1;
+                }
+                break;
+            case Link::HAS_SQUARE_BRACKETS_ROUND_BRACKET_OPEN:
+                if (c == '(') {
+                    ++link.num_brackets_open;
+                } else if (c == ')') {
+                    --link.num_brackets_open;
+                }
+                if (link.num_brackets_open == 0) {
+                    // reset emphasis status, we do not support emphasis around links for now
+                    em = Emphasis();
+                    // render previous line content
+                    line.lineEnd = link.text.start - (link.isImage ? 2 : 1);
+                    RenderLine(markdown_, line, textRegion, mdConfig_);
+                    line.leadSpaceCount = 0;
+                    link.url.stop = i;
+                    line.isUnorderedListStart = false;  // the following text shouldn't have bullets
+                    ImGui::SameLine(0.0f, 0.0f);
+                    if (link.isImage)  // it's an image, render it.
+                    {
+                        bool drawnImage = false;
+                        bool useLinkCallback = false;
+                        if (mdConfig_.imageCallback) {
+                            MarkdownImageData imageData =
+                                    mdConfig_.imageCallback({markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true});
+                            useLinkCallback = imageData.useLinkCallback;
+                            if (imageData.isValid) {
+                                ImGui::Image(imageData.user_texture_id, imageData.size, imageData.uv0, imageData.uv1, imageData.tint_col, imageData.border_col);
+                                drawnImage = true;
+                            }
+                        }
+                        if (!drawnImage) {
+                            ImGui::Text("( Image %.*s not loaded )", link.url.size(), markdown_ + link.url.start);
+                        }
+                        if (ImGui::IsItemHovered()) {
+                            if (ImGui::IsMouseReleased(0) && mdConfig_.linkCallback && useLinkCallback) {
+                                mdConfig_.linkCallback({markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true});
+                            }
+                            if (link.text.size() > 0 && mdConfig_.tooltipCallback) {
+                                mdConfig_.tooltipCallback({{markdown_ + link.text.start, link.text.size(), markdown_ + link.url.start, link.url.size(), mdConfig_.userData, true}, mdConfig_.linkIcon});
+                            }
+                        }
+                    } else  // it's a link, render it.
+                    {
+                        textRegion.RenderLinkTextWrapped(markdown_ + link.text.start, markdown_ + link.text.start + link.text.size(), link, markdown_, mdConfig_, &linkHoverStart, false);
+                    }
+                    ImGui::SameLine(0.0f, 0.0f);
+                    // reset the link by reinitializing it
+                    link = Link();
+                    line.lastRenderPosition = i;
+                    break;
+                }
+        }
+
+        // Test to see if we have emphasis styling
+        switch (em.state) {
+            case Emphasis::NONE:
+                if (link.state == Link::NO_LINK && !line.isHeading) {
+                    int next = i + 1;
+                    int prev = i - 1;
+                    if ((c == '*' || c == '_') && (i == line.lineStart || markdown_[prev] == ' ' || markdown_[prev] == '\t')  // empasis must be preceded by whitespace or line start
+                        && (int)markdownLength_ > next                                                                        // emphasis must precede non-whitespace
+                        && markdown_[next] != ' ' && markdown_[next] != '\n' && markdown_[next] != '\t') {
+                        em.state = Emphasis::LEFT;
+                        em.sym = c;
+                        em.text.start = i;
+                        line.emphasisCount = 1;
+                        continue;
+                    }
+                }
+                break;
+            case Emphasis::LEFT:
+                if (em.sym == c) {
+                    ++line.emphasisCount;
+                    continue;
+                } else {
+                    em.text.start = i;
+                    em.state = Emphasis::MIDDLE;
+                }
+                break;
+            case Emphasis::MIDDLE:
+                if (em.sym == c) {
+                    em.state = Emphasis::RIGHT;
+                    em.text.stop = i;
+                    // pass through to case Emphasis::RIGHT
+                } else {
+                    break;
+                }
+            case Emphasis::RIGHT:
+                if (em.sym == c) {
+                    if (line.emphasisCount < 3 && (i - em.text.stop + 1 == line.emphasisCount)) {
+                        // render text up to emphasis
+                        int lineEnd = em.text.start - line.emphasisCount;
+                        if (lineEnd > line.lineStart) {
+                            line.lineEnd = lineEnd;
+                            RenderLine(markdown_, line, textRegion, mdConfig_);
+                            ImGui::SameLine(0.0f, 0.0f);
+                            line.isUnorderedListStart = false;
+                            line.leadSpaceCount = 0;
+                        }
+                        line.isEmphasis = true;
+                        line.lastRenderPosition = em.text.start - 1;
+                        line.lineStart = em.text.start;
+                        line.lineEnd = em.text.stop;
+                        RenderLine(markdown_, line, textRegion, mdConfig_);
+                        ImGui::SameLine(0.0f, 0.0f);
+                        line.isEmphasis = false;
+                        line.lastRenderPosition = i;
+                        em = Emphasis();
+                    }
+                    continue;
+                } else {
+                    em.state = Emphasis::NONE;
+                    // render text up to here
+                    int start = em.text.start - line.emphasisCount;
+                    if (start < line.lineStart) {
+                        line.lineEnd = line.lineStart;
+                        line.lineStart = start;
+                        line.lastRenderPosition = start - 1;
+                        RenderLine(markdown_, line, textRegion, mdConfig_);
+                        line.lineStart = line.lineEnd;
+                        line.lastRenderPosition = line.lineStart - 1;
+                    }
+                }
+                break;
+        }
+
+        // handle end of line (render)
+        if (c == '\n') {
+            // first check if the line is a horizontal rule
+            line.lineEnd = i;
+            if (em.state == Emphasis::MIDDLE && line.emphasisCount >= 3 && (line.lineStart + line.emphasisCount) == i) {
+                ImGui::Separator();
+            } else {
+                // render the line: multiline emphasis requires a complex implementation so not supporting
+                RenderLine(markdown_, line, textRegion, mdConfig_);
+            }
+
+            // reset the line and emphasis state
+            line = Line();
+            em = Emphasis();
+
+            line.lineStart = i + 1;
+            line.lastRenderPosition = i;
+
+            textRegion.ResetIndent();
+
+            // reset the link
+            link = Link();
+        }
+    }
+
+    if (em.state == Emphasis::LEFT && line.emphasisCount >= 3) {
+        ImGui::Separator();
+    } else {
+        // render any remaining text if last char wasn't 0
+        if (markdownLength_ && line.lineStart < (int)markdownLength_ && markdown_[line.lineStart] != 0) {
+            // handle both null terminated and non null terminated strings
+            line.lineEnd = (int)markdownLength_;
+            if (0 == markdown_[line.lineEnd - 1]) {
+                --line.lineEnd;
+            }
+            RenderLine(markdown_, line, textRegion, mdConfig_);
+        }
+    }
+}
+
+inline bool TextRegion::RenderLinkText(const char *text_, const char *text_end_, const Link &link_, const char *markdown_, const MarkdownConfig &mdConfig_, const char **linkHoverStart_) {
+    MarkdownFormatInfo formatInfo;
+    formatInfo.config = &mdConfig_;
+    formatInfo.type = MarkdownFormatType::LINK;
+    mdConfig_.formatCallback(formatInfo, true);
+    ImGui::PushTextWrapPos(-1.0f);
+    ImGui::TextUnformatted(text_, text_end_);
+    ImGui::PopTextWrapPos();
+
+    bool bThisItemHovered = ImGui::IsItemHovered();
+    if (bThisItemHovered) {
+        *linkHoverStart_ = markdown_ + link_.text.start;
+    }
+    bool bHovered = bThisItemHovered || (*linkHoverStart_ == (markdown_ + link_.text.start));
+
+    formatInfo.itemHovered = bHovered;
+    mdConfig_.formatCallback(formatInfo, false);
+
+    if (bHovered) {
+        if (ImGui::IsMouseReleased(0) && mdConfig_.linkCallback) {
+            mdConfig_.linkCallback({markdown_ + link_.text.start, link_.text.size(), markdown_ + link_.url.start, link_.url.size(), mdConfig_.userData, false});
+        }
+        if (mdConfig_.tooltipCallback) {
+            mdConfig_.tooltipCallback({{markdown_ + link_.text.start, link_.text.size(), markdown_ + link_.url.start, link_.url.size(), mdConfig_.userData, false}, mdConfig_.linkIcon});
+        }
+    }
+    return bThisItemHovered;
+}
+
+inline void TextRegion::RenderLinkTextWrapped(const char *text_, const char *text_end_, const Link &link_, const char *markdown_, const MarkdownConfig &mdConfig_, const char **linkHoverStart_,
+                                              bool bIndentToHere_) {
+    float scale = ImGui::GetIO().FontGlobalScale;
+    float widthLeft = GetContentRegionAvail().x;
+    const char *endLine = ImGui::GetFont()->CalcWordWrapPositionA(scale, text_, text_end_, widthLeft);
+    bool bHovered = RenderLinkText(text_, endLine, link_, markdown_, mdConfig_, linkHoverStart_);
+    if (bIndentToHere_) {
+        float indentNeeded = GetContentRegionAvail().x - widthLeft;
+        if (indentNeeded) {
+            ImGui::Indent(indentNeeded);
+            indentX += indentNeeded;
+        }
+    }
+    widthLeft = GetContentRegionAvail().x;
+    while (endLine < text_end_) {
+        text_ = endLine;
+        if (*text_ == ' ') {
+            ++text_;
+        }  // skip a space at start of line
+        endLine = ImGui::GetFont()->CalcWordWrapPositionA(scale, text_, text_end_, widthLeft);
+        if (text_ == endLine) {
+            endLine++;
+        }
+        bool bThisLineHovered = RenderLinkText(text_, endLine, link_, markdown_, mdConfig_, linkHoverStart_);
+        bHovered = bHovered || bThisLineHovered;
+    }
+    if (!bHovered && *linkHoverStart_ == markdown_ + link_.text.start) {
+        *linkHoverStart_ = NULL;
+    }
+}
+
+inline void defaultMarkdownFormatCallback(const MarkdownFormatInfo &markdownFormatInfo_, bool start_) {
+    switch (markdownFormatInfo_.type) {
+        case MarkdownFormatType::NORMAL_TEXT:
+            break;
+        case MarkdownFormatType::EMPHASIS: {
+            MarkdownHeadingFormat fmt;
+            // default styling for emphasis uses last headingFormats - for your own styling
+            // implement EMPHASIS in your formatCallback
+            if (markdownFormatInfo_.level == 1) {
+                // normal emphasis
+                if (start_) {
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_TextDisabled]);
+                } else {
+                    ImGui::PopStyleColor();
+                }
+            } else {
+                // strong emphasis
+                fmt = markdownFormatInfo_.config->headingFormats[MarkdownConfig::NUMHEADINGS - 1];
+                if (start_) {
+                    if (fmt.font) {
+                        ImGui::PushFont(fmt.font);
+                    }
+                } else {
+                    if (fmt.font) {
+                        ImGui::PopFont();
+                    }
+                }
+            }
+            break;
+        }
+        case MarkdownFormatType::HEADING: {
+            MarkdownHeadingFormat fmt;
+            if (markdownFormatInfo_.level > MarkdownConfig::NUMHEADINGS) {
+                fmt = markdownFormatInfo_.config->headingFormats[MarkdownConfig::NUMHEADINGS - 1];
+            } else {
+                fmt = markdownFormatInfo_.config->headingFormats[markdownFormatInfo_.level - 1];
+            }
+            if (start_) {
+                if (fmt.font) {
+                    ImGui::PushFont(fmt.font);
+                }
+                ImGui::NewLine();
+            } else {
+                if (fmt.separator) {
+                    ImGui::Separator();
+                    ImGui::NewLine();
+                } else {
+                    ImGui::NewLine();
+                }
+                if (fmt.font) {
+                    ImGui::PopFont();
+                }
+            }
+            break;
+        }
+        case MarkdownFormatType::UNORDERED_LIST:
+            break;
+        case MarkdownFormatType::LINK:
+            if (start_) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
+            } else {
+                ImGui::PopStyleColor();
+                if (markdownFormatInfo_.itemHovered) {
+                    ImGui::UnderLine(ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered]);
+                } else {
+                    ImGui::UnderLine(ImGui::GetStyle().Colors[ImGuiCol_Button]);
+                }
+            }
+            break;
+    }
+}
+
+}  // namespace ImGui
 
 namespace ImGuiHelper {
 
@@ -846,9 +1349,6 @@ enum class Alignment : unsigned char {
     kCenter = kHorizontalCenter | kVerticalCenter,
 };
 
-/**
- * @brief Render text with alignment
- */
 inline void AlignedText(const std::string &text, Alignment align, const float &width = 0.0F) {
     const auto alignment = static_cast<unsigned char>(align);
     const auto text_size = ImGui::CalcTextSize(text.c_str());
@@ -924,13 +1424,13 @@ inline auto ButtonTab(std::vector<std::string> &tabs, int &index) -> int {
     return index;
 }
 
-inline void SwitchButton(std::string &&icon, std::string &&label, bool &checked) {
+inline void SwitchButton(std::string &&label, bool &checked) {
     float height = ImGui::GetFrameHeight();
     float width = height * 1.55F;
     float radius = height * 0.50F;
     const auto frame_width = ImGui::GetContentRegionAvail().x;
 
-    AlignedText(icon + "    " + label, Alignment::kVerticalCenter);
+    AlignedText("    " + label, Alignment::kVerticalCenter);
     ImGui::SameLine();
 
     ImGui::SetCursorPosX(frame_width - width);
@@ -998,119 +1498,37 @@ inline void ListSeparator(float indent = 30.0F) {
 
 }  // namespace ImGuiHelper
 
-struct test_markdown : public ImGuiMarkdown {
-    void open_url() const override { system(std::string("start msedge " + m_href).c_str()); }
-
-    bool get_image(image_info &nfo) const override {
-        // use m_href to identify images
-        nfo.size = {40, 20};
-        nfo.uv0 = {0, 0};
-        nfo.uv1 = {1, 1};
-        nfo.col_tint = {1, 1, 1, 1};
-        nfo.col_border = {0, 0, 0, 0};
-        return true;
-    }
-};
-
-/**
-   Dear ImGui with IME on-the-spot translation routines.
-   author: TOGURO Mikito , mit@shalab.net
-*/
-
-#if !defined(imgex_hpp_HEADER_GUARD_7556619d_62b7_4f3b_b364_f02af36a3bbc)
-#define imgex_hpp_HEADER_GUARD_7556619d_62b7_4f3b_b364_f02af36a3bbc 1
+#ifdef ME_IMM32
 
 #if defined(_WIN32)
+#include <CommCtrl.h>
 #include <Windows.h>
 #include <tchar.h>
-#endif /* defined( _WIN32 ) */
-
-#include "libs/imgui/imgui.h"
-
-#if defined(__cplusplus)
-#include <cassert>
-#else /* defined( __cplusplus ) */
-#include <assert.h>
-#endif /* defined( __cplusplus ) */
-
-#if !defined(VERIFY_ASSERT)
-#if defined(IM_ASSERT)
-#define VERIFY_ASSERT(exp) IM_ASSERT(exp)
-#else /* defined(IM_ASSERT) */
-#define VERIFY_ASSERT(exp) assert(exp)
-#endif /* defined(IM_ASSERT) */
-#endif /* !defined( VERIFY_ASSERT ) */
-
-#if !defined(VERIFY)
-#if defined(NDEBUG)
-#define VERIFY(exp)  \
-    do {             \
-        (void)(exp); \
-    } while (0)
-#else /* defined( NDEBUG ) */
-#define VERIFY(exp) VERIFY_ASSERT(exp)
-#endif /* defined( NDEBUG ) */
-#endif /* !defined( VERIFY ) */
-
-#if defined(__cplusplus)
-
-namespace imgex {
-// composition of flags
-namespace implements {
-template <typename first_t>
-constexpr inline unsigned int composite_flags_0(first_t first) {
-    return static_cast<unsigned int>(first);
-}
-template <typename first_t, typename... tail_t>
-constexpr inline unsigned int composite_flags_0(first_t first, tail_t... tail) {
-    return static_cast<unsigned int>(first) | composite_flags_0(tail...);
-}
-}  // namespace implements
-
-template <typename require_t, typename... tail_t>
-constexpr inline require_t composite_flags(tail_t... tail) {
-    return static_cast<require_t>(implements::composite_flags_0(tail...));
-}
-}  // namespace imgex
-
+#include <vcruntime_string.h>
+#if !defined(IMGUI_IMM_COMMAND_BEGIN)
+#define IMGUI_IMM_COMMAND_BEGIN (WM_APP + 0x200)
 #endif
 #endif
 
-#ifndef _IMGUI_IMM32_
-#define _IMGUI_IMM32_
+struct ME_imgui_imm {
 
-#if defined(_WIN32)
-#include <Windows.h>
-#include <commctrl.h>
-#include <tchar.h>
+    enum { IMGUI_IMM_COMMAND = IMGUI_IMM_COMMAND_BEGIN, IMGUI_IMM_END };
 
-#if !defined(WM_IMGUI_IMM32_COMMAND_BEGIN)
-#define WM_IMGUI_IMM32_COMMAND_BEGIN (WM_APP + 0x200)
-#endif /* !defined( WM_IMGUI_IMM32_COMMAND_BEGIN ) */
+    enum { IMGUI_IMM_COMMAND_NOP = 0u, IMGUI_IMM_COMMAND_SUBCLASSIFY, IMGUI_IMM_COMMAND_COMPOSITION_COMPLETE, IMGUI_IMM_COMMAND_CLEANUP };
 
-#endif /* defined( _WIN32 ) */
-
-#if defined(_WIN32)
-
-struct ImGUIIMMCommunication {
-
-    enum { WM_IMGUI_IMM32_COMMAND = WM_IMGUI_IMM32_COMMAND_BEGIN, WM_IMGUI_IMM32_END };
-
-    enum { WM_IMGUI_IMM32_COMMAND_NOP = 0u, WM_IMGUI_IMM32_COMMAND_SUBCLASSIFY, WM_IMGUI_IMM32_COMMAND_COMPOSITION_COMPLETE, WM_IMGUI_IMM32_COMMAND_CLEANUP };
-
-    struct IMMCandidateList {
+    struct imm_candidate_list {
         std::vector<std::string> list_utf8;
         std::vector<std::string>::size_type selection;
 
-        IMMCandidateList() : list_utf8{}, selection(0) {}
-        IMMCandidateList(const IMMCandidateList &rhv) = default;
-        IMMCandidateList(IMMCandidateList &&rhv) noexcept : list_utf8(), selection(0) { *this = std::move(rhv); }
+        imm_candidate_list() : list_utf8{}, selection(0) {}
+        imm_candidate_list(const imm_candidate_list &rhv) = default;
+        imm_candidate_list(imm_candidate_list &&rhv) noexcept : list_utf8(), selection(0) { *this = std::move(rhv); }
 
-        ~IMMCandidateList() = default;
+        ~imm_candidate_list() = default;
 
-        inline IMMCandidateList &operator=(const IMMCandidateList &rhv) = default;
+        inline imm_candidate_list &operator=(const imm_candidate_list &rhv) = default;
 
-        inline IMMCandidateList &operator=(IMMCandidateList &&rhv) noexcept {
+        inline imm_candidate_list &operator=(imm_candidate_list &&rhv) noexcept {
             if (this == &rhv) {
                 return *this;
             }
@@ -1122,8 +1540,8 @@ struct ImGUIIMMCommunication {
             list_utf8.clear();
             selection = 0;
         }
-#
-        static IMMCandidateList cocreate(const CANDIDATELIST *const src, const size_t src_size);
+
+        static imm_candidate_list cocreate(const CANDIDATELIST *const src, const size_t src_size);
     };
 
     static constexpr int candidate_window_num = 9;
@@ -1133,20 +1551,20 @@ struct ImGUIIMMCommunication {
     std::unique_ptr<char[]> comp_target_utf8;
     std::unique_ptr<char[]> comp_unconv_utf8;
     bool show_ime_candidate_list;
-    int request_candidate_list_str_commit;  // 1の時に candidate list が更新された後に、次の変換候補へ移る要請をする
-    IMMCandidateList candidate_list;
+    int request_candidate_list_str_commit;  // 候选列表在1更新后，请求移动到下一个转换候选
+    imm_candidate_list candidate_list;
 
-    ImGUIIMMCommunication()
+    ME_imgui_imm()
         : is_open(false), comp_conved_utf8(nullptr), comp_target_utf8(nullptr), comp_unconv_utf8(nullptr), show_ime_candidate_list(false), request_candidate_list_str_commit(false), candidate_list() {}
 
-    ~ImGUIIMMCommunication() = default;
+    ~ME_imgui_imm() = default;
     void operator()();
 
 private:
     bool update_candidate_window(HWND hWnd);
 
-    static LRESULT WINAPI imm_communication_subClassProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
-    static LRESULT imm_communication_subClassProc_implement(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, ImGUIIMMCommunication &comm);
+    static LRESULT WINAPI imm_communication_subclassproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+    static LRESULT imm_communication_subclassproc_implement(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, ME_imgui_imm &comm);
     BOOL subclassify_impl(HWND hWnd);
 
 public:
@@ -1159,30 +1577,13 @@ public:
     }
 };
 
-#endif
-
-// #if defined( _WIN32 )
-//
-// #define GLFW_EXPOSE_NATIVE_WIN32
-// #include <GLFW/glfw3.h>
-// #include <GLFW/glfw3native.h>
-//
-// template<>
-// inline BOOL
-// ImGUIIMMCommunication::subclassify<GLFWwindow*>(GLFWwindow* window)
-//{
+// template <>
+// inline BOOL ME_imgui_imm::subclassify<GLFWwindow *>(GLFWwindow *window) {
 //     return this->subclassify(glfwGetWin32Window(window));
 // }
-// #endif
-
-#if defined(__cplusplus)
-
-#if defined(_WIN32)
-
-#include "engine/core/sdl_wrapper.h"
 
 template <>
-inline BOOL ImGUIIMMCommunication::subclassify<SDL_Window *>(SDL_Window *window) {
+inline BOOL ME_imgui_imm::subclassify<SDL_Window *>(SDL_Window *window) {
     SDL_SysWMinfo info{};
     SDL_VERSION(&info.version);
     if (SDL_GetWindowWMInfo(window, &info)) {
@@ -1192,798 +1593,10 @@ inline BOOL ImGUIIMMCommunication::subclassify<SDL_Window *>(SDL_Window *window)
     return FALSE;
 }
 
-#endif
-#endif
-#endif
-
-namespace ImGuiWidget {
-void PlotFlame(const char *label, void (*values_getter)(float *start, float *end, ImU8 *level, const char **caption, const void *data, int idx), const void *data, int values_count,
-               int values_offset = 0, const char *overlay_text = NULL, float scale_min = FLT_MAX, float scale_max = FLT_MAX, ImVec2 graph_size = ImVec2(0, 0));
-
-using ImGuiFileBrowserFlags = int;
-
-enum ImGuiFileBrowserFlags_ {
-    ImGuiFileBrowserFlags_SelectDirectory = 1 << 0,    // select directory instead of regular file
-    ImGuiFileBrowserFlags_EnterNewFilename = 1 << 1,   // allow user to enter new filename when selecting regular file
-    ImGuiFileBrowserFlags_NoModal = 1 << 2,            // file browsing window is modal by default. specify this to use a popup window
-    ImGuiFileBrowserFlags_NoTitleBar = 1 << 3,         // hide window title bar
-    ImGuiFileBrowserFlags_NoStatusBar = 1 << 4,        // hide status bar at the bottom of browsing window
-    ImGuiFileBrowserFlags_CloseOnEsc = 1 << 5,         // close file browser when pressing 'ESC'
-    ImGuiFileBrowserFlags_CreateNewDir = 1 << 6,       // allow user to create new directory
-    ImGuiFileBrowserFlags_MultipleSelection = 1 << 7,  // allow user to select multiple files. this will hide ImGuiFileBrowserFlags_EnterNewFilename
-};
-
-class FileBrowser {
-public:
-    // pwd is set to current working directory by default
-    explicit FileBrowser(ImGuiFileBrowserFlags flags = 0);
-
-    FileBrowser(const FileBrowser &copyFrom);
-
-    FileBrowser &operator=(const FileBrowser &copyFrom);
-
-    // set the window position (in pixels)
-    // default is centered
-    void SetWindowPos(int posx, int posy) noexcept;
-
-    // set the window size (in pixels)
-    // default is (700, 450)
-    void SetWindowSize(int width, int height) noexcept;
-
-    // set the window title text
-    void SetTitle(std::string title);
-
-    // open the browsing window
-    void Open();
-
-    // close the browsing window
-    void Close();
-
-    // the browsing window is opened or not
-    bool IsOpened() const noexcept;
-
-    // display the browsing window if opened
-    void Display();
-
-    // returns true when there is a selected filename and the "ok" button was clicked
-    bool HasSelected() const noexcept;
-
-    // set current browsing directory
-    bool SetPwd(const std::filesystem::path &pwd = std::filesystem::current_path());
-
-    // get current browsing directory
-    const std::filesystem::path &GetPwd() const noexcept;
-
-    // returns selected filename. make sense only when HasSelected returns true
-    // when ImGuiFileBrowserFlags_MultipleSelection is enabled, only one of
-    // selected filename will be returned
-    std::filesystem::path GetSelected() const;
-
-    // returns all selected filenames.
-    // when ImGuiFileBrowserFlags_MultipleSelection is enabled, use this
-    // instead of GetSelected
-    std::vector<std::filesystem::path> GetMultiSelected() const;
-
-    // set selected filename to empty
-    void ClearSelected();
-
-    // (optional) set file type filters. eg. { ".h", ".cpp", ".hpp" }
-    // ".*" matches any file types
-    void SetTypeFilters(const std::vector<std::string> &typeFilters);
-
-    // set currently applied type filter
-    // default value is 0 (the first type filter)
-    void SetCurrentTypeFilterIndex(int index);
-
-    // when ImGuiFileBrowserFlags_EnterNewFilename is set
-    // this function will pre-fill the input dialog with a filename.
-    void SetInputName(std::string_view input);
-
-private:
-    template <class Functor>
-    struct ScopeGuard {
-        ScopeGuard(Functor &&t) : func(std::move(t)) {}
-
-        ~ScopeGuard() { func(); }
-
-    private:
-        Functor func;
-    };
-
-    struct FileRecord {
-        bool isDir = false;
-        std::filesystem::path name;
-        std::string showName;
-        std::filesystem::path extension;
-    };
-
-    static std::string ToLower(const std::string &s);
-
-    void UpdateFileRecords();
-
-    void SetPwdUncatched(const std::filesystem::path &pwd);
-
-    bool IsExtensionMatched(const std::filesystem::path &extension) const;
-
-#ifdef _WIN32
-    static std::uint32_t GetDrivesBitMask();
-#endif
-
-    // for c++17 compatibility
-
-#if defined(__cpp_lib_char8_t)
-    static std::string u8StrToStr(std::u8string s);
-#endif
-    static std::string u8StrToStr(std::string s);
-
-    int width_;
-    int height_;
-    int posX_;
-    int posY_;
-    ImGuiFileBrowserFlags flags_;
-
-    std::string title_;
-    std::string openLabel_;
-
-    bool openFlag_;
-    bool closeFlag_;
-    bool isOpened_;
-    bool ok_;
-    bool posIsSet_;
-
-    std::string statusStr_;
-
-    std::vector<std::string> typeFilters_;
-    unsigned int typeFilterIndex_;
-    bool hasAllFilter_;
-
-    std::filesystem::path pwd_;
-    std::set<std::filesystem::path> selectedFilenames_;
-
-    std::vector<FileRecord> fileRecords_;
-
-    // IMPROVE: truncate when selectedFilename_.length() > inputNameBuf_.size() - 1
-    static constexpr size_t INPUT_NAME_BUF_SIZE = 512;
-    std::unique_ptr<std::array<char, INPUT_NAME_BUF_SIZE>> inputNameBuf_;
-
-    std::string openNewDirLabel_;
-    std::unique_ptr<std::array<char, INPUT_NAME_BUF_SIZE>> newDirNameBuf_;
-
-#ifdef _WIN32
-    uint32_t drives_;
-#endif
-};
-}  // namespace ImGuiWidget
-
-inline ImGuiWidget::FileBrowser::FileBrowser(ImGuiFileBrowserFlags flags)
-    : width_(700),
-      height_(450),
-      posX_(0),
-      posY_(0),
-      flags_(flags),
-      openFlag_(false),
-      closeFlag_(false),
-      isOpened_(false),
-      ok_(false),
-      posIsSet_(false),
-      inputNameBuf_(std::make_unique<std::array<char, INPUT_NAME_BUF_SIZE>>()) {
-    if (flags_ & ImGuiFileBrowserFlags_CreateNewDir) {
-        newDirNameBuf_ = std::make_unique<std::array<char, INPUT_NAME_BUF_SIZE>>();
-    }
-
-    inputNameBuf_->front() = '\0';
-    inputNameBuf_->back() = '\0';
-    SetTitle("file browser");
-    SetPwd(std::filesystem::current_path());
-
-    typeFilters_.clear();
-    typeFilterIndex_ = 0;
-    hasAllFilter_ = false;
-
-#ifdef _WIN32
-    drives_ = GetDrivesBitMask();
-#endif
-}
-
-inline ImGuiWidget::FileBrowser::FileBrowser(const FileBrowser &copyFrom) : FileBrowser() { *this = copyFrom; }
-
-inline ImGuiWidget::FileBrowser &ImGuiWidget::FileBrowser::operator=(const FileBrowser &copyFrom) {
-    width_ = copyFrom.width_;
-    height_ = copyFrom.height_;
-
-    posX_ = copyFrom.posX_;
-    posY_ = copyFrom.posY_;
-
-    flags_ = copyFrom.flags_;
-    SetTitle(copyFrom.title_);
-
-    openFlag_ = copyFrom.openFlag_;
-    closeFlag_ = copyFrom.closeFlag_;
-    isOpened_ = copyFrom.isOpened_;
-    ok_ = copyFrom.ok_;
-    posIsSet_ = copyFrom.posIsSet_;
-
-    statusStr_ = "";
-
-    typeFilters_ = copyFrom.typeFilters_;
-    typeFilterIndex_ = copyFrom.typeFilterIndex_;
-    hasAllFilter_ = copyFrom.hasAllFilter_;
-
-    pwd_ = copyFrom.pwd_;
-    selectedFilenames_ = copyFrom.selectedFilenames_;
-
-    fileRecords_ = copyFrom.fileRecords_;
-
-    *inputNameBuf_ = *copyFrom.inputNameBuf_;
-
-    openNewDirLabel_ = copyFrom.openNewDirLabel_;
-    if (flags_ & ImGuiFileBrowserFlags_CreateNewDir) {
-        newDirNameBuf_ = std::make_unique<std::array<char, INPUT_NAME_BUF_SIZE>>();
-        *newDirNameBuf_ = *copyFrom.newDirNameBuf_;
-    }
-
-#ifdef _WIN32
-    drives_ = copyFrom.drives_;
-#endif
-
-    return *this;
-}
-
-inline void ImGuiWidget::FileBrowser::SetWindowPos(int posx, int posy) noexcept {
-    posX_ = posx;
-    posY_ = posy;
-    posIsSet_ = true;
-}
-
-inline void ImGuiWidget::FileBrowser::SetWindowSize(int width, int height) noexcept {
-    assert(width > 0 && height > 0);
-    width_ = width;
-    height_ = height;
-}
-
-inline void ImGuiWidget::FileBrowser::SetTitle(std::string title) {
-    title_ = std::move(title);
-    openLabel_ = title_ + "##filebrowser_" + std::to_string(reinterpret_cast<size_t>(this));
-    openNewDirLabel_ = "new dir##new_dir_" + std::to_string(reinterpret_cast<size_t>(this));
-}
-
-inline void ImGuiWidget::FileBrowser::Open() {
-    ClearSelected();
-    UpdateFileRecords();
-    statusStr_ = std::string();
-    openFlag_ = true;
-    closeFlag_ = false;
-}
-
-inline void ImGuiWidget::FileBrowser::Close() {
-    ClearSelected();
-    statusStr_ = std::string();
-    closeFlag_ = true;
-    openFlag_ = false;
-}
-
-inline bool ImGuiWidget::FileBrowser::IsOpened() const noexcept { return isOpened_; }
-
-inline void ImGuiWidget::FileBrowser::Display() {
-    ImGui::PushID(this);
-    ScopeGuard exitThis([this] {
-        openFlag_ = false;
-        closeFlag_ = false;
-        ImGui::PopID();
-    });
-
-    if (openFlag_) {
-        ImGui::OpenPopup(openLabel_.c_str());
-    }
-    isOpened_ = false;
-
-    // open the popup window
-
-    if (openFlag_ && (flags_ & ImGuiFileBrowserFlags_NoModal)) {
-        if (posIsSet_) ImGui::SetNextWindowPos(ImVec2(static_cast<float>(posX_), static_cast<float>(posY_)));
-        ImGui::SetNextWindowSize(ImVec2(static_cast<float>(width_), static_cast<float>(height_)));
-    } else {
-        if (posIsSet_) ImGui::SetNextWindowPos(ImVec2(static_cast<float>(posX_), static_cast<float>(posY_)), ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowSize(ImVec2(static_cast<float>(width_), static_cast<float>(height_)), ImGuiCond_FirstUseEver);
-    }
-    if (flags_ & ImGuiFileBrowserFlags_NoModal) {
-        if (!ImGui::BeginPopup(openLabel_.c_str())) {
-            return;
-        }
-    } else if (!ImGui::BeginPopupModal(openLabel_.c_str(), nullptr, flags_ & ImGuiFileBrowserFlags_NoTitleBar ? ImGuiWindowFlags_NoTitleBar : 0)) {
-        return;
-    }
-
-    isOpened_ = true;
-    ScopeGuard endPopup([] { ImGui::EndPopup(); });
-
-    // display elements in pwd
-
-#ifdef ME_PLATFORM_WINDOWS
-    char currentDrive = static_cast<char>(pwd_.c_str()[0]);
-    char driveStr[] = {currentDrive, ':', '\0'};
-
-    ImGui::PushItemWidth(4 * ImGui::GetFontSize());
-    if (ImGui::BeginCombo("##select_drive", driveStr)) {
-        ScopeGuard guard([&] { ImGui::EndCombo(); });
-
-        for (int i = 0; i < 26; ++i) {
-            if (!(drives_ & (1 << i))) {
-                continue;
-            }
-
-            char driveCh = static_cast<char>('A' + i);
-            char selectableStr[] = {driveCh, ':', '\0'};
-            bool selected = currentDrive == driveCh;
-
-            if (ImGui::Selectable(selectableStr, selected) && !selected) {
-                char newPwd[] = {driveCh, ':', '\\', '\0'};
-                SetPwd(newPwd);
-            }
-        }
-    }
-    ImGui::PopItemWidth();
-
-    ImGui::SameLine();
-#endif
-
-    int secIdx = 0, newPwdLastSecIdx = -1;
-    for (const auto &sec : pwd_) {
-#ifdef _WIN32
-        if (secIdx == 1) {
-            ++secIdx;
-            continue;
-        }
-#endif
-
-        ImGui::PushID(secIdx);
-        if (secIdx > 0) {
-            ImGui::SameLine();
-        }
-        if (ImGui::SmallButton(u8StrToStr(sec.u8string()).c_str())) {
-            newPwdLastSecIdx = secIdx;
-        }
-        ImGui::PopID();
-
-        ++secIdx;
-    }
-
-    if (newPwdLastSecIdx >= 0) {
-        int i = 0;
-        std::filesystem::path newPwd;
-        for (const auto &sec : pwd_) {
-            if (i++ > newPwdLastSecIdx) {
-                break;
-            }
-            newPwd /= sec;
-        }
-
-#ifdef _WIN32
-        if (newPwdLastSecIdx == 0) {
-            newPwd /= "\\";
-        }
-#endif
-
-        SetPwd(newPwd);
-    }
-
-    ImGui::SameLine();
-
-    if (ImGui::SmallButton("*")) {
-        UpdateFileRecords();
-
-        std::set<std::filesystem::path> newSelectedFilenames;
-        for (auto &name : selectedFilenames_) {
-            auto it = std::find_if(fileRecords_.begin(), fileRecords_.end(), [&](const FileRecord &record) { return name == record.name; });
-
-            if (it != fileRecords_.end()) {
-                newSelectedFilenames.insert(name);
-            }
-        }
-
-        if (inputNameBuf_ && (*inputNameBuf_)[0]) {
-            newSelectedFilenames.insert(inputNameBuf_->data());
-        }
-    }
-
-    if (newDirNameBuf_) {
-        ImGui::SameLine();
-        if (ImGui::SmallButton("+")) {
-            ImGui::OpenPopup(openNewDirLabel_.c_str());
-            (*newDirNameBuf_)[0] = '\0';
-        }
-
-        if (ImGui::BeginPopup(openNewDirLabel_.c_str())) {
-            ScopeGuard endNewDirPopup([] { ImGui::EndPopup(); });
-
-            ImGui::InputText("name", newDirNameBuf_->data(), newDirNameBuf_->size());
-            ImGui::SameLine();
-
-            if (ImGui::Button("ok") && (*newDirNameBuf_)[0] != '\0') {
-                ScopeGuard closeNewDirPopup([] { ImGui::CloseCurrentPopup(); });
-                if (create_directory(pwd_ / newDirNameBuf_->data())) {
-                    UpdateFileRecords();
-                } else {
-                    statusStr_ = "failed to create " + std::string(newDirNameBuf_->data());
-                }
-            }
-        }
-    }
-
-    // browse files in a child window
-
-    float reserveHeight = ImGui::GetFrameHeightWithSpacing();
-    std::filesystem::path newPwd;
-    bool setNewPwd = false;
-    if (!(flags_ & ImGuiFileBrowserFlags_SelectDirectory) && (flags_ & ImGuiFileBrowserFlags_EnterNewFilename)) reserveHeight += ImGui::GetFrameHeightWithSpacing();
-    {
-        ImGui::BeginChild("ch", ImVec2(0, -reserveHeight), true, (flags_ & ImGuiFileBrowserFlags_NoModal) ? ImGuiWindowFlags_AlwaysHorizontalScrollbar : 0);
-        ScopeGuard endChild([] { ImGui::EndChild(); });
-
-        for (auto &rsc : fileRecords_) {
-            if (!rsc.isDir && !IsExtensionMatched(rsc.extension)) {
-                continue;
-            }
-
-            if (!rsc.name.empty() && rsc.name.c_str()[0] == '$') {
-                continue;
-            }
-
-            bool selected = selectedFilenames_.find(rsc.name) != selectedFilenames_.end();
-
-            if (ImGui::Selectable(rsc.showName.c_str(), selected, ImGuiSelectableFlags_DontClosePopups)) {
-                const bool multiSelect =
-                        (flags_ & ImGuiFileBrowserFlags_MultipleSelection) && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && (ImGui::GetIO().KeyCtrl || ImGui::GetIO().KeyShift);
-
-                if (selected) {
-                    if (!multiSelect) {
-                        selectedFilenames_.clear();
-                    } else {
-                        selectedFilenames_.erase(rsc.name);
-                    }
-
-                    (*inputNameBuf_)[0] = '\0';
-                } else if (rsc.name != "..") {
-                    if ((rsc.isDir && (flags_ & ImGuiFileBrowserFlags_SelectDirectory)) || (!rsc.isDir && !(flags_ & ImGuiFileBrowserFlags_SelectDirectory))) {
-                        if (multiSelect) {
-                            selectedFilenames_.insert(rsc.name);
-                        } else {
-                            selectedFilenames_ = {rsc.name};
-                        }
-
-                        if (!(flags_ & ImGuiFileBrowserFlags_SelectDirectory)) {
-#ifdef _MSC_VER
-                            strcpy_s(inputNameBuf_->data(), inputNameBuf_->size(), u8StrToStr(rsc.name.u8string()).c_str());
-#else
-                            std::strncpy(inputNameBuf_->data(), u8StrToStr(rsc.name.u8string()).c_str(), inputNameBuf_->size() - 1);
-#endif
-                        }
-                    }
-                } else {
-                    if (!multiSelect) {
-                        selectedFilenames_.clear();
-                    }
-                }
-            }
-
-            if (ImGui::IsItemClicked(0) && ImGui::IsMouseDoubleClicked(0)) {
-                if (rsc.isDir) {
-                    setNewPwd = true;
-                    newPwd = (rsc.name != "..") ? (pwd_ / rsc.name) : pwd_.parent_path();
-                } else if (!(flags_ & ImGuiFileBrowserFlags_SelectDirectory)) {
-                    selectedFilenames_ = {rsc.name};
-                    ok_ = true;
-                    ImGui::CloseCurrentPopup();
-                }
-            }
-        }
-    }
-
-    if (setNewPwd) {
-        SetPwd(newPwd);
-    }
-
-    if (!(flags_ & ImGuiFileBrowserFlags_SelectDirectory) && (flags_ & ImGuiFileBrowserFlags_EnterNewFilename)) {
-        ImGui::PushID(this);
-        ScopeGuard popTextID([] { ImGui::PopID(); });
-
-        ImGui::PushItemWidth(-1);
-        if (ImGui::InputText("", inputNameBuf_->data(), inputNameBuf_->size()) && inputNameBuf_->at(0) != '\0') {
-            selectedFilenames_ = {inputNameBuf_->data()};
-        }
-        ImGui::PopItemWidth();
-    }
-
-    if (!(flags_ & ImGuiFileBrowserFlags_SelectDirectory)) {
-        if (ImGui::Button(" ok ") && !selectedFilenames_.empty()) {
-            ok_ = true;
-            ImGui::CloseCurrentPopup();
-        }
-    } else {
-        if (ImGui::Button(" ok ")) {
-            ok_ = true;
-            ImGui::CloseCurrentPopup();
-        }
-    }
-
-    ImGui::SameLine();
-
-    bool shouldExit = ImGui::Button("cancel") || closeFlag_ ||
-                      ((flags_ & ImGuiFileBrowserFlags_CloseOnEsc) && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && ImGui::IsKeyPressed(ImGuiKey_Escape));
-    if (shouldExit) {
-        ImGui::CloseCurrentPopup();
-    }
-
-    if (!statusStr_.empty() && !(flags_ & ImGuiFileBrowserFlags_NoStatusBar)) {
-        ImGui::SameLine();
-        ImGui::Text("%s", statusStr_.c_str());
-    }
-
-    if (!typeFilters_.empty()) {
-        ImGui::SameLine();
-        ImGui::PushItemWidth(8 * ImGui::GetFontSize());
-        if (ImGui::BeginCombo("##type_filters", typeFilters_[typeFilterIndex_].c_str())) {
-            ScopeGuard guard([&] { ImGui::EndCombo(); });
-
-            for (size_t i = 0; i < typeFilters_.size(); ++i) {
-                bool selected = i == typeFilterIndex_;
-                if (ImGui::Selectable(typeFilters_[i].c_str(), selected) && !selected) {
-                    typeFilterIndex_ = static_cast<unsigned int>(i);
-                }
-            }
-        }
-        ImGui::PopItemWidth();
-    }
-}
-
-inline bool ImGuiWidget::FileBrowser::HasSelected() const noexcept { return ok_; }
-
-inline bool ImGuiWidget::FileBrowser::SetPwd(const std::filesystem::path &pwd) {
-    try {
-        SetPwdUncatched(pwd);
-        return true;
-    } catch (const std::exception &err) {
-        statusStr_ = std::string("last error: ") + err.what();
-    } catch (...) {
-        statusStr_ = "last error: unknown";
-    }
-
-    SetPwdUncatched(std::filesystem::current_path());
-    return false;
-}
-
-inline const class std::filesystem::path &ImGuiWidget::FileBrowser::GetPwd() const noexcept { return pwd_; }
-
-inline std::filesystem::path ImGuiWidget::FileBrowser::GetSelected() const {
-    // when ok_ is true, selectedFilenames_ may be empty if SelectDirectory
-    // is enabled. return pwd in that case.
-    if (selectedFilenames_.empty()) {
-        return pwd_;
-    }
-    return pwd_ / *selectedFilenames_.begin();
-}
-
-inline std::vector<std::filesystem::path> ImGuiWidget::FileBrowser::GetMultiSelected() const {
-    if (selectedFilenames_.empty()) {
-        return {pwd_};
-    }
-
-    std::vector<std::filesystem::path> ret;
-    ret.reserve(selectedFilenames_.size());
-    for (auto &s : selectedFilenames_) {
-        ret.push_back(pwd_ / s);
-    }
-
-    return ret;
-}
-
-inline void ImGuiWidget::FileBrowser::ClearSelected() {
-    selectedFilenames_.clear();
-    (*inputNameBuf_)[0] = '\0';
-    ok_ = false;
-}
-
-inline void ImGuiWidget::FileBrowser::SetTypeFilters(const std::vector<std::string> &_typeFilters) {
-    typeFilters_.clear();
-
-    // remove duplicate filter names due to case unsensitivity on windows
-
-#ifdef _WIN32
-
-    std::vector<std::string> typeFilters;
-    for (auto &rawFilter : _typeFilters) {
-        std::string lowerFilter = ToLower(rawFilter);
-        auto it = std::find(typeFilters.begin(), typeFilters.end(), lowerFilter);
-        if (it == typeFilters.end()) {
-            typeFilters.push_back(std::move(lowerFilter));
-        }
-    }
-
-#else
-
-    auto &typeFilters = _typeFilters;
+int common_control_initialize();
 
 #endif
 
-    // insert auto-generated filter
-
-    if (typeFilters.size() > 1) {
-        hasAllFilter_ = true;
-        std::string allFiltersName = std::string();
-        for (size_t i = 0; i < typeFilters.size(); ++i) {
-            if (typeFilters[i] == std::string_view(".*")) {
-                hasAllFilter_ = false;
-                break;
-            }
-
-            if (i > 0) {
-                allFiltersName += ",";
-            }
-            allFiltersName += typeFilters[i];
-        }
-
-        if (hasAllFilter_) {
-            typeFilters_.push_back(std::move(allFiltersName));
-        }
-    }
-
-    std::copy(typeFilters.begin(), typeFilters.end(), std::back_inserter(typeFilters_));
-
-    typeFilterIndex_ = 0;
-}
-
-inline void ImGuiWidget::FileBrowser::SetCurrentTypeFilterIndex(int index) { typeFilterIndex_ = static_cast<unsigned int>(index); }
-
-inline void ImGuiWidget::FileBrowser::SetInputName(std::string_view input) {
-    if (flags_ & ImGuiFileBrowserFlags_EnterNewFilename) {
-        if (input.size() >= static_cast<size_t>(INPUT_NAME_BUF_SIZE)) {
-            // If input doesn't fit trim off characters
-            input = input.substr(0, INPUT_NAME_BUF_SIZE - 1);
-        }
-        std::copy(input.begin(), input.end(), inputNameBuf_->begin());
-        inputNameBuf_->at(input.size()) = '\0';
-        selectedFilenames_ = {inputNameBuf_->data()};
-    }
-}
-
-inline std::string ImGuiWidget::FileBrowser::ToLower(const std::string &s) {
-    std::string ret = s;
-    for (char &c : ret) {
-        c = static_cast<char>(std::tolower(c));
-    }
-    return ret;
-}
-
-inline void ImGuiWidget::FileBrowser::UpdateFileRecords() {
-    fileRecords_ = {FileRecord{true, "..", "[D] ..", ""}};
-
-    for (auto &p : std::filesystem::directory_iterator(pwd_)) {
-        FileRecord rcd;
-
-        if (p.is_regular_file()) {
-            rcd.isDir = false;
-        } else if (p.is_directory()) {
-            rcd.isDir = true;
-        } else {
-            continue;
-        }
-
-        rcd.name = p.path().filename();
-        if (rcd.name.empty()) {
-            continue;
-        }
-
-        rcd.extension = p.path().filename().extension();
-
-        rcd.showName = (rcd.isDir ? "[D] " : "[F] ") + u8StrToStr(p.path().filename().u8string());
-        fileRecords_.push_back(rcd);
-    }
-
-    std::sort(fileRecords_.begin(), fileRecords_.end(), [](const FileRecord &L, const FileRecord &R) { return (L.isDir ^ R.isDir) ? L.isDir : (L.name < R.name); });
-}
-
-inline void ImGuiWidget::FileBrowser::SetPwdUncatched(const std::filesystem::path &pwd) {
-    pwd_ = absolute(pwd);
-    UpdateFileRecords();
-    selectedFilenames_.clear();
-    (*inputNameBuf_)[0] = '\0';
-}
-
-inline bool ImGuiWidget::FileBrowser::IsExtensionMatched(const std::filesystem::path &_extension) const {
-#ifdef _WIN32
-    std::filesystem::path extension = ToLower(_extension.string());
-#else
-    auto &extension = _extension;
-#endif
-
-    // no type filters
-    if (typeFilters_.empty()) {
-        return true;
-    }
-
-    // invalid type filter index
-    if (static_cast<size_t>(typeFilterIndex_) >= typeFilters_.size()) {
-        return true;
-    }
-
-    // all type filters
-    if (hasAllFilter_ && typeFilterIndex_ == 0) {
-        for (size_t i = 1; i < typeFilters_.size(); ++i) {
-            if (extension == typeFilters_[i]) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // universal filter
-    if (typeFilters_[typeFilterIndex_] == std::string_view(".*")) {
-        return true;
-    }
-
-    // regular filter
-    return extension == typeFilters_[typeFilterIndex_];
-}
-
-#if defined(__cpp_lib_char8_t)
-inline std::string ImGuiWidget::FileBrowser::u8StrToStr(std::u8string s) { return std::string(s.begin(), s.end()); }
-#endif
-
-inline std::string ImGuiWidget::FileBrowser::u8StrToStr(std::string s) { return s; }
-
-class ImGuiTextureManager {
-public:
-    virtual ~ImGuiTextureManager(){};
-    /**
-     * Creates texture from raw data
-     *
-     * @param data image data in rgba format
-     * @param width texture width
-     * @param height texture height
-     * @returns generated texture id
-     */
-    virtual ImTextureID createTexture(void *data, int width, int height) = 0;
-
-    /**
-     * Deletes old texture
-     */
-    virtual void deleteTexture(ImTextureID id) = 0;
-};
-
-#ifdef _WIN32
-
-#ifndef _INC_WINDOWS
-
-#ifndef WIN32_LEAN_AND_MEAN
-
-#define IMGUI_FILEBROWSER_UNDEF_WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-
-#endif  // #ifndef WIN32_LEAN_AND_MEAN
-
-#include <windows.h>
-
-#ifdef IMGUI_FILEBROWSER_UNDEF_WIN32_LEAN_AND_MEAN
-#undef IMGUI_FILEBROWSER_UNDEF_WIN32_LEAN_AND_MEAN
-#undef WIN32_LEAN_AND_MEAN
-#endif  // #ifdef IMGUI_FILEBROWSER_UNDEF_WIN32_LEAN_AND_MEAN
-
-#endif  // #ifdef _INC_WINDOWS
-
-inline std::uint32_t ImGuiWidget::FileBrowser::GetDrivesBitMask() {
-    DWORD mask = GetLogicalDrives();
-    uint32_t ret = 0;
-    for (int i = 0; i < 26; ++i) {
-        if (!(mask & (1 << i))) {
-            continue;
-        }
-        char rootName[4] = {static_cast<char>('A' + i), ':', '\\', '\0'};
-        UINT type = GetDriveTypeA(rootName);
-        if (type == DRIVE_REMOVABLE || type == DRIVE_FIXED || type == DRIVE_REMOTE) {
-            ret |= (1 << i);
-        }
-    }
-    return ret;
-}
+void ShowAutoTestWindow();
 
 #endif

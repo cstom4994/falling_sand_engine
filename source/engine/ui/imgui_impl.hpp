@@ -5,8 +5,8 @@
 // https://github.com/mekhontsev/imgui_md (MIT) by mekhontsev
 // https://github.com/ocornut/imgui (MIT) by Omar Cornut
 
-#ifndef ME_IMGUIHELPER_HPP
-#define ME_IMGUIHELPER_HPP
+#ifndef ME_IMGUI_IMPL_HPP
+#define ME_IMGUI_IMPL_HPP
 
 #include <algorithm>
 #include <array>

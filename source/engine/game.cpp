@@ -24,7 +24,7 @@
 #include "engine/core/macros.hpp"
 #include "engine/core/mathlib.hpp"
 #include "engine/core/platform.h"
-#include "engine/core/profiler/profiler.h"
+#include "engine/core/profiler.hpp"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/core/threadpool.hpp"
 #include "engine/core/utils/utility.hpp"
@@ -58,8 +58,8 @@ Game::Game(int argc, char *argv[]) {
     // Start memory management including GC
     ME_mem_init(argc, argv);
 
-    METADOT_INIT();
-    METADOT_REGISTER_THREAD("Application thread");
+    ME_profiler_init();
+    ME_profiler_register_thread("Application thread");
 
     // Global game target
     global.game = this;
@@ -68,7 +68,7 @@ Game::Game(int argc, char *argv[]) {
 
 Game::~Game() {
     global.game = nullptr;
-    METADOT_SHUTDOWN();
+    ME_profiler_shutdown();
 
     // Stop memory setting and GC
     ME_mem_end();
@@ -416,13 +416,13 @@ int Game::run(int argc, char *argv[]) {
     // game loop
     while (this->running) {
 
-        METADOT_BEGIN_FRAME();
+        ME_profiler_begin_frame();
 
         EngineUpdate();
 
 #pragma region SDL_Input
 
-        METADOT_SCOPE_AUTO("Loop");
+        ME_profiler_scope_auto("Loop");
 
         // handle window events
         while (SDL_PollEvent(&windowEvent)) {
@@ -895,7 +895,7 @@ int Game::run(int argc, char *argv[]) {
 #pragma endregion SDL_Input
 
 #pragma region GameTick
-        METADOT_SCOPE_AUTO("GameTick");
+        ME_profiler_scope_auto("GameTick");
 
         if (GameIsolate_.globaldef.tick_world) updateFrameEarly();
 
@@ -916,16 +916,16 @@ int Game::run(int argc, char *argv[]) {
 
 #pragma region Render
         // render
-        METADOT_SCOPE_AUTO("Rendering");
+        ME_profiler_scope_auto("Rendering");
 
         Render.target = Render.realTarget;
         R_Clear(Render.target);
 
-        METADOT_SCOPE_AUTO("RenderEarly");
+        ME_profiler_scope_auto("RenderEarly");
         renderEarly();
         Render.target = Render.realTarget;
 
-        METADOT_SCOPE_AUTO("RenderLate");
+        ME_profiler_scope_auto("RenderLate");
         renderLate();
         Render.target = Render.realTarget;
 
@@ -2492,13 +2492,13 @@ void Game::tickPlayer() {
 void Game::tickProfiler() {
 
     if (global.game->GameIsolate_.globaldef.draw_profiler) {
-        static ProfilerFrame data;
-        ProfilerGetFrame(&data);
+        static profiler_frame data;
+        ME_profiler_get_frame(&data);
 
         // // if (g_multi) ProfilerDrawFrameNavigation(g_frameInfos.data(), g_frameInfos.size());
 
         static char buffer[10 * 1024];
-        ProfilerDrawFrame(&data, buffer, 10 * 1024);
+        profiler_draw_frame(&data, buffer, 10 * 1024);
         // // ProfilerDrawStats(&data);
     }
 

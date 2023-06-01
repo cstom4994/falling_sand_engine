@@ -69,6 +69,9 @@ do
 
     files {"source/libs/*.cpp", "source/libs/*.c", "source/libs/ImGui/**.cpp", "source/libs/ImGui/**.c",
            "source/libs/glad/**.c", "source/libs/lz4/**.c", "source/libs/lua/**.c", "source/libs/external/*.c"}
+
+    files {"source/libs/**.h", "source/libs/**.hpp"}
+
 end
 
 project "MetaDot"
@@ -78,7 +81,7 @@ do
     targetdir "output"
     debugdir "output/../"
 
-    files {"source/engine/**.cpp","source/engine/**.c", "source/engine/**.h", "source/engine/**.hpp"}
+    files {"source/engine/**.cpp", "source/engine/**.c", "source/engine/**.h", "source/engine/**.hpp"}
 
     links {"MetaDotLibs", "SDL2", "ffi", win32_libs}
 end

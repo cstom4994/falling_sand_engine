@@ -46,7 +46,7 @@ IMPLENGINE();
 #define LANG(_c) global.I18N.Get(_c).c_str()
 #define ICON_LANG(_i, _c) std::string(std::string(_i) + " " + global.I18N.Get(_c)).c_str()
 
-void ProfilerDrawFrameNavigation(FrameInfo *_infos, uint32_t _numInfos) {
+void profiler_draw_frame_bavigation(frame_info *_infos, uint32_t _numInfos) {
     ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(1510.0f, 140.0f), ImGuiCond_FirstUseEver);
 
@@ -86,7 +86,7 @@ void ProfilerDrawFrameNavigation(FrameInfo *_infos, uint32_t _numInfos) {
 
     ImGui::BeginChild("", ImVec2(s.x, 70), false, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar);
 
-    ImGui::PlotHistogram("", (const float *)_infos, _numInfos, 0, "", 0.f, maxTime, ImVec2(_numInfos * 10, 50), sizeof(FrameInfo));
+    ImGui::PlotHistogram("", (const float *)_infos, _numInfos, 0, "", 0.f, maxTime, ImVec2(_numInfos * 10, 50), sizeof(frame_info));
 
     // if (ImGui::IsMouseClicked(0) && (idx != -1)) {
     //     profilerFrameLoad(g_fileName, _infos[idx].m_offset, _infos[idx].m_size);
@@ -97,8 +97,10 @@ void ProfilerDrawFrameNavigation(FrameInfo *_infos, uint32_t _numInfos) {
     ImGui::End();
 }
 
-int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, bool _inGame, bool _multi) {
+int profiler_draw_frame(profiler_frame *_data, void *_buffer, size_t _bufferSize, bool _inGame, bool _multi) {
     int ret = 0;
+
+    // if (fabs(_data->m_startTime - _data->m_endtime) == 0.0f) return ret;
 
     std::sort(&_data->m_scopes[0], &_data->m_scopes[_data->m_numScopes], customLess);
 
@@ -109,22 +111,22 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
     bool noMove = (pause && _inGame) || !_inGame;
     noMove = noMove && ImGui::GetIO().KeyCtrl;
 
-    static ImVec2 winpos = ImGui::GetWindowPos();
+    ME_PRIVATE(ImVec2) winpos = ImGui::GetWindowPos();
 
     if (noMove) ImGui::SetNextWindowPos(winpos);
 
-    ImGui::Begin(LANG("ui_profiler"), 0, noMove ? ImGuiWindowFlags_NoMove : 0);
+    ImGui::Begin(LANG("Profiler"), 0, noMove ? ImGuiWindowFlags_NoMove : 0);
 
     ImGui::BeginTabBar("ui_profiler_tabbar");
 
-    if (ImGui::BeginTabItem(LANG("ui_frameinspector"))) {
+    if (ImGui::BeginTabItem(LANG("帧监测"))) {
 
         if (!noMove) winpos = ImGui::GetWindowPos();
 
-        float deltaTime = ProfilerClock2ms(_data->m_endtime - _data->m_startTime, _data->m_CPUFrequency);
+        float deltaTime = profiler_clock2ms(_data->m_endtime - _data->m_startTime, _data->m_CPUFrequency);
         float frameRate = 1000.0f / deltaTime;
 
-        ImVec4 col = triColor(frameRate, METADOT_MINIMUM_FRAME_RATE, METADOT_DESIRED_FRAME_RATE);
+        ImVec4 col = tri_color(frameRate, ME_MINIMUM_FRAME_RATE, ME_DESIRED_FRAME_RATE);
 
         ImGui::Text("FPS: ");
         ImGui::SameLine();
@@ -132,7 +134,7 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
         ImGui::Text("%.1f    ", 1000.0f / deltaTime);
         ImGui::PopStyleColor();
         ImGui::SameLine();
-        ImGui::Text("%s", LANG("ui_frametime"));
+        ImGui::Text("%s", LANG("帧耗时"));
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, col);
         ImGui::Text("%.3f ms   ", deltaTime);
@@ -140,16 +142,16 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
         ImGui::SameLine();
 
         if (_inGame) {
-            ImGui::Text("Average FPS: ");
-            ImGui::PushStyleColor(ImGuiCol_Text, triColor(ImGui::GetIO().Framerate, METADOT_MINIMUM_FRAME_RATE, METADOT_DESIRED_FRAME_RATE));
+            ImGui::Text("平均帧率: ");
+            ImGui::PushStyleColor(ImGuiCol_Text, tri_color(ImGui::GetIO().Framerate, ME_MINIMUM_FRAME_RATE, ME_DESIRED_FRAME_RATE));
             ImGui::SameLine();
             ImGui::Text("%.1f   ", ImGui::GetIO().Framerate);
             ImGui::PopStyleColor();
         } else {
-            float prevFrameTime = ProfilerClock2ms(_data->m_prevFrameTime, _data->m_CPUFrequency);
+            float prevFrameTime = profiler_clock2ms(_data->m_prevFrameTime, _data->m_CPUFrequency);
             ImGui::SameLine();
-            ImGui::Text("Prev frame: ");
-            ImGui::PushStyleColor(ImGuiCol_Text, triColor(1000.0f / prevFrameTime, METADOT_MINIMUM_FRAME_RATE, METADOT_DESIRED_FRAME_RATE));
+            ImGui::Text("上一帧: ");
+            ImGui::PushStyleColor(ImGuiCol_Text, tri_color(1000.0f / prevFrameTime, ME_MINIMUM_FRAME_RATE, ME_DESIRED_FRAME_RATE));
             ImGui::SameLine();
             ImGui::Text("%.3f ms  %.2f fps   ", prevFrameTime, 1000.0f / prevFrameTime);
             ImGui::PopStyleColor();
@@ -164,7 +166,7 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
 
         if (_inGame) {
             ImGui::SameLine();
-            ImGui::Checkbox("Pause captures   ", &pause);
+            ImGui::Checkbox("暂停捕获   ", &pause);
         }
 
         bool resetZoom = false;
@@ -180,24 +182,24 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
             ImGui::SliderInt("阈值级别", &thresholdLevel, 0, 23);
 
             ImGui::SameLine();
-            if (ImGui::Button("Save frame")) ret = ProfilerSave(_data, _buffer, _bufferSize);
+            if (ImGui::Button("保存帧")) ret = ME_profiler_save(_data, _buffer, _bufferSize);
         } else {
-            ImGui::Text("Capture threshold: ");
+            ImGui::Text("捕获阈值: ");
             ImGui::SameLine();
             ImGui::TextColored(ImVec4(0, 1.0f, 1.0f, 1.0f), "%.2f ", _data->m_timeThreshold);
             ImGui::SameLine();
             ImGui::Text("ms   ");
             ImGui::SameLine();
-            ImGui::Text("Threshold level: ");
+            ImGui::Text("门限等级: ");
             ImGui::SameLine();
             if (_data->m_levelThreshold == 0)
-                ImGui::TextColored(ImVec4(0, 1.0f, 1.0f, 1.0f), "whole frame   ");
+                ImGui::TextColored(ImVec4(0, 1.0f, 1.0f, 1.0f), "整帧   ");
             else
                 ImGui::TextColored(ImVec4(0, 1.0f, 1.0f, 1.0f), "%d   ", _data->m_levelThreshold);
         }
 
         ImGui::SameLine();
-        resetZoom = ImGui::Button("Reset zoom and pan");
+        resetZoom = ImGui::Button("重置缩放和平移");
 
         const ImVec2 p = ImGui::GetCursorScreenPos();
         const ImVec2 s = ImGui::GetWindowSize();
@@ -206,7 +208,7 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
         float frameEndX = frameStartX + s.x - 23;
         float frameStartY = p.y;
 
-        static PanAndZoon paz;
+        static pan_and_zoon paz;
 
         ImVec2 mpos = ImGui::GetMousePos();
 
@@ -224,7 +226,7 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
         if (ImGui::GetIO().KeysDown[90] && ImGui::IsWindowHovered())  // 'z'
             paz.m_zoom /= 1.1f;
 
-        paz.m_zoom = ProfilerMax(paz.m_zoom, 1.0f);
+        paz.m_zoom = std::max(paz.m_zoom, 1.0f);
 
         float mXpost = paz.s2w(mpos.x, frameStartX, frameEndX);
         float mXdelta = mXpost - mXpre;
@@ -243,11 +245,11 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
             paz.m_zoom = 1.0f;
         }
 
-        ProfilerSetPaused(pause);
-        ProfilerSetThreshold(threshold, thresholdLevel);
+        ME_profiler_set_paused(pause);
+        ME_profiler_set_threshold(threshold, thresholdLevel);
 
-        static const int METADOT_MAX_FRAME_TIMES = 128;
-        static float s_frameTimes[METADOT_MAX_FRAME_TIMES];
+        static const int ME_MAX_FRAME_TIMES = 128;
+        static float s_frameTimes[ME_MAX_FRAME_TIMES];
         static int s_currentFrame = 0;
 
         float maxFrameTime = 0.0f;
@@ -256,19 +258,19 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
 
             if (s_currentFrame == 0) memset(s_frameTimes, 0, sizeof(s_frameTimes));
 
-            if (!ProfilerIsPaused()) {
-                s_frameTimes[s_currentFrame % METADOT_MAX_FRAME_TIMES] = deltaTime;
+            if (!ME_profiler_is_paused()) {
+                s_frameTimes[s_currentFrame % ME_MAX_FRAME_TIMES] = deltaTime;
                 ++s_currentFrame;
             }
 
-            float frameTimes[METADOT_MAX_FRAME_TIMES];
-            for (int i = 0; i < METADOT_MAX_FRAME_TIMES; ++i) {
-                frameTimes[i] = s_frameTimes[(s_currentFrame + i) % METADOT_MAX_FRAME_TIMES];
-                maxFrameTime = ProfilerMax(maxFrameTime, frameTimes[i]);
+            float frameTimes[ME_MAX_FRAME_TIMES];
+            for (int i = 0; i < ME_MAX_FRAME_TIMES; ++i) {
+                frameTimes[i] = s_frameTimes[(s_currentFrame + i) % ME_MAX_FRAME_TIMES];
+                maxFrameTime = std::max(maxFrameTime, frameTimes[i]);
             }
 
             ImGui::Separator();
-            ImGui::PlotHistogram("", frameTimes, METADOT_MAX_FRAME_TIMES, 0, "", 0.f, maxFrameTime, ImVec2(s.x - 9.0f, 45));
+            ImGui::PlotHistogram("", frameTimes, ME_MAX_FRAME_TIMES, 0, "", 0.f, maxFrameTime, ImVec2(s.x - 9.0f, 45));
         } else {
             frameStartY += 12.0f;
             ImGui::Separator();
@@ -276,7 +278,7 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
 
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
-        maxFrameTime = ProfilerMax(maxFrameTime, 0.001f);
+        maxFrameTime = std::max(maxFrameTime, 0.001f);
         float pct30fps = 33.33f / maxFrameTime;
         float pct60fps = 16.66f / maxFrameTime;
 
@@ -291,7 +293,7 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
         if (pct60fps <= 1.0f) draw_list->AddLine(ImVec2(frameStartX - 3.0f, limit60Y), ImVec2(frameEndX + 3.0f, limit60Y), IM_COL32(96, 255, 96, 255));
 
         if (_data->m_numScopes == 0) {
-            ImGui::TextColored(ImVec4(1.0f, 0.23f, 0.23f, 1.0f), "No scope data!");
+            ImGui::TextColored(ImVec4(1.0f, 0.23f, 0.23f, 1.0f), "没有范围数据!");
             ImGui::End();
             return ret;
         }
@@ -304,10 +306,10 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
         float barHeight = 21.0f;
         float bottom = 0.0f;
 
-        uint64_t currTime = ProfilerGetClock();
+        uint64_t currTime = ME_profiler_get_clock();
 
         for (uint32_t i = 0; i < _data->m_numScopes; ++i) {
-            ProfilerScope &cs = _data->m_scopes[i];
+            profiler_scope &cs = _data->m_scopes[i];
             if (!cs.m_name) continue;
 
             if (cs.m_threadID != threadID) {
@@ -353,13 +355,13 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
             ImVec2 tl = ImVec2(startX, frameStartY + cs.m_level * (barHeight + 1.0f));
             ImVec2 br = ImVec2(endX, frameStartY + cs.m_level * (barHeight + 1.0f) + barHeight);
 
-            bottom = ProfilerMax(bottom, br.y);
+            bottom = std::max(bottom, br.y);
 
             int level = cs.m_level;
             if (cs.m_level >= s_maxLevelColors) level = s_maxLevelColors - 1;
 
             ImU32 drawColor = s_levelColors[level];
-            flashColorNamed(drawColor, cs, currTime - s_timeSinceStatClicked);
+            flash_color_named(drawColor, cs, currTime - s_timeSinceStatClicked);
 
             if (ImGui::IsMouseClicked(0) && ImGui::IsMouseHoveringRect(tl, br) && ImGui::IsWindowHovered()) {
                 s_timeSinceStatClicked = currTime;
@@ -367,7 +369,7 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
                 s_statClickedLevel = cs.m_level;
             }
 
-            if ((thresholdLevel == (int)cs.m_level + 1) && (threshold <= ProfilerClock2ms(cs.m_end - cs.m_start, _data->m_CPUFrequency))) flashColor(drawColor, currTime - _data->m_endtime);
+            if ((thresholdLevel == (int)cs.m_level + 1) && (threshold <= profiler_clock2ms(cs.m_end - cs.m_start, _data->m_CPUFrequency))) flash_color(drawColor, currTime - _data->m_endtime);
 
             draw_list->PushClipRect(tl, br, true);
             draw_list->AddRectFilled(tl, br, drawColor);
@@ -381,7 +383,7 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
                 ImGui::Separator();
                 ImGui::TextColored(ImVec4(0, 255, 255, 255), "Time: ");
                 ImGui::SameLine();
-                ImGui::TextColored(ImVec4(230, 230, 230, 255), "%.3f ms", ProfilerClock2ms(cs.m_end - cs.m_start, _data->m_CPUFrequency));
+                ImGui::TextColored(ImVec4(230, 230, 230, 255), "%.3f ms", profiler_clock2ms(cs.m_end - cs.m_start, _data->m_CPUFrequency));
                 ImGui::TextColored(ImVec4(0, 255, 255, 255), "File: ");
                 ImGui::SameLine();
                 ImGui::Text("%s", cs.m_file);
@@ -431,7 +433,7 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
     return ret;
 }
 
-void ProfilerDrawStats(ProfilerFrame *_data, bool _multi) {
+void profiler_draw_stats(profiler_frame *_data, bool _multi) {
     ImGui::SetNextWindowPos(ImVec2(920.0f, _multi ? 160.0f : 10.0f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(600.0f, 900.0f), ImGuiCond_FirstUseEver);
 
@@ -443,7 +445,7 @@ void ProfilerDrawStats(ProfilerFrame *_data, bool _multi) {
         return;
     }
 
-    float deltaTime = ProfilerClock2ms(_data->m_endtime - _data->m_startTime, _data->m_CPUFrequency);
+    float deltaTime = profiler_clock2ms(_data->m_endtime - _data->m_startTime, _data->m_CPUFrequency);
 
     static int exclusive = 0;
     ImGui::Text("Sort by:  ");
@@ -476,7 +478,7 @@ void ProfilerDrawStats(ProfilerFrame *_data, bool _multi) {
     ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
     for (uint32_t i = 0; i < _data->m_numScopesStats; i++) {
-        ProfilerScope &cs = _data->m_scopesStats[i];
+        profiler_scope &cs = _data->m_scopesStats[i];
 
         float endXpct = float(cs.m_stats->m_exclusiveTimeTotal) / float(totalTime);
         if (exclusive == 1) endXpct = float(cs.m_stats->m_inclusiveTimeTotal) / float(totalTime);
@@ -495,12 +497,12 @@ void ProfilerDrawStats(ProfilerFrame *_data, bool _multi) {
         bool hoverRow = ImGui::IsMouseHoveringRect(tl, brE);
 
         if (ImGui::IsMouseClicked(0) && hoverRow && ImGui::IsWindowHovered()) {
-            s_timeSinceStatClicked = ProfilerGetClock();
+            s_timeSinceStatClicked = ME_profiler_get_clock();
             s_statClickedName = cs.m_name;
             s_statClickedLevel = cs.m_level;
         }
 
-        flashColorNamed(drawColor, cs, ProfilerGetClock() - s_timeSinceStatClicked);
+        flash_color_named(drawColor, cs, ME_profiler_get_clock() - s_timeSinceStatClicked);
 
         char buffer[1024];
         snprintf(buffer, 1024, "[%d] %s", cs.m_stats->m_occurences, cs.m_name);
@@ -526,12 +528,12 @@ void ProfilerDrawStats(ProfilerFrame *_data, bool _multi) {
             if (exclusive == 0) {
                 ImGui::TextColored(ImVec4(0, 255, 255, 255), "Exclusive time total: ");
                 ImGui::SameLine();
-                ttime = ProfilerClock2ms(cs.m_stats->m_exclusiveTimeTotal, _data->m_CPUFrequency);
+                ttime = profiler_clock2ms(cs.m_stats->m_exclusiveTimeTotal, _data->m_CPUFrequency);
                 ImGui::TextColored(ImVec4(230, 230, 230, 255), "%.4f ms", ttime);
             } else {
                 ImGui::TextColored(ImVec4(0, 255, 255, 255), "Inclusive time total: ");
                 ImGui::SameLine();
-                ttime = ProfilerClock2ms(cs.m_stats->m_inclusiveTimeTotal, _data->m_CPUFrequency);
+                ttime = profiler_clock2ms(cs.m_stats->m_inclusiveTimeTotal, _data->m_CPUFrequency);
                 ImGui::TextColored(ImVec4(230, 230, 230, 255), "%.4f ms", ttime);
             }
 
@@ -667,46 +669,6 @@ ImGuiLayer::ImGuiLayer() {
     PlatformNewFrameFunction = ImGui_ImplSDL2_NewFrame;
     RenderFunction = ImGui_ImplOpenGL3_RenderDrawData;
 }
-
-class OpenGL3TextureManager : public ImGuiTextureManager {
-public:
-    ~OpenGL3TextureManager() {
-        for (int i = 0; i < mTextures.size(); ++i) {
-            GLuint tid = mTextures[i];
-            glDeleteTextures(1, &tid);
-        }
-        mTextures.clear();
-    }
-
-    ImTextureID createTexture(void *pixels, int width, int height) {
-        // Upload texture to graphics system
-        GLuint texture_id = 0;
-        GLint last_texture;
-        glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-        glGenTextures(1, &texture_id);
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-#ifdef GL_UNPACK_ROW_LENGTH
-        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-#endif
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-        glBindTexture(GL_TEXTURE_2D, last_texture);
-        mTextures.reserve(mTextures.size() + 1);
-        mTextures.push_back(texture_id);
-        return (ImTextureID)(intptr_t)texture_id;
-    }
-
-    void deleteTexture(ImTextureID id) {
-        GLuint tex = (GLuint)(intptr_t)id;
-        glDeleteTextures(1, &tex);
-    }
-
-private:
-    typedef ImVector<GLuint> Textures;
-
-    Textures mTextures;
-};
 
 static bool firstRun = false;
 

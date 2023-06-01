@@ -13,9 +13,9 @@
 #include "engine/core/macros.hpp"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/engine.h"
+#include "engine/renderer/renderer_gpu.h"
 #include "libs/glad/glad.h"
 #include "memory.h"
-#include "engine/renderer/renderer_gpu.h"
 
 IMPLENGINE();
 
@@ -169,7 +169,7 @@ int metadot_initwindow() {
 
     SDL_GL_MakeCurrent(Core.window, Core.glContext);
 
-    auto metadot_gl_global_init = [](metadot_gl_loader_fn loader_fp) {
+    auto metadot_gl_global_init = [](ME_gl_loader_fn loader_fp) {
         if (NULL == loader_fp) {
             if (!gladLoadGL()) {
                 METADOT_ERROR("GLAD GL3 loader failed");

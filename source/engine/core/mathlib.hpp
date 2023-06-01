@@ -60,8 +60,6 @@ typedef signed int metadot_bool;
 
 f32 math_perlin(f32 x, f32 y, f32 z, int x_wrap = 0, int y_wrap = 0, int z_wrap = 0);
 
-static_inline ImVec4 vec4_to_imvec4(const MEvec4 &v4) { return {v4.x, v4.y, v4.z, v4.w}; }
-
 #pragma region NewMATH
 
 namespace NewMaths {

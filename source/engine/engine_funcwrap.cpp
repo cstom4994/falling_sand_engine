@@ -22,14 +22,14 @@
 #include "engine/core/platform.h"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/engine.h"
-#include "game.hpp"
-#include "libs/lz4/lz4.h"
-#include "libs/lz4/lz4frame.h"
-#include "libs/lz4/lz4hc.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/lua_wrapper_base.hpp"
 #include "engine/scripting/scripting.hpp"
+#include "game.hpp"
+#include "libs/lz4/lz4.h"
+#include "libs/lz4/lz4frame.h"
+#include "libs/lz4/lz4hc.h"
 
 #ifndef ME_PLATFORM_WINDOWS
 #include <dirent.h>
@@ -40,6 +40,8 @@
 
 #define f_mkdir(a, b) _mkdir(a)
 #endif
+
+#define FS_LINE_INCR 256
 
 IMPLENGINE();
 

@@ -82,12 +82,11 @@
 #define MAX_PATH 1024
 #endif
 
-#define FS_LINE_INCR 256
-
-typedef void* (*metadot_gl_loader_fn)(const char* name);
-
 /*--------------------------------------------------------------------------*/
-static inline uint64_t getThreadID() {
+
+typedef void* (*ME_gl_loader_fn)(const char* name);
+
+static inline uint64_t ME_get_thread_id() {
 #if defined(ME_PLATFORM_WINDOWS)
     return (uint64_t)GetCurrentThreadId();
 #elif defined(ME_PLATFORM_LINUX)
@@ -104,89 +103,89 @@ static inline uint64_t getThreadID() {
 
 #ifdef ME_PLATFORM_WINDOWS
 
-static inline uint32_t tlsAllocate() { return (uint32_t)TlsAlloc(); }
+static inline uint32_t ME_tls_allocate() { return (uint32_t)TlsAlloc(); }
 
-static inline void tlsSetValue(uint32_t _handle, void* _value) { TlsSetValue(_handle, _value); }
+static inline void ME_tls_set_value(uint32_t _handle, void* _value) { TlsSetValue(_handle, _value); }
 
-static inline void* tlsGetValue(uint32_t _handle) { return TlsGetValue(_handle); }
+static inline void* ME_tls_get_value(uint32_t _handle) { return TlsGetValue(_handle); }
 
-static inline void tlsFree(uint32_t _handle) { TlsFree(_handle); }
+static inline void ME_tls_free(uint32_t _handle) { TlsFree(_handle); }
 
 #else
 
-static inline pthread_key_t tlsAllocate() {
+static inline pthread_key_t ME_tls_allocate() {
     pthread_key_t handle;
     pthread_key_create(&handle, NULL);
     return handle;
 }
 
-static inline void tlsSetValue(pthread_key_t _handle, void *_value) { pthread_setspecific(_handle, _value); }
+static inline void ME_tls_set_value(pthread_key_t _handle, void *_value) { pthread_setspecific(_handle, _value); }
 
-static inline void *tlsGetValue(pthread_key_t _handle) { return pthread_getspecific(_handle); }
+static inline void *ME_tls_get_value(pthread_key_t _handle) { return pthread_getspecific(_handle); }
 
-static inline void tlsFree(pthread_key_t _handle) { pthread_key_delete(_handle); }
+static inline void ME_tls_free(pthread_key_t _handle) { pthread_key_delete(_handle); }
 
 #endif
 
-namespace MetaEngine {
+namespace ME {
 
 #if defined(ME_PLATFORM_WINDOWS)
-typedef CRITICAL_SECTION metadot_mutex;
+typedef CRITICAL_SECTION ME_mutex;
 
-static inline void metadot_mutex_init(metadot_mutex* _mutex) { InitializeCriticalSection(_mutex); }
+static inline void ME_mutex_init(ME_mutex* _mutex) { InitializeCriticalSection(_mutex); }
 
-static inline void metadot_mutex_destroy(metadot_mutex* _mutex) { DeleteCriticalSection(_mutex); }
+static inline void ME_mutex_destroy(ME_mutex* _mutex) { DeleteCriticalSection(_mutex); }
 
-static inline void metadot_mutex_lock(metadot_mutex* _mutex) { EnterCriticalSection(_mutex); }
+static inline void ME_mutex_lock(ME_mutex* _mutex) { EnterCriticalSection(_mutex); }
 
-static inline int metadot_mutex_trylock(metadot_mutex* _mutex) { return TryEnterCriticalSection(_mutex) ? 0 : 1; }
+static inline int ME_mutex_trylock(ME_mutex* _mutex) { return TryEnterCriticalSection(_mutex) ? 0 : 1; }
 
-static inline void metadot_mutex_unlock(metadot_mutex* _mutex) { LeaveCriticalSection(_mutex); }
+static inline void ME_mutex_unlock(ME_mutex* _mutex) { LeaveCriticalSection(_mutex); }
 
 #elif defined(ME_PLATFORM_POSIX)
-typedef pthread_mutex_t metadot_mutex;
+typedef pthread_mutex_t ME_mutex;
 
-static inline void metadot_mutex_init(metadot_mutex *_mutex) { pthread_mutex_init(_mutex, NULL); }
+static inline void ME_mutex_init(ME_mutex *_mutex) { pthread_mutex_init(_mutex, NULL); }
 
-static inline void metadot_mutex_destroy(metadot_mutex *_mutex) { pthread_mutex_destroy(_mutex); }
+static inline void ME_mutex_destroy(ME_mutex *_mutex) { pthread_mutex_destroy(_mutex); }
 
-static inline void metadot_mutex_lock(metadot_mutex *_mutex) { pthread_mutex_lock(_mutex); }
+static inline void ME_mutex_lock(ME_mutex *_mutex) { pthread_mutex_lock(_mutex); }
 
-static inline int metadot_mutex_trylock(metadot_mutex *_mutex) { return pthread_mutex_trylock(_mutex); }
+static inline int ME_mutex_trylock(ME_mutex *_mutex) { return pthread_mutex_trylock(_mutex); }
 
-static inline void metadot_mutex_unlock(metadot_mutex *_mutex) { pthread_mutex_unlock(_mutex); }
+static inline void ME_mutex_unlock(ME_mutex *_mutex) { pthread_mutex_unlock(_mutex); }
 
 #else
 #error "Unsupported platform!"
 #endif
 
-class pthread_Mutex {
-    metadot_mutex m_mutex;
+class pthread_mutex {
+    ME_mutex m_mutex;
 
-    pthread_Mutex(const pthread_Mutex& _rhs);
-    pthread_Mutex& operator=(const pthread_Mutex& _rhs);
-
-public:
-    inline pthread_Mutex() { metadot_mutex_init(&m_mutex); }
-    inline ~pthread_Mutex() { metadot_mutex_destroy(&m_mutex); }
-    inline void lock() { metadot_mutex_lock(&m_mutex); }
-    inline void unlock() { metadot_mutex_unlock(&m_mutex); }
-    inline bool tryLock() { return (metadot_mutex_trylock(&m_mutex) == 0); }
-};
-
-class ScopedMutexLocker {
-    pthread_Mutex& m_mutex;
-
-    ScopedMutexLocker();
-    ScopedMutexLocker(const ScopedMutexLocker&);
-    ScopedMutexLocker& operator=(const ScopedMutexLocker&);
+    pthread_mutex(const pthread_mutex& _rhs);
+    pthread_mutex& operator=(const pthread_mutex& _rhs);
 
 public:
-    inline ScopedMutexLocker(pthread_Mutex& _mutex) : m_mutex(_mutex) { m_mutex.lock(); }
-    inline ~ScopedMutexLocker() { m_mutex.unlock(); }
+    inline pthread_mutex() { ME_mutex_init(&m_mutex); }
+    inline ~pthread_mutex() { ME_mutex_destroy(&m_mutex); }
+    inline void lock() { ME_mutex_lock(&m_mutex); }
+    inline void unlock() { ME_mutex_unlock(&m_mutex); }
+    inline bool tryLock() { return (ME_mutex_trylock(&m_mutex) == 0); }
 };
 
-}  // namespace MetaEngine
+class scoped_mutex_locker {
+    pthread_mutex& m_mutex;
+
+    scoped_mutex_locker();
+    scoped_mutex_locker(const scoped_mutex_locker&);
+    scoped_mutex_locker& operator=(const scoped_mutex_locker&);
+
+public:
+    inline scoped_mutex_locker(pthread_mutex& _mutex) : m_mutex(_mutex) { m_mutex.lock(); }
+    inline ~scoped_mutex_locker() { m_mutex.unlock(); }
+};
+
+}  // namespace ME
 
 typedef enum engine_displaymode { WINDOWED, BORDERLESS, FULLSCREEN } engine_displaymode;
 

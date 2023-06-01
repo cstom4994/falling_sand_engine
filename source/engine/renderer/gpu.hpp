@@ -11,10 +11,11 @@
 #include <vector>
 
 #include "engine/core/core.hpp"
-#include "libs/glad/glad.h"
-#include "libs/imgui/imgui.h"
+#include "engine/core/utils/utility.hpp"
 #include "engine/physics/box2d.h"
 #include "engine/renderer/renderer_gpu.h"
+#include "libs/glad/glad.h"
+#include "libs/imgui/imgui.h"
 
 #define R_GET_PIXEL(surface, x, y) *((u32 *)((u8 *)surface->pixels + ((y)*surface->pitch) + ((x) * sizeof(u32))))
 
@@ -24,6 +25,15 @@ typedef struct engine_render {
     R_Target *realTarget;
     R_Target *target;
 } engine_render;
+
+ME_PRIVATE(void) ME_check_gl_error(const char *file, const int line) {
+    GLenum err;
+    while ((err = glGetError()) != GL_NO_ERROR) {
+        METADOT_ERROR(std::format("[Render] {0} : {1} {2} {3}", file, line, err, (const char *)glGetString(err)).c_str());
+    }
+}
+
+#define ME_CHECK_GL_ERROR() ME_check_gl_error(__FILE__, __LINE__)
 
 namespace MetaEngine {
 const char *GLEnumToString(GLenum e);

@@ -226,7 +226,7 @@ static void InitLua(LuaCore *lc) {
 
     LoadImGuiBindings(lc->L);
 
-    //ME_preload_auto(lc->L, luaopen_lpeg, "lpeg");
+    // ME_preload_auto(lc->L, luaopen_lpeg, "lpeg");
 
     ME_preload_auto(lc->L, ffi_module_open, "ffi");
     ME_preload_auto(lc->L, luaopen_lbind, "lbind");

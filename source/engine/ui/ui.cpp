@@ -8,7 +8,7 @@
 #include "engine/core/global.hpp"
 #include "engine/core/mathlib.hpp"
 #include "engine/core/platform.h"
-#include "engine/core/profiler/profiler.h"
+#include "engine/core/profiler.hpp"
 #include "engine/engine.h"
 #include "engine/event/inputevent.hpp"
 #include "engine/game.hpp"
