@@ -6,15 +6,14 @@
 #include <memory>
 #include <vector>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/global.hpp"
-
 #include "game.hpp"
 #include "game_resources.hpp"
 #include "renderer/renderer_gpu.h"
-#include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/lua_wrapper.hpp"
 
-BackgroundLayer::BackgroundLayer(Texture *texture, F32 parallaxX, F32 parallaxY, F32 moveX, F32 moveY) {
+BackgroundLayer::BackgroundLayer(Texture *texture, f32 parallaxX, f32 parallaxY, f32 moveX, f32 moveY) {
     this->tex = texture;
     this->surface = {ScaleSurface(texture->surface, 1, 1), ScaleSurface(texture->surface, 2, 2), ScaleSurface(texture->surface, 3, 3)};
     this->parralaxX = parallaxX;
@@ -42,17 +41,17 @@ void BackgroundObject::Init() {
     }
 }
 
-void NewBackgroundObject(std::string name, U32 solid, LuaWrapper::LuaRef table) {
+void NewBackgroundObject(std::string name, u32 solid, LuaWrapper::LuaRef table) {
     auto &L = Scripting::GetSingletonPtr()->Lua->s_lua;
     std::vector<LuaWrapper::LuaRef> b = table;
-    std::vector<MetaEngine::Ref<BackgroundLayer>> Layers;
+    std::vector<ME::ref<BackgroundLayer>> Layers;
 
     for (auto &c : b) {
-        METADOT_BUG("NewBackgroundObject %s, [%f %f %f %f]", c["name"].get<std::string>().c_str(), c["p1"].get<F32>(), c["p2"].get<F32>(), c["x1"].get<F32>(), c["x2"].get<F32>());
-        Layers.push_back(MetaEngine::CreateRef<BackgroundLayer>(LoadTexture(c["name"].get<std::string>().c_str()), c["p1"].get<F32>(), c["p2"].get<F32>(), c["x1"].get<F32>(), c["x2"].get<F32>()));
+        METADOT_BUG("NewBackgroundObject %s, [%f %f %f %f]", c["name"].get<std::string>().c_str(), c["p1"].get<f32>(), c["p2"].get<f32>(), c["x1"].get<f32>(), c["x2"].get<f32>());
+        Layers.push_back(ME::create_ref<BackgroundLayer>(LoadTexture(c["name"].get<std::string>().c_str()), c["p1"].get<f32>(), c["p2"].get<f32>(), c["x1"].get<f32>(), c["x2"].get<f32>()));
     }
 
-    METADOT_CREATE(C, bg, BackgroundObject, solid, Layers);
+    BackgroundObject *bg = new BackgroundObject(solid, Layers);
 
     global.game->GameIsolate_.backgrounds->Push(name, bg);
     global.game->GameIsolate_.backgrounds->Get(name)->Init();
@@ -73,14 +72,12 @@ void BackgroundSystem::Create() {
     this->RegisterLua(L);
 
     L["OnBackgroundLoad"]();
-
-    
 }
 
 void BackgroundSystem::Destory() {
-    for (auto &[name, bg] : m_backgrounds) METADOT_DELETE(C, bg, BackgroundObject);
+    for (auto &[name, bg] : m_backgrounds) {
+        delete bg;
+    }
 }
-void BackgroundSystem::Reload() {
-    
-}
+void BackgroundSystem::Reload() {}
 void BackgroundSystem::RegisterLua(LuaWrapper::State &s_lua) { s_lua["NewBackgroundObject"] = LuaWrapper::function(NewBackgroundObject); }

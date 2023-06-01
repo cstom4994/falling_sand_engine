@@ -12,7 +12,7 @@
 #include "core/macros.hpp"
 #include "core/utils/utility.hpp"
 #include "engine/engine.h"
-#include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/lua_wrapper.hpp"
 
 struct lua_State;
 
@@ -20,12 +20,12 @@ struct lua_State;
 
 template <typename T>
 ME_INLINE void struct_as(std::string &s, const char *table, const char *key, const T &value) {
-    s += MetaEngine::Format("{0}.{1} = {2}\n", table, key, value);
+    s += std::format("{0}.{1} = {2}\n", table, key, value);
 }
 
 template <>
 ME_INLINE void struct_as(std::string &s, const char *table, const char *key, const std::string &value) {
-    s += MetaEngine::Format("{0}.{1} = \"{2}\"\n", table, key, value);
+    s += std::format("{0}.{1} = \"{2}\"\n", table, key, value);
 }
 
 #pragma endregion struct_as
@@ -43,7 +43,7 @@ struct test_visitor {
 
 template <typename T>
 void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
-    MetaEngine::Struct::for_each(_struct, [&](const char *name, const auto &value) {
+    ME::Struct::for_each(_struct, [&](const char *name, const auto &value) {
         // METADOT_INFO("{} == {} ({})", name, value, typeid(value).name());
         struct_as(out, table_name, name, value);
     });
@@ -55,10 +55,10 @@ void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
 // void LoadLuaConfig(const T &_struct, LuaWrapper::LuaTable *luat) {
 //     int idx = 0;
 //     test_visitor vis;
-//     MetaEngine::Struct::apply_visitor(vis, _struct);
-//     MetaEngine::Struct::for_each(_struct, [&](const char *name, const auto &value) {
-//         // (*MetaEngine::Struct::get_pointer<idx>()) =
-//         //         (*luat)[name].get<decltype(MetaEngine::Struct::get<idx>(_struct))>();
+//     ME::Struct::apply_visitor(vis, _struct);
+//     ME::Struct::for_each(_struct, [&](const char *name, const auto &value) {
+//         // (*ME::Struct::get_pointer<idx>()) =
+//         //         (*luat)[name].get<decltype(ME::Struct::get<idx>(_struct))>();
 //         // (*vis1.result[idx].first) = (*luat)[name].get<>();
 //     });
 // }
@@ -73,8 +73,7 @@ struct LuaCore {
 };
 
 void print_error(lua_State *state, int result = 0);
-void RunScriptInConsole(const char *c);
-void RunScriptFromFile(const char *filePath);
+void script_runfile(const char *filePath);
 
 class Scripting : public MetaEngine::CSingleton<Scripting> {
 public:

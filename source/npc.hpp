@@ -112,8 +112,8 @@ public:
     Bot(const Bot &p) = default;
 
     Item *heldItem = nullptr;
-    F32 holdAngle = 0;
-    I64 startThrow = 0;
+    f32 holdAngle = 0;
+    i64 startThrow = 0;
     EnumPlayerHoldType holdtype = None;
     int hammerX = 0;
     int hammerY = 0;

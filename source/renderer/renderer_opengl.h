@@ -126,14 +126,14 @@ typedef struct ContextData_OpenGL_3 {
 typedef struct ImageData_OpenGL_3 {
     int refcount;
     bool owns_handle;
-    U32 handle;
-    U32 format;
+    u32 handle;
+    u32 format;
 } ImageData_OpenGL_3;
 
 typedef struct TargetData_OpenGL_3 {
     int refcount;
-    U32 handle;
-    U32 format;
+    u32 handle;
+    u32 format;
 } TargetData_OpenGL_3;
 
 #define ME_OPENGL

@@ -3,7 +3,7 @@
 #ifndef ME_RENDERER_GPU_H
 #define ME_RENDERER_GPU_H
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/mathlib.hpp"
 #include "libs/external/stb_image.h"
 #include "libs/glad/glad.h"
@@ -23,7 +23,7 @@
 #define ALIGN_CENTER 1
 #define ALIGN_RIGHT 2
 
-#define METAENGINE_ALPHA_TRANSPARENT 0
+#define ME_ALPHA_TRANSPARENT 0
 
 // Check for bool support
 #ifdef __STDC_VERSION__
@@ -94,16 +94,16 @@
 #endif
 
 typedef struct ME_Color {
-    U8 r;
-    U8 g;
-    U8 b;
-    U8 a;
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
 
     ME_Color() : r(255), g(255), b(255), a(255) {}
-    ME_Color(U8 R, U8 G, U8 B, U8 A) : r(R), g(G), b(B), a(A) {}
+    ME_Color(u8 R, u8 G, u8 B, u8 A) : r(R), g(G), b(B), a(A) {}
     ME_Color(float R, float G, float B) : r(R * 255), g(G * 255), b(B * 255), a(255) {}
     ME_Color(MEvec3 &v3) : r(v3.r), g(v3.g), b(v3.b), a(255) {}
-    ME_Color(MEvec3 &v3, U8 A) : r(v3.r), g(v3.g), b(v3.b), a(A) {}
+    ME_Color(MEvec3 &v3, u8 A) : r(v3.r), g(v3.g), b(v3.b), a(A) {}
 
     void Set(float R, float G, float B) {
         r = R * 255;
@@ -239,12 +239,12 @@ typedef struct R_Image {
     R_Target *target;
     void *data;
 
-    U16 w, h;
+    u16 w, h;
     R_FormatEnum format;
     int num_layers;
     int bytes_per_pixel;
-    U16 base_w, base_h;        // Original image dimensions
-    U16 texture_w, texture_h;  // Underlying texture dimensions
+    u16 base_w, base_h;        // Original image dimensions
+    u16 texture_w, texture_h;  // Underlying texture dimensions
 
     float anchor_x;  // Normalized coords for the point at which the image is blitted.  Default is (0.5, 0.5), that is, the image is drawn centered.
     float anchor_y;  // These are interpreted according to R_SetCoordinateMode() and range from (0.0 - 1.0) normally.
@@ -327,7 +327,7 @@ typedef struct R_Context {
     R_ShaderBlock default_untextured_shader_block;
 
     /*! SDL window ID */
-    U32 windowID;
+    u32 windowID;
 
     /*! Actual window dimensions */
     int window_w;
@@ -342,15 +342,15 @@ typedef struct R_Context {
     int stored_window_h;
 
     /*! Shader handles used in the default shader programs */
-    U32 default_textured_vertex_shader_id;
-    U32 default_textured_fragment_shader_id;
-    U32 default_untextured_vertex_shader_id;
-    U32 default_untextured_fragment_shader_id;
+    u32 default_textured_vertex_shader_id;
+    u32 default_textured_fragment_shader_id;
+    u32 default_untextured_vertex_shader_id;
+    u32 default_untextured_fragment_shader_id;
 
     /*! Internal state */
-    U32 current_shader_program;
-    U32 default_textured_shader_program;
-    U32 default_untextured_shader_program;
+    u32 current_shader_program;
+    u32 default_textured_shader_program;
+    u32 default_untextured_shader_program;
 
     R_BlendMode shapes_blend_mode;
     float line_thickness;
@@ -381,8 +381,8 @@ struct R_Target {
     R_Target *context_target;
     R_Image *image;
     void *data;
-    U16 w, h;
-    U16 base_w, base_h;  // The true dimensions of the underlying image or window
+    u16 w, h;
+    u16 base_w, base_h;  // The true dimensions of the underlying image or window
     metadot_rect clip_rect;
     ME_Color color;
 
@@ -419,7 +419,7 @@ struct R_Target {
  * \see R_IsFeatureEnabled()
  * \see R_SetRequiredFeatures()
  */
-typedef U32 R_FeatureEnum;
+typedef u32 R_FeatureEnum;
 static const R_FeatureEnum R_FEATURE_NON_POWER_OF_TWO = 0x1;
 static const R_FeatureEnum R_FEATURE_RENDER_TARGETS = 0x2;
 static const R_FeatureEnum R_FEATURE_BLEND_EQUATIONS = 0x4;
@@ -442,7 +442,7 @@ static const R_FeatureEnum R_FEATURE_CORE_FRAMEBUFFER_OBJECTS = 0x1000;
 #define R_FEATURE_BASIC_SHADERS (R_FEATURE_FRAGMENT_SHADER | R_FEATURE_VERTEX_SHADER)
 #define R_FEATURE_ALL_SHADERS (R_FEATURE_FRAGMENT_SHADER | R_FEATURE_VERTEX_SHADER | R_FEATURE_GEOMETRY_SHADER)
 
-typedef U32 R_WindowFlagEnum;
+typedef u32 R_WindowFlagEnum;
 
 /*! \ingroup Initialization
  * Initialization flags for changing default init parameters.  Can be bitwise OR'ed together.
@@ -450,7 +450,7 @@ typedef U32 R_WindowFlagEnum;
  * \see R_SetPreInitFlags()
  * \see R_GetPreInitFlags()
  */
-typedef U32 R_InitFlagEnum;
+typedef u32 R_InitFlagEnum;
 static const R_InitFlagEnum R_INIT_ENABLE_VSYNC = 0x1;
 static const R_InitFlagEnum R_INIT_DISABLE_VSYNC = 0x2;
 static const R_InitFlagEnum R_INIT_DISABLE_DOUBLE_BUFFER = 0x4;
@@ -461,14 +461,14 @@ static const R_InitFlagEnum R_INIT_USE_COPY_TEXTURE_UPLOAD_FALLBACK = 0x40;
 
 #define R_DEFAULT_INIT_FLAGS 0
 
-static const U32 R_NONE = 0x0;
+static const u32 R_NONE = 0x0;
 
 /*! \ingroup Rendering
  * Primitive types for rendering arbitrary geometry.  The values are intentionally identical to the GL_* primitives.
  * \see R_PrimitiveBatch()
  * \see R_PrimitiveBatchV()
  */
-typedef U32 R_PrimitiveEnum;
+typedef u32 R_PrimitiveEnum;
 static const R_PrimitiveEnum R_POINTS = 0x0;
 static const R_PrimitiveEnum R_LINES = 0x1;
 static const R_PrimitiveEnum R_LINE_LOOP = 0x2;
@@ -483,7 +483,7 @@ static const R_PrimitiveEnum R_TRIANGLE_FAN = 0x6;
  * \see R_PrimitiveBatch()
  * \see R_PrimitiveBatchV()
  */
-typedef U32 R_BatchFlagEnum;
+typedef u32 R_BatchFlagEnum;
 static const R_BatchFlagEnum R_BATCH_XY = 0x1;
 static const R_BatchFlagEnum R_BATCH_XYZ = 0x2;
 static const R_BatchFlagEnum R_BATCH_ST = 0x4;
@@ -511,7 +511,7 @@ static const R_BatchFlagEnum R_BATCH_RGBA8 = 0x40;
  * \see R_BlitRect
  * \see R_BlitRectX
  */
-typedef U32 R_FlipEnum;
+typedef u32 R_FlipEnum;
 static const R_FlipEnum R_FLIP_NONE = 0x0;
 static const R_FlipEnum R_FLIP_HORIZONTAL = 0x1;
 static const R_FlipEnum R_FLIP_VERTICAL = 0x2;
@@ -519,7 +519,7 @@ static const R_FlipEnum R_FLIP_VERTICAL = 0x2;
 /*! \ingroup ShaderInterface
  * Type enumeration for R_AttributeFormat specifications.
  */
-typedef U32 R_TypeEnum;
+typedef u32 R_TypeEnum;
 // Use OpenGL's values for simpler translation
 static const R_TypeEnum R_TYPE_BYTE = 0x1400;
 static const R_TypeEnum R_TYPE_UNSIGNED_BYTE = 0x1401;
@@ -625,10 +625,10 @@ struct R_Renderer {
 };
 
 /*! The window corresponding to 'windowID' will be used to create the rendering context instead of creating a new window. */
-void R_SetInitWindow(U32 windowID);
+void R_SetInitWindow(u32 windowID);
 
 /*! Returns the window ID that has been set via R_SetInitWindow(). */
-U32 R_GetInitWindow(void);
+u32 R_GetInitWindow(void);
 
 /*! Set special flags to use for initialization. Set these before calling R_Init().
  * \param R_flags An OR'ed combination of R_InitFlagEnum flags.  Default flags (0) enable late swap vsync and double buffering. */
@@ -670,16 +670,16 @@ void R_GetRendererOrder(int *order_size, R_RendererID *order);
  * \see R_InitRendererByID()
  * \see R_PushErrorCode()
  */
-R_Target *R_Init(U16 w, U16 h, R_WindowFlagEnum SDL_flags);
+R_Target *R_Init(u16 w, u16 h, R_WindowFlagEnum SDL_flags);
 
 /*! Initializes SDL and SDL_gpu.  Creates a window and the requested renderer context. */
-R_Target *R_InitRenderer(U16 w, U16 h, R_WindowFlagEnum SDL_flags);
+R_Target *R_InitRenderer(u16 w, u16 h, R_WindowFlagEnum SDL_flags);
 
 /*! Initializes SDL and SDL_gpu.  Creates a window and the requested renderer context.
  * By requesting a renderer via ID, you can specify the major and minor versions of an individual renderer backend.
  * \see R_MakeRendererID
  */
-R_Target *R_InitRendererByID(R_RendererID renderer_request, U16 w, U16 h, R_WindowFlagEnum SDL_flags);
+R_Target *R_InitRendererByID(R_RendererID renderer_request, u16 w, u16 h, R_WindowFlagEnum SDL_flags);
 
 /*! Checks for important GPU features which may not be supported depending on a device's extension support.  Feature flags (R_FEATURE_*) can be bitwise OR'd together.
  * \return 1 if all of the passed features are enabled/supported
@@ -771,20 +771,20 @@ void R_GetDefaultAnchor(float *anchor_x, float *anchor_y);
 R_Target *R_GetContextTarget(void);
 
 /*! \return The target that is associated with the given windowID. */
-R_Target *R_GetWindowTarget(U32 windowID);
+R_Target *R_GetWindowTarget(u32 windowID);
 
 /*! Creates a separate context for the given window using the current renderer and returns a R_Target that represents it. */
-R_Target *R_CreateTargetFromWindow(U32 windowID);
+R_Target *R_CreateTargetFromWindow(u32 windowID);
 
 /*! Makes the given window the current rendering destination for the given context target.
  * This also makes the target the current context for image loading and window operations.
  * If the target does not represent a window, this does nothing.
  */
-void R_MakeCurrent(R_Target *target, U32 windowID);
+void R_MakeCurrent(R_Target *target, u32 windowID);
 
 /*! Change the actual size of the current context target's window.  This resets the virtual resolution and viewport of the context target.
  * Aside from direct resolution changes, this should also be called in response to SDL_WINDOWEVENT_RESIZED window events for resizable windows. */
-bool R_SetWindowResolution(U16 w, U16 h);
+bool R_SetWindowResolution(u16 w, u16 h);
 
 /*! Enable/disable fullscreen mode for the current context target's window.
  * On some platforms, this may destroy the renderer context and require that textures be reloaded.  Unfortunately, SDL does not provide a notification mechanism for this.
@@ -848,10 +848,10 @@ R_Target *R_GetTarget(R_Image *image);
 void R_FreeTarget(R_Target *target);
 
 /*! Change the logical size of the given target.  Rendering to this target will be scaled as if the dimensions were actually the ones given. */
-void R_SetVirtualResolution(R_Target *target, U16 w, U16 h);
+void R_SetVirtualResolution(R_Target *target, u16 w, u16 h);
 
 /*! Query the logical size of the given target. */
-void R_GetVirtualResolution(R_Target *target, U16 *w, U16 *h);
+void R_GetVirtualResolution(R_Target *target, u16 *w, u16 *h);
 
 /*! Converts screen space coordinates (such as from mouse input) to logical drawing coordinates.  This interacts with R_SetCoordinateMode() when the y-axis is flipped (screen space is assumed to be
  * inverted: (0,0) in the upper-left corner). */
@@ -864,7 +864,7 @@ void R_UnsetVirtualResolution(R_Target *target);
 metadot_rect R_MakeRect(float x, float y, float w, float h);
 
 /*! \return An ME_Color with the given values. */
-ME_Color R_MakeColor(U8 r, U8 g, U8 b, U8 a);
+ME_Color R_MakeColor(u8 r, u8 g, u8 b, u8 a);
 
 /*! Sets the given target's viewport. */
 void R_SetViewport(R_Target *target, metadot_rect viewport);
@@ -907,13 +907,13 @@ void R_SetDepthWrite(R_Target *target, bool enable);
 void R_SetDepthFunction(R_Target *target, R_ComparisonEnum compare_operation);
 
 /*! \return The RGBA color of a pixel. */
-ME_Color R_GetPixel(R_Target *target, I16 x, I16 y);
+ME_Color R_GetPixel(R_Target *target, i16 x, i16 y);
 
 /*! Sets the clipping rect for the given render target. */
 metadot_rect R_SetClipRect(R_Target *target, metadot_rect rect);
 
 /*! Sets the clipping rect for the given render target. */
-metadot_rect R_SetClip(R_Target *target, I16 x, I16 y, U16 w, U16 h);
+metadot_rect R_SetClip(R_Target *target, i16 x, i16 y, u16 w, u16 h);
 
 /*! Turns off clipping for the given target. */
 void R_UnsetClip(R_Target *target);
@@ -938,14 +938,14 @@ void R_SetTargetColor(R_Target *target, ME_Color color);
  *  e.g. R_SetRGB(image, 255, 128, 0); R_SetTargetRGB(target, 128, 128, 128);
  *  Would make the image draw with color of roughly (128, 64, 0).
  */
-void R_SetTargetRGB(R_Target *target, U8 r, U8 g, U8 b);
+void R_SetTargetRGB(R_Target *target, u8 r, u8 g, u8 b);
 
 /*! Sets the modulation color for subsequent drawing of images and shapes on the given target.
  *  This has a cumulative effect with the image coloring functions.
  *  e.g. R_SetRGB(image, 255, 128, 0); R_SetTargetRGB(target, 128, 128, 128);
  *  Would make the image draw with color of roughly (128, 64, 0).
  */
-void R_SetTargetRGBA(R_Target *target, U8 r, U8 g, U8 b, U8 a);
+void R_SetTargetRGBA(R_Target *target, u8 r, u8 g, u8 b, u8 a);
 
 /*! Unsets the modulation color for subsequent drawing of images and shapes on the given target.
  *  This has the same effect as coloring with pure opaque white (255, 255, 255, 255).
@@ -963,7 +963,7 @@ void R_UnsetTargetColor(R_Target *target);
  * \param h Image height in pixels
  * \param format Format of color channels.
  */
-R_Image *R_CreateImage(U16 w, U16 h, R_FormatEnum format);
+R_Image *R_CreateImage(u16 w, u16 h, R_FormatEnum format);
 
 /*! Create a new image that uses the given native texture handle as the image texture. */
 R_Image *R_CreateImageUsingTexture(R_TextureHandle handle, bool take_ownership);
@@ -979,7 +979,7 @@ R_Image *R_CopyImage(R_Image *image);
 void R_FreeImage(R_Image *image);
 
 /*! Change the logical size of the given image.  Rendering this image will scaled it as if the dimensions were actually the ones given. */
-void R_SetImageVirtualResolution(R_Image *image, U16 w, U16 h);
+void R_SetImageVirtualResolution(R_Image *image, u16 w, u16 h);
 
 /*! Reset the logical size of the given image to its original value. */
 void R_UnsetImageVirtualResolution(R_Image *image);
@@ -1000,10 +1000,10 @@ void R_GenerateMipmaps(R_Image *image);
 void R_SetColor(R_Image *image, ME_Color color);
 
 /*! Sets the modulation color for subsequent drawing of the given image. */
-void R_SetRGB(R_Image *image, U8 r, U8 g, U8 b);
+void R_SetRGB(R_Image *image, u8 r, u8 g, u8 b);
 
 /*! Sets the modulation color for subsequent drawing of the given image. */
-void R_SetRGBA(R_Image *image, U8 r, U8 g, U8 b, U8 a);
+void R_SetRGBA(R_Image *image, u8 r, u8 g, u8 b, u8 a);
 
 /*! Unsets the modulation color for subsequent drawing of the given image.
  *  This is equivalent to coloring with pure opaque white (255, 255, 255, 255). */
@@ -1246,10 +1246,10 @@ void R_Clear(R_Target *target);
 void R_ClearColor(R_Target *target, ME_Color color);
 
 /*! Fills the given render target with a color (alpha is 255, fully opaque). */
-void R_ClearRGB(R_Target *target, U8 r, U8 g, U8 b);
+void R_ClearRGB(R_Target *target, u8 r, u8 g, u8 b);
 
 /*! Fills the given render target with a color. */
-void R_ClearRGBA(R_Target *target, U8 r, U8 g, U8 b, U8 a);
+void R_ClearRGBA(R_Target *target, u8 r, u8 g, u8 b, u8 a);
 
 /*! Draws the given image to the given render target.
  * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
@@ -1587,40 +1587,40 @@ void R_PolygonFilled(R_Target *target, unsigned int num_vertices, float *vertice
  * \see R_AttachShader
  * \see R_LinkShaderProgram
  */
-U32 R_CreateShaderProgram(void);
+u32 R_CreateShaderProgram(void);
 
 /*! Deletes a shader program. */
-void R_FreeShaderProgram(U32 program_object);
+void R_FreeShaderProgram(u32 program_object);
 
 /*! Compiles shader source and returns the new shader object. */
-U32 R_CompileShader(R_ShaderEnum shader_type, const char *shader_source);
+u32 R_CompileShader(R_ShaderEnum shader_type, const char *shader_source);
 
 /*! Creates and links a shader program with the given shader objects. */
-U32 R_LinkShaders(U32 shader_object1, U32 shader_object2);
+u32 R_LinkShaders(u32 shader_object1, u32 shader_object2);
 
 /*! Creates and links a shader program with the given shader objects. */
-U32 R_LinkManyShaders(U32 *shader_objects, int count);
+u32 R_LinkManyShaders(u32 *shader_objects, int count);
 
 /*! Deletes a shader object. */
-void R_FreeShader(U32 shader_object);
+void R_FreeShader(u32 shader_object);
 
 /*! Attaches a shader object to a shader program for future linking. */
-void R_AttachShader(U32 program_object, U32 shader_object);
+void R_AttachShader(u32 program_object, u32 shader_object);
 
 /*! Detaches a shader object from a shader program. */
-void R_DetachShader(U32 program_object, U32 shader_object);
+void R_DetachShader(u32 program_object, u32 shader_object);
 
 /*! Links a shader program with any attached shader objects. */
-bool R_LinkShaderProgram(U32 program_object);
+bool R_LinkShaderProgram(u32 program_object);
 
 /*! \return The current shader program */
-U32 R_GetCurrentShaderProgram(void);
+u32 R_GetCurrentShaderProgram(void);
 
 /*! Returns 1 if the given shader program is a default shader for the current context, 0 otherwise. */
-bool R_IsDefaultShaderProgram(U32 program_object);
+bool R_IsDefaultShaderProgram(u32 program_object);
 
 /*! Activates the given shader program.  Passing NULL for 'block' will disable the built-in shader variables for custom shaders until a R_ShaderBlock is set again. */
-void R_ActivateShaderProgram(U32 program_object, R_ShaderBlock *block);
+void R_ActivateShaderProgram(u32 program_object, R_ShaderBlock *block);
 
 /*! Deactivates the current shader program (activates program 0). */
 void R_DeactivateShaderProgram(void);
@@ -1629,7 +1629,7 @@ void R_DeactivateShaderProgram(void);
 const char *R_GetShaderMessage(void);
 
 /*! Returns an integer representing the location of the specified attribute shader variable. */
-int R_GetAttributeLocation(U32 program_object, const char *attrib_name);
+int R_GetAttributeLocation(u32 program_object, const char *attrib_name);
 
 /*! Returns a filled R_AttributeFormat object. */
 R_AttributeFormat R_MakeAttributeFormat(int num_elems_per_vertex, R_TypeEnum type, bool normalize, int stride_bytes, int offset_bytes);
@@ -1638,10 +1638,10 @@ R_AttributeFormat R_MakeAttributeFormat(int num_elems_per_vertex, R_TypeEnum typ
 R_Attribute R_MakeAttribute(int location, void *values, R_AttributeFormat format);
 
 /*! Returns an integer representing the location of the specified uniform shader variable. */
-int R_GetUniformLocation(U32 program_object, const char *uniform_name);
+int R_GetUniformLocation(u32 program_object, const char *uniform_name);
 
 /*! Loads the given shader program's built-in attribute and uniform locations. */
-R_ShaderBlock R_LoadShaderBlock(U32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name);
+R_ShaderBlock R_LoadShaderBlock(u32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name);
 
 /*! Sets the current shader block to use the given attribute and uniform locations. */
 void R_SetShaderBlock(R_ShaderBlock block);
@@ -1656,7 +1656,7 @@ R_ShaderBlock R_GetShaderBlock(void);
 void R_SetShaderImage(R_Image *image, int location, int image_unit);
 
 /*! Fills "values" with the value of the uniform shader variable at the given location. */
-void R_GetUniformiv(U32 program_object, int location, int *values);
+void R_GetUniformiv(u32 program_object, int location, int *values);
 
 /*! Sets the value of the integer uniform shader variable at the given location.
 This is equivalent to calling R_SetUniformiv(location, 1, 1, &value). */
@@ -1666,7 +1666,7 @@ void R_SetUniformi(int location, int value);
 void R_SetUniformiv(int location, int num_elements_per_value, int num_values, int *values);
 
 /*! Fills "values" with the value of the uniform shader variable at the given location. */
-void R_GetUniformuiv(U32 program_object, int location, unsigned int *values);
+void R_GetUniformuiv(u32 program_object, int location, unsigned int *values);
 
 /*! Sets the value of the unsigned integer uniform shader variable at the given location.
 This is equivalent to calling R_SetUniformuiv(location, 1, 1, &value). */
@@ -1676,7 +1676,7 @@ void R_SetUniformui(int location, unsigned int value);
 void R_SetUniformuiv(int location, int num_elements_per_value, int num_values, unsigned int *values);
 
 /*! Fills "values" with the value of the uniform shader variable at the given location. */
-void R_GetUniformfv(U32 program_object, int location, float *values);
+void R_GetUniformfv(u32 program_object, int location, float *values);
 
 /*! Sets the value of the floating point uniform shader variable at the given location.
 This is equivalent to calling R_SetUniformfv(location, 1, 1, &value). */
@@ -1686,7 +1686,7 @@ void R_SetUniformf(int location, float value);
 void R_SetUniformfv(int location, int num_elements_per_value, int num_values, float *values);
 
 /*! Fills "values" with the value of the uniform shader variable at the given location.  The results are identical to calling R_GetUniformfv().  Matrices are gotten in column-major order. */
-void R_GetUniformMatrixfv(U32 program_object, int location, float *values);
+void R_GetUniformMatrixfv(u32 program_object, int location, float *values);
 
 /*! Sets the value of the matrix uniform shader variable at the given location.  The size of the matrices sent is specified by num_rows and num_columns.  Rows and columns must be between 2 and 4. */
 void R_SetUniformMatrixfv(int location, int num_matrices, int num_rows, int num_columns, bool transpose, float *values);
@@ -1719,7 +1719,7 @@ void R_SetAttributeSource(int num_values, R_Attribute source);
 
 // Internal API for managing window mappings
 void R_AddWindowMapping(R_Target *target);
-void R_RemoveWindowMapping(U32 windowID);
+void R_RemoveWindowMapping(u32 windowID);
 void R_RemoveWindowMappingByTarget(R_Target *target);
 
 #if 0
@@ -1728,11 +1728,11 @@ typedef struct R_RendererImpl {
      *  \see R_InitRenderer()
      *  \see R_InitRendererByID()
      */
-    R_Target *(*Init)(R_Renderer *renderer, R_RendererID renderer_request, U16 w, U16 h, R_WindowFlagEnum SDL_flags);
+    R_Target *(*Init)(R_Renderer *renderer, R_RendererID renderer_request, u16 w, u16 h, R_WindowFlagEnum SDL_flags);
 
     /*! \see R_CreateTargetFromWindow
      * The extra parameter is used internally to reuse/reinit a target. */
-    R_Target *(*CreateTargetFromWindow)(R_Renderer *renderer, U32 windowID, R_Target *target);
+    R_Target *(*CreateTargetFromWindow)(R_Renderer *renderer, u32 windowID, R_Target *target);
 
     /*! \see R_SetActiveTarget() */
     bool (*SetActiveTarget)(R_Renderer *renderer, R_Target *target);
@@ -1741,7 +1741,7 @@ typedef struct R_RendererImpl {
     R_Target *(*CreateAliasTarget)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_MakeCurrent */
-    void (*MakeCurrent)(R_Renderer *renderer, R_Target *target, U32 windowID);
+    void (*MakeCurrent)(R_Renderer *renderer, R_Target *target, u32 windowID);
 
     /*! Sets up this renderer to act as the current renderer.  Called automatically by R_SetCurrentRenderer(). */
     void (*SetAsCurrent)(R_Renderer *renderer);
@@ -1753,10 +1753,10 @@ typedef struct R_RendererImpl {
     bool (*AddDepthBuffer)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_SetWindowResolution() */
-    bool (*SetWindowResolution)(R_Renderer *renderer, U16 w, U16 h);
+    bool (*SetWindowResolution)(R_Renderer *renderer, u16 w, u16 h);
 
     /*! \see R_SetVirtualResolution() */
-    void (*SetVirtualResolution)(R_Renderer *renderer, R_Target *target, U16 w, U16 h);
+    void (*SetVirtualResolution)(R_Renderer *renderer, R_Target *target, u16 w, u16 h);
 
     /*! \see R_UnsetVirtualResolution() */
     void (*UnsetVirtualResolution)(R_Renderer *renderer, R_Target *target);
@@ -1771,7 +1771,7 @@ typedef struct R_RendererImpl {
     R_Camera (*SetCamera)(R_Renderer *renderer, R_Target *target, R_Camera *cam);
 
     /*! \see R_CreateImage() */
-    R_Image *(*CreateImage)(R_Renderer *renderer, U16 w, U16 h, R_FormatEnum format);
+    R_Image *(*CreateImage)(R_Renderer *renderer, u16 w, u16 h, R_FormatEnum format);
 
     /*! \see R_CreateImageUsingTexture() */
     R_Image *(*CreateImageUsingTexture)(R_Renderer *renderer, R_TextureHandle handle, bool take_ownership);
@@ -1835,13 +1835,13 @@ typedef struct R_RendererImpl {
     void (*GenerateMipmaps)(R_Renderer *renderer, R_Image *image);
 
     /*! \see R_SetClip() */
-    metadot_rect (*SetClip)(R_Renderer *renderer, R_Target *target, I16 x, I16 y, U16 w, U16 h);
+    metadot_rect (*SetClip)(R_Renderer *renderer, R_Target *target, i16 x, i16 y, u16 w, u16 h);
 
     /*! \see R_UnsetClip() */
     void (*UnsetClip)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_GetPixel() */
-    ME_Color (*GetPixel)(R_Renderer *renderer, R_Target *target, I16 x, I16 y);
+    ME_Color (*GetPixel)(R_Renderer *renderer, R_Target *target, i16 x, i16 y);
 
     /*! \see R_SetImageFilter() */
     void (*SetImageFilter)(R_Renderer *renderer, R_Image *image, R_FilterEnum filter);
@@ -1853,39 +1853,39 @@ typedef struct R_RendererImpl {
     R_TextureHandle (*GetTextureHandle)(R_Renderer *renderer, R_Image *image);
 
     /*! \see R_ClearRGBA() */
-    void (*ClearRGBA)(R_Renderer *renderer, R_Target *target, U8 r, U8 g, U8 b, U8 a);
+    void (*ClearRGBA)(R_Renderer *renderer, R_Target *target, u8 r, u8 g, u8 b, u8 a);
     /*! \see R_FlushBlitBuffer() */
     void (*FlushBlitBuffer)(R_Renderer *renderer);
     /*! \see R_Flip() */
     void (*Flip)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_CreateShaderProgram() */
-    U32 (*CreateShaderProgram)(R_Renderer *renderer);
+    u32 (*CreateShaderProgram)(R_Renderer *renderer);
 
     /*! \see R_FreeShaderProgram() */
-    void (*FreeShaderProgram)(R_Renderer *renderer, U32 program_object);
+    void (*FreeShaderProgram)(R_Renderer *renderer, u32 program_object);
 
-    U32(*CompileShaderInternal)
+    u32(*CompileShaderInternal)
     (R_Renderer *renderer, R_ShaderEnum shader_type, const char *shader_source);
 
     /*! \see R_CompileShader() */
-    U32(*CompileShader)
+    u32(*CompileShader)
     (R_Renderer *renderer, R_ShaderEnum shader_type, const char *shader_source);
 
     /*! \see R_FreeShader() */
-    void (*FreeShader)(R_Renderer *renderer, U32 shader_object);
+    void (*FreeShader)(R_Renderer *renderer, u32 shader_object);
 
     /*! \see R_AttachShader() */
-    void (*AttachShader)(R_Renderer *renderer, U32 program_object, U32 shader_object);
+    void (*AttachShader)(R_Renderer *renderer, u32 program_object, u32 shader_object);
 
     /*! \see R_DetachShader() */
-    void (*DetachShader)(R_Renderer *renderer, U32 program_object, U32 shader_object);
+    void (*DetachShader)(R_Renderer *renderer, u32 program_object, u32 shader_object);
 
     /*! \see R_LinkShaderProgram() */
-    bool (*LinkShaderProgram)(R_Renderer *renderer, U32 program_object);
+    bool (*LinkShaderProgram)(R_Renderer *renderer, u32 program_object);
 
     /*! \see R_ActivateShaderProgram() */
-    void (*ActivateShaderProgram)(R_Renderer *renderer, U32 program_object, R_ShaderBlock *block);
+    void (*ActivateShaderProgram)(R_Renderer *renderer, u32 program_object, R_ShaderBlock *block);
 
     /*! \see R_DeactivateShaderProgram() */
     void (*DeactivateShaderProgram)(R_Renderer *renderer);
@@ -1894,13 +1894,13 @@ typedef struct R_RendererImpl {
     const char *(*GetShaderMessage)(R_Renderer *renderer);
 
     /*! \see R_GetAttribLocation() */
-    int (*GetAttributeLocation)(R_Renderer *renderer, U32 program_object, const char *attrib_name);
+    int (*GetAttributeLocation)(R_Renderer *renderer, u32 program_object, const char *attrib_name);
 
     /*! \see R_GetUniformLocation() */
-    int (*GetUniformLocation)(R_Renderer *renderer, U32 program_object, const char *uniform_name);
+    int (*GetUniformLocation)(R_Renderer *renderer, u32 program_object, const char *uniform_name);
 
     /*! \see R_LoadShaderBlock() */
-    R_ShaderBlock (*LoadShaderBlock)(R_Renderer *renderer, U32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name);
+    R_ShaderBlock (*LoadShaderBlock)(R_Renderer *renderer, u32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name);
 
     /*! \see R_SetShaderBlock() */
     void (*SetShaderBlock)(R_Renderer *renderer, R_ShaderBlock block);
@@ -1909,7 +1909,7 @@ typedef struct R_RendererImpl {
     void (*SetShaderImage)(R_Renderer *renderer, R_Image *image, int location, int image_unit);
 
     /*! \see R_GetUniformiv() */
-    void (*GetUniformiv)(R_Renderer *renderer, U32 program_object, int location, int *values);
+    void (*GetUniformiv)(R_Renderer *renderer, u32 program_object, int location, int *values);
 
     /*! \see R_SetUniformi() */
     void (*SetUniformi)(R_Renderer *renderer, int location, int value);
@@ -1918,7 +1918,7 @@ typedef struct R_RendererImpl {
     void (*SetUniformiv)(R_Renderer *renderer, int location, int num_elements_per_value, int num_values, int *values);
 
     /*! \see R_GetUniformuiv() */
-    void (*GetUniformuiv)(R_Renderer *renderer, U32 program_object, int location, unsigned int *values);
+    void (*GetUniformuiv)(R_Renderer *renderer, u32 program_object, int location, unsigned int *values);
 
     /*! \see R_SetUniformui() */
     void (*SetUniformui)(R_Renderer *renderer, int location, unsigned int value);
@@ -1927,7 +1927,7 @@ typedef struct R_RendererImpl {
     void (*SetUniformuiv)(R_Renderer *renderer, int location, int num_elements_per_value, int num_values, unsigned int *values);
 
     /*! \see R_GetUniformfv() */
-    void (*GetUniformfv)(R_Renderer *renderer, U32 program_object, int location, float *values);
+    void (*GetUniformfv)(R_Renderer *renderer, u32 program_object, int location, float *values);
 
     /*! \see R_SetUniformf() */
     void (*SetUniformf)(R_Renderer *renderer, int location, float value);

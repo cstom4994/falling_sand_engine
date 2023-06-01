@@ -1,6 +1,6 @@
 #include "ResponseHandle.h"
 
-#include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/lua_wrapper.hpp"
 
 namespace MetaEngine::net {
 ResponseHandle::ResponseHandle(std::stringstream *stream) { this->stream = stream; }

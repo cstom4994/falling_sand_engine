@@ -4,8 +4,8 @@
 
 #include <cstdlib>
 
-#include "core/alloc.hpp"
-#include "core/core.h"
+#include "core/memory.h"
+#include "core/core.hpp"
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
 #include "engine/engine_core.h"

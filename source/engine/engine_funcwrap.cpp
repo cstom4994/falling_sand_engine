@@ -27,8 +27,8 @@
 #include "libs/lz4/lz4frame.h"
 #include "libs/lz4/lz4hc.h"
 #include "renderer/renderer_gpu.h"
-#include "scripting/lua/lua_wrapper.h"
-#include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/lua_wrapper.hpp"
+#include "scripting/lua_wrapper_base.hpp"
 #include "scripting/scripting.hpp"
 
 #ifndef ME_PLATFORM_WINDOWS
@@ -53,7 +53,7 @@ R_Image *buffer;
 // R_Target *renderer;
 // R_Target *bufferTarget;
 
-U8 palette[COLOR_LIMIT][3] = INIT_COLORS;
+u8 palette[COLOR_LIMIT][3] = INIT_COLORS;
 
 int paletteNum = 0;
 
@@ -122,15 +122,15 @@ struct imageType {
 };
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-U32 rMask = 0xff000000;
-U32 gMask = 0x00ff0000;
-U32 bMask = 0x0000ff00;
-U32 aMask = 0x000000ff;
+u32 rMask = 0xff000000;
+u32 gMask = 0x00ff0000;
+u32 bMask = 0x0000ff00;
+u32 aMask = 0x000000ff;
 #else
-U32 rMask = 0x000000ff;
-U32 gMask = 0x0000ff00;
-U32 bMask = 0x00ff0000;
-U32 aMask = 0xff000000;
+u32 rMask = 0x000000ff;
+u32 gMask = 0x0000ff00;
+u32 bMask = 0x00ff0000;
+u32 aMask = 0xff000000;
 #endif
 
 static char getColor(lua_State *L, int arg) {
@@ -138,7 +138,7 @@ static char getColor(lua_State *L, int arg) {
     return static_cast<char>(color == -2 ? -1 : (color < 0 ? 0 : (color > (COLOR_LIMIT - 1) ? (COLOR_LIMIT - 1) : color)));
 }
 
-static U32 getRectC(imageType *data, int colorGiven) {
+static u32 getRectC(imageType *data, int colorGiven) {
     int color = data->remap[colorGiven];  // Palette remapping
     return SDL_MapRGBA(data->surface->format, TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255);
 }
@@ -208,7 +208,7 @@ static int renderImage(lua_State *L) {
     if (!freeCheck(L, data)) return 0;
 
     if (data->lastRenderNum != TestData::paletteNum || data->remapped) {
-        U32 rectColor = SDL_MapRGBA(data->surface->format, 0, 0, 0, 0);
+        u32 rectColor = SDL_MapRGBA(data->surface->format, 0, 0, 0, 0);
         SDL_FillRect(data->surface, nullptr, rectColor);
 
         for (int x = 0; x < data->width; x++) {
@@ -325,7 +325,7 @@ static int imageDrawPixel(lua_State *L) {
     char color = getColor(L, 4);
 
     if (color >= 0) {
-        U32 rectColor = getRectC(data, color);
+        u32 rectColor = getRectC(data, color);
         SDL_Rect rect = {x, y, 1, 1};
         SDL_FillRect(data->surface, &rect, rectColor);
         internalDrawPixel(data, x, y, color);
@@ -345,7 +345,7 @@ static int imageDrawRectangle(lua_State *L) {
     char color = getColor(L, 6);
 
     if (color >= 0) {
-        U32 rectColor = getRectC(data, color);
+        u32 rectColor = getRectC(data, color);
         SDL_Rect rect = {x, y, w, h};
         SDL_FillRect(data->surface, &rect, rectColor);
         for (int xp = x; xp < x + w; xp++) {
@@ -390,7 +390,7 @@ static int imageBlitPixels(lua_State *L) {
             int xp = (i - 1) % w;
             int yp = (i - 1) / w;
 
-            U32 rectColor = getRectC(data, color);
+            u32 rectColor = getRectC(data, color);
             SDL_Rect rect = {x + xp, y + yp, 1, 1};
             SDL_FillRect(data->surface, &rect, rectColor);
             internalDrawPixel(data, x + xp, y + yp, static_cast<char>(color));
@@ -406,7 +406,7 @@ static int imageClear(lua_State *L) {
     imageType *data = checkImage(L);
     if (!freeCheck(L, data)) return 0;
 
-    U32 rectColor = SDL_MapRGBA(data->surface->format, 0, 0, 0, 0);
+    u32 rectColor = SDL_MapRGBA(data->surface->format, 0, 0, 0, 0);
     SDL_FillRect(data->surface, nullptr, rectColor);
     for (int xp = 0; xp < data->width; xp++) {
         for (int yp = 0; yp < data->height; yp++) {
@@ -608,8 +608,8 @@ static int gpu_set_clipping(lua_State *L) {
 
     auto x = static_cast<Sint16>(luaL_checkinteger(L, 1));
     auto y = static_cast<Sint16>(luaL_checkinteger(L, 2));
-    auto w = static_cast<U16>(luaL_checkinteger(L, 3));
-    auto h = static_cast<U16>(luaL_checkinteger(L, 4));
+    auto w = static_cast<u16>(luaL_checkinteger(L, 3));
+    auto h = static_cast<u16>(luaL_checkinteger(L, 4));
 
     R_SetClip(TestData::buffer->target, x, y, w, h);
 
@@ -619,9 +619,9 @@ static int gpu_set_clipping(lua_State *L) {
 static int gpu_set_palette_color(lua_State *L) {
     int slot = gpu_getColor(L, 1);
 
-    auto r = static_cast<U8>(luaL_checkinteger(L, 2));
-    auto g = static_cast<U8>(luaL_checkinteger(L, 3));
-    auto b = static_cast<U8>(luaL_checkinteger(L, 4));
+    auto r = static_cast<u8>(luaL_checkinteger(L, 2));
+    auto g = static_cast<u8>(luaL_checkinteger(L, 3));
+    auto b = static_cast<u8>(luaL_checkinteger(L, 4));
 
     TestData::palette[slot][0] = r;
     TestData::palette[slot][1] = g;
@@ -650,15 +650,15 @@ static int gpu_blit_palette(lua_State *L) {
 
         lua_pushnumber(L, 1);
         lua_gettable(L, -2);
-        TestData::palette[i - 1][0] = static_cast<U8>(luaL_checkinteger(L, -1));
+        TestData::palette[i - 1][0] = static_cast<u8>(luaL_checkinteger(L, -1));
 
         lua_pushnumber(L, 2);
         lua_gettable(L, -3);
-        TestData::palette[i - 1][1] = static_cast<U8>(luaL_checkinteger(L, -1));
+        TestData::palette[i - 1][1] = static_cast<u8>(luaL_checkinteger(L, -1));
 
         lua_pushnumber(L, 3);
         lua_gettable(L, -4);
-        TestData::palette[i - 1][2] = static_cast<U8>(luaL_checkinteger(L, -1));
+        TestData::palette[i - 1][2] = static_cast<u8>(luaL_checkinteger(L, -1));
 
         lua_pop(L, 4);
     }
@@ -690,7 +690,7 @@ static int gpu_get_pixel(lua_State *L) {
     auto y = static_cast<Sint16>(luaL_checkinteger(L, 2));
     ME_Color col = R_GetPixel(TestData::buffer->target, x, y);
     for (int i = 0; i < COLOR_LIMIT; i++) {
-        U8 *pCol = TestData::palette[i];
+        u8 *pCol = TestData::palette[i];
         if (col.r == pCol[0] && col.g == pCol[1] && col.b == pCol[2]) {
             lua_pushinteger(L, i + 1);
             return 1;

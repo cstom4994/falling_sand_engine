@@ -15,9 +15,9 @@
 #include <string>
 #include <utility>
 
-#include "core/alloc.hpp"
 #include "core/core.hpp"
 #include "core/io/filesystem.h"
+#include "core/memory.h"
 #include "core/sdl_wrapper.h"
 #include "imgui_impl.hpp"
 #include "renderer/renderer_gpu.h"

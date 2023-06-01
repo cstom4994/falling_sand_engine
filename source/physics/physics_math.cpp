@@ -1761,7 +1761,7 @@ int TPPLPartition::Triangulate_MONO(TPPLPoly *poly, TPPLPolyList *triangles) {
 
 #pragma endregion TPPL
 
-void simplify_section(const std::vector<MEvec2> &pts, F32 tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted) {
+void simplify_section(const std::vector<MEvec2> &pts, f32 tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted) {
     // make sure we always return 2 points
     if (pts.size() - omitted <= 2) return;
 
@@ -1771,11 +1771,11 @@ void simplify_section(const std::vector<MEvec2> &pts, F32 tolerance, size_t i, s
         return;
     }
 
-    F32 max_distance = -1.0f;
+    f32 max_distance = -1.0f;
     size_t max_index = i;
 
     for (size_t k = i + 1; k < j; k++) {
-        F32 distance = pDistance(pts[k].x, pts[k].y, pts[i].x, pts[i].y, pts[j].x, pts[j].y);
+        f32 distance = pDistance(pts[k].x, pts[k].y, pts[i].x, pts[i].y, pts[j].x, pts[j].y);
 
         if (distance > max_distance) {
             max_distance = distance;
@@ -1794,7 +1794,7 @@ void simplify_section(const std::vector<MEvec2> &pts, F32 tolerance, size_t i, s
     }
 }
 
-std::vector<MEvec2> simplify(const std::vector<MEvec2> &vertices, F32 tolerance) {
+std::vector<MEvec2> simplify(const std::vector<MEvec2> &vertices, f32 tolerance) {
     std::vector<bool> mark_map(vertices.size(), true);
 
     simplify_section(vertices, tolerance, 0, vertices.size() - 1, &mark_map);
@@ -1809,20 +1809,20 @@ std::vector<MEvec2> simplify(const std::vector<MEvec2> &vertices, F32 tolerance)
     return result;
 }
 
-F32 pDistance(F32 x, F32 y, F32 x1, F32 y1, F32 x2, F32 y2) {
+f32 pDistance(f32 x, f32 y, f32 x1, f32 y1, f32 x2, f32 y2) {
 
-    F32 A = x - x1;
-    F32 B = y - y1;
-    F32 C = x2 - x1;
-    F32 D = y2 - y1;
+    f32 A = x - x1;
+    f32 B = y - y1;
+    f32 C = x2 - x1;
+    f32 D = y2 - y1;
 
-    F32 dot = A * C + B * D;
-    F32 len_sq = C * C + D * D;
-    F32 param = -1;
+    f32 dot = A * C + B * D;
+    f32 len_sq = C * C + D * D;
+    f32 param = -1;
     if (len_sq != 0)  // in case of 0 length line
         param = dot / len_sq;
 
-    F32 xx, yy;
+    f32 xx, yy;
 
     if (param < 0) {
         xx = x1;
@@ -1835,8 +1835,8 @@ F32 pDistance(F32 x, F32 y, F32 x1, F32 y1, F32 x2, F32 y2) {
         yy = y1 + param * D;
     }
 
-    F32 dx = x - xx;
-    F32 dy = y - yy;
+    f32 dx = x - xx;
+    f32 dy = y - yy;
     return std::sqrt(dx * dx + dy * dy);
 }
 

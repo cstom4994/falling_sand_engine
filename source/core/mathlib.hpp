@@ -24,8 +24,8 @@
 #endif
 
 typedef struct U16Point {
-    U16 x;
-    U16 y;
+    u16 x;
+    u16 y;
 } U16Point;
 
 typedef struct metadot_rect {
@@ -58,7 +58,7 @@ typedef signed int metadot_bool;
 #define UTIL_dot(u, v) ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
 // #define norm(v) sqrt(dot(v, v))// norm = length of  vector
 
-F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap = 0, int y_wrap = 0, int z_wrap = 0);
+f32 math_perlin(f32 x, f32 y, f32 z, int x_wrap = 0, int y_wrap = 0, int z_wrap = 0);
 
 static_inline ImVec4 vec4_to_imvec4(const MEvec4 &v4) { return {v4.x, v4.y, v4.z, v4.w}; }
 
@@ -68,39 +68,39 @@ namespace NewMaths {
 
 constexpr std::size_t hash_combine(std::size_t l, std::size_t r) noexcept { return l ^ (r + 0x9e3779b9 + (l << 6) + (l >> 2)); }
 
-F32 vec22angle(MEvec2 v2);
-F32 clamp(F32 input, F32 min, F32 max);
+f32 vec22angle(MEvec2 v2);
+f32 clamp(f32 input, f32 min, f32 max);
 int rand_range(int min, int max);
 uint64_t rand_XOR();
-inline F64 random_double();
-inline F64 random_double(F64 min, F64 max);
+inline f64 random_double();
+inline f64 random_double(f64 min, f64 max);
 struct v2;
 struct RandState;
-F32 v2_distance_2Points(v2 A, v2 B);
+f32 v2_distance_2Points(v2 A, v2 B);
 v2 unitvec_AtoB(v2 A, v2 B);
-F32 signed_angle_v2(v2 A, v2 B);
-v2 Rotate2D(v2 P, F32 sine, F32 cosine);
-v2 Rotate2D(v2 P, F32 Angle);
-v2 Rotate2D(v2 p, v2 o, F32 angle);
+f32 signed_angle_v2(v2 A, v2 B);
+v2 Rotate2D(v2 P, f32 sine, f32 cosine);
+v2 Rotate2D(v2 P, f32 Angle);
+v2 Rotate2D(v2 p, v2 o, f32 angle);
 v2 Reflection2D(v2 P, v2 N);
 bool PointInRectangle(v2 P, v2 A, v2 B, v2 C);
-int sign(F32 x);
-static F32 dot(v2 A, v2 B);
-static F32 perpdot(v2 A, v2 B);
+int sign(f32 x);
+static f32 dot(v2 A, v2 B);
+static f32 perpdot(v2 A, v2 B);
 static bool operator==(v2 A, v2 B);
 
 MEvec3 NormalizeVector(MEvec3 v);
 MEvec3 Add(MEvec3 a, MEvec3 b);
 MEvec3 Subtract(MEvec3 a, MEvec3 b);
-MEvec3 ScalarMult(MEvec3 v, F32 s);
-F64 Distance(MEvec3 a, MEvec3 b);
+MEvec3 ScalarMult(MEvec3 v, f32 s);
+f64 Distance(MEvec3 a, MEvec3 b);
 MEvec3 VectorProjection(MEvec3 a, MEvec3 b);
 MEvec3 Reflection(MEvec3 *v1, MEvec3 *v2);
 
-F64 DistanceFromPointToLine2D(MEvec3 lP1, MEvec3 lP2, MEvec3 p);
+f64 DistanceFromPointToLine2D(MEvec3 lP1, MEvec3 lP2, MEvec3 p);
 
 typedef struct Matrix3x3 {
-    F32 m[3][3];
+    f32 m[3][3];
 } Matrix3x3;
 
 Matrix3x3 Transpose(Matrix3x3 m);
@@ -112,17 +112,17 @@ MEvec3 RotatePoint(MEvec3 p, MEvec3 r, MEvec3 pivot);
 Matrix3x3 MultiplyMatrix3x3(Matrix3x3 a, Matrix3x3 b);
 
 typedef struct Matrix4x4 {
-    F32 m[4][4];
+    f32 m[4][4];
 } Matrix4x4;
 
 Matrix4x4 Identity4x4();
-Matrix4x4 GetProjectionMatrix(F32 right, F32 left, F32 top, F32 bottom, F32 near, F32 far);
+Matrix4x4 GetProjectionMatrix(f32 right, f32 left, f32 top, f32 bottom, f32 near, f32 far);
 
-F32 Lerp(F64 t, F32 a, F32 b);
-int Step(F32 edge, F32 x);
-F32 Smoothstep(F32 edge0, F32 edge1, F32 x);
+f32 Lerp(f64 t, f32 a, f32 b);
+int Step(f32 edge, f32 x);
+f32 Smoothstep(f32 edge0, f32 edge1, f32 x);
 int Modulus(int a, int b);
-F32 fModulus(F32 a, F32 b);
+f32 fModulus(f32 a, f32 b);
 }  // namespace NewMaths
 
 #pragma endregion NewMATH
@@ -1073,82 +1073,82 @@ typedef MetaEngine::math::CAngle<float> angle;
 #pragma region c2
 
 // 2d vector.
-typedef struct METAENGINE_V2 {
+typedef struct ME_V2 {
     float x;
     float y;
-} METAENGINE_V2;
+} ME_V2;
 
 // Use this to create a v2 struct.
 // The C++ API uses V2(x, y).
-ME_INLINE METAENGINE_V2 metadot_v2(float x, float y) {
-    METAENGINE_V2 result;
+ME_INLINE ME_V2 metadot_v2(float x, float y) {
+    ME_V2 result;
     result.x = x;
     result.y = y;
     return result;
 }
 
 // Rotation about an axis composed of cos/sin pair.
-typedef struct METAENGINE_SinCos {
+typedef struct ME_SinCos {
     float s;
     float c;
-} METAENGINE_SinCos;
+} ME_SinCos;
 
 // 2x2 matrix.
-typedef struct METAENGINE_M2x2 {
-    METAENGINE_V2 x;
-    METAENGINE_V2 y;
-} METAENGINE_M2x2;
+typedef struct ME_M2x2 {
+    ME_V2 x;
+    ME_V2 y;
+} ME_M2x2;
 
 // 2d transformation, mostly useful for graphics and not physics colliders, since it supports scale.
-typedef struct METAENGINE_M3x2 {
-    METAENGINE_M2x2 m;
-    METAENGINE_V2 p;
-} METAENGINE_M3x2;
+typedef struct ME_M3x2 {
+    ME_M2x2 m;
+    ME_V2 p;
+} ME_M3x2;
 
 // 2d transformation, mostly useful for physics colliders since there's no scale.
-typedef struct METAENGINE_Transform {
-    METAENGINE_SinCos r;
-    METAENGINE_V2 p;
-} METAENGINE_Transform;
+typedef struct ME_Transform {
+    ME_SinCos r;
+    ME_V2 p;
+} ME_Transform;
 
 // 2d plane, aka line.
-typedef struct METAENGINE_Halfspace {
-    METAENGINE_V2 n;  // normal
+typedef struct ME_Halfspace {
+    ME_V2 n;  // normal
     float d;          // distance to origin; d = ax + by = dot(n, p)
-} METAENGINE_Halfspace;
+} ME_Halfspace;
 
 // A ray is a directional line segment. It starts at an endpoint and extends into another direction
 // for a specified distance (defined by t).
-typedef struct METAENGINE_Ray {
-    METAENGINE_V2 p;  // position
-    METAENGINE_V2 d;  // direction (normalized)
+typedef struct ME_Ray {
+    ME_V2 p;  // position
+    ME_V2 d;  // direction (normalized)
     float t;          // distance along d from position p to find endpoint of ray
-} METAENGINE_Ray;
+} ME_Ray;
 
 // The results for a raycast query.
-typedef struct METAENGINE_Raycast {
+typedef struct ME_Raycast {
     float t;          // time of impact
-    METAENGINE_V2 n;  // normal of surface at impact (unit length)
-} METAENGINE_Raycast;
+    ME_V2 n;  // normal of surface at impact (unit length)
+} ME_Raycast;
 
-typedef struct METAENGINE_Circle {
-    METAENGINE_V2 p;
+typedef struct ME_Circle {
+    ME_V2 p;
     float r;
-} METAENGINE_Circle;
+} ME_Circle;
 
 // Axis-aligned bounding box. A box that cannot rotate.
-typedef struct METAENGINE_Aabb {
-    METAENGINE_V2 min;
-    METAENGINE_V2 max;
-} METAENGINE_Aabb;
+typedef struct ME_Aabb {
+    ME_V2 min;
+    ME_V2 max;
+} ME_Aabb;
 
 // Box that cannot rotate defined with integers instead of floats. Not used for collision detection,
 // but still sometimes useful.
-typedef struct METAENGINE_Rect {
+typedef struct ME_Rect {
     int w, h, x, y;
-} METAENGINE_Rect;
+} ME_Rect;
 
-#define METAENGINE_PI 3.14159265f
+#define ME_PI 3.14159265f
 
 //--------------------------------------------------------------------------------------------------
 // Scalar float ops.
@@ -1246,9 +1246,9 @@ ME_INLINE float metadot_quint_in_out(float x) {
         return 0.5f * f * f * f * f * f + 1.0f;
     }
 }
-ME_INLINE float metadot_sin_in(float x) { return sinf((x - 1.0f) * METAENGINE_PI * 0.5f) + 1.0f; }
-ME_INLINE float metadot_sin_out(float x) { return sinf(x * (METAENGINE_PI * 0.5f)); }
-ME_INLINE float metadot_sin_in_out(float x) { return 0.5f * (1.0f - cosf(x * METAENGINE_PI)); }
+ME_INLINE float metadot_sin_in(float x) { return sinf((x - 1.0f) * ME_PI * 0.5f) + 1.0f; }
+ME_INLINE float metadot_sin_out(float x) { return sinf(x * (ME_PI * 0.5f)); }
+ME_INLINE float metadot_sin_in_out(float x) { return 0.5f * (1.0f - cosf(x * ME_PI)); }
 ME_INLINE float metadot_circle_in(float x) { return 1.0f - sqrtf(1.0f - (x * x)); }
 ME_INLINE float metadot_circle_out(float x) { return sqrtf((2.0f - x) * x); }
 ME_INLINE float metadot_circle_in_out(float x) {
@@ -1257,74 +1257,74 @@ ME_INLINE float metadot_circle_in_out(float x) {
     else
         return 0.5f * (sqrtf(-((2.0f * x) - 3.0f) * ((2.0f * x) - 1.0f)) + 1.0f);
 }
-ME_INLINE float metadot_back_in(float x) { return x * x * x - x * sinf(x * METAENGINE_PI); }
+ME_INLINE float metadot_back_in(float x) { return x * x * x - x * sinf(x * ME_PI); }
 ME_INLINE float metadot_back_out(float x) {
     float f = (1.0f - x);
-    return 1.0f - (x * x * x - x * sinf(f * METAENGINE_PI));
+    return 1.0f - (x * x * x - x * sinf(f * ME_PI));
 }
 ME_INLINE float metadot_back_in_out(float x) {
     if (x < 0.5f) {
         float f = 2.0f * x;
-        return 0.5f * (f * f * f - f * sinf(f * METAENGINE_PI));
+        return 0.5f * (f * f * f - f * sinf(f * ME_PI));
     } else {
         float f = (1.0f - (2.0f * x - 1.0f));
-        return 0.5f * (1.0f - (f * f * f - f * sinf(f * METAENGINE_PI))) + 0.5f;
+        return 0.5f * (1.0f - (f * f * f - f * sinf(f * ME_PI))) + 0.5f;
     }
 }
 
 //--------------------------------------------------------------------------------------------------
 // 2D vector ops.
 
-ME_INLINE METAENGINE_V2 metadot_add_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(a.x + b.x, a.y + b.y); }
-ME_INLINE METAENGINE_V2 metadot_sub_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(a.x - b.x, a.y - b.y); }
+ME_INLINE ME_V2 metadot_add_v2(ME_V2 a, ME_V2 b) { return metadot_v2(a.x + b.x, a.y + b.y); }
+ME_INLINE ME_V2 metadot_sub_v2(ME_V2 a, ME_V2 b) { return metadot_v2(a.x - b.x, a.y - b.y); }
 
-ME_INLINE float metadot_dot(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x * b.x + a.y * b.y; }
+ME_INLINE float metadot_dot(ME_V2 a, ME_V2 b) { return a.x * b.x + a.y * b.y; }
 
-ME_INLINE METAENGINE_V2 metadot_mul_v2_f(METAENGINE_V2 a, float b) { return metadot_v2(a.x * b, a.y * b); }
-ME_INLINE METAENGINE_V2 metadot_mul_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(a.x * b.x, a.y * b.y); }
-ME_INLINE METAENGINE_V2 metadot_div_v2_f(METAENGINE_V2 a, float b) { return metadot_v2(a.x / b, a.y / b); }
+ME_INLINE ME_V2 metadot_mul_v2_f(ME_V2 a, float b) { return metadot_v2(a.x * b, a.y * b); }
+ME_INLINE ME_V2 metadot_mul_v2(ME_V2 a, ME_V2 b) { return metadot_v2(a.x * b.x, a.y * b.y); }
+ME_INLINE ME_V2 metadot_div_v2_f(ME_V2 a, float b) { return metadot_v2(a.x / b, a.y / b); }
 
-ME_INLINE METAENGINE_V2 metadot_skew(METAENGINE_V2 a) { return metadot_v2(-a.y, a.x); }
-ME_INLINE METAENGINE_V2 metadot_cw90(METAENGINE_V2 a) { return metadot_v2(a.y, -a.x); }
-ME_INLINE float metadot_det2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x * b.y - a.y * b.x; }
-ME_INLINE float metadot_cross(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_det2(a, b); }
-ME_INLINE METAENGINE_V2 metadot_cross_v2_f(METAENGINE_V2 a, float b) { return metadot_v2(b * a.y, -b * a.x); }
-ME_INLINE METAENGINE_V2 metadot_cross_f_v2(float a, METAENGINE_V2 b) { return metadot_v2(-a * b.y, a * b.x); }
-ME_INLINE METAENGINE_V2 metadot_min_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(metadot_min(a.x, b.x), metadot_min(a.y, b.y)); }
-ME_INLINE METAENGINE_V2 metadot_max_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return metadot_v2(metadot_max(a.x, b.x), metadot_max(a.y, b.y)); }
-ME_INLINE METAENGINE_V2 metadot_clamp_v2(METAENGINE_V2 a, METAENGINE_V2 lo, METAENGINE_V2 hi) { return metadot_max_v2(lo, metadot_min_v2(a, hi)); }
-ME_INLINE METAENGINE_V2 metadot_clamp01_v2(METAENGINE_V2 a) { return metadot_max_v2(metadot_v2(0, 0), metadot_min_v2(a, metadot_v2(1, 1))); }
-ME_INLINE METAENGINE_V2 metadot_abs_v2(METAENGINE_V2 a) { return metadot_v2(fabsf(a.x), fabsf(a.y)); }
-ME_INLINE float metadot_hmin(METAENGINE_V2 a) { return metadot_min(a.x, a.y); }
-ME_INLINE float metadot_hmax(METAENGINE_V2 a) { return metadot_max(a.x, a.y); }
-ME_INLINE float metadot_len(METAENGINE_V2 a) { return sqrtf(metadot_dot(a, a)); }
-ME_INLINE float metadot_distance(METAENGINE_V2 a, METAENGINE_V2 b) {
-    METAENGINE_V2 d = metadot_sub_v2(b, a);
+ME_INLINE ME_V2 metadot_skew(ME_V2 a) { return metadot_v2(-a.y, a.x); }
+ME_INLINE ME_V2 metadot_cw90(ME_V2 a) { return metadot_v2(a.y, -a.x); }
+ME_INLINE float metadot_det2(ME_V2 a, ME_V2 b) { return a.x * b.y - a.y * b.x; }
+ME_INLINE float metadot_cross(ME_V2 a, ME_V2 b) { return metadot_det2(a, b); }
+ME_INLINE ME_V2 metadot_cross_v2_f(ME_V2 a, float b) { return metadot_v2(b * a.y, -b * a.x); }
+ME_INLINE ME_V2 metadot_cross_f_v2(float a, ME_V2 b) { return metadot_v2(-a * b.y, a * b.x); }
+ME_INLINE ME_V2 metadot_min_v2(ME_V2 a, ME_V2 b) { return metadot_v2(metadot_min(a.x, b.x), metadot_min(a.y, b.y)); }
+ME_INLINE ME_V2 metadot_max_v2(ME_V2 a, ME_V2 b) { return metadot_v2(metadot_max(a.x, b.x), metadot_max(a.y, b.y)); }
+ME_INLINE ME_V2 metadot_clamp_v2(ME_V2 a, ME_V2 lo, ME_V2 hi) { return metadot_max_v2(lo, metadot_min_v2(a, hi)); }
+ME_INLINE ME_V2 metadot_clamp01_v2(ME_V2 a) { return metadot_max_v2(metadot_v2(0, 0), metadot_min_v2(a, metadot_v2(1, 1))); }
+ME_INLINE ME_V2 metadot_abs_v2(ME_V2 a) { return metadot_v2(fabsf(a.x), fabsf(a.y)); }
+ME_INLINE float metadot_hmin(ME_V2 a) { return metadot_min(a.x, a.y); }
+ME_INLINE float metadot_hmax(ME_V2 a) { return metadot_max(a.x, a.y); }
+ME_INLINE float metadot_len(ME_V2 a) { return sqrtf(metadot_dot(a, a)); }
+ME_INLINE float metadot_distance(ME_V2 a, ME_V2 b) {
+    ME_V2 d = metadot_sub_v2(b, a);
     return sqrtf(metadot_dot(d, d));
 }
-ME_INLINE METAENGINE_V2 metadot_norm(METAENGINE_V2 a) { return metadot_div_v2_f(a, metadot_len(a)); }
-ME_INLINE METAENGINE_V2 metadot_safe_norm(METAENGINE_V2 a) {
+ME_INLINE ME_V2 metadot_norm(ME_V2 a) { return metadot_div_v2_f(a, metadot_len(a)); }
+ME_INLINE ME_V2 metadot_safe_norm(ME_V2 a) {
     float sq = metadot_dot(a, a);
     return sq ? metadot_div_v2_f(a, sqrtf(sq)) : metadot_v2(0, 0);
 }
 ME_INLINE float metadot_safe_norm_f(float a) { return a == 0 ? 0 : metadot_sign(a); }
 ME_INLINE int metadot_safe_norm_int(int a) { return a == 0 ? 0 : metadot_sign_int(a); }
-ME_INLINE METAENGINE_V2 metadot_neg_v2(METAENGINE_V2 a) { return metadot_v2(-a.x, -a.y); }
-ME_INLINE METAENGINE_V2 metadot_lerp_v2(METAENGINE_V2 a, METAENGINE_V2 b, float t) { return metadot_add_v2(a, metadot_mul_v2_f(metadot_sub_v2(b, a), t)); }
-ME_INLINE METAENGINE_V2 metadot_bezier(METAENGINE_V2 a, METAENGINE_V2 c0, METAENGINE_V2 b, float t) { return metadot_lerp_v2(metadot_lerp_v2(a, c0, t), metadot_lerp_v2(c0, b, t), t); }
-ME_INLINE METAENGINE_V2 metadot_bezier2(METAENGINE_V2 a, METAENGINE_V2 c0, METAENGINE_V2 c1, METAENGINE_V2 b, float t) {
+ME_INLINE ME_V2 metadot_neg_v2(ME_V2 a) { return metadot_v2(-a.x, -a.y); }
+ME_INLINE ME_V2 metadot_lerp_v2(ME_V2 a, ME_V2 b, float t) { return metadot_add_v2(a, metadot_mul_v2_f(metadot_sub_v2(b, a), t)); }
+ME_INLINE ME_V2 metadot_bezier(ME_V2 a, ME_V2 c0, ME_V2 b, float t) { return metadot_lerp_v2(metadot_lerp_v2(a, c0, t), metadot_lerp_v2(c0, b, t), t); }
+ME_INLINE ME_V2 metadot_bezier2(ME_V2 a, ME_V2 c0, ME_V2 c1, ME_V2 b, float t) {
     return metadot_bezier(metadot_lerp_v2(a, c0, t), metadot_lerp_v2(c0, c1, t), metadot_lerp_v2(c1, b, t), t);
 }
-ME_INLINE int metadot_lesser_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x < b.x && a.y < b.y; }
-ME_INLINE int metadot_greater_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x > b.x && a.y > b.y; }
-ME_INLINE int metadot_lesser_equal_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x <= b.x && a.y <= b.y; }
-ME_INLINE int metadot_greater_equal_v2(METAENGINE_V2 a, METAENGINE_V2 b) { return a.x >= b.x && a.y >= b.y; }
-ME_INLINE METAENGINE_V2 metadot_floor(METAENGINE_V2 a) { return metadot_v2(floorf(a.x), floorf(a.y)); }
-ME_INLINE METAENGINE_V2 metadot_round(METAENGINE_V2 a) { return metadot_v2(roundf(a.x), roundf(a.y)); }
-ME_INLINE METAENGINE_V2 metadot_safe_invert_v2(METAENGINE_V2 a) { return metadot_v2(metadot_safe_invert(a.x), metadot_safe_invert(a.y)); }
-ME_INLINE METAENGINE_V2 metadot_sign_v2(METAENGINE_V2 a) { return metadot_v2(metadot_sign(a.x), metadot_sign(a.y)); }
+ME_INLINE int metadot_lesser_v2(ME_V2 a, ME_V2 b) { return a.x < b.x && a.y < b.y; }
+ME_INLINE int metadot_greater_v2(ME_V2 a, ME_V2 b) { return a.x > b.x && a.y > b.y; }
+ME_INLINE int metadot_lesser_equal_v2(ME_V2 a, ME_V2 b) { return a.x <= b.x && a.y <= b.y; }
+ME_INLINE int metadot_greater_equal_v2(ME_V2 a, ME_V2 b) { return a.x >= b.x && a.y >= b.y; }
+ME_INLINE ME_V2 metadot_floor(ME_V2 a) { return metadot_v2(floorf(a.x), floorf(a.y)); }
+ME_INLINE ME_V2 metadot_round(ME_V2 a) { return metadot_v2(roundf(a.x), roundf(a.y)); }
+ME_INLINE ME_V2 metadot_safe_invert_v2(ME_V2 a) { return metadot_v2(metadot_safe_invert(a.x), metadot_safe_invert(a.y)); }
+ME_INLINE ME_V2 metadot_sign_v2(ME_V2 a) { return metadot_v2(metadot_sign(a.x), metadot_sign(a.y)); }
 
-ME_INLINE int metadot_parallel(METAENGINE_V2 a, METAENGINE_V2 b, float tol) {
+ME_INLINE int metadot_parallel(ME_V2 a, ME_V2 b, float tol) {
     float k = metadot_len(a) / metadot_len(b);
     b = metadot_mul_v2_f(b, k);
     if (fabs(a.x - b.x) < tol && fabs(a.y - b.y) < tol) return 1;
@@ -1332,44 +1332,44 @@ ME_INLINE int metadot_parallel(METAENGINE_V2 a, METAENGINE_V2 b, float tol) {
 }
 
 //--------------------------------------------------------------------------------------------------
-// METAENGINE_SinCos rotation ops.
+// ME_SinCos rotation ops.
 
-ME_INLINE METAENGINE_SinCos metadot_sincos_f(float radians) {
-    METAENGINE_SinCos r;
+ME_INLINE ME_SinCos metadot_sincos_f(float radians) {
+    ME_SinCos r;
     r.s = sinf(radians);
     r.c = cosf(radians);
     return r;
 }
-ME_INLINE METAENGINE_SinCos metadot_sincos() {
-    METAENGINE_SinCos r;
+ME_INLINE ME_SinCos metadot_sincos() {
+    ME_SinCos r;
     r.c = 1.0f;
     r.s = 0;
     return r;
 }
-ME_INLINE METAENGINE_V2 metadot_x_axis(METAENGINE_SinCos r) { return metadot_v2(r.c, r.s); }
-ME_INLINE METAENGINE_V2 metadot_y_axis(METAENGINE_SinCos r) { return metadot_v2(-r.s, r.c); }
-ME_INLINE METAENGINE_V2 metadot_mul_sc_v2(METAENGINE_SinCos a, METAENGINE_V2 b) { return metadot_v2(a.c * b.x - a.s * b.y, a.s * b.x + a.c * b.y); }
-ME_INLINE METAENGINE_V2 metadot_mulT_sc_v2(METAENGINE_SinCos a, METAENGINE_V2 b) { return metadot_v2(a.c * b.x + a.s * b.y, -a.s * b.x + a.c * b.y); }
-ME_INLINE METAENGINE_SinCos metadot_mul_sc(METAENGINE_SinCos a, METAENGINE_SinCos b) {
-    METAENGINE_SinCos c;
+ME_INLINE ME_V2 metadot_x_axis(ME_SinCos r) { return metadot_v2(r.c, r.s); }
+ME_INLINE ME_V2 metadot_y_axis(ME_SinCos r) { return metadot_v2(-r.s, r.c); }
+ME_INLINE ME_V2 metadot_mul_sc_v2(ME_SinCos a, ME_V2 b) { return metadot_v2(a.c * b.x - a.s * b.y, a.s * b.x + a.c * b.y); }
+ME_INLINE ME_V2 metadot_mulT_sc_v2(ME_SinCos a, ME_V2 b) { return metadot_v2(a.c * b.x + a.s * b.y, -a.s * b.x + a.c * b.y); }
+ME_INLINE ME_SinCos metadot_mul_sc(ME_SinCos a, ME_SinCos b) {
+    ME_SinCos c;
     c.c = a.c * b.c - a.s * b.s;
     c.s = a.s * b.c + a.c * b.s;
     return c;
 }
-ME_INLINE METAENGINE_SinCos metadot_mulT_sc(METAENGINE_SinCos a, METAENGINE_SinCos b) {
-    METAENGINE_SinCos c;
+ME_INLINE ME_SinCos metadot_mulT_sc(ME_SinCos a, ME_SinCos b) {
+    ME_SinCos c;
     c.c = a.c * b.c + a.s * b.s;
     c.s = a.c * b.s - a.s * b.c;
     return c;
 }
 
 // Remaps the result from atan2f to the continuous range of 0, 2*PI.
-ME_INLINE float metadot_atan2_360(float y, float x) { return atan2f(-y, -x) + METAENGINE_PI; }
-ME_INLINE float metadot_atan2_360_sc(METAENGINE_SinCos r) { return metadot_atan2_360(r.s, r.c); }
-ME_INLINE float metadot_atan2_360_v2(METAENGINE_V2 v) { return atan2f(-v.y, -v.x) + METAENGINE_PI; }
+ME_INLINE float metadot_atan2_360(float y, float x) { return atan2f(-y, -x) + ME_PI; }
+ME_INLINE float metadot_atan2_360_sc(ME_SinCos r) { return metadot_atan2_360(r.s, r.c); }
+ME_INLINE float metadot_atan2_360_v2(ME_V2 v) { return atan2f(-v.y, -v.x) + ME_PI; }
 
 // Computes the shortest angle to rotate the vector a to the vector b.
-ME_INLINE float metadot_shortest_arc(METAENGINE_V2 a, METAENGINE_V2 b) {
+ME_INLINE float metadot_shortest_arc(ME_V2 a, ME_V2 b) {
     float c = metadot_dot(a, b);
     float s = metadot_det2(a, b);
     float theta = acosf(c);
@@ -1380,27 +1380,27 @@ ME_INLINE float metadot_shortest_arc(METAENGINE_V2 a, METAENGINE_V2 b) {
     }
 }
 
-ME_INLINE float metadot_angle_diff(float radians_a, float radians_b) { return metadot_mod((radians_b - radians_a) + METAENGINE_PI, 2.0f * METAENGINE_PI) - METAENGINE_PI; }
-ME_INLINE METAENGINE_V2 metadot_from_angle(float radians) { return metadot_v2(cosf(radians), sinf(radians)); }
+ME_INLINE float metadot_angle_diff(float radians_a, float radians_b) { return metadot_mod((radians_b - radians_a) + ME_PI, 2.0f * ME_PI) - ME_PI; }
+ME_INLINE ME_V2 metadot_from_angle(float radians) { return metadot_v2(cosf(radians), sinf(radians)); }
 
 //--------------------------------------------------------------------------------------------------
 // m2 ops.
 // 2D graphics matrix for only scale + rotate.
 
-ME_INLINE METAENGINE_M2x2 metadot_mul_m2_f(METAENGINE_M2x2 a, float b) {
-    METAENGINE_M2x2 c;
+ME_INLINE ME_M2x2 metadot_mul_m2_f(ME_M2x2 a, float b) {
+    ME_M2x2 c;
     c.x = metadot_mul_v2_f(a.x, b);
     c.y = metadot_mul_v2_f(a.y, b);
     return c;
 }
-ME_INLINE METAENGINE_V2 metadot_mul_m2_v2(METAENGINE_M2x2 a, METAENGINE_V2 b) {
-    METAENGINE_V2 c;
+ME_INLINE ME_V2 metadot_mul_m2_v2(ME_M2x2 a, ME_V2 b) {
+    ME_V2 c;
     c.x = a.x.x * b.x + a.y.x * b.y;
     c.y = a.x.y * b.x + a.y.y * b.y;
     return c;
 }
-ME_INLINE METAENGINE_M2x2 metadot_mul_m2(METAENGINE_M2x2 a, METAENGINE_M2x2 b) {
-    METAENGINE_M2x2 c;
+ME_INLINE ME_M2x2 metadot_mul_m2(ME_M2x2 a, ME_M2x2 b) {
+    ME_M2x2 c;
     c.x = metadot_mul_m2_v2(a, b.x);
     c.y = metadot_mul_m2_v2(a, b.y);
     return c;
@@ -1410,65 +1410,65 @@ ME_INLINE METAENGINE_M2x2 metadot_mul_m2(METAENGINE_M2x2 a, METAENGINE_M2x2 b) {
 // m3x2 ops.
 // General purpose 2D graphics matrix; scale + rotate + translate.
 
-ME_INLINE METAENGINE_V2 metadot_mul_m32_v2(METAENGINE_M3x2 a, METAENGINE_V2 b) { return metadot_add_v2(metadot_mul_m2_v2(a.m, b), a.p); }
-ME_INLINE METAENGINE_M3x2 metadot_mul_m32(METAENGINE_M3x2 a, METAENGINE_M3x2 b) {
-    METAENGINE_M3x2 c;
+ME_INLINE ME_V2 metadot_mul_m32_v2(ME_M3x2 a, ME_V2 b) { return metadot_add_v2(metadot_mul_m2_v2(a.m, b), a.p); }
+ME_INLINE ME_M3x2 metadot_mul_m32(ME_M3x2 a, ME_M3x2 b) {
+    ME_M3x2 c;
     c.m = metadot_mul_m2(a.m, b.m);
     c.p = metadot_add_v2(metadot_mul_m2_v2(a.m, b.p), a.p);
     return c;
 }
-ME_INLINE METAENGINE_M3x2 metadot_make_identity() {
-    METAENGINE_M3x2 m;
+ME_INLINE ME_M3x2 metadot_make_identity() {
+    ME_M3x2 m;
     m.m.x = metadot_v2(1, 0);
     m.m.y = metadot_v2(0, 1);
     m.p = metadot_v2(0, 0);
     return m;
 }
-ME_INLINE METAENGINE_M3x2 metadot_make_translation_f(float x, float y) {
-    METAENGINE_M3x2 m;
+ME_INLINE ME_M3x2 metadot_make_translation_f(float x, float y) {
+    ME_M3x2 m;
     m.m.x = metadot_v2(1, 0);
     m.m.y = metadot_v2(0, 1);
     m.p = metadot_v2(x, y);
     return m;
 }
-ME_INLINE METAENGINE_M3x2 metadot_make_translation(METAENGINE_V2 p) { return metadot_make_translation_f(p.x, p.y); }
-ME_INLINE METAENGINE_M3x2 metadot_make_scale(METAENGINE_V2 s) {
-    METAENGINE_M3x2 m;
+ME_INLINE ME_M3x2 metadot_make_translation(ME_V2 p) { return metadot_make_translation_f(p.x, p.y); }
+ME_INLINE ME_M3x2 metadot_make_scale(ME_V2 s) {
+    ME_M3x2 m;
     m.m.x = metadot_v2(s.x, 0);
     m.m.y = metadot_v2(0, s.y);
     m.p = metadot_v2(0, 0);
     return m;
 }
-ME_INLINE METAENGINE_M3x2 metadot_make_scale_f(float s) { return metadot_make_scale(metadot_v2(s, s)); }
-ME_INLINE METAENGINE_M3x2 metadot_make_scale_translation(METAENGINE_V2 s, METAENGINE_V2 p) {
-    METAENGINE_M3x2 m;
+ME_INLINE ME_M3x2 metadot_make_scale_f(float s) { return metadot_make_scale(metadot_v2(s, s)); }
+ME_INLINE ME_M3x2 metadot_make_scale_translation(ME_V2 s, ME_V2 p) {
+    ME_M3x2 m;
     m.m.x = metadot_v2(s.x, 0);
     m.m.y = metadot_v2(0, s.y);
     m.p = p;
     return m;
 }
-ME_INLINE METAENGINE_M3x2 metadot_make_scale_translation_f(float s, METAENGINE_V2 p) { return metadot_make_scale_translation(metadot_v2(s, s), p); }
-ME_INLINE METAENGINE_M3x2 metadot_make_scale_translation_f_f(float sx, float sy, METAENGINE_V2 p) { return metadot_make_scale_translation(metadot_v2(sx, sy), p); }
-ME_INLINE METAENGINE_M3x2 metadot_make_rotation(float radians) {
-    METAENGINE_SinCos sc = metadot_sincos_f(radians);
-    METAENGINE_M3x2 m;
+ME_INLINE ME_M3x2 metadot_make_scale_translation_f(float s, ME_V2 p) { return metadot_make_scale_translation(metadot_v2(s, s), p); }
+ME_INLINE ME_M3x2 metadot_make_scale_translation_f_f(float sx, float sy, ME_V2 p) { return metadot_make_scale_translation(metadot_v2(sx, sy), p); }
+ME_INLINE ME_M3x2 metadot_make_rotation(float radians) {
+    ME_SinCos sc = metadot_sincos_f(radians);
+    ME_M3x2 m;
     m.m.x = metadot_v2(sc.c, -sc.s);
     m.m.y = metadot_v2(sc.s, sc.c);
     m.p = metadot_v2(0, 0);
     return m;
 }
-ME_INLINE METAENGINE_M3x2 metadot_make_transform_TSR(METAENGINE_V2 p, METAENGINE_V2 s, float radians) {
-    METAENGINE_SinCos sc = metadot_sincos_f(radians);
-    METAENGINE_M3x2 m;
+ME_INLINE ME_M3x2 metadot_make_transform_TSR(ME_V2 p, ME_V2 s, float radians) {
+    ME_SinCos sc = metadot_sincos_f(radians);
+    ME_M3x2 m;
     m.m.x = metadot_mul_v2_f(metadot_v2(sc.c, -sc.s), s.x);
     m.m.y = metadot_mul_v2_f(metadot_v2(sc.s, sc.c), s.y);
     m.p = p;
     return m;
 }
 
-ME_INLINE METAENGINE_M3x2 metadot_invert(METAENGINE_M3x2 a) {
+ME_INLINE ME_M3x2 metadot_invert(ME_M3x2 a) {
     float id = metadot_safe_invert(metadot_det2(a.m.x, a.m.y));
-    METAENGINE_M3x2 b;
+    ME_M3x2 b;
     b.m.x = metadot_v2(a.m.y.y * id, -a.m.x.y * id);
     b.m.y = metadot_v2(-a.m.y.x * id, a.m.x.x * id);
     b.p.x = (a.m.y.x * a.p.y - a.p.x * a.m.y.y) * id;
@@ -1480,28 +1480,28 @@ ME_INLINE METAENGINE_M3x2 metadot_invert(METAENGINE_M3x2 a) {
 // Transform ops.
 // No scale factor allowed here, good for physics + colliders.
 
-ME_INLINE METAENGINE_Transform metadot_make_transform() {
-    METAENGINE_Transform x;
+ME_INLINE ME_Transform metadot_make_transform() {
+    ME_Transform x;
     x.p = metadot_v2(0, 0);
     x.r = metadot_sincos();
     return x;
 }
-ME_INLINE METAENGINE_Transform metadot_make_transform_TR(METAENGINE_V2 p, float radians) {
-    METAENGINE_Transform x;
+ME_INLINE ME_Transform metadot_make_transform_TR(ME_V2 p, float radians) {
+    ME_Transform x;
     x.r = metadot_sincos_f(radians);
     x.p = p;
     return x;
 }
-ME_INLINE METAENGINE_V2 metadot_mul_tf_v2(METAENGINE_Transform a, METAENGINE_V2 b) { return metadot_add_v2(metadot_mul_sc_v2(a.r, b), a.p); }
-ME_INLINE METAENGINE_V2 metadot_mulT_tf_v2(METAENGINE_Transform a, METAENGINE_V2 b) { return metadot_mulT_sc_v2(a.r, metadot_sub_v2(b, a.p)); }
-ME_INLINE METAENGINE_Transform metadot_mul_tf(METAENGINE_Transform a, METAENGINE_Transform b) {
-    METAENGINE_Transform c;
+ME_INLINE ME_V2 metadot_mul_tf_v2(ME_Transform a, ME_V2 b) { return metadot_add_v2(metadot_mul_sc_v2(a.r, b), a.p); }
+ME_INLINE ME_V2 metadot_mulT_tf_v2(ME_Transform a, ME_V2 b) { return metadot_mulT_sc_v2(a.r, metadot_sub_v2(b, a.p)); }
+ME_INLINE ME_Transform metadot_mul_tf(ME_Transform a, ME_Transform b) {
+    ME_Transform c;
     c.r = metadot_mul_sc(a.r, b.r);
     c.p = metadot_add_v2(metadot_mul_sc_v2(a.r, b.p), a.p);
     return c;
 }
-ME_INLINE METAENGINE_Transform metadot_mulT_tf(METAENGINE_Transform a, METAENGINE_Transform b) {
-    METAENGINE_Transform c;
+ME_INLINE ME_Transform metadot_mulT_tf(ME_Transform a, ME_Transform b) {
+    ME_Transform c;
     c.r = metadot_mulT_sc(a.r, b.r);
     c.p = metadot_mulT_sc_v2(a.r, metadot_sub_v2(b.p, a.p));
     return c;
@@ -1511,91 +1511,91 @@ ME_INLINE METAENGINE_Transform metadot_mulT_tf(METAENGINE_Transform a, METAENGIN
 // Halfspace (plane/line) ops.
 // Functions for infinite lines.
 
-ME_INLINE METAENGINE_Halfspace metadot_plane(METAENGINE_V2 n, float d) {
-    METAENGINE_Halfspace h;
+ME_INLINE ME_Halfspace metadot_plane(ME_V2 n, float d) {
+    ME_Halfspace h;
     h.n = n;
     h.d = d;
     return h;
 }
-ME_INLINE METAENGINE_Halfspace metadot_plane2(METAENGINE_V2 n, METAENGINE_V2 p) {
-    METAENGINE_Halfspace h;
+ME_INLINE ME_Halfspace metadot_plane2(ME_V2 n, ME_V2 p) {
+    ME_Halfspace h;
     h.n = n;
     h.d = metadot_dot(n, p);
     return h;
 }
-ME_INLINE METAENGINE_V2 metadot_origin(METAENGINE_Halfspace h) { return metadot_mul_v2_f(h.n, h.d); }
-ME_INLINE float metadot_distance_hs(METAENGINE_Halfspace h, METAENGINE_V2 p) { return metadot_dot(h.n, p) - h.d; }
-ME_INLINE METAENGINE_V2 metadot_project(METAENGINE_Halfspace h, METAENGINE_V2 p) { return metadot_sub_v2(p, metadot_mul_v2_f(h.n, metadot_distance_hs(h, p))); }
-ME_INLINE METAENGINE_Halfspace metadot_mul_tf_hs(METAENGINE_Transform a, METAENGINE_Halfspace b) {
-    METAENGINE_Halfspace c;
+ME_INLINE ME_V2 metadot_origin(ME_Halfspace h) { return metadot_mul_v2_f(h.n, h.d); }
+ME_INLINE float metadot_distance_hs(ME_Halfspace h, ME_V2 p) { return metadot_dot(h.n, p) - h.d; }
+ME_INLINE ME_V2 metadot_project(ME_Halfspace h, ME_V2 p) { return metadot_sub_v2(p, metadot_mul_v2_f(h.n, metadot_distance_hs(h, p))); }
+ME_INLINE ME_Halfspace metadot_mul_tf_hs(ME_Transform a, ME_Halfspace b) {
+    ME_Halfspace c;
     c.n = metadot_mul_sc_v2(a.r, b.n);
     c.d = metadot_dot(metadot_mul_tf_v2(a, metadot_origin(b)), c.n);
     return c;
 }
-ME_INLINE METAENGINE_Halfspace metadot_mulT_tf_hs(METAENGINE_Transform a, METAENGINE_Halfspace b) {
-    METAENGINE_Halfspace c;
+ME_INLINE ME_Halfspace metadot_mulT_tf_hs(ME_Transform a, ME_Halfspace b) {
+    ME_Halfspace c;
     c.n = metadot_mulT_sc_v2(a.r, b.n);
     c.d = metadot_dot(metadot_mulT_tf_v2(a, metadot_origin(b)), c.n);
     return c;
 }
-ME_INLINE METAENGINE_V2 metadot_intersect_halfspace(METAENGINE_V2 a, METAENGINE_V2 b, float da, float db) { return metadot_add_v2(a, metadot_mul_v2_f(metadot_sub_v2(b, a), (da / (da - db)))); }
-ME_INLINE METAENGINE_V2 metadot_intersect_halfspace2(METAENGINE_Halfspace h, METAENGINE_V2 a, METAENGINE_V2 b) {
+ME_INLINE ME_V2 metadot_intersect_halfspace(ME_V2 a, ME_V2 b, float da, float db) { return metadot_add_v2(a, metadot_mul_v2_f(metadot_sub_v2(b, a), (da / (da - db)))); }
+ME_INLINE ME_V2 metadot_intersect_halfspace2(ME_Halfspace h, ME_V2 a, ME_V2 b) {
     return metadot_intersect_halfspace(a, b, metadot_distance_hs(h, a), metadot_distance_hs(h, b));
 }
 
 //--------------------------------------------------------------------------------------------------
 // AABB helpers.
 
-ME_INLINE METAENGINE_Aabb metadot_make_aabb(METAENGINE_V2 min, METAENGINE_V2 max) {
-    METAENGINE_Aabb bb;
+ME_INLINE ME_Aabb metadot_make_aabb(ME_V2 min, ME_V2 max) {
+    ME_Aabb bb;
     bb.min = min;
     bb.max = max;
     return bb;
 }
-ME_INLINE METAENGINE_Aabb metadot_make_aabb_pos_w_h(METAENGINE_V2 pos, float w, float h) {
-    METAENGINE_Aabb bb;
-    METAENGINE_V2 he = metadot_mul_v2_f(metadot_v2(w, h), 0.5f);
+ME_INLINE ME_Aabb metadot_make_aabb_pos_w_h(ME_V2 pos, float w, float h) {
+    ME_Aabb bb;
+    ME_V2 he = metadot_mul_v2_f(metadot_v2(w, h), 0.5f);
     bb.min = metadot_sub_v2(pos, he);
     bb.max = metadot_add_v2(pos, he);
     return bb;
 }
-ME_INLINE METAENGINE_Aabb metadot_make_aabb_center_half_extents(METAENGINE_V2 center, METAENGINE_V2 half_extents) {
-    METAENGINE_Aabb bb;
+ME_INLINE ME_Aabb metadot_make_aabb_center_half_extents(ME_V2 center, ME_V2 half_extents) {
+    ME_Aabb bb;
     bb.min = metadot_sub_v2(center, half_extents);
     bb.max = metadot_add_v2(center, half_extents);
     return bb;
 }
-ME_INLINE METAENGINE_Aabb metadot_make_aabb_from_top_left(METAENGINE_V2 top_left, float w, float h) {
+ME_INLINE ME_Aabb metadot_make_aabb_from_top_left(ME_V2 top_left, float w, float h) {
     return metadot_make_aabb(metadot_add_v2(top_left, metadot_v2(0, -h)), metadot_add_v2(top_left, metadot_v2(w, 0)));
 }
-ME_INLINE float metadot_width(METAENGINE_Aabb bb) { return bb.max.x - bb.min.x; }
-ME_INLINE float metadot_height(METAENGINE_Aabb bb) { return bb.max.y - bb.min.y; }
-ME_INLINE float metadot_half_width(METAENGINE_Aabb bb) { return metadot_width(bb) * 0.5f; }
-ME_INLINE float metadot_half_height(METAENGINE_Aabb bb) { return metadot_height(bb) * 0.5f; }
-ME_INLINE METAENGINE_V2 metadot_half_extents(METAENGINE_Aabb bb) { return (metadot_mul_v2_f(metadot_sub_v2(bb.max, bb.min), 0.5f)); }
-ME_INLINE METAENGINE_V2 metadot_extents(METAENGINE_Aabb aabb) { return metadot_sub_v2(aabb.max, aabb.min); }
-ME_INLINE METAENGINE_Aabb metadot_expand_aabb(METAENGINE_Aabb aabb, METAENGINE_V2 v) { return metadot_make_aabb(metadot_sub_v2(aabb.min, v), metadot_add_v2(aabb.max, v)); }
-ME_INLINE METAENGINE_Aabb metadot_expand_aabb_f(METAENGINE_Aabb aabb, float v) {
-    METAENGINE_V2 factor = metadot_v2(v, v);
+ME_INLINE float metadot_width(ME_Aabb bb) { return bb.max.x - bb.min.x; }
+ME_INLINE float metadot_height(ME_Aabb bb) { return bb.max.y - bb.min.y; }
+ME_INLINE float metadot_half_width(ME_Aabb bb) { return metadot_width(bb) * 0.5f; }
+ME_INLINE float metadot_half_height(ME_Aabb bb) { return metadot_height(bb) * 0.5f; }
+ME_INLINE ME_V2 metadot_half_extents(ME_Aabb bb) { return (metadot_mul_v2_f(metadot_sub_v2(bb.max, bb.min), 0.5f)); }
+ME_INLINE ME_V2 metadot_extents(ME_Aabb aabb) { return metadot_sub_v2(aabb.max, aabb.min); }
+ME_INLINE ME_Aabb metadot_expand_aabb(ME_Aabb aabb, ME_V2 v) { return metadot_make_aabb(metadot_sub_v2(aabb.min, v), metadot_add_v2(aabb.max, v)); }
+ME_INLINE ME_Aabb metadot_expand_aabb_f(ME_Aabb aabb, float v) {
+    ME_V2 factor = metadot_v2(v, v);
     return metadot_make_aabb(metadot_sub_v2(aabb.min, factor), metadot_add_v2(aabb.max, factor));
 }
-ME_INLINE METAENGINE_V2 metadot_min_aabb(METAENGINE_Aabb bb) { return bb.min; }
-ME_INLINE METAENGINE_V2 metadot_max_aabb(METAENGINE_Aabb bb) { return bb.max; }
-ME_INLINE METAENGINE_V2 metadot_midpoint(METAENGINE_Aabb bb) { return metadot_mul_v2_f(metadot_add_v2(bb.min, bb.max), 0.5f); }
-ME_INLINE METAENGINE_V2 metadot_center(METAENGINE_Aabb bb) { return metadot_mul_v2_f(metadot_add_v2(bb.min, bb.max), 0.5f); }
-ME_INLINE METAENGINE_V2 metadot_top_left(METAENGINE_Aabb bb) { return metadot_v2(bb.min.x, bb.max.y); }
-ME_INLINE METAENGINE_V2 metadot_top_right(METAENGINE_Aabb bb) { return metadot_v2(bb.max.x, bb.max.y); }
-ME_INLINE METAENGINE_V2 metadot_bottom_left(METAENGINE_Aabb bb) { return metadot_v2(bb.min.x, bb.min.y); }
-ME_INLINE METAENGINE_V2 metadot_bottom_right(METAENGINE_Aabb bb) { return metadot_v2(bb.max.x, bb.min.y); }
-ME_INLINE bool metadot_contains_point(METAENGINE_Aabb bb, METAENGINE_V2 p) { return metadot_greater_equal_v2(p, bb.min) && metadot_lesser_equal_v2(p, bb.max); }
-ME_INLINE bool metadot_contains_aabb(METAENGINE_Aabb a, METAENGINE_Aabb b) { return metadot_lesser_equal_v2(a.min, b.min) && metadot_greater_equal_v2(a.max, b.max); }
-ME_INLINE float metadot_surface_area_aabb(METAENGINE_Aabb bb) { return 2.0f * metadot_width(bb) * metadot_height(bb); }
-ME_INLINE float metadot_area_aabb(METAENGINE_Aabb bb) { return metadot_width(bb) * metadot_height(bb); }
-ME_INLINE METAENGINE_V2 metadot_clamp_aabb_v2(METAENGINE_Aabb bb, METAENGINE_V2 p) { return metadot_clamp_v2(p, bb.min, bb.max); }
-ME_INLINE METAENGINE_Aabb metadot_clamp_aabb(METAENGINE_Aabb a, METAENGINE_Aabb b) { return metadot_make_aabb(metadot_clamp_v2(a.min, b.min, b.max), metadot_clamp_v2(a.max, b.min, b.max)); }
-ME_INLINE METAENGINE_Aabb metadot_combine(METAENGINE_Aabb a, METAENGINE_Aabb b) { return metadot_make_aabb(metadot_min_v2(a.min, b.min), metadot_max_v2(a.max, b.max)); }
+ME_INLINE ME_V2 metadot_min_aabb(ME_Aabb bb) { return bb.min; }
+ME_INLINE ME_V2 metadot_max_aabb(ME_Aabb bb) { return bb.max; }
+ME_INLINE ME_V2 metadot_midpoint(ME_Aabb bb) { return metadot_mul_v2_f(metadot_add_v2(bb.min, bb.max), 0.5f); }
+ME_INLINE ME_V2 metadot_center(ME_Aabb bb) { return metadot_mul_v2_f(metadot_add_v2(bb.min, bb.max), 0.5f); }
+ME_INLINE ME_V2 metadot_top_left(ME_Aabb bb) { return metadot_v2(bb.min.x, bb.max.y); }
+ME_INLINE ME_V2 metadot_top_right(ME_Aabb bb) { return metadot_v2(bb.max.x, bb.max.y); }
+ME_INLINE ME_V2 metadot_bottom_left(ME_Aabb bb) { return metadot_v2(bb.min.x, bb.min.y); }
+ME_INLINE ME_V2 metadot_bottom_right(ME_Aabb bb) { return metadot_v2(bb.max.x, bb.min.y); }
+ME_INLINE bool metadot_contains_point(ME_Aabb bb, ME_V2 p) { return metadot_greater_equal_v2(p, bb.min) && metadot_lesser_equal_v2(p, bb.max); }
+ME_INLINE bool metadot_contains_aabb(ME_Aabb a, ME_Aabb b) { return metadot_lesser_equal_v2(a.min, b.min) && metadot_greater_equal_v2(a.max, b.max); }
+ME_INLINE float metadot_surface_area_aabb(ME_Aabb bb) { return 2.0f * metadot_width(bb) * metadot_height(bb); }
+ME_INLINE float metadot_area_aabb(ME_Aabb bb) { return metadot_width(bb) * metadot_height(bb); }
+ME_INLINE ME_V2 metadot_clamp_aabb_v2(ME_Aabb bb, ME_V2 p) { return metadot_clamp_v2(p, bb.min, bb.max); }
+ME_INLINE ME_Aabb metadot_clamp_aabb(ME_Aabb a, ME_Aabb b) { return metadot_make_aabb(metadot_clamp_v2(a.min, b.min, b.max), metadot_clamp_v2(a.max, b.min, b.max)); }
+ME_INLINE ME_Aabb metadot_combine(ME_Aabb a, ME_Aabb b) { return metadot_make_aabb(metadot_min_v2(a.min, b.min), metadot_max_v2(a.max, b.max)); }
 
-ME_INLINE int metadot_overlaps(METAENGINE_Aabb a, METAENGINE_Aabb b) {
+ME_INLINE int metadot_overlaps(ME_Aabb a, ME_Aabb b) {
     int d0 = b.max.x < a.min.x;
     int d1 = a.max.x < b.min.x;
     int d2 = b.max.y < a.min.y;
@@ -1603,11 +1603,11 @@ ME_INLINE int metadot_overlaps(METAENGINE_Aabb a, METAENGINE_Aabb b) {
     return !(d0 | d1 | d2 | d3);
 }
 
-ME_INLINE int metadot_collide_aabb(METAENGINE_Aabb a, METAENGINE_Aabb b) { return metadot_overlaps(a, b); }
+ME_INLINE int metadot_collide_aabb(ME_Aabb a, ME_Aabb b) { return metadot_overlaps(a, b); }
 
-ME_INLINE METAENGINE_Aabb metadot_make_aabb_verts(METAENGINE_V2 *verts, int count) {
-    METAENGINE_V2 vmin = verts[0];
-    METAENGINE_V2 vmax = vmin;
+ME_INLINE ME_Aabb metadot_make_aabb_verts(ME_V2 *verts, int count) {
+    ME_V2 vmin = verts[0];
+    ME_V2 vmax = vmin;
     for (int i = 0; i < count; ++i) {
         vmin = metadot_min_v2(vmin, verts[i]);
         vmax = metadot_max_v2(vmax, verts[i]);
@@ -1615,7 +1615,7 @@ ME_INLINE METAENGINE_Aabb metadot_make_aabb_verts(METAENGINE_V2 *verts, int coun
     return metadot_make_aabb(vmin, vmax);
 }
 
-ME_INLINE void metadot_aabb_verts(METAENGINE_V2 *out, METAENGINE_Aabb bb) {
+ME_INLINE void metadot_aabb_verts(ME_V2 *out, ME_Aabb bb) {
     out[0] = bb.min;
     out[1] = metadot_v2(bb.max.x, bb.min.y);
     out[2] = bb.max;
@@ -1625,10 +1625,10 @@ ME_INLINE void metadot_aabb_verts(METAENGINE_V2 *out, METAENGINE_Aabb bb) {
 //--------------------------------------------------------------------------------------------------
 // Circle helpers.
 
-ME_INLINE float metadot_area_circle(METAENGINE_Circle c) { return 3.14159265f * c.r * c.r; }
-ME_INLINE float metadot_surface_area_circle(METAENGINE_Circle c) { return 2.0f * 3.14159265f * c.r; }
-ME_INLINE METAENGINE_Circle metadot_mul_tf_circle(METAENGINE_Transform tx, METAENGINE_Circle a) {
-    METAENGINE_Circle b;
+ME_INLINE float metadot_area_circle(ME_Circle c) { return 3.14159265f * c.r * c.r; }
+ME_INLINE float metadot_surface_area_circle(ME_Circle c) { return 2.0f * 3.14159265f * c.r; }
+ME_INLINE ME_Circle metadot_mul_tf_circle(ME_Transform tx, ME_Circle a) {
+    ME_Circle b;
     b.p = metadot_mul_tf_v2(tx, a.p);
     b.r = a.r;
     return b;
@@ -1638,10 +1638,10 @@ ME_INLINE METAENGINE_Circle metadot_mul_tf_circle(METAENGINE_Transform tx, METAE
 // Ray ops.
 // Full raycasting suite is farther down below in this file.
 
-ME_INLINE METAENGINE_V2 metadot_impact(METAENGINE_Ray r, float t) { return metadot_add_v2(r.p, metadot_mul_v2_f(r.d, t)); }
-ME_INLINE METAENGINE_V2 metadot_endpoint(METAENGINE_Ray r) { return metadot_add_v2(r.p, metadot_mul_v2_f(r.d, r.t)); }
+ME_INLINE ME_V2 metadot_impact(ME_Ray r, float t) { return metadot_add_v2(r.p, metadot_mul_v2_f(r.d, t)); }
+ME_INLINE ME_V2 metadot_endpoint(ME_Ray r) { return metadot_add_v2(r.p, metadot_mul_v2_f(r.d, r.t)); }
 
-ME_INLINE int metadot_ray_to_halfpsace(METAENGINE_Ray A, METAENGINE_Halfspace B, METAENGINE_Raycast *out) {
+ME_INLINE int metadot_ray_to_halfpsace(ME_Ray A, ME_Halfspace B, ME_Raycast *out) {
     float da = metadot_distance_hs(B, A.p);
     float db = metadot_distance_hs(B, metadot_impact(A, A.t));
     if (da * db > 0) return 0;
@@ -1651,20 +1651,20 @@ ME_INLINE int metadot_ray_to_halfpsace(METAENGINE_Ray A, METAENGINE_Halfspace B,
 }
 
 // http://www.randygaul.net/2014/07/23/distance-point-to-line-segment/
-ME_INLINE float metadot_distance_sq(METAENGINE_V2 a, METAENGINE_V2 b, METAENGINE_V2 p) {
-    METAENGINE_V2 n = metadot_sub_v2(b, a);
-    METAENGINE_V2 pa = metadot_sub_v2(a, p);
+ME_INLINE float metadot_distance_sq(ME_V2 a, ME_V2 b, ME_V2 p) {
+    ME_V2 n = metadot_sub_v2(b, a);
+    ME_V2 pa = metadot_sub_v2(a, p);
     float c = metadot_dot(n, pa);
 
     // Closest point is a
     if (c > 0.0f) return metadot_dot(pa, pa);
 
     // Closest point is b
-    METAENGINE_V2 bp = metadot_sub_v2(p, b);
+    ME_V2 bp = metadot_sub_v2(p, b);
     if (metadot_dot(n, bp) > 0.0f) return metadot_dot(bp, bp);
 
     // Closest point is between a and b
-    METAENGINE_V2 e = metadot_sub_v2(pa, metadot_mul_v2_f(n, (c / metadot_dot(n, n))));
+    ME_V2 e = metadot_sub_v2(pa, metadot_mul_v2_f(n, (c / metadot_dot(n, n))));
     return metadot_dot(e, e);
 }
 
@@ -1674,93 +1674,93 @@ ME_INLINE float metadot_distance_sq(METAENGINE_V2 a, METAENGINE_V2 b, METAENGINE
 // It's quite common to limit the number of verts on polygons to a low number. Feel free to adjust
 // this number if needed, but be warned: higher than 8 and shapes generally start to look more like
 // circles/ovals; it becomes pointless beyond a certain point.
-#define METAENGINE_POLY_MAX_VERTS 8
+#define ME_POLY_MAX_VERTS 8
 
 // 2D polygon. Verts are ordered in counter-clockwise order (CCW).
-typedef struct METAENGINE_Poly {
+typedef struct ME_Poly {
     int count;
-    METAENGINE_V2 verts[METAENGINE_POLY_MAX_VERTS];
-    METAENGINE_V2 norms[METAENGINE_POLY_MAX_VERTS];  // Pointing perpendicular along the poly's surface.
+    ME_V2 verts[ME_POLY_MAX_VERTS];
+    ME_V2 norms[ME_POLY_MAX_VERTS];  // Pointing perpendicular along the poly's surface.
                                                      // Rotated vert[i] to vert[i + 1] 90 degrees CCW + normalized.
-} METAENGINE_Poly;
+} ME_Poly;
 
 // 2D capsule shape. It's like a shrink-wrap of 2 circles connected by a rod.
-typedef struct METAENGINE_Capsule {
-    METAENGINE_V2 a;
-    METAENGINE_V2 b;
+typedef struct ME_Capsule {
+    ME_V2 a;
+    ME_V2 b;
     float r;
-} METAENGINE_Capsule;
+} ME_Capsule;
 
 // Contains all information necessary to resolve a collision, or in other words
 // this is the information needed to separate shapes that are colliding. Doing
 // the resolution step is *not* included.
-typedef struct METAENGINE_Manifold {
+typedef struct ME_Manifold {
     int count;
     float depths[2];
-    METAENGINE_V2 contact_points[2];
+    ME_V2 contact_points[2];
 
     // Always points from shape A to shape B.
-    METAENGINE_V2 n;
-} METAENGINE_Manifold;
+    ME_V2 n;
+} ME_Manifold;
 
 // Boolean collision detection functions.
 // These versions are slightly faster/simpler than the manifold versions, but only give a YES/NO result.
-bool METADOT_CDECL metadot_circle_to_circle(METAENGINE_Circle A, METAENGINE_Circle B);
-bool METADOT_CDECL metadot_circle_to_aabb(METAENGINE_Circle A, METAENGINE_Aabb B);
-bool METADOT_CDECL metadot_circle_to_capsule(METAENGINE_Circle A, METAENGINE_Capsule B);
-bool METADOT_CDECL metadot_aabb_to_aabb(METAENGINE_Aabb A, METAENGINE_Aabb B);
-bool METADOT_CDECL metadot_aabb_to_capsule(METAENGINE_Aabb A, METAENGINE_Capsule B);
-bool METADOT_CDECL metadot_capsule_to_capsule(METAENGINE_Capsule A, METAENGINE_Capsule B);
-bool METADOT_CDECL metadot_circle_to_poly(METAENGINE_Circle A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx);
-bool METADOT_CDECL metadot_aabb_to_poly(METAENGINE_Aabb A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx);
-bool METADOT_CDECL metadot_capsule_to_poly(METAENGINE_Capsule A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx);
-bool METADOT_CDECL metadot_poly_to_poly(const METAENGINE_Poly *A, const METAENGINE_Transform *ax, const METAENGINE_Poly *B, const METAENGINE_Transform *bx);
+bool METADOT_CDECL metadot_circle_to_circle(ME_Circle A, ME_Circle B);
+bool METADOT_CDECL metadot_circle_to_aabb(ME_Circle A, ME_Aabb B);
+bool METADOT_CDECL metadot_circle_to_capsule(ME_Circle A, ME_Capsule B);
+bool METADOT_CDECL metadot_aabb_to_aabb(ME_Aabb A, ME_Aabb B);
+bool METADOT_CDECL metadot_aabb_to_capsule(ME_Aabb A, ME_Capsule B);
+bool METADOT_CDECL metadot_capsule_to_capsule(ME_Capsule A, ME_Capsule B);
+bool METADOT_CDECL metadot_circle_to_poly(ME_Circle A, const ME_Poly *B, const ME_Transform *bx);
+bool METADOT_CDECL metadot_aabb_to_poly(ME_Aabb A, const ME_Poly *B, const ME_Transform *bx);
+bool METADOT_CDECL metadot_capsule_to_poly(ME_Capsule A, const ME_Poly *B, const ME_Transform *bx);
+bool METADOT_CDECL metadot_poly_to_poly(const ME_Poly *A, const ME_Transform *ax, const ME_Poly *B, const ME_Transform *bx);
 
 // Ray casting.
-// Output is placed into the `METAENGINE_Raycast` struct, which represents the hit location
+// Output is placed into the `ME_Raycast` struct, which represents the hit location
 // of the ray. The out param contains no meaningful information if these funcs
 // return false.
-bool METADOT_CDECL metadot_ray_to_circle(METAENGINE_Ray A, METAENGINE_Circle B, METAENGINE_Raycast *out);
-bool METADOT_CDECL metadot_ray_to_aabb(METAENGINE_Ray A, METAENGINE_Aabb B, METAENGINE_Raycast *out);
-bool METADOT_CDECL metadot_ray_to_capsule(METAENGINE_Ray A, METAENGINE_Capsule B, METAENGINE_Raycast *out);
-bool METADOT_CDECL metadot_ray_to_poly(METAENGINE_Ray A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx_ptr, METAENGINE_Raycast *out);
+bool METADOT_CDECL metadot_ray_to_circle(ME_Ray A, ME_Circle B, ME_Raycast *out);
+bool METADOT_CDECL metadot_ray_to_aabb(ME_Ray A, ME_Aabb B, ME_Raycast *out);
+bool METADOT_CDECL metadot_ray_to_capsule(ME_Ray A, ME_Capsule B, ME_Raycast *out);
+bool METADOT_CDECL metadot_ray_to_poly(ME_Ray A, const ME_Poly *B, const ME_Transform *bx_ptr, ME_Raycast *out);
 
 // Manifold generation.
 // These functions are (generally) slower + more complex than bool versions, but compute one
 // or two points that represent the plane of contact. This information is
 // is usually needed to resolve and prevent shapes from colliding. If no coll-
 // ision occured the `count` member of the manifold typedef struct is set to 0.
-void METADOT_CDECL metadot_circle_to_circle_manifold(METAENGINE_Circle A, METAENGINE_Circle B, METAENGINE_Manifold *m);
-void METADOT_CDECL metadot_circle_to_aabb_manifold(METAENGINE_Circle A, METAENGINE_Aabb B, METAENGINE_Manifold *m);
-void METADOT_CDECL metadot_circle_to_capsule_manifold(METAENGINE_Circle A, METAENGINE_Capsule B, METAENGINE_Manifold *m);
-void METADOT_CDECL metadot_aabb_to_aabb_manifold(METAENGINE_Aabb A, METAENGINE_Aabb B, METAENGINE_Manifold *m);
-void METADOT_CDECL metadot_aabb_to_capsule_manifold(METAENGINE_Aabb A, METAENGINE_Capsule B, METAENGINE_Manifold *m);
-void METADOT_CDECL metadot_capsule_to_capsule_manifold(METAENGINE_Capsule A, METAENGINE_Capsule B, METAENGINE_Manifold *m);
-void METADOT_CDECL metadot_circle_to_poly_manifold(METAENGINE_Circle A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx, METAENGINE_Manifold *m);
-void METADOT_CDECL metadot_aabb_to_poly_manifold(METAENGINE_Aabb A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx, METAENGINE_Manifold *m);
-void METADOT_CDECL metadot_capsule_to_poly_manifold(METAENGINE_Capsule A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx, METAENGINE_Manifold *m);
-void METADOT_CDECL metadot_poly_to_poly_manifold(const METAENGINE_Poly *A, const METAENGINE_Transform *ax, const METAENGINE_Poly *B, const METAENGINE_Transform *bx, METAENGINE_Manifold *m);
+void METADOT_CDECL metadot_circle_to_circle_manifold(ME_Circle A, ME_Circle B, ME_Manifold *m);
+void METADOT_CDECL metadot_circle_to_aabb_manifold(ME_Circle A, ME_Aabb B, ME_Manifold *m);
+void METADOT_CDECL metadot_circle_to_capsule_manifold(ME_Circle A, ME_Capsule B, ME_Manifold *m);
+void METADOT_CDECL metadot_aabb_to_aabb_manifold(ME_Aabb A, ME_Aabb B, ME_Manifold *m);
+void METADOT_CDECL metadot_aabb_to_capsule_manifold(ME_Aabb A, ME_Capsule B, ME_Manifold *m);
+void METADOT_CDECL metadot_capsule_to_capsule_manifold(ME_Capsule A, ME_Capsule B, ME_Manifold *m);
+void METADOT_CDECL metadot_circle_to_poly_manifold(ME_Circle A, const ME_Poly *B, const ME_Transform *bx, ME_Manifold *m);
+void METADOT_CDECL metadot_aabb_to_poly_manifold(ME_Aabb A, const ME_Poly *B, const ME_Transform *bx, ME_Manifold *m);
+void METADOT_CDECL metadot_capsule_to_poly_manifold(ME_Capsule A, const ME_Poly *B, const ME_Transform *bx, ME_Manifold *m);
+void METADOT_CDECL metadot_poly_to_poly_manifold(const ME_Poly *A, const ME_Transform *ax, const ME_Poly *B, const ME_Transform *bx, ME_Manifold *m);
 
-#define METAENGINE_SHAPE_TYPE_DEFS         \
-    METAENGINE_ENUM(SHAPE_TYPE_NONE, 0)    \
-    METAENGINE_ENUM(SHAPE_TYPE_CIRCLE, 1)  \
-    METAENGINE_ENUM(SHAPE_TYPE_AABB, 2)    \
-    METAENGINE_ENUM(SHAPE_TYPE_CAPSULE, 3) \
-    METAENGINE_ENUM(SHAPE_TYPE_POLY, 4)
+#define ME_SHAPE_TYPE_DEFS         \
+    ME_ENUM(SHAPE_TYPE_NONE, 0)    \
+    ME_ENUM(SHAPE_TYPE_CIRCLE, 1)  \
+    ME_ENUM(SHAPE_TYPE_AABB, 2)    \
+    ME_ENUM(SHAPE_TYPE_CAPSULE, 3) \
+    ME_ENUM(SHAPE_TYPE_POLY, 4)
 
-typedef enum METAENGINE_ShapeType {
-#define METAENGINE_ENUM(K, V) METAENGINE_##K = V,
-    METAENGINE_SHAPE_TYPE_DEFS
-#undef METAENGINE_ENUM
-} METAENGINE_ShapeType;
+typedef enum ME_ShapeType {
+#define ME_ENUM(K, V) ME_##K = V,
+    ME_SHAPE_TYPE_DEFS
+#undef ME_ENUM
+} ME_ShapeType;
 
-ME_INLINE const char *metadot_shape_type_to_string(METAENGINE_ShapeType type) {
+ME_INLINE const char *metadot_shape_type_to_string(ME_ShapeType type) {
     switch (type) {
-#define METAENGINE_ENUM(K, V) \
-    case METAENGINE_##K:      \
-        return METAENGINE_STRINGIZE(METAENGINE_##K);
-        METAENGINE_SHAPE_TYPE_DEFS
-#undef METAENGINE_ENUM
+#define ME_ENUM(K, V) \
+    case ME_##K:      \
+        return ME_STRINGIZE(ME_##K);
+        ME_SHAPE_TYPE_DEFS
+#undef ME_ENUM
         default:
             return NULL;
     }
@@ -1768,13 +1768,13 @@ ME_INLINE const char *metadot_shape_type_to_string(METAENGINE_ShapeType type) {
 
 // This typedef struct is only for advanced usage of the `metadot_gjk` function. See comments inside of the
 // `metadot_gjk` function for more details.
-typedef struct METAENGINE_GjkCache {
+typedef struct ME_GjkCache {
     float metric;
     int count;
     int iA[3];
     int iB[3];
     float div;
-} METAENGINE_GjkCache;
+} ME_GjkCache;
 
 // This is an advanced function, intended to be used by people who know what they're doing.
 //
@@ -1795,17 +1795,17 @@ typedef struct METAENGINE_GjkCache {
 //     less than 100.0f. If you need large shapes, you should use tiny collision geometry for all
 //     function here, and simply render the geometry larger on-screen by scaling it up.
 //
-float METADOT_CDECL metadot_gjk(const void *A, METAENGINE_ShapeType typeA, const METAENGINE_Transform *ax_ptr, const void *B, METAENGINE_ShapeType typeB, const METAENGINE_Transform *bx_ptr,
-                                METAENGINE_V2 *outA, METAENGINE_V2 *outB, int use_radius, int *iterations, METAENGINE_GjkCache *cache);
+float METADOT_CDECL metadot_gjk(const void *A, ME_ShapeType typeA, const ME_Transform *ax_ptr, const void *B, ME_ShapeType typeB, const ME_Transform *bx_ptr,
+                                ME_V2 *outA, ME_V2 *outB, int use_radius, int *iterations, ME_GjkCache *cache);
 
 // Stores results of a time of impact calculation done by `metadot_toi`.
-typedef struct METAENGINE_ToiResult {
+typedef struct ME_ToiResult {
     int hit;          // 1 if shapes were touching at the TOI, 0 if they never hit.
     float toi;        // The time of impact between two shapes.
-    METAENGINE_V2 n;  // Surface normal from shape A to B at the time of impact.
-    METAENGINE_V2 p;  // Point of contact between shapes A and B at time of impact.
+    ME_V2 n;  // Surface normal from shape A to B at the time of impact.
+    ME_V2 p;  // Point of contact between shapes A and B at time of impact.
     int iterations;   // Number of iterations the solver underwent.
-} METAENGINE_ToiResult;
+} ME_ToiResult;
 
 // This is an advanced function, intended to be used by people who know what they're doing.
 //
@@ -1836,8 +1836,8 @@ typedef struct METAENGINE_ToiResult {
 //    See the function `metadot_inflate` for some more details.
 // 4. Compute the collision manifold between the inflated shapes (for example, use poly_ttoPolyManifold).
 // 5. Gently push the shapes apart. This will give the next call to metadot_toi some breathing room.
-METAENGINE_ToiResult METADOT_CDECL metadot_toi(const void *A, METAENGINE_ShapeType typeA, const METAENGINE_Transform *ax_ptr, METAENGINE_V2 vA, const void *B, METAENGINE_ShapeType typeB,
-                                               const METAENGINE_Transform *bx_ptr, METAENGINE_V2 vB, int use_radius);
+ME_ToiResult METADOT_CDECL metadot_toi(const void *A, ME_ShapeType typeA, const ME_Transform *ax_ptr, ME_V2 vA, const void *B, ME_ShapeType typeB,
+                                               const ME_Transform *bx_ptr, ME_V2 vB, int use_radius);
 
 // Inflating a shape.
 //
@@ -1851,32 +1851,32 @@ METAENGINE_ToiResult METADOT_CDECL metadot_toi(const void *A, METAENGINE_ShapeTy
 // Deflating a shape can avoid this problem, but deflating a very small shape can invert
 // the planes and result in something that is no longer convex. Make sure to pick an
 // appropriately small skin factor, for example 1.0e-6f.
-void METADOT_CDECL metadot_inflate(void *shape, METAENGINE_ShapeType type, float skin_factor);
+void METADOT_CDECL metadot_inflate(void *shape, ME_ShapeType type, float skin_factor);
 
 // Computes 2D convex hull. Will not do anything if less than two verts supplied. If
-// more than METAENGINE_POLY_MAX_VERTS are supplied extras are ignored.
-int METADOT_CDECL metadot_hull(METAENGINE_V2 *verts, int count);
-void METADOT_CDECL metadot_norms(METAENGINE_V2 *verts, METAENGINE_V2 *norms, int count);
+// more than ME_POLY_MAX_VERTS are supplied extras are ignored.
+int METADOT_CDECL metadot_hull(ME_V2 *verts, int count);
+void METADOT_CDECL metadot_norms(ME_V2 *verts, ME_V2 *norms, int count);
 
 // runs metadot_hull and metadot_norms, assumes p->verts and p->count are both set to valid values
-void METADOT_CDECL metadot_make_poly(METAENGINE_Poly *p);
-METAENGINE_V2 METADOT_CDECL metadot_centroid(const METAENGINE_V2 *verts, int count);
+void METADOT_CDECL metadot_make_poly(ME_Poly *p);
+ME_V2 METADOT_CDECL metadot_centroid(const ME_V2 *verts, int count);
 
 // Generic collision detection routines, useful for games that want to use some poly-
 // morphism to write more generic-styled code. Internally calls various above functions.
 // For AABBs/Circles/Capsules ax and bx are ignored. For polys ax and bx can define
 // model to world transformations (for polys only), or be NULL for identity transforms.
-int METADOT_CDECL metadot_collided(const void *A, const METAENGINE_Transform *ax, METAENGINE_ShapeType typeA, const void *B, const METAENGINE_Transform *bx, METAENGINE_ShapeType typeB);
-void METADOT_CDECL metadot_collide(const void *A, const METAENGINE_Transform *ax, METAENGINE_ShapeType typeA, const void *B, const METAENGINE_Transform *bx, METAENGINE_ShapeType typeB,
-                                   METAENGINE_Manifold *m);
-bool METADOT_CDECL metadot_cast_ray(METAENGINE_Ray A, const void *B, const METAENGINE_Transform *bx, METAENGINE_ShapeType typeB, METAENGINE_Raycast *out);
+int METADOT_CDECL metadot_collided(const void *A, const ME_Transform *ax, ME_ShapeType typeA, const void *B, const ME_Transform *bx, ME_ShapeType typeB);
+void METADOT_CDECL metadot_collide(const void *A, const ME_Transform *ax, ME_ShapeType typeA, const void *B, const ME_Transform *bx, ME_ShapeType typeB,
+                                   ME_Manifold *m);
+bool METADOT_CDECL metadot_cast_ray(ME_Ray A, const void *B, const ME_Transform *bx, ME_ShapeType typeB, ME_Raycast *out);
 
 //--------------------------------------------------------------------------------------------------
 // C++ API
 
 namespace MetaEngine {
 
-using v2 = METAENGINE_V2;
+using v2 = ME_V2;
 
 ME_INLINE v2 V2(float x, float y) {
     v2 result;
@@ -1906,34 +1906,34 @@ ME_INLINE int operator>(v2 a, v2 b) { return a.x > b.x && a.y > b.y; }
 ME_INLINE int operator<=(v2 a, v2 b) { return a.x <= b.x && a.y <= b.y; }
 ME_INLINE int operator>=(v2 a, v2 b) { return a.x >= b.x && a.y >= b.y; }
 
-using SinCos = METAENGINE_SinCos;
-using M2x2 = METAENGINE_M2x2;
-using M3x2 = METAENGINE_M3x2;
-using MTransform = METAENGINE_Transform;
-using Halfspace = METAENGINE_Halfspace;
-using Ray = METAENGINE_Ray;
-using Raycast = METAENGINE_Raycast;
-using Circle = METAENGINE_Circle;
-using Aabb = METAENGINE_Aabb;
-using Rect = METAENGINE_Rect;
-using Poly = METAENGINE_Poly;
-using Capsule = METAENGINE_Capsule;
-using Manifold = METAENGINE_Manifold;
-using GjkCache = METAENGINE_GjkCache;
-using ToiResult = METAENGINE_ToiResult;
+using SinCos = ME_SinCos;
+using M2x2 = ME_M2x2;
+using M3x2 = ME_M3x2;
+using MTransform = ME_Transform;
+using Halfspace = ME_Halfspace;
+using Ray = ME_Ray;
+using Raycast = ME_Raycast;
+using Circle = ME_Circle;
+using Aabb = ME_Aabb;
+using Rect = ME_Rect;
+using Poly = ME_Poly;
+using Capsule = ME_Capsule;
+using Manifold = ME_Manifold;
+using GjkCache = ME_GjkCache;
+using ToiResult = ME_ToiResult;
 
-using ShapeType = METAENGINE_ShapeType;
-#define METAENGINE_ENUM(K, V) ME_INLINE constexpr ShapeType K = METAENGINE_##K;
-METAENGINE_SHAPE_TYPE_DEFS
-#undef METAENGINE_ENUM
+using ShapeType = ME_ShapeType;
+#define ME_ENUM(K, V) ME_INLINE constexpr ShapeType K = ME_##K;
+ME_SHAPE_TYPE_DEFS
+#undef ME_ENUM
 
 ME_INLINE const char *to_string(ShapeType type) {
     switch (type) {
-#define METAENGINE_ENUM(K, V) \
-    case METAENGINE_##K:      \
+#define ME_ENUM(K, V) \
+    case ME_##K:      \
         return #K;
-        METAENGINE_SHAPE_TYPE_DEFS
-#undef METAENGINE_ENUM
+        ME_SHAPE_TYPE_DEFS
+#undef ME_ENUM
         default:
             return NULL;
     }
@@ -2105,8 +2105,8 @@ ME_INLINE Aabb combine(Aabb a, Aabb b) { return metadot_combine(a, b); }
 ME_INLINE int overlaps(Aabb a, Aabb b) { return metadot_overlaps(a, b); }
 ME_INLINE int collide(Aabb a, Aabb b) { return metadot_collide_aabb(a, b); }
 
-ME_INLINE Aabb make_aabb(v2 *verts, int count) { return metadot_make_aabb_verts((METAENGINE_V2 *)verts, count); }
-ME_INLINE void aabb_verts(v2 *out, Aabb bb) { return metadot_aabb_verts((METAENGINE_V2 *)out, bb); }
+ME_INLINE Aabb make_aabb(v2 *verts, int count) { return metadot_make_aabb_verts((ME_V2 *)verts, count); }
+ME_INLINE void aabb_verts(v2 *out, Aabb bb) { return metadot_aabb_verts((ME_V2 *)out, bb); }
 
 ME_INLINE float area(Circle c) { return metadot_area_circle(c); }
 ME_INLINE float surface_area(Circle c) { return metadot_surface_area_circle(c); }
@@ -2147,7 +2147,7 @@ ME_INLINE void poly_to_poly_manifold(const Poly *A, const MTransform *ax, const 
 
 ME_INLINE float gjk(const void *A, ShapeType typeA, const MTransform *ax_ptr, const void *B, ShapeType typeB, const MTransform *bx_ptr, v2 *outA, v2 *outB, int use_radius, int *iterations,
                     GjkCache *cache) {
-    return metadot_gjk(A, typeA, ax_ptr, B, typeB, bx_ptr, (METAENGINE_V2 *)outA, (METAENGINE_V2 *)outB, use_radius, iterations, cache);
+    return metadot_gjk(A, typeA, ax_ptr, B, typeB, bx_ptr, (ME_V2 *)outA, (ME_V2 *)outB, use_radius, iterations, cache);
 }
 
 ME_INLINE ToiResult toi(const void *A, ShapeType typeA, const MTransform *ax_ptr, v2 vA, const void *B, ShapeType typeB, const MTransform *bx_ptr, v2 vB, int use_radius, int *iterations) {
@@ -2156,11 +2156,11 @@ ME_INLINE ToiResult toi(const void *A, ShapeType typeA, const MTransform *ax_ptr
 
 ME_INLINE void inflate(void *shape, ShapeType type, float skin_factor) { return metadot_inflate(shape, type, skin_factor); }
 
-ME_INLINE int hull(v2 *verts, int count) { return metadot_hull((METAENGINE_V2 *)verts, count); }
-ME_INLINE void norms(v2 *verts, v2 *norms, int count) { return metadot_norms((METAENGINE_V2 *)verts, (METAENGINE_V2 *)norms, count); }
+ME_INLINE int hull(v2 *verts, int count) { return metadot_hull((ME_V2 *)verts, count); }
+ME_INLINE void norms(v2 *verts, v2 *norms, int count) { return metadot_norms((ME_V2 *)verts, (ME_V2 *)norms, count); }
 
 ME_INLINE void make_poly(Poly *p) { return metadot_make_poly(p); }
-ME_INLINE v2 centroid(const v2 *verts, int count) { return metadot_centroid((METAENGINE_V2 *)verts, count); }
+ME_INLINE v2 centroid(const v2 *verts, int count) { return metadot_centroid((ME_V2 *)verts, count); }
 
 ME_INLINE int collided(const void *A, const MTransform *ax, ShapeType typeA, const void *B, const MTransform *bx, ShapeType typeB) { return metadot_collided(A, ax, typeA, B, bx, typeB); }
 ME_INLINE void collide(const void *A, const MTransform *ax, ShapeType typeA, const void *B, const MTransform *bx, ShapeType typeB, Manifold *m) {

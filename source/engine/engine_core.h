@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/cpp/utils.hpp"
 #include "core/sdl_wrapper.h"
 
@@ -19,7 +19,7 @@ typedef struct engine_core {
     std::string gamepath;
 
     // Maximum memory that can be used
-    U64 max_mem = 4294967296;  // 4096mb
+    u64 max_mem = 4294967296;  // 4096mb
 } engine_core;
 
 typedef struct windows {
@@ -31,31 +31,31 @@ typedef struct windows {
     int windowWidth;
     int windowHeight;
 
-    I32 gameScale = 4;
+    i32 gameScale = 4;
 
     unsigned maxFPS;
 } windows;
 
 typedef struct engine_time {
-    I32 feelsLikeFps;
-    I64 lastTime;
-    I64 lastCheckTime;
-    I64 lastTickTime;
-    I64 lastLoadingTick;
-    I64 now;
-    I64 startTime;
-    I64 deltaTime;
+    i32 feelsLikeFps;
+    i64 lastTime;
+    i64 lastCheckTime;
+    i64 lastTickTime;
+    i64 lastLoadingTick;
+    i64 now;
+    i64 startTime;
+    i64 deltaTime;
 
-    I32 tickCount;
+    i32 tickCount;
 
-    F32 mspt;
-    I32 tpsTrace[TraceTimeNum];
-    F32 tps;
-    U32 maxTps;
+    f32 mspt;
+    i32 tpsTrace[TraceTimeNum];
+    f32 tps;
+    u32 maxTps;
 
-    U16 frameTimesTrace[TraceTimeNum];
-    U32 frameCount;
-    F32 framesPerSecond;
+    u16 frameTimesTrace[TraceTimeNum];
+    u32 frameCount;
+    f32 framesPerSecond;
 } engine_time;
 
 void ExitGame();
@@ -70,6 +70,6 @@ void WaitUntilNextFrame();
 
 void InitFPS();
 void ProcessTickTime();
-F32 GetFPS();
+f32 GetFPS();
 
 #endif

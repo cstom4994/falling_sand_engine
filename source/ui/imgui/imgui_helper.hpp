@@ -20,11 +20,11 @@
 
 #include <string>
 
-#ifndef METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE
-#define METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE sizeof(std::string)  // larger values generate less tree nodes
+#ifndef ME_GUI_TREE_MAX_ELEMENT_SIZE
+#define ME_GUI_TREE_MAX_ELEMENT_SIZE sizeof(std::string)  // larger values generate less tree nodes
 #endif
-#ifndef METAENGINE_GUI_TREE_MAX_TUPLE_ELEMENTS
-#define METAENGINE_GUI_TREE_MAX_TUPLE_ELEMENTS 3  // larger values generate less tree nodes
+#ifndef ME_GUI_TREE_MAX_TUPLE_ELEMENTS
+#define ME_GUI_TREE_MAX_TUPLE_ELEMENTS 3  // larger values generate less tree nodes
 #endif
 
 #include <tuple>
@@ -54,7 +54,7 @@
 #include <typeinfo>
 
 #include "core/cpp/pfr.hpp"
-#define METAENGINE_GUI_STRUCT_TO_TUPLE MetaEngine::BuiltinPFR::pfr::structure_tie
+#define ME_GUI_STRUCT_TO_TUPLE MetaEngine::BuiltinPFR::pfr::structure_tie
 
 namespace ImGui {
 //      IMGUI::AUTO()
@@ -132,7 +132,7 @@ using c_array_t = T[N];  // so arrays are regular types and can be used in macro
 template <typename AnyType>
 struct Auto_t {
     static void Auto(AnyType &anything, const std::string &name) {
-#ifndef METAENGINE_GUI_STRUCT_TO_TUPLE
+#ifndef ME_GUI_STRUCT_TO_TUPLE
         static_assert(false, "TODO: fix for this compiler! (at least C++14 is required)")
 #endif
                 static_assert(!std::is_reference_v<AnyType> && std::is_copy_constructible_v<std::remove_all_extents_t<AnyType>> && !std::is_polymorphic_v<AnyType> &&
@@ -141,7 +141,7 @@ struct Auto_t {
                                                                                                                          1L)>::value,  // If the above is not a constexpr expression, you are yousing an
                                                                                                                                        // invalid type
                               "This type cannot be converted to a tuple.");
-        auto tuple = METAENGINE_GUI_STRUCT_TO_TUPLE(anything);
+        auto tuple = ME_GUI_STRUCT_TO_TUPLE(anything);
         ImGui::detail::AutoTuple("Struct " + name, tuple);
     }
 };  // ImGui::Auto_t<>::Auto()
@@ -160,7 +160,7 @@ inline void ImGui::Auto(AnyType &anything, const std::string &name) {
 
 template <typename T>
 bool ImGui::detail::AutoExpand(const std::string &name, T &value) {
-    if (sizeof(T) <= METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE) {
+    if (sizeof(T) <= ME_GUI_TREE_MAX_ELEMENT_SIZE) {
         ImGui::PushID(name.c_str());
         ImGui::Bullet();
         ImGui::Auto_t<T>::Auto(value, name);
@@ -245,8 +245,8 @@ void ImGui::detail::AutoContainerPopBackButton(Container &cont) {
 }
 template <typename Key, typename Value>
 void ImGui::detail::AutoMapKeyValue(Key &key, Value &value) {
-    bool b_k = sizeof(Key) <= METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE;
-    bool b_v = sizeof(Value) <= METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE;
+    bool b_k = sizeof(Key) <= ME_GUI_TREE_MAX_ELEMENT_SIZE;
+    bool b_v = sizeof(Value) <= ME_GUI_TREE_MAX_ELEMENT_SIZE;
     if (b_k) {
         ImGui::TextUnformatted("[");
         ImGui::SameLine();
@@ -279,7 +279,7 @@ template <typename... Args>
 void ImGui::detail::AutoTuple(const std::string &name, std::tuple<Args...> &tpl) {
     constexpr std::size_t tuple_size = sizeof(decltype(tpl));
     constexpr std::size_t tuple_numelems = sizeof...(Args);
-    if (tuple_size <= METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE && tuple_numelems <= METAENGINE_GUI_TREE_MAX_TUPLE_ELEMENTS) {
+    if (tuple_size <= ME_GUI_TREE_MAX_ELEMENT_SIZE && tuple_numelems <= ME_GUI_TREE_MAX_TUPLE_ELEMENTS) {
         ImGui::TextUnformatted((name + " (" + std::to_string(tuple_size) + " bytes)").c_str());
         ImGui::PushID(name.c_str());
         ImGui::Indent();
@@ -297,7 +297,7 @@ void ImGui::detail::AutoTuple(const std::string &name,
 {
     constexpr std::size_t tuple_size = sizeof(std::tuple<Args...>);
     constexpr std::size_t tuple_numelems = sizeof...(Args);
-    if (tuple_size <= METAENGINE_GUI_TREE_MAX_ELEMENT_SIZE && tuple_numelems <= METAENGINE_GUI_TREE_MAX_TUPLE_ELEMENTS) {
+    if (tuple_size <= ME_GUI_TREE_MAX_ELEMENT_SIZE && tuple_numelems <= ME_GUI_TREE_MAX_TUPLE_ELEMENTS) {
         ImGui::TextUnformatted((name + " !(" + std::to_string(tuple_size) + " bytes)").c_str());
         ImGui::PushID(name.c_str());
         ImGui::Indent();
@@ -317,50 +317,50 @@ void ImGui::detail::AutoTuple(const std::string &name,
 
 #define UNPACK(...) __VA_ARGS__  // for unpacking parentheses. It is needed for macro arguments with commmas
 // Enclose templatespec, AND typespec in parentheses in this version. Useful if there are commas in the argument.
-#define METAENGINE_GUI_DEFINE_BEGIN_P(templatespec, typespec) \
+#define ME_GUI_DEFINE_BEGIN_P(templatespec, typespec) \
     namespace ImGui {                                         \
     UNPACK templatespec struct Auto_t<UNPACK typespec> {      \
         static void Auto(UNPACK typespec &var, const std::string &name) {
 // If macro arguments have no commmas inside use this version without parentheses
-#define METAENGINE_GUI_DEFINE_BEGIN(templatespec, typespec) METAENGINE_GUI_DEFINE_BEGIN_P((templatespec), (typespec))  // when there are no commas in types, use this without parentheses
-#define METAENGINE_GUI_DEFINE_END \
+#define ME_GUI_DEFINE_BEGIN(templatespec, typespec) ME_GUI_DEFINE_BEGIN_P((templatespec), (typespec))  // when there are no commas in types, use this without parentheses
+#define ME_GUI_DEFINE_END \
     }                             \
     }                             \
     ;                             \
     }
-#define METAENGINE_GUI_DEFINE_INLINE_P(template_spec, type_spec, code) METAENGINE_GUI_DEFINE_BEGIN_P(template_spec, type_spec) code METAENGINE_GUI_DEFINE_END
-#define METAENGINE_GUI_DEFINE_INLINE(template_spec, type_spec, code) METAENGINE_GUI_DEFINE_INLINE_P((template_spec), (type_spec), code)
+#define ME_GUI_DEFINE_INLINE_P(template_spec, type_spec, code) ME_GUI_DEFINE_BEGIN_P(template_spec, type_spec) code ME_GUI_DEFINE_END
+#define ME_GUI_DEFINE_INLINE(template_spec, type_spec, code) ME_GUI_DEFINE_INLINE_P((template_spec), (type_spec), code)
 
 #include <string>
 #include <type_traits>
 #include <utility>
 
-#ifndef METAENGINE_GUI_INPUT_FLOAT1
-#define METAENGINE_GUI_INPUT_FLOAT1 ImGui::DragFloat
+#ifndef ME_GUI_INPUT_FLOAT1
+#define ME_GUI_INPUT_FLOAT1 ImGui::DragFloat
 #endif
-#ifndef METAENGINE_GUI_INPUT_FLOAT2
-#define METAENGINE_GUI_INPUT_FLOAT2 ImGui::DragFloat2
+#ifndef ME_GUI_INPUT_FLOAT2
+#define ME_GUI_INPUT_FLOAT2 ImGui::DragFloat2
 #endif
-#ifndef METAENGINE_GUI_INPUT_FLOAT3
-#define METAENGINE_GUI_INPUT_FLOAT3 ImGui::DragFloat3
+#ifndef ME_GUI_INPUT_FLOAT3
+#define ME_GUI_INPUT_FLOAT3 ImGui::DragFloat3
 #endif
-#ifndef METAENGINE_GUI_INPUT_FLOAT4
-#define METAENGINE_GUI_INPUT_FLOAT4 ImGui::DragFloat4
+#ifndef ME_GUI_INPUT_FLOAT4
+#define ME_GUI_INPUT_FLOAT4 ImGui::DragFloat4
 #endif
-#ifndef METAENGINE_GUI_INPUT_INT1
-#define METAENGINE_GUI_INPUT_INT1 ImGui::InputInt
+#ifndef ME_GUI_INPUT_INT1
+#define ME_GUI_INPUT_INT1 ImGui::InputInt
 #endif
-#ifndef METAENGINE_GUI_INPUT_INT2
-#define METAENGINE_GUI_INPUT_INT2 ImGui::InputInt2
+#ifndef ME_GUI_INPUT_INT2
+#define ME_GUI_INPUT_INT2 ImGui::InputInt2
 #endif
-#ifndef METAENGINE_GUI_INPUT_INT3
-#define METAENGINE_GUI_INPUT_INT3 ImGui::InputInt3
+#ifndef ME_GUI_INPUT_INT3
+#define ME_GUI_INPUT_INT3 ImGui::InputInt3
 #endif
-#ifndef METAENGINE_GUI_INPUT_INT4
-#define METAENGINE_GUI_INPUT_INT4 ImGui::InputInt4
+#ifndef ME_GUI_INPUT_INT4
+#define ME_GUI_INPUT_INT4 ImGui::InputInt4
 #endif
-#ifndef METAENGINE_GUI_NULLPTR_COLOR
-#define METAENGINE_GUI_NULLPTR_COLOR ImVec4(1.0, 0.5, 0.5, 1.0)
+#ifndef ME_GUI_NULLPTR_COLOR
+#define ME_GUI_NULLPTR_COLOR ImVec4(1.0, 0.5, 0.5, 1.0)
 #endif
 
 //      SPECIALIZATIONS
@@ -368,110 +368,110 @@ void ImGui::detail::AutoTuple(const std::string &name,
 
 #pragma region STRINGS
 
-METAENGINE_GUI_DEFINE_BEGIN(template <>, const char *)
+ME_GUI_DEFINE_BEGIN(template <>, const char *)
 if (name.empty())
     ImGui::TextUnformatted(var);
 else
     ImGui::Text("%s=%s", name.c_str(), var);
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
-METAENGINE_GUI_DEFINE_BEGIN_P((template <std::size_t N>), (const detail::c_array_t<char, N>))
+ME_GUI_DEFINE_BEGIN_P((template <std::size_t N>), (const detail::c_array_t<char, N>))
 if (name.empty())
     ImGui::TextUnformatted(var, var + N - 1);
 else
     ImGui::Text("%s=%s", name.c_str(), var);
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
-METAENGINE_GUI_DEFINE_INLINE(template <>, char *, const char *tmp = var; ImGui::Auto_t<const char *>::Auto(tmp, name);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, char *const, const char *tmp = var; ImGui::Auto_t<const char *>::Auto(tmp, name);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, const char *const, const char *tmp = var; ImGui::Auto_t<const char *>::Auto(tmp, name);)
-METAENGINE_GUI_DEFINE_BEGIN(template <>, std::string)
+ME_GUI_DEFINE_INLINE(template <>, char *, const char *tmp = var; ImGui::Auto_t<const char *>::Auto(tmp, name);)
+ME_GUI_DEFINE_INLINE(template <>, char *const, const char *tmp = var; ImGui::Auto_t<const char *>::Auto(tmp, name);)
+ME_GUI_DEFINE_INLINE(template <>, const char *const, const char *tmp = var; ImGui::Auto_t<const char *>::Auto(tmp, name);)
+ME_GUI_DEFINE_BEGIN(template <>, std::string)
 const std::size_t lines = var.find('\n');
 if (var.find('\n') != std::string::npos)
     ImGui::InputTextMultiline(name.c_str(), const_cast<char *>(var.c_str()), 256);
 else
     ImGui::InputText(name.c_str(), const_cast<char *>(var.c_str()), 256);
-METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template <>, const std::string)
+ME_GUI_DEFINE_END
+ME_GUI_DEFINE_BEGIN(template <>, const std::string)
 if (name.empty())
     ImGui::TextUnformatted(var.c_str(), var.c_str() + var.length());
 else
     ImGui::Text("%s=%s", name.c_str(), var.c_str());
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
 #pragma endregion
 
 #pragma region NUMBERS
 
-METAENGINE_GUI_DEFINE_INLINE(template <>, float, METAENGINE_GUI_INPUT_FLOAT1(name.c_str(), &var);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, int, METAENGINE_GUI_INPUT_INT1(name.c_str(), &var);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, unsigned int, METAENGINE_GUI_INPUT_INT1(name.c_str(), (int *)&var);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, bool, ImGui::Checkbox(name.c_str(), &var);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, ImVec2, METAENGINE_GUI_INPUT_FLOAT2(name.c_str(), &var.x);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, ImVec4, METAENGINE_GUI_INPUT_FLOAT4(name.c_str(), &var.x);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, const float, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, const int, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, const unsigned, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, const bool, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, const ImVec2, ImGui::Text("%s(%f,%f)", (name.empty() ? "" : name + "=").c_str(), var.x, var.y);)
-METAENGINE_GUI_DEFINE_INLINE(template <>, const ImVec4, ImGui::Text("%s(%f,%f,%f,%f)", (name.empty() ? "" : name + "=").c_str(), var.x, var.y, var.z, var.w);)
+ME_GUI_DEFINE_INLINE(template <>, float, ME_GUI_INPUT_FLOAT1(name.c_str(), &var);)
+ME_GUI_DEFINE_INLINE(template <>, int, ME_GUI_INPUT_INT1(name.c_str(), &var);)
+ME_GUI_DEFINE_INLINE(template <>, unsigned int, ME_GUI_INPUT_INT1(name.c_str(), (int *)&var);)
+ME_GUI_DEFINE_INLINE(template <>, bool, ImGui::Checkbox(name.c_str(), &var);)
+ME_GUI_DEFINE_INLINE(template <>, ImVec2, ME_GUI_INPUT_FLOAT2(name.c_str(), &var.x);)
+ME_GUI_DEFINE_INLINE(template <>, ImVec4, ME_GUI_INPUT_FLOAT4(name.c_str(), &var.x);)
+ME_GUI_DEFINE_INLINE(template <>, const float, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
+ME_GUI_DEFINE_INLINE(template <>, const int, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
+ME_GUI_DEFINE_INLINE(template <>, const unsigned, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
+ME_GUI_DEFINE_INLINE(template <>, const bool, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
+ME_GUI_DEFINE_INLINE(template <>, const ImVec2, ImGui::Text("%s(%f,%f)", (name.empty() ? "" : name + "=").c_str(), var.x, var.y);)
+ME_GUI_DEFINE_INLINE(template <>, const ImVec4, ImGui::Text("%s(%f,%f,%f,%f)", (name.empty() ? "" : name + "=").c_str(), var.x, var.y, var.z, var.w);)
 
 #define INTERNAL_NUM(_c, _imn)                                                                                   \
-    METAENGINE_GUI_DEFINE_INLINE(template <>, _c, ImGui::InputScalar(name.c_str(), ImGuiDataType_##_imn, &var);) \
-    METAENGINE_GUI_DEFINE_INLINE(template <>, const _c, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
+    ME_GUI_DEFINE_INLINE(template <>, _c, ImGui::InputScalar(name.c_str(), ImGuiDataType_##_imn, &var);) \
+    ME_GUI_DEFINE_INLINE(template <>, const _c, ImGui::Auto_t<const std::string>::Auto(std::to_string(var), name);)
 
-INTERNAL_NUM(U8, U8)
-INTERNAL_NUM(U16, U16)
-INTERNAL_NUM(U64, U64)
-INTERNAL_NUM(I8, S8)
-INTERNAL_NUM(I16, S16)
-INTERNAL_NUM(I64, S64)
+INTERNAL_NUM(u8, U8)
+INTERNAL_NUM(u16, U16)
+INTERNAL_NUM(u64, U64)
+INTERNAL_NUM(i8, S8)
+INTERNAL_NUM(i16, S16)
+INTERNAL_NUM(i64, S64)
 
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<float, 1>), METAENGINE_GUI_INPUT_FLOAT1(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<float, 1>), ImGui::Text("%s%f", (name.empty() ? "" : name + "=").c_str(), var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<float, 2>), METAENGINE_GUI_INPUT_FLOAT2(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<float, 2>), ImGui::Text("%s(%f,%f)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<float, 3>), METAENGINE_GUI_INPUT_FLOAT3(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<float, 3>), ImGui::Text("%s(%f,%f,%f)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1], var[2]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<float, 4>), METAENGINE_GUI_INPUT_FLOAT4(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<float, 4>), ImGui::Text("%s(%f,%f,%f,%f)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1], var[2], var[3]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<float, 1>), ME_GUI_INPUT_FLOAT1(name.c_str(), &var[0]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<float, 1>), ImGui::Text("%s%f", (name.empty() ? "" : name + "=").c_str(), var[0]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<float, 2>), ME_GUI_INPUT_FLOAT2(name.c_str(), &var[0]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<float, 2>), ImGui::Text("%s(%f,%f)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<float, 3>), ME_GUI_INPUT_FLOAT3(name.c_str(), &var[0]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<float, 3>), ImGui::Text("%s(%f,%f,%f)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1], var[2]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<float, 4>), ME_GUI_INPUT_FLOAT4(name.c_str(), &var[0]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<float, 4>), ImGui::Text("%s(%f,%f,%f,%f)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1], var[2], var[3]);)
 
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<int, 1>), METAENGINE_GUI_INPUT_INT1(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<int, 1>), ImGui::Text("%s%d", (name.empty() ? "" : name + "=").c_str(), var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<int, 2>), METAENGINE_GUI_INPUT_INT2(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<int, 2>), ImGui::Text("%s(%d,%d)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<int, 3>), METAENGINE_GUI_INPUT_INT3(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<int, 3>), ImGui::Text("%s(%d,%d,%d)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1], var[2]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<int, 4>), METAENGINE_GUI_INPUT_INT4(name.c_str(), &var[0]);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<int, 4>), ImGui::Text("%s(%d,%d,%d,%d)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1], var[2], var[3]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<int, 1>), ME_GUI_INPUT_INT1(name.c_str(), &var[0]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<int, 1>), ImGui::Text("%s%d", (name.empty() ? "" : name + "=").c_str(), var[0]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<int, 2>), ME_GUI_INPUT_INT2(name.c_str(), &var[0]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<int, 2>), ImGui::Text("%s(%d,%d)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<int, 3>), ME_GUI_INPUT_INT3(name.c_str(), &var[0]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<int, 3>), ImGui::Text("%s(%d,%d,%d)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1], var[2]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (detail::c_array_t<int, 4>), ME_GUI_INPUT_INT4(name.c_str(), &var[0]);)
+ME_GUI_DEFINE_INLINE_P((template <>), (const detail::c_array_t<int, 4>), ImGui::Text("%s(%d,%d,%d,%d)", (name.empty() ? "" : name + "=").c_str(), var[0], var[1], var[2], var[3]);)
 
 #pragma endregion
 
 #pragma region POINTERS and ARRAYS
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, T *)
+ME_GUI_DEFINE_BEGIN(template <typename T>, T *)
 if (var != nullptr)
     ImGui::detail::AutoExpand<T>("Pointer " + name, *var);
 else
-    ImGui::TextColored(METAENGINE_GUI_NULLPTR_COLOR, "%s=NULL", name.c_str());
-METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, T *const)
+    ImGui::TextColored(ME_GUI_NULLPTR_COLOR, "%s=NULL", name.c_str());
+ME_GUI_DEFINE_END
+ME_GUI_DEFINE_BEGIN(template <typename T>, T *const)
 if (var != nullptr)
     ImGui::detail::AutoExpand<T>("Pointer " + name, *var);
 else
-    ImGui::TextColored(METAENGINE_GUI_NULLPTR_COLOR, "%s=NULL", name.c_str());
-METAENGINE_GUI_DEFINE_END
+    ImGui::TextColored(ME_GUI_NULLPTR_COLOR, "%s=NULL", name.c_str());
+ME_GUI_DEFINE_END
 #ifdef _ARRAY_
-METAENGINE_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (std::array<T, N>), ImGui::detail::AutoContainerValues("array " + name, var);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (const std::array<T, N>), ImGui::detail::AutoContainerValues("array " + name, var);)
-METAENGINE_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (detail::c_array_t<T, N>), ImGui::detail::AutoContainerValues("Array " + name, *(std::array<T, N> *)(&var));)
-METAENGINE_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (const detail::c_array_t<T, N>), ImGui::detail::AutoContainerValues("Array " + name, *(const std::array<T, N> *)(&var));)
+ME_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (std::array<T, N>), ImGui::detail::AutoContainerValues("array " + name, var);)
+ME_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (const std::array<T, N>), ImGui::detail::AutoContainerValues("array " + name, var);)
+ME_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (detail::c_array_t<T, N>), ImGui::detail::AutoContainerValues("Array " + name, *(std::array<T, N> *)(&var));)
+ME_GUI_DEFINE_INLINE_P((template <typename T, std::size_t N>), (const detail::c_array_t<T, N>), ImGui::detail::AutoContainerValues("Array " + name, *(const std::array<T, N> *)(&var));)
 #endif
 
 #pragma endregion
 
 #pragma region PAIRS and TUPLES
 
-METAENGINE_GUI_DEFINE_BEGIN_P((template <typename T1, typename T2>), (std::pair<T1, T2>))
+ME_GUI_DEFINE_BEGIN_P((template <typename T1, typename T2>), (std::pair<T1, T2>))
 if ((std::is_fundamental_v<T1> || std::is_same_v<std::string, T1>)&&(std::is_fundamental_v<T2> || std::is_same_v<std::string, T2>)) {
     float width = ImGui::CalcItemWidth();
     ImGui::PushItemWidth(width * 0.4 - 10);  // a bit less than half
@@ -484,24 +484,24 @@ if ((std::is_fundamental_v<T1> || std::is_same_v<std::string, T1>)&&(std::is_fun
     ImGui::detail::AutoExpand<T2>(name + ".second", var.second);
 }
 
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
-METAENGINE_GUI_DEFINE_BEGIN_P((template <typename T1, typename T2>), (const std::pair<T1, T2>))
+ME_GUI_DEFINE_BEGIN_P((template <typename T1, typename T2>), (const std::pair<T1, T2>))
 ImGui::detail::AutoExpand<const T1>(name + ".first", var.first);
 if (std::is_fundamental_v<T1> && std::is_fundamental_v<T2>) ImGui::SameLine();
 ImGui::detail::AutoExpand<const T2>(name + ".second", var.second);
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
 #ifdef _TUPLE_
-METAENGINE_GUI_DEFINE_INLINE(template <typename... Args>, std::tuple<Args...>, ImGui::detail::AutoTuple("Tuple " + name, var);)
-METAENGINE_GUI_DEFINE_INLINE(template <typename... Args>, const std::tuple<Args...>, ImGui::detail::AutoTuple("Tuple " + name, var);)
+ME_GUI_DEFINE_INLINE(template <typename... Args>, std::tuple<Args...>, ImGui::detail::AutoTuple("Tuple " + name, var);)
+ME_GUI_DEFINE_INLINE(template <typename... Args>, const std::tuple<Args...>, ImGui::detail::AutoTuple("Tuple " + name, var);)
 #endif  //_TUPLE_
 
 #pragma endregion
 
 #pragma region CONTAINERS
 #ifdef _VECTOR_
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::vector<T>)
+ME_GUI_DEFINE_BEGIN(template <typename T>, std::vector<T>)
 if (ImGui::detail::AutoContainerValues<std::vector<T>>("Vector " + name, var)) {
     ImGui::PushID(name.c_str());
     ImGui::Indent();
@@ -511,8 +511,8 @@ if (ImGui::detail::AutoContainerValues<std::vector<T>>("Vector " + name, var)) {
     ImGui::PopID();
     ImGui::Unindent();
 }
-METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template <>, std::vector<bool>)
+ME_GUI_DEFINE_END
+ME_GUI_DEFINE_BEGIN(template <>, std::vector<bool>)
 if (ImGui::detail::AutoContainerTreeNode<std::vector<bool>>("Vector " + name, var)) {
     ImGui::Indent();
     for (int i = 0; i < var.size(); ++i) {
@@ -530,12 +530,12 @@ if (ImGui::detail::AutoContainerTreeNode<std::vector<bool>>("Vector " + name, va
     ImGui::Unindent();
     ImGui::Unindent();
 }
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::vector<T>)
+ME_GUI_DEFINE_BEGIN(template <typename T>, const std::vector<T>)
 ImGui::detail::AutoContainerValues<const std::vector<T>>("Vector " + name, var);
-METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template <>, const std::vector<bool>)
+ME_GUI_DEFINE_END
+ME_GUI_DEFINE_BEGIN(template <>, const std::vector<bool>)
 if (ImGui::detail::AutoContainerTreeNode<const std::vector<bool>>("Vector " + name, var)) {
     ImGui::Indent();
     for (int i = 0; i < var.size(); ++i) {
@@ -544,11 +544,11 @@ if (ImGui::detail::AutoContainerTreeNode<const std::vector<bool>>("Vector " + na
     }
     ImGui::Unindent();
 }
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 #endif
 
 #ifdef _LIST_
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::list<T>)
+ME_GUI_DEFINE_BEGIN(template <typename T>, std::list<T>)
 if (ImGui::detail::AutoContainerValues<std::list<T>>("List " + name, var)) {
     ImGui::PushID(name.c_str());
     ImGui::Indent();
@@ -561,14 +561,14 @@ if (ImGui::detail::AutoContainerValues<std::list<T>>("List " + name, var)) {
     ImGui::PopID();
     ImGui::Unindent();
 }
-METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::list<T>)
+ME_GUI_DEFINE_END
+ME_GUI_DEFINE_BEGIN(template <typename T>, const std::list<T>)
 ImGui::detail::AutoContainerValues<const std::list<T>>("List " + name, var);
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 #endif  // _LIST_
 
 #ifdef _DEQUE_
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::deque<T>)
+ME_GUI_DEFINE_BEGIN(template <typename T>, std::deque<T>)
 if (ImGui::detail::AutoContainerValues<std::deque<T>>("Deque " + name, var)) {
     ImGui::PushID(name.c_str());
     ImGui::Indent();
@@ -581,14 +581,14 @@ if (ImGui::detail::AutoContainerValues<std::deque<T>>("Deque " + name, var)) {
     ImGui::PopID();
     ImGui::Unindent();
 }
-METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::deque<T>)
+ME_GUI_DEFINE_END
+ME_GUI_DEFINE_BEGIN(template <typename T>, const std::deque<T>)
 ImGui::detail::AutoContainerValues<const std::deque<T>>("Deque " + name, var);
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 #endif  // _DEQUE_
 
 #ifdef _FORWARD_LIST_
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::forward_list<T>)
+ME_GUI_DEFINE_BEGIN(template <typename T>, std::forward_list<T>)
 if (ImGui::detail::AutoContainerValues<std::forward_list<T>>("Forward list " + name, var)) {
     ImGui::PushID(name.c_str());
     ImGui::Indent();
@@ -598,62 +598,62 @@ if (ImGui::detail::AutoContainerValues<std::forward_list<T>>("Forward list " + n
     ImGui::PopID();
     ImGui::Unindent();
 }
-METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::forward_list<T>)
+ME_GUI_DEFINE_END
+ME_GUI_DEFINE_BEGIN(template <typename T>, const std::forward_list<T>)
 ImGui::detail::AutoContainerValues<const std::forward_list<T>>("Forward list " + name, var);
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 #endif  // _FORWARD_LIST_
 
 #ifdef _SET_
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::set<T>)
+ME_GUI_DEFINE_BEGIN(template <typename T>, std::set<T>)
 ImGui::detail::AutoContainerValues<std::set<T>>("Set " + name, var);
 // todo insert
-METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::set<T>)
+ME_GUI_DEFINE_END
+ME_GUI_DEFINE_BEGIN(template <typename T>, const std::set<T>)
 ImGui::detail::AutoContainerValues<const std::set<T>>("Set " + name, var);
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 #endif  // _SET_
 
 #ifdef _UNORDERED_SET_
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::unordered_set<T>)
+ME_GUI_DEFINE_BEGIN(template <typename T>, std::unordered_set<T>)
 ImGui::detail::AutoContainerValues<std::unordered_set<T>>("Unordered set " + name, var);
 // todo insert
-METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::unordered_set<T>)
+ME_GUI_DEFINE_END
+ME_GUI_DEFINE_BEGIN(template <typename T>, const std::unordered_set<T>)
 ImGui::detail::AutoContainerValues<const std::unordered_set<T>>("Unordered set " + name, var);
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 #endif  // _UNORDERED_SET_
 
 #ifdef _MAP_
-METAENGINE_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (std::map<K, V>))
+ME_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (std::map<K, V>))
 ImGui::detail::AutoMapContainerValues<std::map<K, V>>("Map " + name, var);
 // todo insert
-METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (const std::map<K, V>))
+ME_GUI_DEFINE_END
+ME_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (const std::map<K, V>))
 ImGui::detail::AutoMapContainerValues<const std::map<K, V>>("Map " + name, var);
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 #endif  // _MAP_
 
 #ifdef _UNORDERED_MAP_
-METAENGINE_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (std::unordered_map<K, V>))
+ME_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (std::unordered_map<K, V>))
 ImGui::detail::AutoMapContainerValues<std::unordered_map<K, V>>("Unordered map " + name, var);
 // todo insert
-METAENGINE_GUI_DEFINE_END
-METAENGINE_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (const std::unordered_map<K, V>))
+ME_GUI_DEFINE_END
+ME_GUI_DEFINE_BEGIN_P((template <typename K, typename V>), (const std::unordered_map<K, V>))
 ImGui::detail::AutoMapContainerValues<const std::unordered_map<K, V>>("Unordered map " + name, var);
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 #endif  // _UNORDERED_MAP_
 
 #pragma endregion
 
 #pragma region FUNCTIONS
 
-METAENGINE_GUI_DEFINE_INLINE(template <>, std::add_pointer_t<void()>, if (ImGui::Button(name.c_str())) var();)
-METAENGINE_GUI_DEFINE_INLINE(template <>, const std::add_pointer_t<void()>, if (ImGui::Button(name.c_str())) var();)
+ME_GUI_DEFINE_INLINE(template <>, std::add_pointer_t<void()>, if (ImGui::Button(name.c_str())) var();)
+ME_GUI_DEFINE_INLINE(template <>, const std::add_pointer_t<void()>, if (ImGui::Button(name.c_str())) var();)
 
 #pragma endregion
 
-// METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, std::vector<T>)
+// ME_GUI_DEFINE_BEGIN(template <typename T>, std::vector<T>)
 // if (ImGui::detail::AutoContainerValues<std::vector<T>>("MetaEngineVector " + name, var)) {
 //     ImGui::PushID(name.c_str());
 //     ImGui::Indent();
@@ -663,11 +663,11 @@ METAENGINE_GUI_DEFINE_INLINE(template <>, const std::add_pointer_t<void()>, if (
 //     ImGui::PopID();
 //     ImGui::Unindent();
 // }
-// METAENGINE_GUI_DEFINE_END
+// ME_GUI_DEFINE_END
 
-// METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, const std::vector<T>)
+// ME_GUI_DEFINE_BEGIN(template <typename T>, const std::vector<T>)
 // ImGui::detail::AutoContainerValues<const std::vector<T>>("MetaEngineVector " + name, var);
-// METAENGINE_GUI_DEFINE_END
+// ME_GUI_DEFINE_END
 
 #pragma endregion ImGuiAuto
 
@@ -833,10 +833,10 @@ private:
     MD_PARSER m_md;
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template <>, MarkdownData)
+ME_GUI_DEFINE_BEGIN(template <>, MarkdownData)
 ImGuiMarkdown markdown;
 markdown.print(var.data);
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
 namespace ImGuiHelper {
 

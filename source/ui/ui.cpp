@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/global.hpp"
 #include "core/mathlib.hpp"
 #include "core/platform.h"
@@ -43,11 +43,11 @@ void UISystem::UIRendererInit() {
     uidata = new UIData;
 
     METADOT_INFO("Loading ImGUI");
-    uidata->imgui = MetaEngine::CreateRef<ImGuiLayer>();
+    uidata->imgui = ME::create_ref<ImGuiLayer>();
     uidata->imgui->Init();
 
     // Test element drawing
-    auto testElement1 = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::windowElement,
+    auto testElement1 = ME::create_ref<UIElement>(UIElement{.type = ElementType::windowElement,
                                                                    .visible = false,
                                                                    .resizable = {true},
                                                                    .x = 50,
@@ -60,8 +60,8 @@ void UISystem::UIRendererInit() {
                                                                    .cclass = {.window = {}}});
 
     auto testElement2 =
-            MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::textElement, .parent = testElement1, .x = 5, .y = 5, .w = 40, .h = 20, .color = {1, 255, 1, 255}, .text = "哈哈哈哈哈嗝"});
-    auto testElement3 = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::buttonElement,
+            ME::create_ref<UIElement>(UIElement{.type = ElementType::textElement, .parent = testElement1, .x = 5, .y = 5, .w = 40, .h = 20, .color = {1, 255, 1, 255}, .text = "哈哈哈哈哈嗝"});
+    auto testElement3 = ME::create_ref<UIElement>(UIElement{.type = ElementType::buttonElement,
                                                                    .parent = testElement1,
                                                                    .x = 20,
                                                                    .y = 40,
@@ -72,7 +72,7 @@ void UISystem::UIRendererInit() {
                                                                    .text = "按钮捏",
                                                                    .cclass = {.button = {.hot_color = {1, 255, 1, 255}, .func = []() { METADOT_INFO("button pressed"); }}}});
 
-    auto testElement4 = MetaEngine::CreateRef<UIElement>(
+    auto testElement4 = ME::create_ref<UIElement>(
             UIElement{.type = ElementType::progressBarElement,
                       .parent = testElement1,
                       .x = 20,
@@ -84,10 +84,10 @@ void UISystem::UIRendererInit() {
                       .text = "进度条",
                       .cclass = {.progressbar = {.bar_type = 1, .bar_current = 50.0f, .bar_limit = 1000.0f, .bar_color = {54, 54, 54, 255}, .bar_text_color = {255, 255, 255, 255}}}});
 
-    auto testElement5 = MetaEngine::CreateRef<UIElement>(
+    auto testElement5 = ME::create_ref<UIElement>(
             UIElement{.type = ElementType::texturedRectangle, .parent = testElement1, .x = 40, .y = 20, .w = 100, .h = 50, .state = 0, .color = {}, .texture = LoadTexture("data/assets/ui/logo.png")});
 
-    auto testElement6 = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::inputBoxElement,
+    auto testElement6 = ME::create_ref<UIElement>(UIElement{.type = ElementType::inputBoxElement,
                                                                    .parent = testElement1,
                                                                    .x = 40,
                                                                    .y = 80,
@@ -98,7 +98,7 @@ void UISystem::UIRendererInit() {
                                                                    .text = "编辑框1",
                                                                    .cclass = {.inputbox = {.bg_color = {54, 54, 54, 255}, .text_color = {255, 0, 20, 255}}}});
 
-    auto testElement7 = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::inputBoxElement,
+    auto testElement7 = ME::create_ref<UIElement>(UIElement{.type = ElementType::inputBoxElement,
                                                                    .parent = testElement1,
                                                                    .x = 40,
                                                                    .y = 105,
@@ -117,7 +117,7 @@ void UISystem::UIRendererInit() {
     uidata->elementLists.insert(std::make_pair("testElement6", testElement6));
     uidata->elementLists.insert(std::make_pair("testElement7", testElement7));
 
-    auto window_menu = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::windowElement,
+    auto window_menu = ME::create_ref<UIElement>(UIElement{.type = ElementType::windowElement,
                                                                   .visible = false,
                                                                   .resizable = {true},
                                                                   .x = 150,
@@ -129,7 +129,7 @@ void UISystem::UIRendererInit() {
                                                                   .texture = LoadTexture("data/assets/ui/demo_background.png"),
                                                                   .cclass = {.window = {}}});
 
-    auto button_play = MetaEngine::CreateRef<UIElement>(UIElement{.type = ElementType::buttonElement,
+    auto button_play = ME::create_ref<UIElement>(UIElement{.type = ElementType::buttonElement,
                                                                   .parent = window_menu,
                                                                   .x = 20,
                                                                   .y = 40,
@@ -256,7 +256,7 @@ void UISystem::UIRendererDraw() {
 
 void UISystem::UIRendererDrawImGui() { uidata->imgui->Draw(); }
 
-F32 BoxDistence(metadot_rect box, MEvec2 A) {
+f32 BoxDistence(metadot_rect box, MEvec2 A) {
     if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;
     return 0;
 }
@@ -421,7 +421,7 @@ bool UISystem::UIIsMouseOnControls() {
     return false;
 }
 
-void UISystem::DrawPoint(MEvec3 pos, float size, Texture *texture, U8 r, U8 g, U8 b) {
+void UISystem::DrawPoint(MEvec3 pos, float size, Texture *texture, u8 r, u8 g, u8 b) {
     MEvec3 min = {pos.x - size, pos.y - size, 0};
     MEvec3 max = {pos.x + size, pos.y + size, 0};
 
@@ -432,7 +432,7 @@ void UISystem::DrawPoint(MEvec3 pos, float size, Texture *texture, U8 r, U8 g, U
     }
 }
 
-void UISystem::DrawLine(MEvec3 min, MEvec3 max, float thickness, U8 r, U8 g, U8 b) { R_Line(Render.target, min.x, min.y, max.x, max.y, {r, g, b, 255}); }
+void UISystem::DrawLine(MEvec3 min, MEvec3 max, float thickness, u8 r, u8 g, u8 b) { R_Line(Render.target, min.x, min.y, max.x, max.y, {r, g, b, 255}); }
 
 void UISystem::Create() { UIRendererInit(); }
 

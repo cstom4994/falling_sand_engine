@@ -6,7 +6,7 @@
 #include <string_view>
 
 #include "chunk.hpp"
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/core.hpp"
 #include "core/cpp/utils.hpp"
 #include "core/debug.hpp"
@@ -20,12 +20,12 @@
 #include "game_utils/cells.h"
 #include "physics/box2d.h"
 #include "reflectionflat.hpp"
-#include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/lua_wrapper.hpp"
 #include "world.hpp"
 
 std::vector<Biome *> GameData::biome_container;
 std::vector<Material *> GameData::materials_container;
-I32 GameData::materials_count = 0;
+i32 GameData::materials_count = 0;
 Material **GameData::materials_array;
 
 void ReleaseGameData() {
@@ -36,7 +36,7 @@ void ReleaseGameData() {
 
 #pragma region Material
 
-Material::Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color) {
+Material::Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor, u32 color) {
     this->name = name;
     this->index_name = index_name;
     this->id = id;
@@ -170,12 +170,12 @@ void InitMaterials() {
         snprintf(buff, sizeof(buff), "Mat_%d", i);
         std::string buffAsStdStr = buff;
 
-        U32 rgb = rand() % 255;
+        u32 rgb = rand() % 255;
         rgb = (rgb << 8) + rand() % 255;
         rgb = (rgb << 8) + rand() % 255;
 
         int type = rand() % 2 == 0 ? (rand() % 2 == 0 ? PhysicsType::SAND : PhysicsType::GAS) : PhysicsType::SOUP;
-        F32 dens = 0;
+        f32 dens = 0;
         if (type == PhysicsType::SAND) {
             dens = 5 + (rand() % 1000) / 1000.0;
         } else if (type == PhysicsType::SOUP) {
@@ -269,7 +269,7 @@ void InitMaterials() {
     // ME::meta::static_refl::TypeInfo<Material>::fields.ForEach([](const auto &field) { METADOT_DBG(field.name); });
 }
 
-void RegisterMaterial(int s_id, std::string name, std::string index_name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color) {
+void RegisterMaterial(int s_id, std::string name, std::string index_name, int physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor, u32 color) {
     MaterialsList::ScriptableMaterials.insert(
             std::make_pair(s_id, Material(GameData::materials_count++, name, index_name, (PhysicsType)physicsType, slipperyness, alpha, density, iterations, emit, emitColor, color)));
     REGISTER(MaterialsList::ScriptableMaterials[s_id]);
@@ -284,7 +284,7 @@ void PushMaterials() {
 
 #undef REGISTER
 
-MaterialInstance::MaterialInstance(Material *mat, U32 color, I32 temperature) {
+MaterialInstance::MaterialInstance(Material *mat, u32 color, i32 temperature) {
     // this->id = _curID++;
     this->mat = mat;
     this->color = color;
@@ -299,7 +299,7 @@ MaterialInstance Tiles_TEST_GAS = MaterialInstance(&MaterialsList::GENERIC_GAS, 
 MaterialInstance Tiles_OBJECT = MaterialInstance(&MaterialsList::GENERIC_OBJECT, 0x00ff00);
 
 MaterialInstance TilesCreateTestSand() {
-    U32 rgb = 220;
+    u32 rgb = 220;
     rgb = (rgb << 8) + 155 + rand() % 30;
     rgb = (rgb << 8) + 100;
     return MaterialInstance(&MaterialsList::ScriptableMaterials[1001], rgb);
@@ -311,12 +311,12 @@ MaterialInstance TilesCreateTestTexturedSand(int x, int y) {
     int tx = x % tex->w;
     int ty = y % tex->h;
 
-    U32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = R_GET_PIXEL(tex, tx, ty);
     return MaterialInstance(&MaterialsList::ScriptableMaterials[1002], rgb);
 }
 
 MaterialInstance TilesCreateTestLiquid() {
-    U32 rgb = 0;
+    u32 rgb = 0;
     rgb = (rgb << 8) + 0;
     rgb = (rgb << 8) + 255;
     return MaterialInstance(&MaterialsList::ScriptableMaterials[1003], rgb);
@@ -328,23 +328,23 @@ MaterialInstance TilesCreateStone(int x, int y) {
     int tx = x % tex->w;
     int ty = y % tex->h;
 
-    U8 *pixel = (U8 *)tex->pixels;
+    u8 *pixel = (u8 *)tex->pixels;
 
-    pixel += ((ty)*tex->pitch) + ((tx) * sizeof(U32));
-    U32 rgb = *((U32 *)pixel);
+    pixel += ((ty)*tex->pitch) + ((tx) * sizeof(u32));
+    u32 rgb = *((u32 *)pixel);
 
     return MaterialInstance(&MaterialsList::STONE, rgb);
 }
 
 MaterialInstance TilesCreateGrass() {
-    U32 rgb = 40;
+    u32 rgb = 40;
     rgb = (rgb << 8) + 120 + rand() % 20;
     rgb = (rgb << 8) + 20;
     return MaterialInstance(&MaterialsList::GRASS, rgb);
 }
 
 MaterialInstance TilesCreateDirt() {
-    U32 rgb = 60 + rand() % 10;
+    u32 rgb = 60 + rand() % 10;
     rgb = (rgb << 8) + 40;
     rgb = (rgb << 8) + 20;
     return MaterialInstance(&MaterialsList::DIRT, rgb);
@@ -356,7 +356,7 @@ MaterialInstance TilesCreateSmoothStone(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    U32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&MaterialsList::SMOOTH_STONE, rgb);
 }
@@ -367,7 +367,7 @@ MaterialInstance TilesCreateCobbleStone(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    U32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&MaterialsList::COBBLE_STONE, rgb);
 }
@@ -378,7 +378,7 @@ MaterialInstance TilesCreateSmoothDirt(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    U32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&MaterialsList::SMOOTH_DIRT, rgb);
 }
@@ -389,7 +389,7 @@ MaterialInstance TilesCreateCobbleDirt(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    U32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&MaterialsList::COBBLE_DIRT, rgb);
 }
@@ -400,19 +400,19 @@ MaterialInstance TilesCreateSoftDirt(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    U32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&MaterialsList::SOFT_DIRT, rgb);
 }
 
 MaterialInstance TilesCreateWater() {
-    U32 rgb = 0x00B69F;
+    u32 rgb = 0x00B69F;
 
     return MaterialInstance(&MaterialsList::WATER, rgb, -1023);
 }
 
 MaterialInstance TilesCreateLava() {
-    U32 rgb = 0xFF7C00;
+    u32 rgb = 0xFF7C00;
 
     return MaterialInstance(&MaterialsList::LAVA, rgb, 1024);
 }
@@ -423,7 +423,7 @@ MaterialInstance TilesCreateCloud(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    U32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&MaterialsList::CLOUD, rgb);
 }
@@ -434,7 +434,7 @@ MaterialInstance TilesCreateGold(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    U32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&MaterialsList::GOLD_ORE, rgb);
 }
@@ -445,7 +445,7 @@ MaterialInstance TilesCreateIron(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    U32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&MaterialsList::IRON_ORE, rgb);
 }
@@ -456,7 +456,7 @@ MaterialInstance TilesCreateObsidian(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    U32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
     return MaterialInstance(&MaterialsList::OBSIDIAN, rgb);
 }
@@ -465,7 +465,7 @@ MaterialInstance TilesCreateSteam() { return MaterialInstance(&MaterialsList::ST
 
 MaterialInstance TilesCreateFire() {
 
-    U32 rgb = 255;
+    u32 rgb = 255;
     rgb = (rgb << 8) + 100 + rand() % 50;
     rgb = (rgb << 8) + 50;
 
@@ -509,7 +509,7 @@ MaterialInstance TilesCreate(Material *mat, int x, int y) {
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        U32 rgb = R_GET_PIXEL(tex, tx, ty);
+        u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&MaterialsList::GOLD_MOLTEN, rgb);
     } else if (mat->id == MaterialsList::GOLD_SOLID.id) {
@@ -518,7 +518,7 @@ MaterialInstance TilesCreate(Material *mat, int x, int y) {
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        U32 rgb = R_GET_PIXEL(tex, tx, ty);
+        u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&MaterialsList::GOLD_SOLID, rgb);
     } else if (mat->id == MaterialsList::IRON_ORE.id) {
@@ -535,7 +535,7 @@ MaterialInstance TilesCreate(Material *mat, int x, int y) {
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        U32 rgb = R_GET_PIXEL(tex, tx, ty);
+        u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&MaterialsList::FLAT_COBBLE_STONE, rgb);
     } else if (mat->id == MaterialsList::FLAT_COBBLE_DIRT.id) {
@@ -544,7 +544,7 @@ MaterialInstance TilesCreate(Material *mat, int x, int y) {
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        U32 rgb = R_GET_PIXEL(tex, tx, ty);
+        u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
         return MaterialInstance(&MaterialsList::FLAT_COBBLE_DIRT, rgb);
     }
@@ -560,7 +560,7 @@ MaterialInstance TilesCreate(int id, int x, int y) {
             int tx = (tex->w + (x % tex->w)) % tex->w;
             int ty = (tex->h + (y % tex->h)) % tex->h;
 
-            U32 rgb = R_GET_PIXEL(tex, tx, ty);
+            u32 rgb = R_GET_PIXEL(tex, tx, ty);
 
             return MaterialInstance(&m, rgb);
         }
@@ -594,10 +594,10 @@ Item *Item::makeItem(ItemFlags flags, RigidBody *rb, std::string n) {
     return i;
 }
 
-U32 getpixel(C_Surface *surface, int x, int y) {
+u32 getpixel(C_Surface *surface, int x, int y) {
     int bpp = surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to retrieve */
-    U8 *p = (U8 *)surface->pixels + y * surface->pitch + x * bpp;
+    u8 *p = (u8 *)surface->pixels + y * surface->pitch + x * bpp;
 
     switch (bpp) {
         case 1:
@@ -605,7 +605,7 @@ U32 getpixel(C_Surface *surface, int x, int y) {
             break;
 
         case 2:
-            return *(U16 *)p;
+            return *(u16 *)p;
             break;
 
         case 3:
@@ -616,7 +616,7 @@ U32 getpixel(C_Surface *surface, int x, int y) {
             break;
 
         case 4:
-            return *(U32 *)p;
+            return *(u32 *)p;
             break;
 
         default:
@@ -626,12 +626,12 @@ U32 getpixel(C_Surface *surface, int x, int y) {
 
 void Item::loadFillTexture(C_Surface *tex) {
     fill.resize(capacity);
-    U32 maxN = 0;
-    for (U16 x = 0; x < tex->w; x++) {
-        for (U16 y = 0; y < tex->h; y++) {
-            U32 col = getpixel(tex, x, y);
+    u32 maxN = 0;
+    for (u16 x = 0; x < tex->w; x++) {
+        for (u16 y = 0; y < tex->h; y++) {
+            u32 col = getpixel(tex, x, y);
             if (((col >> 24) & 0xff) > 0) {
-                U32 n = col & 0x00ffffff;
+                u32 n = col & 0x00ffffff;
                 fill[n - 1] = {x, y};
                 if (n - 1 > maxN) maxN = n - 1;
             }
@@ -650,7 +650,7 @@ Structure::Structure(C_Surface *texture, Material mat) {
     MaterialInstance *tiles = new MaterialInstance[texture->w * texture->h];
     for (int x = 0; x < texture->w; x++) {
         for (int y = 0; y < texture->h; y++) {
-            U32 color = R_GET_PIXEL(texture, x, y);
+            u32 color = R_GET_PIXEL(texture, x, y);
             int alpha = 255;
             if (texture->format->format == SDL_PIXELFORMAT_ARGB8888) {
                 alpha = (color >> 24) & 0xff;
@@ -681,8 +681,8 @@ Structure Structures::makeTree(World world, int x, int y) {
 
     int trunk = 3 + rand() % 2;
 
-    F32 cx = w / 2;
-    F32 dcx = (((rand() % 10) / 10.0) - 0.5) / 3.0;
+    f32 cx = w / 2;
+    f32 dcx = (((rand() % 10) / 10.0) - 0.5) / 3.0;
     for (int ty = h - 1; ty > 20; ty--) {
         int bw = trunk + std::max((ty - h + 10) / 3, 0);
         for (int xx = -bw; xx <= bw; xx++) {
@@ -692,9 +692,9 @@ Structure Structures::makeTree(World world, int x, int y) {
     }
 
     for (int theta = 0; theta < 360; theta += 1) {
-        F64 p = world.noise.GetPerlin(std::cos(theta * 3.1415 / 180.0) * 4 + x, std::sin(theta * 3.1415 / 180.0) * 4 + y, 2652);
-        F32 r = 15 + (F32)p * 6;
-        for (F32 d = 0; d < r; d += 0.5) {
+        f64 p = world.noise.GetPerlin(std::cos(theta * 3.1415 / 180.0) * 4 + x, std::sin(theta * 3.1415 / 180.0) * 4 + y, 2652);
+        f32 r = 15 + (f32)p * 6;
+        for (f32 d = 0; d < r; d += 0.5) {
             int tx = cx - (int)(dcx * (h - 30)) + d * std::cos(theta * 3.1415 / 180.0);
             int ty = 20 + d * std::sin(theta * 3.1415 / 180.0);
             if (tx >= 0 && ty >= 0 && tx < w && ty < h) {
@@ -707,13 +707,13 @@ Structure Structures::makeTree(World world, int x, int y) {
     bool side = rand() % 2;  // false = right, true = left
     for (int i = 0; i < nBranches; i++) {
         int yPos = 20 + (h - 20) / 3 * (i + 1) + rand() % 10;
-        F32 tilt = ((rand() % 10) / 10.0 - 0.5) * 8;
+        f32 tilt = ((rand() % 10) / 10.0 - 0.5) * 8;
         int len = 10 + rand() % 5;
         for (int xx = 0; xx < len; xx++) {
             int tx = (int)(w / 2 + dcx * (h - yPos)) + (side ? 1 : -1) * (xx + 2) - (int)(dcx * (h - 30));
-            int th = 3 * (1 - (xx / (F32)len));
+            int th = 3 * (1 - (xx / (f32)len));
             for (int yy = -th; yy <= th; yy++) {
-                int ty = yPos + yy + (xx / (F32)len * tilt);
+                int ty = yPos + yy + (xx / (f32)len * tilt);
                 if (tx >= 0 && ty >= 0 && tx < w && ty < h) {
                     tiles[tx + ty * w] = MaterialInstance(&MaterialsList::GENERIC_PASSABLE, yy >= 2 ? 0x683600 : 0x7C4000);
                 }
@@ -745,11 +745,11 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 //          int px = x + ch.x * CHUNK_W;
 //          int py = y + ch.y * CHUNK_H;
 //          if (tiles[x + y * CHUNK_W].mat.physicsType == PhysicsType::SOLID && tiles[x + y * CHUNK_W].mat.id != Materials::CLOUD.id) {
-//              F64 n = world.perlin.noise(px / 64.0, py / 64.0, 3802);
-//              F64 n2 = world.perlin.noise(px / 150.0, py / 150.0, 6213);
-//              F64 ndetail = world.perlin.noise(px / 16.0, py / 16.0, 5319) * 0.1;
+//              f64 n = world.perlin.noise(px / 64.0, py / 64.0, 3802);
+//              f64 n2 = world.perlin.noise(px / 150.0, py / 150.0, 6213);
+//              f64 ndetail = world.perlin.noise(px / 16.0, py / 16.0, 5319) * 0.1;
 //              if (n2 + n + ndetail < std::fmin(0.95, (py) / 1000.0)) {
-//                  F64 nlav = world.perlin.noise(px / 250.0, py / 250.0, 7018);
+//                  f64 nlav = world.perlin.noise(px / 250.0, py / 250.0, 7018);
 //                  if (nlav > 0.7) {
 //                      tiles[x + y * CHUNK_W] = rand() % 3 == 0 ? (ch.y > 5 ? TilesCreateLava() : TilesCreateWater()) : Tiles_NOTHING;
 //                  }
@@ -758,7 +758,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 //                  }
 //              }
 //              else {
-//                  F64 n3 = world.perlin.noise(px / 64.0, py / 64.0, 9828);
+//                  f64 n3 = world.perlin.noise(px / 64.0, py / 64.0, 9828);
 //                  if (n3 - 0.25 > py / 1000.0) {
 //                      tiles[x + y * CHUNK_W] = Tiles_NOTHING;
 //                  }
@@ -766,12 +766,12 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 //          }
 
 //          if (tiles[x + y * CHUNK_W].mat.id == Materials::SMOOTH_STONE.id) {
-//              F64 n = world.perlin.noise(px / 48.0, py / 48.0, 5124);
+//              f64 n = world.perlin.noise(px / 48.0, py / 48.0, 5124);
 //              if (n < 0.25) tiles[x + y * CHUNK_W] = TilesCreateIron(px, py);
 //          }
 
 //          if (tiles[x + y * CHUNK_W].mat.id == Materials::SMOOTH_STONE.id) {
-//              F64 n = world.perlin.noise(px / 32.0, py / 32.0, 7513);
+//              f64 n = world.perlin.noise(px / 32.0, py / 32.0, 7513);
 //              if (n < 0.20) tiles[x + y * CHUNK_W] = TilesCreateGold(px, py);
 //          }
 
@@ -860,7 +860,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 //      //std::cout << "placestruct " << world.structures.size() << std::endl;
 //  }
 
-//  F32 treePointsScale = 2000;
+//  f32 treePointsScale = 2000;
 //  std::vector<b2Vec2> treePts = world.getPointsWithin((ch.x - 1) * CHUNK_W / treePointsScale, (ch.y - 1) * CHUNK_H / treePointsScale, CHUNK_W * 3 / treePointsScale, CHUNK_H * 3 /
 // treePointsScale);    Structure tree = Structures::makeTree1(world, ch.x * CHUNK_W, ch.y * CHUNK_H);  std::cout << treePts.size() << std::endl;   for (int i = 0; i < treePts.size(); i++) {      int
 // px = treePts[i].x * treePointsScale - ch.x * CHUNK_W;        int py = treePts[i].y * treePointsScale - ch.y * CHUNK_H;
@@ -957,19 +957,19 @@ std::vector<PlacedStructure> CavePopulator::apply(MaterialInstance *chunk, Mater
             int px = x + ch->x * CHUNK_W;
             int py = y + ch->y * CHUNK_H;
             if (chunk[x + y * CHUNK_W].mat->physicsType == PhysicsType::SOLID && chunk[x + y * CHUNK_W].mat->id != MaterialsList::CLOUD.id) {
-                F64 n = (world->noise.GetPerlin(px * 1.5, py * 1.5, 3802) + 1) / 2;
-                F64 n2 = (world->noise.GetPerlin(px / 3.0, py / 3.0, 6213) + 1) / 2;
-                F64 ndetail = (world->noise.GetPerlin(px * 8.0, py * 8.0, 5319) + 1) / 2 * 0.08;
+                f64 n = (world->noise.GetPerlin(px * 1.5, py * 1.5, 3802) + 1) / 2;
+                f64 n2 = (world->noise.GetPerlin(px / 3.0, py / 3.0, 6213) + 1) / 2;
+                f64 ndetail = (world->noise.GetPerlin(px * 8.0, py * 8.0, 5319) + 1) / 2 * 0.08;
 
                 if (n2 + n + ndetail < std::fmin(0.95, (py) / 1000.0)) {
-                    F64 nlav = world->noise.GetPerlin(px / 4.0, py / 4.0, 7018);
+                    f64 nlav = world->noise.GetPerlin(px / 4.0, py / 4.0, 7018);
                     if (nlav > 0.45) {
                         chunk[x + y * CHUNK_W] = rand() % 3 == 0 ? (ch->y > 15 ? TilesCreateLava() : TilesCreateWater()) : Tiles_NOTHING;
                     } else {
                         chunk[x + y * CHUNK_W] = Tiles_NOTHING;
                     }
                 } else {
-                    F64 n3 = world->noise.GetPerlin(px / 64.0, py / 64.0, 9828);
+                    f64 n3 = world->noise.GetPerlin(px / 64.0, py / 64.0, 9828);
                     if (n3 - 0.25 > py / 1000.0) {
                         chunk[x + y * CHUNK_W] = Tiles_NOTHING;
                     }
@@ -1076,12 +1076,12 @@ std::vector<PlacedStructure> OrePopulator::apply(MaterialInstance *chunk, Materi
 
             MaterialInstance prop = chunk[x + y * CHUNK_W];
             if (chunk[x + y * CHUNK_W].mat->id == MaterialsList::SMOOTH_STONE.id) {
-                F64 n = (world->noise.GetNoise(px * 1.7, py * 1.7, 5124) + 1) / 2;
+                f64 n = (world->noise.GetNoise(px * 1.7, py * 1.7, 5124) + 1) / 2;
                 if (n < 0.25) chunk[x + y * CHUNK_W] = TilesCreateIron(px, py);
             }
 
             if (chunk[x + y * CHUNK_W].mat->id == MaterialsList::SMOOTH_STONE.id) {
-                F64 n = (world->noise.GetNoise(px * 2, py * 2, 7513) + 1) / 2;
+                f64 n = (world->noise.GetNoise(px * 2, py * 2, 7513) + 1) / 2;
                 if (n < 0.20) chunk[x + y * CHUNK_W] = TilesCreateGold(px, py);
             }
         }
@@ -1106,8 +1106,8 @@ std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, Mater
 
             // for (int tx = 0; tx < tree.w; tx++) {
             //     for (int ty = 0; ty < tree.h; ty++) {
-            //         int chx = (int) floor((tx + px) / (F32) CHUNK_W) + 1 - ch->x;
-            //         int chy = (int) floor((ty + py) / (F32) CHUNK_H) + 1 - ch->y;
+            //         int chx = (int) floor((tx + px) / (f32) CHUNK_W) + 1 - ch->x;
+            //         int chy = (int) floor((ty + py) / (f32) CHUNK_H) + 1 - ch->y;
             //         if (chx < 0 || chy < 0 || chx > 2 || chy > 2) continue;
             //         int dxx = (CHUNK_W + ((tx + px) % CHUNK_W)) % CHUNK_W;
             //         int dyy = (CHUNK_H + ((ty + py) % CHUNK_H)) % CHUNK_H;
@@ -1166,10 +1166,10 @@ void Player::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
     if (heldItem != NULL) {
         int scaleEnt = global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1;
 
-        metadot_rect *ir = new metadot_rect{(F32)(int)(ofsX + we->x + we->hw / 2.0 - heldItem->surface->w), (F32)(int)(ofsY + we->y + we->hh / 2.0 - heldItem->surface->h / 2),
-                                            (F32)heldItem->surface->w, (F32)heldItem->surface->h};
-        F32 fx = (F32)(int)(-ir->x + ofsX + we->x + we->hw / 2.0);
-        F32 fy = (F32)(int)(-ir->y + ofsY + we->y + we->hh / 2.0);
+        metadot_rect *ir = new metadot_rect{(f32)(int)(ofsX + we->x + we->hw / 2.0 - heldItem->surface->w), (f32)(int)(ofsY + we->y + we->hh / 2.0 - heldItem->surface->h / 2),
+                                            (f32)heldItem->surface->w, (f32)heldItem->surface->h};
+        f32 fx = (f32)(int)(-ir->x + ofsX + we->x + we->hw / 2.0);
+        f32 fy = (f32)(int)(-ir->y + ofsY + we->y + we->hh / 2.0);
         fx -= heldItem->pivotX;
         ir->x += heldItem->pivotX;
         fy -= heldItem->pivotY;
@@ -1190,7 +1190,7 @@ void Player::renderLQ(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
     R_Rectangle(target, we->x + ofsX, we->y + ofsY, we->x + ofsX + we->hw, we->y + ofsY + we->hh, {0xff, 0xff, 0xff, 0xff});
 }
 
-MEvec2 rotate_point2(F32 cx, F32 cy, F32 angle, MEvec2 p);
+MEvec2 rotate_point2(f32 cx, f32 cy, f32 angle, MEvec2 p);
 
 void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
     RigidBody *r;
@@ -1198,9 +1198,9 @@ void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
         b2PolygonShape ps;
         ps.SetAsBox(1, 1);
 
-        F32 angle = holdAngle;
+        f32 angle = holdAngle;
 
-        MEvec2 pt = rotate_point2(0, 0, angle * 3.1415 / 180.0, {(F32)(heldItem->surface->w / 2.0), (F32)(heldItem->surface->h / 2.0)});
+        MEvec2 pt = rotate_point2(0, 0, angle * 3.1415 / 180.0, {(f32)(heldItem->surface->w / 2.0), (f32)(heldItem->surface->h / 2.0)});
 
         r = world->makeRigidBody(b2_dynamicBody, we->x + we->hw / 2 + world->loadZone.x - pt.x + 16 * cos((holdAngle + 180) * 3.1415f / 180.0f),
                                  we->y + we->hh / 2 + world->loadZone.y - pt.y + 16 * sin((holdAngle + 180) * 3.1415f / 180.0f), angle, ps, 1, 0.3, heldItem->surface);
@@ -1210,14 +1210,14 @@ void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
         // 180 ->  w/2  h/2
         // 270 -> -w/2  h/2
 
-        F32 strength = 10;
+        f32 strength = 10;
         int time = ME_gettime() - startThrow;
 
         if (time > 1000) time = 1000;
 
         strength += time / 1000.0 * 30;
 
-        r->body->SetLinearVelocity({(F32)(strength * (F32)cos((holdAngle + 180) * 3.1415f / 180.0f)), (F32)(strength * (F32)sin((holdAngle + 180) * 3.1415f / 180.0f)) - 10});
+        r->body->SetLinearVelocity({(f32)(strength * (f32)cos((holdAngle + 180) * 3.1415f / 180.0f)), (f32)(strength * (f32)sin((holdAngle + 180) * 3.1415f / 180.0f)) - 10});
 
         b2Filter bf = {};
         bf.categoryBits = 0x0001;
@@ -1238,17 +1238,17 @@ Player::~Player() {
     if (heldItem) delete heldItem;
 }
 
-MEvec2 rotate_point2(F32 cx, F32 cy, F32 angle, MEvec2 p) {
-    F32 s = sin(angle);
-    F32 c = cos(angle);
+MEvec2 rotate_point2(f32 cx, f32 cy, f32 angle, MEvec2 p) {
+    f32 s = sin(angle);
+    f32 c = cos(angle);
 
     // translate to origin
     p.x -= cx;
     p.y -= cy;
 
     // rotate
-    F32 xn = p.x * c - p.y * s;
-    F32 yn = p.x * s + p.y * c;
+    f32 xn = p.x * c - p.y * s;
+    f32 yn = p.x * s + p.y * c;
 
     // translate back
     return MEvec2(xn + cx, yn + cy);
@@ -1281,9 +1281,9 @@ void WorldEntitySystem::process(MetaEngine::ECS::registry &world, const entity_u
                             evt.g->objectDelete[wx + wy * evt.g->GameIsolate_.world->width] = true;
                         } else if (evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND ||
                                    evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
-                            evt.g->GameIsolate_.world->addCell(new CellData(evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width], (F32)(wx + rand() % 3 - 1 - pl.vx),
-                                                                            (F32)(wy - abs(pl.vy)), (F32)(-pl.vx / 4 + (rand() % 10 - 5) / 5.0f), (F32)(-pl.vy / 4 + -(rand() % 5 + 5) / 5.0f), 0,
-                                                                            (F32)0.1));
+                            evt.g->GameIsolate_.world->addCell(new CellData(evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width], (f32)(wx + rand() % 3 - 1 - pl.vx),
+                                                                            (f32)(wy - abs(pl.vy)), (f32)(-pl.vx / 4 + (rand() % 10 - 5) / 5.0f), (f32)(-pl.vy / 4 + -(rand() % 5 + 5) / 5.0f), 0,
+                                                                            (f32)0.1));
                             evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width] = Tiles_OBJECT;
                             evt.g->objectDelete[wx + wy * evt.g->GameIsolate_.world->width] = true;
                             evt.g->GameIsolate_.world->dirty[wx + wy * evt.g->GameIsolate_.world->width] = true;

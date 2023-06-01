@@ -3,7 +3,7 @@
 #ifndef ME_GAMERESOURCES_HPP
 #define ME_GAMERESOURCES_HPP
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/sdl_wrapper.h"
 #include "engine/engine.h"
 #include "renderer/renderer_gpu.h"
@@ -39,8 +39,8 @@ void EndTexture(TexturePack *tex);
 Texture *CreateTexture(C_Surface *surface);
 void DestroyTexture(Texture *tex);
 Texture *LoadTexture(const char *path);
-Texture *LoadTextureInternal(const char *path, U32 pixelFormat);
-C_Surface *ScaleSurface(C_Surface *src, F32 x, F32 y);
+Texture *LoadTextureInternal(const char *path, u32 pixelFormat);
+C_Surface *ScaleSurface(C_Surface *src, f32 x, f32 y);
 Texture *LoadAsepriteTexture(const char *path);
 Texture *LoadTextureData(const char *path);
 void RenderTextureRect(Texture *tex, R_Target *target, int x, int y, metadot_rect *clip = nullptr);

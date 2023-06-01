@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/dbgtools.h"
 #include "core/memory.h"
 #include "core/utils/utility.hpp"

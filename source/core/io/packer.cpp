@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/platform.h"
 #include "core/utils/utility.hpp"
 #include "libs/lz4/lz4.h"

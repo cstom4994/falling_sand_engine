@@ -17,7 +17,7 @@
 #include "meta/static_relfection.hpp"
 #include "physics/box2d.h"
 #include "renderer/renderer_gpu.h"
-#include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/lua_wrapper.hpp"
 
 struct Chunk;
 struct Populator;
@@ -39,24 +39,24 @@ struct ImGuiContext;
 #define GetFunctions(name) global.GameData_.HostData.Functions[name]
 
 struct GameData {
-    I32 ofsX = 0;
-    I32 ofsY = 0;
+    i32 ofsX = 0;
+    i32 ofsY = 0;
 
-    F32 plPosX = 0;
-    F32 plPosY = 0;
+    f32 plPosX = 0;
+    f32 plPosY = 0;
 
-    F32 camX = 0;
-    F32 camY = 0;
+    f32 camX = 0;
+    f32 camY = 0;
 
-    F32 desCamX = 0;
-    F32 desCamY = 0;
+    f32 desCamX = 0;
+    f32 desCamY = 0;
 
-    F32 freeCamX = 0;
-    F32 freeCamY = 0;
+    f32 freeCamX = 0;
+    f32 freeCamY = 0;
 
     static std::vector<Biome *> biome_container;
     static std::vector<Material *> materials_container;
-    static I32 materials_count;
+    static i32 materials_count;
     static Material **materials_array;
 
     struct {
@@ -68,10 +68,10 @@ class WorldEntity {
 public:
     std::string name;
 
-    F32 x = 0;
-    F32 y = 0;
-    F32 vx = 0;
-    F32 vy = 0;
+    f32 x = 0;
+    f32 y = 0;
+    f32 vx = 0;
+    f32 vy = 0;
     int hw = 14;
     int hh = 26;
     bool ground = false;
@@ -80,7 +80,7 @@ public:
 
     WorldEntity(const WorldEntity &) = default;
 
-    WorldEntity(bool isplayer, F32 x, F32 y, F32 vx, F32 vy, int hw, int hh, RigidBody *rb, std::string n = "unknown")
+    WorldEntity(bool isplayer, f32 x, f32 y, f32 vx, f32 vy, int hw, int hh, RigidBody *rb, std::string n = "unknown")
         : is_player(isplayer), x(x), y(y), vx(vx), vy(vy), hw(hw), hh(hh), rb(rb), name(n) {}
     ~WorldEntity() {
         // if (static_cast<bool>(rb)) delete rb;
@@ -105,9 +105,9 @@ struct ME::meta::static_refl::TypeInfo<WorldEntity> : TypeInfoBase<WorldEntity> 
     };
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template <>, WorldEntity)
+ME_GUI_DEFINE_BEGIN(template <>, WorldEntity)
 ME::meta::static_refl::TypeInfo<WorldEntity>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
 void ReleaseGameData();
 
@@ -154,15 +154,15 @@ struct Material {
 
     int id = 0;
     int physicsType = 0;
-    U8 alpha = 0;
-    F32 density = 0;
+    u8 alpha = 0;
+    f32 density = 0;
     int iterations = 0;
     int emit = 0;
-    U32 emitColor = 0;
-    U32 color = 0;
-    U32 addTemp = 0;
-    F32 conductionSelf = 1.0;
-    F32 conductionOther = 1.0;
+    u32 emitColor = 0;
+    u32 color = 0;
+    u32 addTemp = 0;
+    f32 conductionSelf = 1.0;
+    f32 conductionOther = 1.0;
 
     bool is_scriptable = false;
 
@@ -178,12 +178,12 @@ struct Material {
 
     int slipperyness = 1;
 
-    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color);
-    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor)
+    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor, u32 color);
+    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor)
         : Material(id, name, index_name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor, 0xffffffff) {}
-    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, U8 alpha, F32 density, int iterations)
+    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, u8 alpha, f32 density, int iterations)
         : Material(id, name, index_name, physicsType, slipperyness, alpha, density, iterations, 0, 0) {}
-    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, F32 density, int iterations)
+    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, f32 density, int iterations)
         : Material(id, name, index_name, physicsType, slipperyness, 0xff, density, iterations) {}
     Material() : Material(0, "Air", "", PhysicsType::AIR, 4, 0, 0) {}
 };
@@ -216,12 +216,12 @@ struct ME::meta::static_refl::TypeInfo<Material> : TypeInfoBase<Material> {
     };
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template <>, Material)
+ME_GUI_DEFINE_BEGIN(template <>, Material)
 ME::meta::static_refl::TypeInfo<Material>::ForEachVarOf(var, [](auto field, auto &&value) {
     static_assert(std::is_lvalue_reference_v<decltype(value)>);
     ImGui::Auto(value, std::string(field.name));
 });
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
 struct MaterialsList {
     static std::unordered_map<int, Material> ScriptableMaterials;
@@ -256,22 +256,22 @@ struct MaterialsList {
 };
 
 void InitMaterials();
-void RegisterMaterial(int s_id, std::string name, std::string index_name, int physicsType, int slipperyness, U8 alpha, F32 density, int iterations, int emit, U32 emitColor, U32 color);
+void RegisterMaterial(int s_id, std::string name, std::string index_name, int physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor, u32 color);
 void PushMaterials();
 
 class MaterialInstance {
 public:
     Material *mat;
-    U32 color;
-    I32 temperature;
-    U32 id = 0;
+    u32 color;
+    i32 temperature;
+    u32 id = 0;
     bool moved = false;
-    F32 fluidAmount = 2.0f;
-    F32 fluidAmountDiff = 0.0f;
-    U8 settleCount = 0;
+    f32 fluidAmount = 2.0f;
+    f32 fluidAmountDiff = 0.0f;
+    u8 settleCount = 0;
 
-    MaterialInstance(Material *mat, U32 color, I32 temperature);
-    MaterialInstance(Material *mat, U32 color) : MaterialInstance(mat, color, 0){};
+    MaterialInstance(Material *mat, u32 color, i32 temperature);
+    MaterialInstance(Material *mat, u32 color) : MaterialInstance(mat, color, 0){};
     MaterialInstance() : MaterialInstance(&MaterialsList::GENERIC_AIR, 0x000000, 0){};
     inline bool operator==(const MaterialInstance &other) { return this->mat->id == other.mat->id; }
 };
@@ -282,10 +282,10 @@ struct ME::meta::static_refl::TypeInfo<MaterialInstance> : TypeInfoBase<Material
     static constexpr FieldList fields = {};
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template <>, MaterialInstance)
+ME_GUI_DEFINE_BEGIN(template <>, MaterialInstance)
 ImGui::Text("MaterialInstance:\n%d", var.id);
 ImGui::Auto(var.mat, "Material");
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
 extern MaterialInstance Tiles_NOTHING;
 extern MaterialInstance Tiles_TEST_SOLID;
@@ -339,9 +339,9 @@ struct ME::meta::static_refl::TypeInfo<EnumPlayerHoldType> : TypeInfoBase<EnumPl
     };
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template <>, EnumPlayerHoldType)
+ME_GUI_DEFINE_BEGIN(template <>, EnumPlayerHoldType)
 ImGui::Text("EnumPlayerHoldType: %s", ME::meta::static_refl::TypeInfo<EnumPlayerHoldType>::fields.NameOfValue(var).data());
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
 class Item {
 public:
@@ -357,10 +357,10 @@ public:
 
     int pivotX = 0;
     int pivotY = 0;
-    F32 breakSize = 16;
+    f32 breakSize = 16;
     std::vector<MaterialInstance> carry;
     std::vector<U16Point> fill;
-    U16 capacity = 0;
+    u16 capacity = 0;
 
     std::vector<CellData *> vacuumCells = {};
 
@@ -380,11 +380,11 @@ struct ME::meta::static_refl::TypeInfo<Item> : TypeInfoBase<Item> {
                                          Field{TSTR("capacity"), &Type::capacity}};
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template <>, Item)
+ME_GUI_DEFINE_BEGIN(template <>, Item)
 ME::meta::static_refl::TypeInfo<Item>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
-using ItemLuaPtr = MetaEngine::Ref<Item>;
+using ItemLuaPtr = ME::ref<Item>;
 
 struct ItemBinding : public LuaWrapper::PodBind::Binding<ItemBinding, Item> {
     static constexpr const char *class_name = "Item";
@@ -394,7 +394,7 @@ struct ItemBinding : public LuaWrapper::PodBind::Binding<ItemBinding, Item> {
         LuaWrapper::PodBind::CheckArgCount(L, 2);
         const char *name = luaL_checkstring(L, 1);
         int age = luaL_checkinteger(L, 2);
-        ItemLuaPtr sp = MetaEngine::CreateRef<Item>();
+        ItemLuaPtr sp = ME::create_ref<Item>();
         push(L, sp);
         return 1;
     }
@@ -458,10 +458,10 @@ struct ME::meta::static_refl::TypeInfo<Biome> : TypeInfoBase<Biome> {
     };
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template <>, Biome)
+ME_GUI_DEFINE_BEGIN(template <>, Biome)
 ImGui::Text("Name: %s", var.name.c_str());
 ImGui::Text("ID: %d", var.id);
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
 struct WorldGenerator {
     virtual void generateChunk(World *world, Chunk *ch) = 0;
@@ -559,7 +559,7 @@ public:
     bool back = false;
     std::list<TPPLPoly> outline;
     std::list<TPPLPoly> outline2;
-    F32 hover = 0;
+    f32 hover = 0;
 
     Item *item = nullptr;
 
@@ -583,7 +583,7 @@ struct ME::meta::static_refl::TypeInfo<RigidBody> : TypeInfoBase<RigidBody> {
     };
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template <>, RigidBody)
+ME_GUI_DEFINE_BEGIN(template <>, RigidBody)
 ImGui::Text("RigidBody: %s", var.name.c_str());
 ImGui::Text("matWidth: %d", var.matWidth);
 ImGui::Text("matHeight: %d", var.matHeight);
@@ -591,9 +591,9 @@ ImGui::Text("weldX: %d", var.weldX);
 ImGui::Text("weldY: %d", var.weldY);
 ImGui::Text("needsUpdate: %s", BOOL_STRING(var.needsUpdate));
 ImGui::Text("texNeedsUpdate: %s", BOOL_STRING(var.texNeedsUpdate));
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
-using RigidBodyPtr = MetaEngine::Ref<RigidBody>;
+using RigidBodyPtr = ME::ref<RigidBody>;
 
 struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, RigidBody> {
     static constexpr const char *class_name = "RigidBody";
@@ -614,7 +614,7 @@ struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, 
         LuaWrapper::PodBind::CheckArgCount(L, 2);
         b2Body *body = (b2Body *)lua_touserdata(L, 1);
         const char *name = luaL_checkstring(L, 2);
-        RigidBodyPtr sp = MetaEngine::CreateRef<RigidBody>(body, name);
+        RigidBodyPtr sp = ME::create_ref<RigidBody>(body, name);
         push(L, sp);
         return 1;
     }
@@ -668,8 +668,8 @@ struct Controlable {};
 class Player {
 public:
     Item *heldItem = nullptr;
-    F32 holdAngle = 0;
-    I64 startThrow = 0;
+    f32 holdAngle = 0;
+    i64 startThrow = 0;
     EnumPlayerHoldType holdtype = None;
     int hammerX = 0;
     int hammerY = 0;
@@ -701,13 +701,13 @@ struct ME::meta::static_refl::TypeInfo<Player> : TypeInfoBase<Player> {
     };
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template <>, Player)
+ME_GUI_DEFINE_BEGIN(template <>, Player)
 ME::meta::static_refl::TypeInfo<Player>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
 struct move_player_event {
-    F32 dt;
-    F32 thruTick;
+    f32 dt;
+    f32 thruTick;
     Game *g;
 };
 

@@ -6,7 +6,7 @@
 #include <functional>
 #include <map>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "game_basic.hpp"
 #include "game_resources.hpp"
 // #include "libs/parallel_hashmap/btree.h"
@@ -28,15 +28,15 @@ typedef union UIElementClass {
     } window;
 
     struct UIElementState_ProgressBar {
-        U8 bar_type;
-        F32 bar_current;
-        F32 bar_limit;
+        u8 bar_type;
+        f32 bar_current;
+        f32 bar_limit;
         ME_Color bar_color;
         ME_Color bar_text_color;
     } progressbar;
 
     struct UIElementState_ListBox {
-        U8 list_type;
+        u8 list_type;
         char** list;
         ME_Color list_bg_color;
         ME_Color list_hover_color;
@@ -69,14 +69,14 @@ typedef struct UIElement {
 
     bool visible = true;
 
-    MetaEngine::Ref<UIElement> parent;
+    ME::ref<UIElement> parent;
 
     UIMovable movable;
     UIResizable resizable;
 
     int x, y, w, h;
 
-    U8 state;
+    u8 state;
     ME_Color color;
     Texture* texture;
     std::string text;
@@ -92,10 +92,10 @@ typedef struct UIElement {
 // static_assert(sizeof(UIElement) == 176);
 
 typedef struct UIData {
-    MetaEngine::Ref<ImGuiLayer> imgui;
+    ME::ref<ImGuiLayer> imgui;
 
     // std::map<std::string, UIElement> elementLists = {};
-    std::map<std::string, MetaEngine::Ref<UIElement>> elementLists = {};
+    std::map<std::string, ME::ref<UIElement>> elementLists = {};
 
     UIElement* oninput = nullptr;
     UIElement* onmoving = nullptr;
@@ -122,8 +122,8 @@ public:
 
     bool UIIsMouseOnControls();
 
-    void DrawPoint(MEvec3 pos, float size, Texture* texture, U8 r, U8 g, U8 b);
-    void DrawLine(MEvec3 min, MEvec3 max, float thickness, U8 r, U8 g, U8 b);
+    void DrawPoint(MEvec3 pos, float size, Texture* texture, u8 r, u8 g, u8 b);
+    void DrawLine(MEvec3 min, MEvec3 max, float thickness, u8 r, u8 g, u8 b);
 };
 
 #endif

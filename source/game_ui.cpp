@@ -7,7 +7,7 @@
 #include <string>
 #include <thread>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/core.hpp"
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
@@ -18,7 +18,7 @@
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "libs/imgui/imgui.h"
-#include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
 #include "ui/imgui/imgui_impl.hpp"
 #include "ui/imgui/imgui_layer.hpp"
@@ -232,7 +232,7 @@ void OptionsUI__DrawAudio(Game *game) {
     //         "World"}};
 
     // for (auto &v : disp) {
-    //     F32 volume = 0;
+    //     f32 volume = 0;
     //     gameUI.OptionsUI__busMap[v[0]]->getVolume(&volume);
     //     volume *= 100;
     //     if (ImGui::SliderFloat(v[1].c_str(), &volume, 0.0f, 100.0f, "%0.0f%%")) {
@@ -255,7 +255,7 @@ void MainMenuUI__RefreshWorlds(Game *game) {
 
         if (worldName == ".DS_Store") continue;
 
-        WorldMeta meta = WorldMeta::loadWorldMeta(METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()));
+        WorldMeta meta = WorldMeta::loadWorldMeta(METADOT_RESLOC(std::format("saves/{0}", worldName).c_str()));
 
         gameUI.MainMenuUI__worlds.push_back(std::make_tuple(worldName, meta));
     }
@@ -403,7 +403,7 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
         std::regex trimWhitespaceRegex("^ *(.+?) *$");
         worldTitle = regex_replace(worldTitle, trimWhitespaceRegex, "$1");
 
-        METADOT_INFO("Creating world named \"%s\" at \"%s\"", worldTitle.c_str(), METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str()));
+        METADOT_INFO("Creating world named \"%s\" at \"%s\"", worldTitle.c_str(), METADOT_RESLOC(std::format("saves/{0}", wn).c_str()));
         gameUI.visible_mainmenu = false;
         LuaWrapper::LuaRef s = Scripting::GetSingletonPtr()->Lua->s_lua["game_datastruct"]["ui"];
         s["state"] = 5;
@@ -423,10 +423,10 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
             generator = new MaterialTestGenerator();
         }
 
-        std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", wn).c_str());
+        std::string wpStr = METADOT_RESLOC(std::format("saves/{0}", wn).c_str());
 
-        game->GameIsolate_.world = MetaEngine::CreateScope<World>();
-        game->GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / 3 / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * 3,
+        game->GameIsolate_.world = ME::create_scope<World>();
+        game->GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / 3 / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3,
                                        Render.target, &global.audio, generator);
         game->GameIsolate_.world->metadata.worldName = std::string(gameUI.MainMenuUI__worldNameBuf);
         game->GameIsolate_.world->metadata.lastOpenedTime = ME_gettime() / 1000;
@@ -463,7 +463,7 @@ void MainMenuUI__inputChanged(std::string text, Game *game) {
     std::regex worldFolderRegex("[\\/\\\\:*?\"<>|.]");
 
     std::string worldFolderName = regex_replace(text, worldFolderRegex, "_");
-    std::string folder = METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldFolderName).c_str());
+    std::string folder = METADOT_RESLOC(std::format("saves/{0}", worldFolderName).c_str());
     struct stat buffer;
     bool exists = (stat(folder.c_str(), &buffer) == 0);
 
@@ -471,7 +471,7 @@ void MainMenuUI__inputChanged(std::string text, Game *game) {
     int i = 2;
     while (exists) {
         newWorldFolderName = worldFolderName + " (" + std::to_string(i) + ")";
-        folder = METADOT_RESLOC(MetaEngine::Format("saves/{0}", newWorldFolderName).c_str());
+        folder = METADOT_RESLOC(std::format("saves/{0}", newWorldFolderName).c_str());
 
         exists = (stat(folder.c_str(), &buffer) == 0);
 
@@ -530,7 +530,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
         snprintf(filenameAndTimestamp, 100, "%s (%d-%02d-%02d %02d:%02d:%02d)", worldName.c_str(), timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour,
                  timeinfo->tm_min, timeinfo->tm_sec);
 
-        if (ImGui::Selectable(MetaEngine::Format("{0}\n{1}", meta.worldName, filenameAndTimestamp).c_str())) {
+        if (ImGui::Selectable(std::format("{0}\n{1}", meta.worldName, filenameAndTimestamp).c_str())) {
             METADOT_INFO("Selected world: %s", worldName.c_str());
 
             gameUI.visible_mainmenu = false;
@@ -544,9 +544,9 @@ void MainMenuUI__DrawWorldLists(Game *game) {
 
                 game->GameIsolate_.world.reset();
 
-                game->GameIsolate_.world = MetaEngine::CreateScope<World>();
-                game->GameIsolate_.world->init(METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
-                                               (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, Render.target, &global.audio);
+                game->GameIsolate_.world = ME::create_scope<World>();
+                game->GameIsolate_.world->init(METADOT_RESLOC(std::format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
+                                               (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, Render.target, &global.audio);
                 game->GameIsolate_.world->metadata.lastOpenedTime = ME_gettime() / 1000;
                 game->GameIsolate_.world->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
                 game->GameIsolate_.world->metadata.save(game->GameIsolate_.world->worldName);
@@ -757,7 +757,7 @@ void DebugDrawUI__Draw(Game *game) {
 
     int width = 5;
 
-    int nRows = ceil(global.GameData_.materials_container.size() / (F32)width);
+    int nRows = ceil(global.GameData_.materials_container.size() / (f32)width);
 
     ImGui::SetNextWindowSize(ImVec2(40 * width + 16 + 20, 70 + 5 * 40));
     ImGui::SetNextWindowPos(ImVec2(15, 25), ImGuiCond_FirstUseEver);

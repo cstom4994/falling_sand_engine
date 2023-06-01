@@ -5,10 +5,9 @@
 
 #include <filesystem>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/macros.hpp"
 #include "core/sdl_wrapper.h"
-#include "core/stl/stl.h"
 
 /*--------------------------------------------------------------------------
  * Platform specific headers
@@ -208,7 +207,7 @@ void metadot_set_VSync(bool vsync);
 void metadot_set_minimize_onlostfocus(bool minimize);
 void metadot_set_windowtitle(const char* title);
 char* metadot_clipboard_get();
-METAENGINE_Result metadot_clipboard_set(const char* string);
+void metadot_clipboard_set(const char* string);
 
 #pragma region strings
 

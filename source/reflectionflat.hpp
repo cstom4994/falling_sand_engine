@@ -6,7 +6,7 @@
 #include <array>
 #include <vector>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/macros.hpp"
 #include "game_basic.hpp"
 

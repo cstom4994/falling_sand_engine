@@ -68,7 +68,7 @@ public:
     static KeyControl *ZOOM_OUT;
     static KeyControl *PAUSE;
 
-    static std::vector<MetaEngine::Ref<KeyControl>> keyControls;
+    static std::vector<ME::ref<KeyControl>> keyControls;
     static std::map<std::string, int> SDLKeymap;
 
     static bool initted;
@@ -78,7 +78,7 @@ public:
     // Register the key binding
     static void InitKey();
     // Add key binding
-    static KeyControl *Add(MetaEngine::Ref<KeyControl> c);
+    static KeyControl *Add(ME::ref<KeyControl> c);
 
     static void InitKeymap();
     static std::string SDLKeyToString(int sdlkey);

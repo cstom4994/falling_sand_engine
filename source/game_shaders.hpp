@@ -23,30 +23,30 @@ public:
 
 class WaterShader : public ShaderBase {
 public:
-    void Update(F32 t, int w, int h, R_Image *maskImg, int mask_x, int mask_y, int mask_w, int mask_h, int scale, R_Image *flowImg, int overlay, bool showFlow, bool pixelated);
+    void Update(f32 t, int w, int h, R_Image *maskImg, int mask_x, int mask_y, int mask_w, int mask_h, int scale, R_Image *flowImg, int overlay, bool showFlow, bool pixelated);
 };
 
 class NewLightingShader : public ShaderBase {
 public:
-    F32 lastLx;
-    F32 lastLy;
-    F32 lastQuality;
-    F32 lastInside;
+    f32 lastLx;
+    f32 lastLy;
+    f32 lastQuality;
+    f32 lastInside;
     bool lastSimpleMode;
     bool lastEmissionEnabled;
     bool lastDitheringEnabled;
 
-    F32 insideDes;
-    F32 insideCur;
+    f32 insideDes;
+    f32 insideCur;
 
     void SetSimpleMode(bool simpleMode);
     void SetEmissionEnabled(bool emissionEnabled);
     void SetDitheringEnabled(bool ditheringEnabled);
-    void SetQuality(F32 quality);
-    void SetInside(F32 inside);
-    void SetBounds(F32 minX, F32 minY, F32 maxX, F32 maxY);
+    void SetQuality(f32 quality);
+    void SetInside(f32 inside);
+    void SetBounds(f32 minX, f32 minY, f32 maxX, f32 maxY);
 
-    void Update(R_Image *tex, R_Image *emit, F32 x, F32 y);
+    void Update(R_Image *tex, R_Image *emit, f32 x, f32 y);
 };
 
 class FireShader : public ShaderBase {

@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "core.h"
+#include "core.hpp"
 
 #define ME_MEM_PLATFORM_WINDOWS
 

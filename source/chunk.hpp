@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "core/const.h"
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/cpp/property.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
@@ -20,9 +20,9 @@
 #define CHUNK_DATABASE_FORMAT "ssiiiiiiiBB"
 
 typedef struct {
-    U16 index;
-    U32 color;
-    I32 temperature;
+    u16 index;
+    u32 color;
+    i32 temperature;
 } MaterialInstanceData;
 template <>
 struct ME::meta::static_refl::TypeInfo<MaterialInstanceData> : TypeInfoBase<MaterialInstanceData> {
@@ -45,13 +45,13 @@ typedef struct Chunk {
     Property<bool> hasMeta;
 
     // in order for a chunk to execute phase generationPhase+1, all surrounding chunks must be at least generationPhase
-    I8 generationPhase = 0;
+    i8 generationPhase = 0;
     bool pleaseDelete = false;
 
     bool hasTileCache = false;
     MaterialInstance *tiles = nullptr;
     MaterialInstance *layer2 = nullptr;
-    U32 *background = nullptr;
+    u32 *background = nullptr;
     std::vector<Biome *> biomes = {nullptr};
     std::vector<b2PolygonShape> polys = {};
     RigidBody *rb = nullptr;
@@ -78,9 +78,9 @@ struct ME::meta::static_refl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
     };
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template <>, b2PolygonShape)
+ME_GUI_DEFINE_BEGIN(template <>, b2PolygonShape)
 ImGui::Auto("b2PolygonShape");
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
 // Initialize a chunk
 void ChunkInit(Chunk *_struct, int x, int y, char *worldName);
@@ -91,7 +91,7 @@ void ChunkLoadMeta(Chunk *_struct);
 
 // static MaterialInstanceData* readBuf;
 void ChunkRead(Chunk *_struct);
-void ChunkWrite(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer2, U32 *background);
+void ChunkWrite(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer2, u32 *background);
 bool ChunkHasFile(Chunk *_struct);
 
 class ChunkReadyToMerge {

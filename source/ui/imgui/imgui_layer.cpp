@@ -13,9 +13,7 @@
 
 #include "audio/audio.h"
 #include "chunk.hpp"
-#include "core/alloc.hpp"
 #include "core/const.h"
-#include "core/core.h"
 #include "core/core.hpp"
 #include "core/cpp/utils.hpp"
 #include "core/dbgtools.h"
@@ -23,6 +21,7 @@
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
 #include "core/macros.hpp"
+#include "core/memory.h"
 #include "core/utils/utility.hpp"
 #include "engine/engine.h"
 #include "game.hpp"
@@ -37,7 +36,7 @@
 #include "reflectionflat.hpp"
 #include "renderer/gpu.hpp"
 #include "renderer/renderer_gpu.h"
-#include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/lua_wrapper.hpp"
 #include "scripting/scripting.hpp"
 #include "ui/imgui/imgui_impl.hpp"
 #include "ui/ui.hpp"
@@ -397,19 +396,31 @@ int ProfilerDrawFrame(ProfilerFrame *_data, void *_buffer, size_t _bufferSize, b
     }
 
     if (ImGui::BeginTabItem("内存")) {
-        ImGui::Text("MaximumMem: %llu mb", Core.max_mem / 1048576);
-        ImGui::Text("MemCurrentUsage: %.2f mb", MemCurrentUsageMB());
-        ImGui::Text("MemTotalAllocated: %.2lf mb", (F64)(g_AllocationMetrics.TotalAllocated / 1048576.0f));
-        ImGui::Text("MemTotalFree: %.2lf mb", (F64)(g_AllocationMetrics.TotalFree / 1048576.0f));
+        ImGui::Text("MemCurrentUsage: %.2f mb", ME_mem_current_usage_mb());
+        ImGui::Text("MemTotalAllocated: %.2lf mb", (f64)(g_allocation_metrics.total_allocated / 1048576.0));
+        ImGui::Text("MemTotalFree: %.2lf mb", (f64)(g_allocation_metrics.total_free / 1048576.0));
+        ImGui::Text("GC MemAllocInUsed: %.2lf mb", (f64)(ME_memory_bytes_inuse() / 1048576.0));
 
-#if defined(METADOT_DEBUG)
-        ImGui::Dummy(ImVec2(0.0f, 10.0f));
-        ImGui::Text("GC:\n");
-        for (auto [name, size] : AllocationMetrics::MemoryDebugMap) {
-            ImGui::Text("%s", MetaEngine::Format("   {0} {1}", name, size).c_str());
-        }
-        // ImGui::Auto(AllocationMetrics::MemoryDebugMap, "map");
-#endif
+#define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
+#define GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX 0x9049
+
+        GLint total_mem_kb = 0;
+        glGetIntegerv(GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX, &total_mem_kb);
+
+        GLint cur_avail_mem_kb = 0;
+        glGetIntegerv(GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX, &cur_avail_mem_kb);
+
+        ImGui::Text("GPU MemTotalAvailable: %.2lf mb", (f64)(cur_avail_mem_kb / 1024.0f));
+        ImGui::Text("GPU MemCurrentUsage: %.2lf mb", (f64)((total_mem_kb - cur_avail_mem_kb) / 1024.0f));
+
+        // #if defined(ME_DEBUG)
+        //         ImGui::Dummy(ImVec2(0.0f, 10.0f));
+        //         ImGui::Text("GC:\n");
+        //         for (auto [name, size] : allocation_metrics::MemoryDebugMap) {
+        //             ImGui::Text("%s", ME::Format("   {0} {1}", name, size).c_str());
+        //         }
+        //         // ImGui::Auto(allocation_metrics::MemoryDebugMap, "map");
+        // #endif
 
         ImGui::EndTabItem();
     }
@@ -703,14 +714,14 @@ static bool firstRun = false;
 ImGUIIMMCommunication imguiIMMCommunication{};
 #endif
 
-static void *ImGuiMalloc(size_t sz, void *user_data) { return gc_malloc(&gc, sz); }
-static void ImGuiFree(void *ptr, void *user_data) { gc_free(&gc, ptr); }
+ME_PRIVATE(void *) ImGuiMalloc(size_t sz, void *user_data) { return ME_MALLOC(sz); }
+ME_PRIVATE(void) ImGuiFree(void *ptr, void *user_data) { ME_FREE(ptr); }
 
 void ImGuiLayer::Init() {
 
     IMGUI_CHECKVERSION();
 
-    // ImGui::SetAllocatorFunctions(ImGuiMalloc, ImGuiFree);
+    ImGui::SetAllocatorFunctions(ImGuiMalloc, ImGuiFree);
 
     m_imgui = ImGui::CreateContext();
 
@@ -728,7 +739,7 @@ void ImGuiLayer::Init() {
     config.OversampleV = 1;
     config.PixelSnapH = 1;
 
-    F32 scale = 1.0f;
+    f32 scale = 1.0f;
 
     io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fusion-pixel.ttf"), 12.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
 
@@ -846,12 +857,12 @@ void ImGuiLayer::Init() {
     //    // Register variables
     //    console_imgui->System().RegisterVariable("background_color", clear_color, imvec4_setter);
 
-    //    console_imgui->System().RegisterVariable("plPosX", global.GameData_.plPosX, Command::Arg<F32>(""));
-    //    console_imgui->System().RegisterVariable("plPosY", global.GameData_.plPosY, Command::Arg<F32>(""));
+    //    console_imgui->System().RegisterVariable("plPosX", global.GameData_.plPosX, Command::Arg<f32>(""));
+    //    console_imgui->System().RegisterVariable("plPosY", global.GameData_.plPosY, Command::Arg<f32>(""));
 
-    //    console_imgui->System().RegisterVariable("scale", Screen.gameScale, Command::Arg<I32>(""));
+    //    console_imgui->System().RegisterVariable("scale", Screen.gameScale, Command::Arg<i32>(""));
 
-    //    MetaEngine::Struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>("")); });
+    //    ME::Struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>("")); });
 
     //    // Register custom commands
     //    console_imgui->System().RegisterCommand("random_background_color", "Assigns a random color to the background application", [&clear_color]() {
@@ -875,7 +886,7 @@ void ImGuiLayer::Init() {
     //            },
     //            Command::Arg<String>(""));
 
-    //    console_imgui->System().RegisterVariable("tps", Time.maxTps, Command::Arg<U32>(""));
+    //    console_imgui->System().RegisterVariable("tps", Time.maxTps, Command::Arg<u32>(""));
 
     //    console_imgui->System().Log(Command::ItemType::INFO) << "游戏控制终端" << Command::endl;
     //};
@@ -1032,28 +1043,28 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                 ImGui::Separator();
 
-                MarkdownData TickInfoPanel;
-                TickInfoPanel.data = R"(
-Info &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Data &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Comments &nbsp;
-:-----------|:------------|:--------
-TickCount | {0} | Nothing
-DeltaTime | {1} | Nothing
-TPS | {2} | Nothing
-Mspt | {3} | Nothing
-Delta | {4} | Nothing
-STDTime | {5} | Nothing
-CSTDTime | {6} | Nothing)";
+                //                MarkdownData TickInfoPanel;
+                //                TickInfoPanel.data = R"(
+                // Info &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Data &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Comments &nbsp;
+                //:-----------|:------------|:--------
+                // TickCount | {0} | Nothing
+                // DeltaTime | {1} | Nothing
+                // TPS | {2} | Nothing
+                // Mspt | {3} | Nothing
+                // Delta | {4} | Nothing
+                // STDTime | {5} | Nothing
+                // CSTDTime | {6} | Nothing)";
+                //
+                //                 time_t rawtime;
+                //                 rawtime = time(NULL);
+                //                 struct tm *timeinfo = localtime(&rawtime);
+                //
+                //                 TickInfoPanel.data = std::format(TickInfoPanel.data, Time.tickCount, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTickTime, ME_gettime(), rawtime);
+                //
+                //                 ImGui::Auto(TickInfoPanel);
 
-                time_t rawtime;
-                rawtime = time(NULL);
-                struct tm *timeinfo = localtime(&rawtime);
-
-                TickInfoPanel.data = MetaEngine::Format(TickInfoPanel.data, Time.tickCount, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTickTime, ME_gettime(), rawtime);
-
-                ImGui::Auto(TickInfoPanel);
-
-                ImGui::Text("\nnow: %d-%02d-%02d %02d:%02d:%02d", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-                // ImGui::Text("_curID %d", MaterialInstance::_curID);
+                // ImGui::Text("\nnow: %d-%02d-%02d %02d:%02d:%02d", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+                //  ImGui::Text("_curID %d", MaterialInstance::_curID);
 
                 ImGui::Dummy(ImVec2(0.0f, 20.0f));
 
@@ -1092,12 +1103,12 @@ CSTDTime | {6} | Nothing)";
                     ImGui::SameLine();
                     if (ImGui::Button("Audio")) {
                         play ^= true;
-                        static METAENGINE_Audio *test_audio = metadot_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
+                        static ME_Audio *test_audio = metadot_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
                         if (play) {
                             ME_ASSERT_E(test_audio);
                             // metadot_music_play(test_audio, 0.f);
                             // metadot_audio_destroy(test_audio);
-                            METAENGINE_Result err;
+                            int err;
                             metadot_play_sound(test_audio, metadot_sound_params_defaults(), &err);
                         } else {
                             MetaEngine::audio_set_pause(false);
@@ -1317,7 +1328,7 @@ CSTDTime | {6} | Nothing)";
 
                     ImGui::TableHeadersRow();
 
-                    // MetaEngine::Struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value,
+                    // ME::Struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value,
                     // Command::Arg<int>(""));
                     // });
                     int i = 0;
@@ -1495,7 +1506,7 @@ CSTDTime | {6} | Nothing)";
                     }
                 };
 
-                MetaEngine::Struct::for_each(global.game->GameIsolate_.globaldef, ShowCVar);
+                ME::Struct::for_each(global.game->GameIsolate_.globaldef, ShowCVar);
 
                 ImGui::EndTable();
             }

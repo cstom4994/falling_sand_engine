@@ -6,84 +6,84 @@
 #undef STB_VORBIS_HEADER_ONLY
 #include "libs/external/stb_vorbis.c"
 
-#ifndef METAENGINE_SOUND_MINIMUM_BUFFERED_SAMPLES
-#define METAENGINE_SOUND_MINIMUM_BUFFERED_SAMPLES 1024
+#ifndef ME_SOUND_MINIMUM_BUFFERED_SAMPLES
+#define ME_SOUND_MINIMUM_BUFFERED_SAMPLES 1024
 #endif
 
-#if !defined(METAENGINE_SOUND_ASSERT)
+#if !defined(ME_SOUND_ASSERT)
 #include <assert.h>
-#define METAENGINE_SOUND_ASSERT assert
+#define ME_SOUND_ASSERT assert
 #endif
 
-#if !defined(METAENGINE_SOUND_ALLOC)
+#if !defined(ME_SOUND_ALLOC)
 #include <stdlib.h>
-#define METAENGINE_SOUND_ALLOC(size, ctx) malloc(size)
+#define ME_SOUND_ALLOC(size, ctx) malloc(size)
 #endif
 
-#if !defined(METAENGINE_SOUND_FREE)
+#if !defined(ME_SOUND_FREE)
 #include <stdlib.h>
-#define METAENGINE_SOUND_FREE(mem, ctx) free(mem)
+#define ME_SOUND_FREE(mem, ctx) free(mem)
 #endif
 
-#ifndef METAENGINE_SOUND_MEMCPY
+#ifndef ME_SOUND_MEMCPY
 #include <string.h>
-#define METAENGINE_SOUND_MEMCPY memcpy
+#define ME_SOUND_MEMCPY memcpy
 #endif
 
-#ifndef METAENGINE_SOUND_MEMSET
+#ifndef ME_SOUND_MEMSET
 #include <string.h>
-#define METAENGINE_SOUND_MEMSET memset
+#define ME_SOUND_MEMSET memset
 #endif
 
-#ifndef METAENGINE_SOUND_MEMCMP
+#ifndef ME_SOUND_MEMCMP
 #include <string.h>
-#define METAENGINE_SOUND_MEMCMP memcmp
+#define ME_SOUND_MEMCMP memcmp
 #endif
 
-#ifndef METAENGINE_SOUND_SEEK_SET
+#ifndef ME_SOUND_SEEK_SET
 #include <stdio.h>
-#define METAENGINE_SOUND_SEEK_SET SEEK_SET
+#define ME_SOUND_SEEK_SET SEEK_SET
 #endif
 
-#ifndef METAENGINE_SOUND_SEEK_END
+#ifndef ME_SOUND_SEEK_END
 #include <stdio.h>
-#define METAENGINE_SOUND_SEEK_END SEEK_END
+#define ME_SOUND_SEEK_END SEEK_END
 #endif
 
-#ifndef METAENGINE_SOUND_FILE
+#ifndef ME_SOUND_FILE
 #include <stdio.h>
-#define METAENGINE_SOUND_FILE FILE
+#define ME_SOUND_FILE FILE
 #endif
 
-#ifndef METAENGINE_SOUND_FOPEN
+#ifndef ME_SOUND_FOPEN
 #include <stdio.h>
-#define METAENGINE_SOUND_FOPEN fopen
+#define ME_SOUND_FOPEN fopen
 #endif
 
-#ifndef METAENGINE_SOUND_FSEEK
+#ifndef ME_SOUND_FSEEK
 #include <stdio.h>
-#define METAENGINE_SOUND_FSEEK fseek
+#define ME_SOUND_FSEEK fseek
 #endif
 
-#ifndef METAENGINE_SOUND_FREAD
+#ifndef ME_SOUND_FREAD
 #include <stdio.h>
-#define METAENGINE_SOUND_FREAD fread
+#define ME_SOUND_FREAD fread
 #endif
 
-#ifndef METAENGINE_SOUND_FTELL
+#ifndef ME_SOUND_FTELL
 #include <stdio.h>
-#define METAENGINE_SOUND_FTELL ftell
+#define ME_SOUND_FTELL ftell
 #endif
 
-#ifndef METAENGINE_SOUND_FCLOSE
+#ifndef ME_SOUND_FCLOSE
 #include <stdio.h>
-#define METAENGINE_SOUND_FCLOSE fclose
+#define ME_SOUND_FCLOSE fclose
 #endif
 
 // Platform detection.
-#define METAENGINE_SOUND_WINDOWS 1
-#define METAENGINE_SOUND_APPLE 2
-#define METAENGINE_SOUND_SDL 3
+#define ME_SOUND_WINDOWS 1
+#define ME_SOUND_APPLE 2
+#define ME_SOUND_SDL 3
 
 #if defined(_WIN32)
 
@@ -95,29 +95,29 @@
 #define _CRT_NONSTDC_NO_DEPRECATE
 #endif
 
-#define METAENGINE_SOUND_PLATFORM METAENGINE_SOUND_WINDOWS
+#define ME_SOUND_PLATFORM ME_SOUND_WINDOWS
 
 #elif defined(__APPLE__)
 
-#define METAENGINE_SOUND_PLATFORM METAENGINE_SOUND_APPLE
+#define ME_SOUND_PLATFORM ME_SOUND_APPLE
 
 #else
 
 // Just use SDL on other esoteric platforms.
-#define METAENGINE_SOUND_PLATFORM METAENGINE_SOUND_SDL
+#define ME_SOUND_PLATFORM ME_SOUND_SDL
 
 #endif
 
-// Use METAENGINE_SOUND_FORCE_SDL to override the above macros and use the SDL port.
-#ifdef METAENGINE_SOUND_FORCE_SDL
+// Use ME_SOUND_FORCE_SDL to override the above macros and use the SDL port.
+#ifdef ME_SOUND_FORCE_SDL
 
-#undef METAENGINE_SOUND_PLATFORM
-#define METAENGINE_SOUND_PLATFORM METAENGINE_SOUND_SDL
+#undef ME_SOUND_PLATFORM
+#define ME_SOUND_PLATFORM ME_SOUND_SDL
 
 #endif
 
 // Platform specific file inclusions.
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#if ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
 
 #ifndef _WINDOWS_
 #ifndef WIN32_LEAN_AND_MEAN
@@ -138,14 +138,14 @@
 #pragma comment(lib, "dsound.lib")
 #endif
 
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_APPLE
+#elif ME_SOUND_PLATFORM == ME_SOUND_APPLE
 
 #include <AudioUnit/AudioUnit.h>
 #include <CoreAudio/CoreAudio.h>
 #include <mach/mach_time.h>
 #include <pthread.h>
 
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
+#elif ME_SOUND_PLATFORM == ME_SOUND_SDL
 
 #ifndef SDL_h_
 #include <SDL.h>
@@ -156,15 +156,15 @@
 
 #else
 
-#error Unsupported platform - please choose one of METAENGINE_SOUND_WINDOWS, METAENGINE_SOUND_APPLE, METAENGINE_SOUND_SDL.
+#error Unsupported platform - please choose one of ME_SOUND_WINDOWS, ME_SOUND_APPLE, ME_SOUND_SDL.
 
 #endif
 
-#ifdef METAENGINE_SOUND_SCALAR_MODE
+#ifdef ME_SOUND_SCALAR_MODE
 
 #include <limits.h>
 
-#define METAENGINE_SOUND_SATURATE16(X) (int16_t)((X) > SHRT_MAX ? SHRT_MAX : ((X) < SHRT_MIN ? SHRT_MIN : (X)))
+#define ME_SOUND_SATURATE16(X) (int16_t)((X) > SHRT_MAX ? SHRT_MAX : ((X) < SHRT_MIN ? SHRT_MIN : (X)))
 
 typedef struct cs__m128 {
     float a, b, c, d;
@@ -251,18 +251,18 @@ cs__m128i cs_mm_packs_epi32(cs__m128i a, cs__m128i b) {
         int16_t c[8];
         cs__m128i m;
     } dst;
-    dst.c[0] = METAENGINE_SOUND_SATURATE16(a.a);
-    dst.c[1] = METAENGINE_SOUND_SATURATE16(a.b);
-    dst.c[2] = METAENGINE_SOUND_SATURATE16(a.c);
-    dst.c[3] = METAENGINE_SOUND_SATURATE16(a.d);
-    dst.c[4] = METAENGINE_SOUND_SATURATE16(b.a);
-    dst.c[5] = METAENGINE_SOUND_SATURATE16(b.b);
-    dst.c[6] = METAENGINE_SOUND_SATURATE16(b.c);
-    dst.c[7] = METAENGINE_SOUND_SATURATE16(b.d);
+    dst.c[0] = ME_SOUND_SATURATE16(a.a);
+    dst.c[1] = ME_SOUND_SATURATE16(a.b);
+    dst.c[2] = ME_SOUND_SATURATE16(a.c);
+    dst.c[3] = ME_SOUND_SATURATE16(a.d);
+    dst.c[4] = ME_SOUND_SATURATE16(b.a);
+    dst.c[5] = ME_SOUND_SATURATE16(b.b);
+    dst.c[6] = ME_SOUND_SATURATE16(b.c);
+    dst.c[7] = ME_SOUND_SATURATE16(b.d);
     return dst.m;
 }
 
-#else  // METAENGINE_SOUND_SCALAR_MODE
+#else  // ME_SOUND_SCALAR_MODE
 
 #ifdef __METADOT_ARCH_ARM
 #include "libs/sse2neon.h"
@@ -284,10 +284,10 @@ cs__m128i cs_mm_packs_epi32(cs__m128i a, cs__m128i b) {
 #define cs_mm_unpackhi_epi32 _mm_unpackhi_epi32
 #define cs_mm_packs_epi32 _mm_packs_epi32
 
-#endif  // METAENGINE_SOUND_SCALAR_MODE
+#endif  // ME_SOUND_SCALAR_MODE
 
-#define METAENGINE_SOUND_ALIGN(X, Y) ((((size_t)X) + ((Y)-1)) & ~((Y)-1))
-#define METAENGINE_SOUND_TRUNC(X, Y) ((size_t)(X) & ~((Y)-1))
+#define ME_SOUND_ALIGN(X, Y) ((((size_t)X) + ((Y)-1)) & ~((Y)-1))
+#define ME_SOUND_TRUNC(X, Y) ((size_t)(X) & ~((Y)-1))
 
 // -------------------------------------------------------------------------------------------------
 // hashtable.h implementation by Mattias Gustavsson
@@ -295,19 +295,19 @@ cs__m128i cs_mm_packs_epi32(cs__m128i a, cs__m128i b) {
 // begin hashtable.h
 
 #ifndef HASHTABLE_MEMSET
-#define HASHTABLE_MEMSET(ptr, val, n) METAENGINE_SOUND_MEMSET(ptr, val, n)
+#define HASHTABLE_MEMSET(ptr, val, n) ME_SOUND_MEMSET(ptr, val, n)
 #endif
 
 #ifndef HASHTABLE_MEMCPY
-#define HASHTABLE_MEMCPY(dst, src, n) METAENGINE_SOUND_MEMCPY(dst, src, n)
+#define HASHTABLE_MEMCPY(dst, src, n) ME_SOUND_MEMCPY(dst, src, n)
 #endif
 
 #ifndef HASHTABLE_MALLOC
-#define HASHTABLE_MALLOC(ctx, size) METAENGINE_SOUND_ALLOC(size, ctx)
+#define HASHTABLE_MALLOC(ctx, size) ME_SOUND_ALLOC(size, ctx)
 #endif
 
 #ifndef HASHTABLE_FREE
-#define HASHTABLE_FREE(ctx, ptr) METAENGINE_SOUND_FREE(ptr, ctx)
+#define HASHTABLE_FREE(ctx, ptr) ME_SOUND_FREE(ptr, ctx)
 #endif
 
 #define HASHTABLE_IMPLEMENTATION
@@ -641,9 +641,9 @@ typedef struct cs_list_t {
     cs_list_node_t nodes;
 } cs_list_t;
 
-#define METAENGINE_SOUND_OFFSET_OF(T, member) ((size_t)((uintptr_t)(&(((T*)0)->member))))
-#define METAENGINE_SOUND_LIST_NODE(T, member, ptr) ((cs_list_node_t*)((uintptr_t)ptr + METAENGINE_SOUND_OFFSET_OF(T, member)))
-#define METAENGINE_SOUND_LIST_HOST(T, member, ptr) ((T*)((uintptr_t)ptr - METAENGINE_SOUND_OFFSET_OF(T, member)))
+#define ME_SOUND_OFFSET_OF(T, member) ((size_t)((uintptr_t)(&(((T*)0)->member))))
+#define ME_SOUND_LIST_NODE(T, member, ptr) ((cs_list_node_t*)((uintptr_t)ptr + ME_SOUND_OFFSET_OF(T, member)))
+#define ME_SOUND_LIST_HOST(T, member, ptr) ((T*)((uintptr_t)ptr - ME_SOUND_OFFSET_OF(T, member)))
 
 void cs_list_init_node(cs_list_node_t* node) {
     node->next = node;
@@ -698,62 +698,62 @@ cs_list_node_t* cs_list_back(cs_list_t* list) { return list->nodes.prev; }
 
 const char* cs_error_as_string(cs_error_t error) {
     switch (error) {
-        case METAENGINE_SOUND_ERROR_NONE:
-            return "METAENGINE_SOUND_ERROR_NONE";
-        case METAENGINE_SOUND_ERROR_IMPLEMENTATION_ERROR_PLEASE_REPORT_THIS_ON_GITHUB:
-            return "METAENGINE_SOUND_ERROR_IMPLEMENTATION_ERROR_PLEASE_REPORT_THIS_ON_GITHUB";
-        case METAENGINE_SOUND_ERROR_FILE_NOT_FOUND:
-            return "METAENGINE_SOUND_ERROR_FILE_NOT_FOUND";
-        case METAENGINE_SOUND_ERROR_INVALID_SOUND:
-            return "METAENGINE_SOUND_ERROR_INVALID_SOUND";
-        case METAENGINE_SOUND_ERROR_HWND_IS_NULL:
-            return "METAENGINE_SOUND_ERROR_HWND_IS_NULL";
-        case METAENGINE_SOUND_ERROR_DIRECTSOUND_CREATE_FAILED:
-            return "METAENGINE_SOUND_ERROR_DIRECTSOUND_CREATE_FAILED";
-        case METAENGINE_SOUND_ERROR_CREATESOUNDBUFFER_FAILED:
-            return "METAENGINE_SOUND_ERROR_CREATESOUNDBUFFER_FAILED";
-        case METAENGINE_SOUND_ERROR_SETFORMAT_FAILED:
-            return "METAENGINE_SOUND_ERROR_SETFORMAT_FAILED";
-        case METAENGINE_SOUND_ERROR_AUDIOCOMPONENTFINDNEXT_FAILED:
-            return "METAENGINE_SOUND_ERROR_AUDIOCOMPONENTFINDNEXT_FAILED";
-        case METAENGINE_SOUND_ERROR_AUDIOCOMPONENTINSTANCENEW_FAILED:
-            return "METAENGINE_SOUND_ERROR_AUDIOCOMPONENTINSTANCENEW_FAILED";
-        case METAENGINE_SOUND_ERROR_FAILED_TO_SET_STREAM_FORMAT:
-            return "METAENGINE_SOUND_ERROR_FAILED_TO_SET_STREAM_FORMAT";
-        case METAENGINE_SOUND_ERROR_FAILED_TO_SET_RENDER_CALLBACK:
-            return "METAENGINE_SOUND_ERROR_FAILED_TO_SET_RENDER_CALLBACK";
-        case METAENGINE_SOUND_ERROR_AUDIOUNITINITIALIZE_FAILED:
-            return "METAENGINE_SOUND_ERROR_AUDIOUNITINITIALIZE_FAILED";
-        case METAENGINE_SOUND_ERROR_AUDIOUNITSTART_FAILED:
-            return "METAENGINE_SOUND_ERROR_AUDIOUNITSTART_FAILED";
-        case METAENGINE_SOUND_ERROR_CANT_OPEN_AUDIO_DEVICE:
-            return "METAENGINE_SOUND_ERROR_CANT_OPEN_AUDIO_DEVICE";
-        case METAENGINE_SOUND_ERROR_CANT_INIT_SDL_AUDIO:
-            return "METAENGINE_SOUND_ERROR_CANT_INIT_SDL_AUDIO";
-        case METAENGINE_SOUND_ERROR_THE_FILE_IS_NOT_A_WAV_FILE:
-            return "METAENGINE_SOUND_ERROR_THE_FILE_IS_NOT_A_WAV_FILE";
-        case METAENGINE_SOUND_ERROR_WAV_FILE_FORMAT_CHUNK_NOT_FOUND:
-            return "METAENGINE_SOUND_ERROR_WAV_FILE_FORMAT_CHUNK_NOT_FOUND";
-        case METAENGINE_SOUND_ERROR_WAV_DATA_CHUNK_NOT_FOUND:
-            return "METAENGINE_SOUND_ERROR_WAV_DATA_CHUNK_NOT_FOUND";
-        case METAENGINE_SOUND_ERROR_ONLY_PCM_WAV_FILES_ARE_SUPPORTED:
-            return "METAENGINE_SOUND_ERROR_ONLY_PCM_WAV_FILES_ARE_SUPPORTED";
-        case METAENGINE_SOUND_ERROR_WAV_ONLY_MONO_OR_STEREO_IS_SUPPORTED:
-            return "METAENGINE_SOUND_ERROR_WAV_ONLY_MONO_OR_STEREO_IS_SUPPORTED";
-        case METAENGINE_SOUND_ERROR_WAV_ONLY_16_BITS_PER_SAMPLE_SUPPORTED:
-            return "METAENGINE_SOUND_ERROR_WAV_ONLY_16_BITS_PER_SAMPLE_SUPPORTED";
-        case METAENGINE_SOUND_ERROR_CANNOT_SWITCH_MUSIC_WHILE_PAUSED:
-            return "METAENGINE_SOUND_ERROR_CANNOT_SWITCH_MUSIC_WHILE_PAUSED";
-        case METAENGINE_SOUND_ERROR_CANNOT_CROSSFADE_WHILE_MUSIC_IS_PAUSED:
-            return "METAENGINE_SOUND_ERROR_CANNOT_CROSSFADE_WHILE_MUSIC_IS_PAUSED";
-        case METAENGINE_SOUND_ERROR_CANNOT_FADEOUT_WHILE_MUSIC_IS_PAUSED:
-            return "METAENGINE_SOUND_ERROR_CANNOT_FADEOUT_WHILE_MUSIC_IS_PAUSED";
-        case METAENGINE_SOUND_ERROR_TRIED_TO_SET_SAMPLE_INDEX_BEYOND_THE_AUDIO_SOURCES_SAMPLE_COUNT:
-            return "METAENGINE_SOUND_ERROR_TRIED_TO_SET_SAMPLE_INDEX_BEYOND_THE_AUDIO_SOURCES_SAMPLE_COUNT";
-        case METAENGINE_SOUND_ERROR_STB_VORBIS_DECODE_FAILED:
-            return "METAENGINE_SOUND_ERROR_STB_VORBIS_DECODE_FAILED";
-        case METAENGINE_SOUND_ERROR_OGG_UNSUPPORTED_CHANNEL_COUNT:
-            return "METAENGINE_SOUND_ERROR_OGG_UNSUPPORTED_CHANNEL_COUN";
+        case ME_SOUND_ERROR_NONE:
+            return "ME_SOUND_ERROR_NONE";
+        case ME_SOUND_ERROR_IMPLEMENTATION_ERROR_PLEASE_REPORT_THIS_ON_GITHUB:
+            return "ME_SOUND_ERROR_IMPLEMENTATION_ERROR_PLEASE_REPORT_THIS_ON_GITHUB";
+        case ME_SOUND_ERROR_FILE_NOT_FOUND:
+            return "ME_SOUND_ERROR_FILE_NOT_FOUND";
+        case ME_SOUND_ERROR_INVALID_SOUND:
+            return "ME_SOUND_ERROR_INVALID_SOUND";
+        case ME_SOUND_ERROR_HWND_IS_NULL:
+            return "ME_SOUND_ERROR_HWND_IS_NULL";
+        case ME_SOUND_ERROR_DIRECTSOUND_CREATE_FAILED:
+            return "ME_SOUND_ERROR_DIRECTSOUND_CREATE_FAILED";
+        case ME_SOUND_ERROR_CREATESOUNDBUFFER_FAILED:
+            return "ME_SOUND_ERROR_CREATESOUNDBUFFER_FAILED";
+        case ME_SOUND_ERROR_SETFORMAT_FAILED:
+            return "ME_SOUND_ERROR_SETFORMAT_FAILED";
+        case ME_SOUND_ERROR_AUDIOCOMPONENTFINDNEXT_FAILED:
+            return "ME_SOUND_ERROR_AUDIOCOMPONENTFINDNEXT_FAILED";
+        case ME_SOUND_ERROR_AUDIOCOMPONENTINSTANCENEW_FAILED:
+            return "ME_SOUND_ERROR_AUDIOCOMPONENTINSTANCENEW_FAILED";
+        case ME_SOUND_ERROR_FAILED_TO_SET_STREAM_FORMAT:
+            return "ME_SOUND_ERROR_FAILED_TO_SET_STREAM_FORMAT";
+        case ME_SOUND_ERROR_FAILED_TO_SET_RENDER_CALLBACK:
+            return "ME_SOUND_ERROR_FAILED_TO_SET_RENDER_CALLBACK";
+        case ME_SOUND_ERROR_AUDIOUNITINITIALIZE_FAILED:
+            return "ME_SOUND_ERROR_AUDIOUNITINITIALIZE_FAILED";
+        case ME_SOUND_ERROR_AUDIOUNITSTART_FAILED:
+            return "ME_SOUND_ERROR_AUDIOUNITSTART_FAILED";
+        case ME_SOUND_ERROR_CANT_OPEN_AUDIO_DEVICE:
+            return "ME_SOUND_ERROR_CANT_OPEN_AUDIO_DEVICE";
+        case ME_SOUND_ERROR_CANT_INIT_SDL_AUDIO:
+            return "ME_SOUND_ERROR_CANT_INIT_SDL_AUDIO";
+        case ME_SOUND_ERROR_THE_FILE_IS_NOT_A_WAV_FILE:
+            return "ME_SOUND_ERROR_THE_FILE_IS_NOT_A_WAV_FILE";
+        case ME_SOUND_ERROR_WAV_FILE_FORMAT_CHUNK_NOT_FOUND:
+            return "ME_SOUND_ERROR_WAV_FILE_FORMAT_CHUNK_NOT_FOUND";
+        case ME_SOUND_ERROR_WAV_DATA_CHUNK_NOT_FOUND:
+            return "ME_SOUND_ERROR_WAV_DATA_CHUNK_NOT_FOUND";
+        case ME_SOUND_ERROR_ONLY_PCM_WAV_FILES_ARE_SUPPORTED:
+            return "ME_SOUND_ERROR_ONLY_PCM_WAV_FILES_ARE_SUPPORTED";
+        case ME_SOUND_ERROR_WAV_ONLY_MONO_OR_STEREO_IS_SUPPORTED:
+            return "ME_SOUND_ERROR_WAV_ONLY_MONO_OR_STEREO_IS_SUPPORTED";
+        case ME_SOUND_ERROR_WAV_ONLY_16_BITS_PER_SAMPLE_SUPPORTED:
+            return "ME_SOUND_ERROR_WAV_ONLY_16_BITS_PER_SAMPLE_SUPPORTED";
+        case ME_SOUND_ERROR_CANNOT_SWITCH_MUSIC_WHILE_PAUSED:
+            return "ME_SOUND_ERROR_CANNOT_SWITCH_MUSIC_WHILE_PAUSED";
+        case ME_SOUND_ERROR_CANNOT_CROSSFADE_WHILE_MUSIC_IS_PAUSED:
+            return "ME_SOUND_ERROR_CANNOT_CROSSFADE_WHILE_MUSIC_IS_PAUSED";
+        case ME_SOUND_ERROR_CANNOT_FADEOUT_WHILE_MUSIC_IS_PAUSED:
+            return "ME_SOUND_ERROR_CANNOT_FADEOUT_WHILE_MUSIC_IS_PAUSED";
+        case ME_SOUND_ERROR_TRIED_TO_SET_SAMPLE_INDEX_BEYOND_THE_AUDIO_SOURCES_SAMPLE_COUNT:
+            return "ME_SOUND_ERROR_TRIED_TO_SET_SAMPLE_INDEX_BEYOND_THE_AUDIO_SOURCES_SAMPLE_COUNT";
+        case ME_SOUND_ERROR_STB_VORBIS_DECODE_FAILED:
+            return "ME_SOUND_ERROR_STB_VORBIS_DECODE_FAILED";
+        case ME_SOUND_ERROR_OGG_UNSUPPORTED_CHANNEL_COUNT:
+            return "ME_SOUND_ERROR_OGG_UNSUPPORTED_CHANNEL_COUN";
         default:
             return "UNKNOWN";
     }
@@ -792,21 +792,21 @@ typedef struct cs_sound_inst_t {
 } cs_sound_inst_t;
 
 typedef enum cs_music_state_t {
-    METAENGINE_SOUND_MUSIC_STATE_NONE,
-    METAENGINE_SOUND_MUSIC_STATE_PLAYING,
-    METAENGINE_SOUND_MUSIC_STATE_FADE_OUT,
-    METAENGINE_SOUND_MUSIC_STATE_FADE_IN,
-    METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_0,
-    METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_1,
-    METAENGINE_SOUND_MUSIC_STATE_CROSSFADE,
-    METAENGINE_SOUND_MUSIC_STATE_PAUSED
+    ME_SOUND_MUSIC_STATE_NONE,
+    ME_SOUND_MUSIC_STATE_PLAYING,
+    ME_SOUND_MUSIC_STATE_FADE_OUT,
+    ME_SOUND_MUSIC_STATE_FADE_IN,
+    ME_SOUND_MUSIC_STATE_SWITCH_TO_0,
+    ME_SOUND_MUSIC_STATE_SWITCH_TO_1,
+    ME_SOUND_MUSIC_STATE_CROSSFADE,
+    ME_SOUND_MUSIC_STATE_PAUSED
 } cs_music_state_t;
 
-#define METAENGINE_SOUND_PAGE_INSTANCE_COUNT 1024
+#define ME_SOUND_PAGE_INSTANCE_COUNT 1024
 
 typedef struct cs_inst_page_t {
     struct cs_inst_page_t* next;
-    cs_sound_inst_t instances[METAENGINE_SOUND_PAGE_INSTANCE_COUNT];
+    cs_sound_inst_t instances[ME_SOUND_PAGE_INSTANCE_COUNT];
 } cs_inst_page_t;
 
 typedef struct cs_context_t {
@@ -847,7 +847,7 @@ typedef struct cs_context_t {
     bool running;
     int sleep_milliseconds;
 
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#if ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
 
     DWORD last_cursor;
     unsigned running_index;
@@ -859,7 +859,7 @@ typedef struct cs_context_t {
     // data for cs_mix thread, enable these with cs_spawn_mix_thread
     CRITICAL_SECTION critical_section;
 
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_APPLE
+#elif ME_SOUND_PLATFORM == ME_SOUND_APPLE
 
     unsigned index0;  // read
     unsigned index1;  // write
@@ -873,7 +873,7 @@ typedef struct cs_context_t {
     pthread_t thread;
     pthread_mutex_t mutex;
 
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
+#elif ME_SOUND_PLATFORM == ME_SOUND_SDL
 
     unsigned index0;  // read
     unsigned index1;  // write
@@ -891,34 +891,34 @@ typedef struct cs_context_t {
 cs_context_t* s_ctx = NULL;
 
 void cs_sleep(int milliseconds) {
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#if ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
     Sleep(milliseconds);
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_APPLE
+#elif ME_SOUND_PLATFORM == ME_SOUND_APPLE
     struct timespec ts = {0, milliseconds * 1000000};
     nanosleep(&ts, NULL);
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
+#elif ME_SOUND_PLATFORM == ME_SOUND_SDL
     SDL_Delay(milliseconds);
 #endif
 }
 
 static void* cs_malloc16(size_t size, void* mem_ctx) {
     (void)mem_ctx;
-    void* p = METAENGINE_SOUND_ALLOC(size + 16, mem_ctx);
+    void* p = ME_SOUND_ALLOC(size + 16, mem_ctx);
     if (!p) return 0;
     unsigned char offset = (size_t)p & 15;
-    p = (void*)METAENGINE_SOUND_ALIGN(p + 1, 16);
+    p = (void*)ME_SOUND_ALIGN(p + 1, 16);
     *((char*)p - 1) = 16 - offset;
-    METAENGINE_SOUND_ASSERT(!((size_t)p & 15));
+    ME_SOUND_ASSERT(!((size_t)p & 15));
     return p;
 }
 
 static void cs_free16(void* p, void* mem_ctx) {
     (void)mem_ctx;
     if (!p) return;
-    METAENGINE_SOUND_FREE((char*)p - (((size_t) * ((char*)p - 1)) & 0xFF), NULL);
+    ME_SOUND_FREE((char*)p - (((size_t) * ((char*)p - 1)) & 0xFF), NULL);
 }
 
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL || METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_APPLE
+#if ME_SOUND_PLATFORM == ME_SOUND_SDL || ME_SOUND_PLATFORM == ME_SOUND_APPLE
 
 static int cs_samples_written() { return s_ctx->samples_in_circular_buffer; }
 
@@ -928,7 +928,7 @@ static int cs_samples_to_mix() {
     int lat = s_ctx->latency_samples;
     int written = cs_samples_written();
     int dif = lat - written;
-    METAENGINE_SOUND_ASSERT(dif >= 0);
+    ME_SOUND_ASSERT(dif >= 0);
     if (dif) {
         int unwritten = cs_samples_unwritten();
         return dif < unwritten ? dif : unwritten;
@@ -936,12 +936,12 @@ static int cs_samples_to_mix() {
     return 0;
 }
 
-#define METAENGINE_SOUND_SAMPLES_TO_BYTES(interleaved_sample_count) ((interleaved_sample_count)*s_ctx->bps)
-#define METAENGINE_SOUND_BYTES_TO_SAMPLES(byte_count) ((byte_count) / s_ctx->bps)
+#define ME_SOUND_SAMPLES_TO_BYTES(interleaved_sample_count) ((interleaved_sample_count)*s_ctx->bps)
+#define ME_SOUND_BYTES_TO_SAMPLES(byte_count) ((byte_count) / s_ctx->bps)
 
 static void cs_push_bytes(void* data, int size) {
     int index1 = s_ctx->index1;
-    int samples_to_write = METAENGINE_SOUND_BYTES_TO_SAMPLES(size);
+    int samples_to_write = ME_SOUND_BYTES_TO_SAMPLES(size);
     int sample_count = s_ctx->sample_count;
 
     int unwritten = cs_samples_unwritten();
@@ -949,11 +949,11 @@ static void cs_push_bytes(void* data, int size) {
     int samples_to_end = sample_count - index1;
 
     if (samples_to_write > samples_to_end) {
-        METAENGINE_SOUND_MEMCPY((char*)s_ctx->samples + METAENGINE_SOUND_SAMPLES_TO_BYTES(index1), data, METAENGINE_SOUND_SAMPLES_TO_BYTES(samples_to_end));
-        METAENGINE_SOUND_MEMCPY(s_ctx->samples, (char*)data + METAENGINE_SOUND_SAMPLES_TO_BYTES(samples_to_end), size - METAENGINE_SOUND_SAMPLES_TO_BYTES(samples_to_end));
+        ME_SOUND_MEMCPY((char*)s_ctx->samples + ME_SOUND_SAMPLES_TO_BYTES(index1), data, ME_SOUND_SAMPLES_TO_BYTES(samples_to_end));
+        ME_SOUND_MEMCPY(s_ctx->samples, (char*)data + ME_SOUND_SAMPLES_TO_BYTES(samples_to_end), size - ME_SOUND_SAMPLES_TO_BYTES(samples_to_end));
         s_ctx->index1 = (samples_to_write - samples_to_end) % sample_count;
     } else {
-        METAENGINE_SOUND_MEMCPY((char*)s_ctx->samples + METAENGINE_SOUND_SAMPLES_TO_BYTES(index1), data, size);
+        ME_SOUND_MEMCPY((char*)s_ctx->samples + ME_SOUND_SAMPLES_TO_BYTES(index1), data, size);
         s_ctx->index1 = (s_ctx->index1 + samples_to_write) % sample_count;
     }
 
@@ -962,7 +962,7 @@ static void cs_push_bytes(void* data, int size) {
 
 static int cs_pull_bytes(void* dst, int size) {
     int index0 = s_ctx->index0;
-    int allowed_size = METAENGINE_SOUND_SAMPLES_TO_BYTES(cs_samples_written());
+    int allowed_size = ME_SOUND_SAMPLES_TO_BYTES(cs_samples_written());
     int sample_count = s_ctx->sample_count;
     int zeros = 0;
 
@@ -971,15 +971,15 @@ static int cs_pull_bytes(void* dst, int size) {
         size = allowed_size;
     }
 
-    int samples_to_read = METAENGINE_SOUND_BYTES_TO_SAMPLES(size);
+    int samples_to_read = ME_SOUND_BYTES_TO_SAMPLES(size);
     int samples_to_end = sample_count - index0;
 
     if (samples_to_read > samples_to_end) {
-        METAENGINE_SOUND_MEMCPY(dst, ((char*)s_ctx->samples) + METAENGINE_SOUND_SAMPLES_TO_BYTES(index0), METAENGINE_SOUND_SAMPLES_TO_BYTES(samples_to_end));
-        METAENGINE_SOUND_MEMCPY(((char*)dst) + METAENGINE_SOUND_SAMPLES_TO_BYTES(samples_to_end), s_ctx->samples, size - METAENGINE_SOUND_SAMPLES_TO_BYTES(samples_to_end));
+        ME_SOUND_MEMCPY(dst, ((char*)s_ctx->samples) + ME_SOUND_SAMPLES_TO_BYTES(index0), ME_SOUND_SAMPLES_TO_BYTES(samples_to_end));
+        ME_SOUND_MEMCPY(((char*)dst) + ME_SOUND_SAMPLES_TO_BYTES(samples_to_end), s_ctx->samples, size - ME_SOUND_SAMPLES_TO_BYTES(samples_to_end));
         s_ctx->index0 = (samples_to_read - samples_to_end) % sample_count;
     } else {
-        METAENGINE_SOUND_MEMCPY(dst, ((char*)s_ctx->samples) + METAENGINE_SOUND_SAMPLES_TO_BYTES(index0), size);
+        ME_SOUND_MEMCPY(dst, ((char*)s_ctx->samples) + ME_SOUND_SAMPLES_TO_BYTES(index0), size);
         s_ctx->index0 = (s_ctx->index0 + samples_to_read) % sample_count;
     }
 
@@ -990,7 +990,7 @@ static int cs_pull_bytes(void* dst, int size) {
 
 #endif
 
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#if ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
 
 static DWORD WINAPI cs_ctx_thread(LPVOID lpParameter) {
     (void)lpParameter;
@@ -1006,7 +1006,7 @@ static DWORD WINAPI cs_ctx_thread(LPVOID lpParameter) {
     return 0;
 }
 
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_APPLE
+#elif ME_SOUND_PLATFORM == ME_SOUND_APPLE
 
 static void* cs_ctx_thread(void* udata) {
     while (s_ctx->running) {
@@ -1027,18 +1027,18 @@ static OSStatus cs_memcpy_to_coreaudio(void* udata, AudioUnitRenderActionFlags* 
     int samples_requested_to_consume = inNumberFrames;
     AudioBuffer* buffer = ioData->mBuffers;
 
-    METAENGINE_SOUND_ASSERT(ioData->mNumberBuffers == 1);
-    METAENGINE_SOUND_ASSERT(buffer->mNumberChannels == 2);
+    ME_SOUND_ASSERT(ioData->mNumberBuffers == 1);
+    ME_SOUND_ASSERT(buffer->mNumberChannels == 2);
     int byte_size = buffer->mDataByteSize;
-    METAENGINE_SOUND_ASSERT(byte_size == samples_requested_to_consume * bps);
+    ME_SOUND_ASSERT(byte_size == samples_requested_to_consume * bps);
 
     int zero_bytes = cs_pull_bytes(s_ctx, buffer->mData, byte_size);
-    METAENGINE_SOUND_MEMSET(((char*)buffer->mData) + (byte_size - zero_bytes), 0, zero_bytes);
+    ME_SOUND_MEMSET(((char*)buffer->mData) + (byte_size - zero_bytes), 0, zero_bytes);
 
     return noErr;
 }
 
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
+#elif ME_SOUND_PLATFORM == ME_SOUND_SDL
 
 int cs_ctx_thread(void* udata) {
     while (s_ctx->running) {
@@ -1055,14 +1055,14 @@ int cs_ctx_thread(void* udata) {
 
 static void cs_sdl_audio_callback(void* udata, Uint8* stream, int len) {
     int zero_bytes = cs_pull_bytes(stream, len);
-    METAENGINE_SOUND_MEMSET(stream + (len - zero_bytes), 0, zero_bytes);
+    ME_SOUND_MEMSET(stream + (len - zero_bytes), 0, zero_bytes);
 }
 
 #endif
 
 static void s_add_page() {
-    cs_inst_page_t* page = (cs_inst_page_t*)METAENGINE_SOUND_ALLOC(sizeof(cs_inst_page_t), user_allocator_context);
-    for (int i = 0; i < METAENGINE_SOUND_PAGE_INSTANCE_COUNT; ++i) {
+    cs_inst_page_t* page = (cs_inst_page_t*)ME_SOUND_ALLOC(sizeof(cs_inst_page_t), user_allocator_context);
+    for (int i = 0; i < ME_SOUND_PAGE_INSTANCE_COUNT; ++i) {
         cs_list_init_node(&page->instances[i].node);
         cs_list_push_back(&s_ctx->free_sounds, &page->instances[i].node);
     }
@@ -1071,30 +1071,30 @@ static void s_add_page() {
 }
 
 cs_error_t cs_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_samples, void* user_allocator_context /* = NULL */) {
-    buffered_samples = buffered_samples < METAENGINE_SOUND_MINIMUM_BUFFERED_SAMPLES ? METAENGINE_SOUND_MINIMUM_BUFFERED_SAMPLES : buffered_samples;
+    buffered_samples = buffered_samples < ME_SOUND_MINIMUM_BUFFERED_SAMPLES ? ME_SOUND_MINIMUM_BUFFERED_SAMPLES : buffered_samples;
     int sample_count = buffered_samples;
-    int wide_count = (int)METAENGINE_SOUND_ALIGN(sample_count, 4);
+    int wide_count = (int)ME_SOUND_ALIGN(sample_count, 4);
     int bps = sizeof(uint16_t) * 2;
 
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#if ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
 
     int buffer_size = buffered_samples * bps;
     LPDIRECTSOUND dsound = NULL;
     LPDIRECTSOUNDBUFFER primary_buffer = NULL;
     LPDIRECTSOUNDBUFFER secondary_buffer = NULL;
 
-    if (!os_handle) return METAENGINE_SOUND_ERROR_HWND_IS_NULL;
+    if (!os_handle) return ME_SOUND_ERROR_HWND_IS_NULL;
     {
         WAVEFORMATEX format = {0, 0, 0, 0, 0, 0, 0};
         DSBUFFERDESC bufdesc = {0, 0, 0, 0, 0, {0, 0, 0, 0}};
         HRESULT res = DirectSoundCreate(0, &dsound, 0);
-        if (res != DS_OK) return METAENGINE_SOUND_ERROR_DIRECTSOUND_CREATE_FAILED;
+        if (res != DS_OK) return ME_SOUND_ERROR_DIRECTSOUND_CREATE_FAILED;
         IDirectSound_SetCooperativeLevel(dsound, (HWND)os_handle, DSSCL_PRIORITY);
         bufdesc.dwSize = sizeof(bufdesc);
         bufdesc.dwFlags = DSBCAPS_PRIMARYBUFFER;
 
         res = IDirectSound_CreateSoundBuffer(dsound, &bufdesc, &primary_buffer, 0);
-        if (res != DS_OK) METAENGINE_SOUND_ERROR_CREATESOUNDBUFFER_FAILED;
+        if (res != DS_OK) ME_SOUND_ERROR_CREATESOUNDBUFFER_FAILED;
 
         format.wFormatTag = WAVE_FORMAT_PCM;
         format.nChannels = 2;
@@ -1104,14 +1104,14 @@ cs_error_t cs_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_
         format.nAvgBytesPerSec = format.nSamplesPerSec * format.nBlockAlign;
         format.cbSize = 0;
         res = IDirectSoundBuffer_SetFormat(primary_buffer, &format);
-        if (res != DS_OK) METAENGINE_SOUND_ERROR_SETFORMAT_FAILED;
+        if (res != DS_OK) ME_SOUND_ERROR_SETFORMAT_FAILED;
 
         bufdesc.dwSize = sizeof(bufdesc);
         bufdesc.dwFlags = DSBCAPS_GETCURRENTPOSITION2;
         bufdesc.dwBufferBytes = buffer_size;
         bufdesc.lpwfxFormat = &format;
         res = IDirectSound_CreateSoundBuffer(dsound, &bufdesc, &secondary_buffer, 0);
-        if (res != DS_OK) METAENGINE_SOUND_ERROR_SETFORMAT_FAILED;
+        if (res != DS_OK) ME_SOUND_ERROR_SETFORMAT_FAILED;
 
         // Silence the initial audio buffer.
         void* region1;
@@ -1120,12 +1120,12 @@ cs_error_t cs_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_
         DWORD size2;
         res = IDirectSoundBuffer_Lock(secondary_buffer, 0, bufdesc.dwBufferBytes, &region1, &size1, &region2, &size2, DSBLOCK_ENTIREBUFFER);
         if (res == DS_OK) {
-            METAENGINE_SOUND_MEMSET(region1, 0, size1);
+            ME_SOUND_MEMSET(region1, 0, size1);
             IDirectSoundBuffer_Unlock(secondary_buffer, region1, size1, region2, size2);
         }
     }
 
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_APPLE
+#elif ME_SOUND_PLATFORM == ME_SOUND_APPLE
 
     AudioComponentDescription comp_desc = {0};
     comp_desc.componentType = kAudioUnitType_Output;
@@ -1135,7 +1135,7 @@ cs_error_t cs_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_
     comp_desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 
     AudioComponent comp = AudioComponentFindNext(NULL, &comp_desc);
-    if (!comp) return METAENGINE_SOUND_ERROR_AUDIOCOMPONENTFINDNEXT_FAILED;
+    if (!comp) return ME_SOUND_ERROR_AUDIOCOMPONENTFINDNEXT_FAILED;
 
     AudioStreamBasicDescription stream_desc = {0};
     stream_desc.mSampleRate = (double)play_frequency_in_Hz;
@@ -1153,26 +1153,26 @@ cs_error_t cs_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_
     AURenderCallbackStruct input;
 
     ret = AudioComponentInstanceNew(comp, &inst);
-    if (ret != noErr) return METAENGINE_SOUND_ERROR_AUDIOCOMPONENTINSTANCENEW_FAILED;
+    if (ret != noErr) return ME_SOUND_ERROR_AUDIOCOMPONENTINSTANCENEW_FAILED;
 
     ret = AudioUnitSetProperty(inst, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input, 0, &stream_desc, sizeof(stream_desc));
-    if (ret != noErr) return METAENGINE_SOUND_ERROR_FAILED_TO_SET_STREAM_FORMAT;
+    if (ret != noErr) return ME_SOUND_ERROR_FAILED_TO_SET_STREAM_FORMAT;
 
     ret = AudioUnitInitialize(inst);
-    if (ret != noErr) return METAENGINE_SOUND_ERROR_AUDIOUNITINITIALIZE_FAILED;
+    if (ret != noErr) return ME_SOUND_ERROR_AUDIOUNITINITIALIZE_FAILED;
 
     ret = AudioOutputUnitStart(inst);
-    if (ret != noErr) return METAENGINE_SOUND_ERROR_AUDIOUNITSTART_FAILED;
+    if (ret != noErr) return ME_SOUND_ERROR_AUDIOUNITSTART_FAILED;
 
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
+#elif ME_SOUND_PLATFORM == ME_SOUND_SDL
 
     SDL_AudioSpec wanted, have;
     int ret = SDL_InitSubSystem(SDL_INIT_AUDIO);
-    if (ret < 0) return METAENGINE_SOUND_ERROR_CANT_INIT_SDL_AUDIO;
+    if (ret < 0) return ME_SOUND_ERROR_CANT_INIT_SDL_AUDIO;
 
 #endif
 
-    s_ctx = (cs_context_t*)METAENGINE_SOUND_ALLOC(sizeof(cs_context_t), user_allocator_context);
+    s_ctx = (cs_context_t*)ME_SOUND_ALLOC(sizeof(cs_context_t), user_allocator_context);
     s_ctx->global_pan = 0.5f;
     s_ctx->global_volume = 1.0f;
     s_ctx->global_pause = false;
@@ -1183,13 +1183,13 @@ cs_error_t cs_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_
     s_ctx->t = 0;
     s_ctx->fade = 0;
     s_ctx->fade_switch_1 = 0;
-    s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_NONE;
-    s_ctx->music_state_to_resume_from_paused = METAENGINE_SOUND_MUSIC_STATE_NONE;
+    s_ctx->music_state = ME_SOUND_MUSIC_STATE_NONE;
+    s_ctx->music_state_to_resume_from_paused = ME_SOUND_MUSIC_STATE_NONE;
     s_ctx->music_playing = NULL;
     s_ctx->music_next = NULL;
     s_ctx->audio_sources_to_free_capacity = 32;
     s_ctx->audio_sources_to_free_size = 0;
-    s_ctx->audio_sources_to_free = (cs_audio_source_t**)METAENGINE_SOUND_ALLOC(sizeof(cs_audio_source_t*) * s_ctx->audio_sources_to_free_capacity, s_ctx->mem_ctx);
+    s_ctx->audio_sources_to_free = (cs_audio_source_t**)ME_SOUND_ALLOC(sizeof(cs_audio_source_t*) * s_ctx->audio_sources_to_free_capacity, s_ctx->mem_ctx);
     s_ctx->instance_id_gen = 1;
     hashtable_init(&s_ctx->instance_map, sizeof(cs_audio_source_t*), 1024, user_allocator_context);
     s_ctx->pages = NULL;
@@ -1208,7 +1208,7 @@ cs_error_t cs_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_
     s_ctx->separate_thread = false;
     s_ctx->sleep_milliseconds = 0;
 
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#if ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
 
     s_ctx->last_cursor = 0;
     s_ctx->running_index = 0;
@@ -1218,7 +1218,7 @@ cs_error_t cs_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_
     s_ctx->secondary = secondary_buffer;
     InitializeCriticalSectionAndSpinCount(&s_ctx->critical_section, 0x00000400);
 
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_APPLE
+#elif ME_SOUND_PLATFORM == ME_SOUND_APPLE
 
     s_ctx->index0 = 0;
     s_ctx->index1 = 0;
@@ -1230,9 +1230,9 @@ cs_error_t cs_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_
     input.inputProc = cs_memcpy_to_coreaudio;
     input.inputProcRefCon = s_ctx;
     ret = AudioUnitSetProperty(inst, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &input, sizeof(input));
-    if (ret != noErr) return METAENGINE_SOUND_ERROR_FAILED_TO_SET_RENDER_CALLBACK;  // This leaks memory, oh well.
+    if (ret != noErr) return ME_SOUND_ERROR_FAILED_TO_SET_RENDER_CALLBACK;  // This leaks memory, oh well.
 
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
+#elif ME_SOUND_PLATFORM == ME_SOUND_SDL
 
     SDL_memset(&wanted, 0, sizeof(wanted));
     SDL_memset(&have, 0, sizeof(have));
@@ -1247,13 +1247,13 @@ cs_error_t cs_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_
     s_ctx->samples_in_circular_buffer = 0;
     s_ctx->sample_count = wide_count * 4;
     s_ctx->dev = SDL_OpenAudioDevice(NULL, 0, &wanted, &have, 0);
-    if (s_ctx->dev < 0) return METAENGINE_SOUND_ERROR_CANT_OPEN_AUDIO_DEVICE;  // This leaks memory, oh well.
+    if (s_ctx->dev < 0) return ME_SOUND_ERROR_CANT_OPEN_AUDIO_DEVICE;  // This leaks memory, oh well.
     SDL_PauseAudioDevice(s_ctx->dev, 0);
     s_ctx->mutex = SDL_CreateMutex();
 
 #endif
 
-    return METAENGINE_SOUND_ERROR_NONE;
+    return ME_SOUND_ERROR_NONE;
 }
 
 void cs_lock();
@@ -1267,15 +1267,15 @@ void cs_shutdown() {
         cs_unlock();
         while (s_ctx->separate_thread) cs_sleep(1);
     }
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#if ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
 
     DeleteCriticalSection(&s_ctx->critical_section);
     IDirectSoundBuffer_Release(s_ctx->secondary);
     IDirectSoundBuffer_Release(s_ctx->primary);
     IDirectSoundBuffer_Release(s_ctx->dsound);
 
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_APPLE
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
+#elif ME_SOUND_PLATFORM == ME_SOUND_APPLE
+#elif ME_SOUND_PLATFORM == ME_SOUND_SDL
 
     SDL_DestroyMutex(s_ctx->mutex);
     SDL_CloseAudioDevice(s_ctx->dev);
@@ -1285,16 +1285,16 @@ void cs_shutdown() {
     cs_inst_page_t* page = s_ctx->pages;
     while (page) {
         cs_inst_page_t* next = page->next;
-        METAENGINE_SOUND_FREE(page, s_ctx->mem_ctx);
+        ME_SOUND_FREE(page, s_ctx->mem_ctx);
         page = next;
     }
 
     for (int i = 0; i < s_ctx->audio_sources_to_free_size; ++i) {
         cs_audio_source_t* audio = s_ctx->audio_sources_to_free[i];
         cs_free16(audio->channels[0], s_ctx->mem_ctx);
-        METAENGINE_SOUND_FREE(audio, s_ctx->mem_ctx);
+        ME_SOUND_FREE(audio, s_ctx->mem_ctx);
     }
-    METAENGINE_SOUND_FREE(s_ctx->audio_sources_to_free, s_ctx->mem_ctx);
+    ME_SOUND_FREE(s_ctx->audio_sources_to_free, s_ctx->mem_ctx);
 
     cs_free16(s_ctx->floatA, s_ctx->mem_ctx);
     cs_free16(s_ctx->floatB, s_ctx->mem_ctx);
@@ -1302,7 +1302,7 @@ void cs_shutdown() {
     hashtable_term(&s_ctx->instance_map);
     void* mem_ctx = s_ctx->mem_ctx;
     (void)mem_ctx;
-    METAENGINE_SOUND_FREE(s_ctx, mem_ctx);
+    ME_SOUND_FREE(s_ctx, mem_ctx);
     s_ctx = NULL;
 }
 
@@ -1312,10 +1312,10 @@ void cs_update(float dt) {
     if (!s_ctx->separate_thread) cs_mix();
 
     switch (s_ctx->music_state) {
-        case METAENGINE_SOUND_MUSIC_STATE_FADE_OUT: {
+        case ME_SOUND_MUSIC_STATE_FADE_OUT: {
             s_ctx->t += dt;
             if (s_ctx->t >= s_ctx->fade) {
-                s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_NONE;
+                s_ctx->music_state = ME_SOUND_MUSIC_STATE_NONE;
                 s_ctx->music_playing->active = false;
                 s_ctx->music_playing = NULL;
             } else {
@@ -1324,19 +1324,19 @@ void cs_update(float dt) {
             }
         } break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_FADE_IN: {
+        case ME_SOUND_MUSIC_STATE_FADE_IN: {
             s_ctx->t += dt;
             if (s_ctx->t >= s_ctx->fade) {
-                s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_PLAYING;
+                s_ctx->music_state = ME_SOUND_MUSIC_STATE_PLAYING;
                 s_ctx->t = s_ctx->fade;
             }
             s_ctx->music_playing->volume = s_smoothstep(1.0f - ((s_ctx->fade - s_ctx->t) / s_ctx->fade));
         } break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_0: {
+        case ME_SOUND_MUSIC_STATE_SWITCH_TO_0: {
             s_ctx->t += dt;
             if (s_ctx->t >= s_ctx->fade) {
-                s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_1;
+                s_ctx->music_state = ME_SOUND_MUSIC_STATE_SWITCH_TO_1;
                 s_ctx->music_playing->active = false;
                 s_ctx->music_playing->volume = 0;
                 s_ctx->t = 0;
@@ -1349,10 +1349,10 @@ void cs_update(float dt) {
             }
         } break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_1: {
+        case ME_SOUND_MUSIC_STATE_SWITCH_TO_1: {
             s_ctx->t += dt;
             if (s_ctx->t >= s_ctx->fade) {
-                s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_PLAYING;
+                s_ctx->music_state = ME_SOUND_MUSIC_STATE_PLAYING;
                 s_ctx->t = s_ctx->fade;
                 s_ctx->music_next->volume = 1.0f;
                 s_ctx->music_playing = s_ctx->music_next;
@@ -1364,10 +1364,10 @@ void cs_update(float dt) {
             }
         } break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_CROSSFADE: {
+        case ME_SOUND_MUSIC_STATE_CROSSFADE: {
             s_ctx->t += dt;
             if (s_ctx->t >= s_ctx->fade) {
-                s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_PLAYING;
+                s_ctx->music_state = ME_SOUND_MUSIC_STATE_PLAYING;
                 s_ctx->music_playing->active = false;
                 s_ctx->music_next->volume = 1.0f;
                 s_ctx->music_playing = s_ctx->music_next;
@@ -1401,26 +1401,26 @@ void cs_set_global_pan(float pan_0_to_1) {
 void cs_set_global_pause(bool true_for_paused) { s_ctx->global_pause = true_for_paused; }
 
 void cs_lock() {
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#if ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
     EnterCriticalSection(&s_ctx->critical_section);
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_APPLE
+#elif ME_SOUND_PLATFORM == ME_SOUND_APPLE
     pthread_mutex_lock(&s_ctx->mutex);
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
+#elif ME_SOUND_PLATFORM == ME_SOUND_SDL
     SDL_LockMutex(s_ctx->mutex);
 #endif
 }
 
 void cs_unlock() {
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#if ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
     LeaveCriticalSection(&s_ctx->critical_section);
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_APPLE
+#elif ME_SOUND_PLATFORM == ME_SOUND_APPLE
     pthread_mutex_unlock(&s_ctx->mutex);
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
+#elif ME_SOUND_PLATFORM == ME_SOUND_SDL
     SDL_UnlockMutex(s_ctx->mutex);
 #endif
 }
 
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#if ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
 
 static void cs_dsound_get_bytes_to_fill(int* byte_to_lock, int* bytes_to_write) {
     DWORD play_cursor;
@@ -1455,7 +1455,7 @@ static void cs_dsound_get_bytes_to_fill(int* byte_to_lock, int* bytes_to_write) 
     lock = (s_ctx->running_index * s_ctx->bps) % s_ctx->buffer_size;
     target_cursor = (write_cursor + s_ctx->latency_samples * s_ctx->bps);
     if (target_cursor > (DWORD)s_ctx->buffer_size) target_cursor %= s_ctx->buffer_size;
-    target_cursor = (DWORD)METAENGINE_SOUND_TRUNC(target_cursor, 16);
+    target_cursor = (DWORD)ME_SOUND_TRUNC(target_cursor, 16);
 
     if (lock > target_cursor) {
         write = (s_ctx->buffer_size - lock) + target_cursor;
@@ -1534,7 +1534,7 @@ void cs_dsound_dont_run_too_fast() {
     }
 }
 
-#endif  // METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#endif  // ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
 
 void cs_mix() {
     cs__m128i* samples;
@@ -1546,7 +1546,7 @@ void cs_mix() {
 
     cs_lock();
 
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#if ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
 
     int byte_to_lock;
     int bytes_to_write;
@@ -1555,7 +1555,7 @@ void cs_mix() {
     if (bytes_to_write < (int)s_ctx->latency_samples) goto unlock;
     samples_to_write = bytes_to_write / s_ctx->bps;
 
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_APPLE || METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
+#elif ME_SOUND_PLATFORM == ME_SOUND_APPLE || ME_SOUND_PLATFORM == ME_SOUND_SDL
 
     int bytes_to_write;
     samples_to_write = cs_samples_to_mix();
@@ -1565,7 +1565,7 @@ void cs_mix() {
 #endif
 
     // Clear mixer buffers.
-    wide_count = (int)METAENGINE_SOUND_ALIGN(samples_to_write, 4) / 4;
+    wide_count = (int)ME_SOUND_ALIGN(samples_to_write, 4) / 4;
 
     floatA = s_ctx->floatA;
     floatB = s_ctx->floatB;
@@ -1582,7 +1582,7 @@ void cs_mix() {
         cs_list_node_t* end_node = cs_list_end(&s_ctx->playing_sounds);
         do {
             cs_list_node_t* next_node = playing_node->next;
-            cs_sound_inst_t* playing = METAENGINE_SOUND_LIST_HOST(cs_sound_inst_t, node, playing_node);
+            cs_sound_inst_t* playing = ME_SOUND_LIST_HOST(cs_sound_inst_t, node, playing_node);
             cs_audio_source_t* audio = playing->audio;
 
             if (!playing->active || !s_ctx->running) goto remove;
@@ -1595,13 +1595,13 @@ void cs_mix() {
 
                 // Attempted to play a sound with no audio.
                 // Make sure the audio file was loaded properly.
-                METAENGINE_SOUND_ASSERT(cA);
+                ME_SOUND_ASSERT(cA);
 
                 int mix_count = samples_to_write;
                 int offset = (int)playing->sample_index;
                 int remaining = audio->sample_count - offset;
                 if (remaining < mix_count) mix_count = remaining;
-                METAENGINE_SOUND_ASSERT(remaining > 0);
+                ME_SOUND_ASSERT(remaining > 0);
 
                 float gpan0 = 1.0f - s_ctx->global_pan;
                 float gpan1 = s_ctx->global_pan;
@@ -1633,12 +1633,12 @@ void cs_mix() {
                         mix_count = mix_leftover;
                     }
                 }
-                METAENGINE_SOUND_ASSERT(!(delay_offset & 3));
+                ME_SOUND_ASSERT(!(delay_offset & 3));
 
                 // SIMD offets.
-                int mix_wide = (int)METAENGINE_SOUND_ALIGN(mix_count, 4) / 4;
-                int offset_wide = (int)METAENGINE_SOUND_TRUNC(offset, 4) / 4;
-                int delay_wide = (int)METAENGINE_SOUND_ALIGN(delay_offset, 4) / 4;
+                int mix_wide = (int)ME_SOUND_ALIGN(mix_count, 4) / 4;
+                int offset_wide = (int)ME_SOUND_TRUNC(offset, 4) / 4;
+                int delay_wide = (int)ME_SOUND_ALIGN(delay_offset, 4) / 4;
                 int sample_count = (mix_wide - 2 * delay_wide) * 4;
                 (void)sample_count;
 
@@ -1669,7 +1669,7 @@ void cs_mix() {
 
                 // playing list logic
                 playing->sample_index += mix_count;
-                METAENGINE_SOUND_ASSERT(playing->sample_index <= audio->sample_count);
+                ME_SOUND_ASSERT(playing->sample_index <= audio->sample_count);
                 if (playing->sample_index == audio->sample_count) {
                     if (playing->looped) {
                         playing->sample_index = 0;
@@ -1690,7 +1690,7 @@ void cs_mix() {
 
             if (playing->audio) {
                 playing->audio->playing_count -= 1;
-                METAENGINE_SOUND_ASSERT(playing->audio->playing_count >= 0);
+                ME_SOUND_ASSERT(playing->audio->playing_count >= 0);
             }
 
             cs_list_remove(playing_node);
@@ -1702,7 +1702,7 @@ void cs_mix() {
     }
 
     // load all floats into 16 bit packed interleaved samples
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#if ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
 
     samples = s_ctx->samples;
     for (int i = 0; i < wide_count; ++i) {
@@ -1715,7 +1715,7 @@ void cs_mix() {
     cs_dsound_memcpy_to_driver((int16_t*)samples, byte_to_lock, bytes_to_write);
     cs_dsound_dont_run_too_fast();
 
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_APPLE || METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
+#elif ME_SOUND_PLATFORM == ME_SOUND_APPLE || ME_SOUND_PLATFORM == ME_SOUND_SDL
 
     // Since the ctx->samples array is already in use as a ring buffer
     // reusing floatA to store output is a good way to temporarly store
@@ -1739,7 +1739,7 @@ void cs_mix() {
         cs_audio_source_t* audio = s_ctx->audio_sources_to_free[i];
         if (audio->playing_count == 0) {
             cs_free16(audio->channels[0], s_ctx->mem_ctx);
-            METAENGINE_SOUND_FREE(audio, s_ctx->mem_ctx);
+            ME_SOUND_FREE(audio, s_ctx->mem_ctx);
             s_ctx->audio_sources_to_free[i] = s_ctx->audio_sources_to_free[--s_ctx->audio_sources_to_free_size];
         } else {
             ++i;
@@ -1753,11 +1753,11 @@ unlock:
 void cs_spawn_mix_thread() {
     if (s_ctx->separate_thread) return;
     s_ctx->separate_thread = true;
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_WINDOWS
+#if ME_SOUND_PLATFORM == ME_SOUND_WINDOWS
     CreateThread(0, 0, cs_ctx_thread, s_ctx, 0, 0);
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_APPLE
+#elif ME_SOUND_PLATFORM == ME_SOUND_APPLE
     pthread_create(&s_ctx->thread, 0, cs_ctx_thread, s_ctx);
-#elif METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL
+#elif ME_SOUND_PLATFORM == ME_SOUND_SDL
     s_ctx->thread = SDL_CreateThread(&cs_ctx_thread, "CuteSoundThread", s_ctx);
 #endif
 }
@@ -1774,16 +1774,16 @@ void cs_set_context_ptr(void* ctx) { s_ctx = (cs_context_t*)ctx; }
 static void* cs_read_file_to_memory(const char* path, int* size, void* mem_ctx) {
     (void)mem_ctx;
     void* data = 0;
-    METAENGINE_SOUND_FILE* fp = METAENGINE_SOUND_FOPEN(path, "rb");
+    ME_SOUND_FILE* fp = ME_SOUND_FOPEN(path, "rb");
     int sizeNum = 0;
 
     if (fp) {
-        METAENGINE_SOUND_FSEEK(fp, 0, METAENGINE_SOUND_SEEK_END);
-        sizeNum = (int)METAENGINE_SOUND_FTELL(fp);
-        METAENGINE_SOUND_FSEEK(fp, 0, METAENGINE_SOUND_SEEK_SET);
-        data = METAENGINE_SOUND_ALLOC(sizeNum, mem_ctx);
-        (void)(METAENGINE_SOUND_FREAD(data, sizeNum, 1, fp) + 1);
-        METAENGINE_SOUND_FCLOSE(fp);
+        ME_SOUND_FSEEK(fp, 0, ME_SOUND_SEEK_END);
+        sizeNum = (int)ME_SOUND_FTELL(fp);
+        ME_SOUND_FSEEK(fp, 0, ME_SOUND_SEEK_SET);
+        data = ME_SOUND_ALLOC(sizeNum, mem_ctx);
+        (void)(ME_SOUND_FREAD(data, sizeNum, 1, fp) + 1);
+        ME_SOUND_FCLOSE(fp);
     }
 
     if (size) *size = sizeNum;
@@ -1791,7 +1791,7 @@ static void* cs_read_file_to_memory(const char* path, int* size, void* mem_ctx) 
 }
 
 static int cs_four_cc(const char* CC, void* memory) {
-    if (!METAENGINE_SOUND_MEMCMP(CC, memory, 4)) return 1;
+    if (!ME_SOUND_MEMCMP(CC, memory, 4)) return 1;
     return 0;
 }
 
@@ -1826,14 +1826,14 @@ cs_audio_source_t* cs_load_wav(const char* path, cs_error_t* err /* = NULL */) {
     void* wav = cs_read_file_to_memory(path, &size, s_ctx->mem_ctx);
     if (!wav) return NULL;
     cs_audio_source_t* audio = cs_read_mem_wav(wav, size, err);
-    METAENGINE_SOUND_FREE(wav, s_ctx->mem_ctx);
+    ME_SOUND_FREE(wav, s_ctx->mem_ctx);
     return audio;
 }
 
 cs_audio_source_t* cs_read_mem_wav(const void* memory, size_t size, cs_error_t* err) {
-    if (err) *err = METAENGINE_SOUND_ERROR_NONE;
+    if (err) *err = ME_SOUND_ERROR_NONE;
     if (!memory) {
-        if (err) *err = METAENGINE_SOUND_ERROR_FILE_NOT_FOUND;
+        if (err) *err = ME_SOUND_ERROR_FILE_NOT_FOUND;
         return NULL;
     }
 
@@ -1856,11 +1856,11 @@ cs_audio_source_t* cs_read_mem_wav(const void* memory, size_t size, cs_error_t* 
     char* data = (char*)memory;
     char* end = data + size;
     if (!cs_four_cc("RIFF", data)) {
-        if (err) *err = METAENGINE_SOUND_ERROR_THE_FILE_IS_NOT_A_WAV_FILE;
+        if (err) *err = ME_SOUND_ERROR_THE_FILE_IS_NOT_A_WAV_FILE;
         return NULL;
     }
     if (!cs_four_cc("WAVE", data + 8)) {
-        if (err) *err = METAENGINE_SOUND_ERROR_THE_FILE_IS_NOT_A_WAV_FILE;
+        if (err) *err = ME_SOUND_ERROR_THE_FILE_IS_NOT_A_WAV_FILE;
         return NULL;
     }
 
@@ -1868,7 +1868,7 @@ cs_audio_source_t* cs_read_mem_wav(const void* memory, size_t size, cs_error_t* 
 
     while (1) {
         if (!(end > data)) {
-            if (err) *err = METAENGINE_SOUND_ERROR_WAV_FILE_FORMAT_CHUNK_NOT_FOUND;
+            if (err) *err = ME_SOUND_ERROR_WAV_FILE_FORMAT_CHUNK_NOT_FOUND;
             return NULL;
         }
         if (cs_four_cc("fmt ", data)) break;
@@ -1878,33 +1878,33 @@ cs_audio_source_t* cs_read_mem_wav(const void* memory, size_t size, cs_error_t* 
     Fmt fmt;
     fmt = *(Fmt*)(data + 8);
     if (fmt.wFormatTag != 1) {
-        if (err) *err = METAENGINE_SOUND_ERROR_WAV_FILE_FORMAT_CHUNK_NOT_FOUND;
+        if (err) *err = ME_SOUND_ERROR_WAV_FILE_FORMAT_CHUNK_NOT_FOUND;
         return NULL;
     }
     if (!(fmt.nChannels == 1 || fmt.nChannels == 2)) {
-        if (err) *err = METAENGINE_SOUND_ERROR_WAV_ONLY_MONO_OR_STEREO_IS_SUPPORTED;
+        if (err) *err = ME_SOUND_ERROR_WAV_ONLY_MONO_OR_STEREO_IS_SUPPORTED;
         return NULL;
     }
     if (!(fmt.wBitsPerSample == 16)) {
-        if (err) *err = METAENGINE_SOUND_ERROR_WAV_ONLY_16_BITS_PER_SAMPLE_SUPPORTED;
+        if (err) *err = ME_SOUND_ERROR_WAV_ONLY_16_BITS_PER_SAMPLE_SUPPORTED;
         return NULL;
     }
     if (!(fmt.nBlockAlign == fmt.nChannels * 2)) {
-        if (err) *err = METAENGINE_SOUND_ERROR_IMPLEMENTATION_ERROR_PLEASE_REPORT_THIS_ON_GITHUB;
+        if (err) *err = ME_SOUND_ERROR_IMPLEMENTATION_ERROR_PLEASE_REPORT_THIS_ON_GITHUB;
         return NULL;
     }
 
     while (1) {
         if (!(end > data)) {
-            if (err) *err = METAENGINE_SOUND_ERROR_WAV_DATA_CHUNK_NOT_FOUND;
+            if (err) *err = ME_SOUND_ERROR_WAV_DATA_CHUNK_NOT_FOUND;
             return NULL;
         }
         if (cs_four_cc("data", data)) break;
         data = cs_next(data);
     }
 
-    audio = (cs_audio_source_t*)METAENGINE_SOUND_ALLOC(sizeof(cs_audio_source_t), s_ctx->mem_ctx);
-    METAENGINE_SOUND_MEMSET(audio, 0, sizeof(*audio));
+    audio = (cs_audio_source_t*)ME_SOUND_ALLOC(sizeof(cs_audio_source_t), s_ctx->mem_ctx);
+    ME_SOUND_MEMSET(audio, 0, sizeof(*audio));
     audio->sample_rate = (int)fmt.nSamplesPerSec;
 
     {
@@ -1913,12 +1913,12 @@ cs_audio_source_t* cs_read_mem_wav(const void* memory, size_t size, cs_error_t* 
         audio->sample_count = sample_count;
         audio->channel_count = fmt.nChannels;
 
-        int wide_count = (int)METAENGINE_SOUND_ALIGN(sample_count, 4);
+        int wide_count = (int)ME_SOUND_ALIGN(sample_count, 4);
         wide_count /= 4;
         int wide_offset = sample_count & 3;
         int16_t* samples = (int16_t*)(data + 8);
         float* sample = (float*)alloca(sizeof(float) * 4 + 16);
-        sample = (float*)METAENGINE_SOUND_ALIGN(sample, 16);
+        sample = (float*)ME_SOUND_ALIGN(sample, 16);
 
         switch (audio->channel_count) {
             case 1: {
@@ -1962,12 +1962,12 @@ cs_audio_source_t* cs_read_mem_wav(const void* memory, size_t size, cs_error_t* 
             } break;
 
             default:
-                if (err) *err = METAENGINE_SOUND_ERROR_WAV_ONLY_MONO_OR_STEREO_IS_SUPPORTED;
-                METAENGINE_SOUND_ASSERT(false);
+                if (err) *err = ME_SOUND_ERROR_WAV_ONLY_MONO_OR_STEREO_IS_SUPPORTED;
+                ME_SOUND_ASSERT(false);
         }
     }
 
-    if (err) *err = METAENGINE_SOUND_ERROR_NONE;
+    if (err) *err = ME_SOUND_ERROR_NONE;
     return audio;
 }
 
@@ -1975,13 +1975,13 @@ void cs_free_audio_source(cs_audio_source_t* audio) {
     cs_lock();
     if (audio->playing_count == 0) {
         cs_free16(audio->channels[0], s_ctx->mem_ctx);
-        METAENGINE_SOUND_FREE(audio, s_ctx->mem_ctx);
+        ME_SOUND_FREE(audio, s_ctx->mem_ctx);
     } else {
         if (s_ctx->audio_sources_to_free_size == s_ctx->audio_sources_to_free_capacity) {
             int new_capacity = s_ctx->audio_sources_to_free_capacity * 2;
-            cs_audio_source_t** new_sources = (cs_audio_source_t**)METAENGINE_SOUND_ALLOC(new_capacity, s_ctx->mem_ctx);
-            METAENGINE_SOUND_MEMCPY(new_sources, s_ctx->audio_sources_to_free, sizeof(cs_audio_source_t*) * s_ctx->audio_sources_to_free_size);
-            METAENGINE_SOUND_FREE(s_ctx->audio_sources_to_free, s_ctx->mem_ctx);
+            cs_audio_source_t** new_sources = (cs_audio_source_t**)ME_SOUND_ALLOC(new_capacity, s_ctx->mem_ctx);
+            ME_SOUND_MEMCPY(new_sources, s_ctx->audio_sources_to_free, sizeof(cs_audio_source_t*) * s_ctx->audio_sources_to_free_size);
+            ME_SOUND_FREE(s_ctx->audio_sources_to_free, s_ctx->mem_ctx);
             s_ctx->audio_sources_to_free = new_sources;
             s_ctx->audio_sources_to_free_capacity = new_capacity;
         }
@@ -1990,13 +1990,13 @@ void cs_free_audio_source(cs_audio_source_t* audio) {
     cs_unlock();
 }
 
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL && defined(SDL_rwops_h_) && defined(METAENGINE_SOUND_SDL_RWOPS)
+#if ME_SOUND_PLATFORM == ME_SOUND_SDL && defined(SDL_rwops_h_) && defined(ME_SOUND_SDL_RWOPS)
 
 // Load an SDL_RWops object's data into memory.
 // Ripped straight from: https://wiki.libsdl.org/SDL_RWread
 static void* cs_read_rw_to_memory(SDL_RWops* rw, int* size, void* mem_ctx) {
     Sint64 res_size = SDL_RWsize(rw);
-    char* data = (char*)METAENGINE_SOUND_ALLOC((size_t)(res_size + 1), mem_ctx);
+    char* data = (char*)ME_SOUND_ALLOC((size_t)(res_size + 1), mem_ctx);
 
     Sint64 nb_read_total = 0, nb_read = 1;
     char* buf = data;
@@ -2009,7 +2009,7 @@ static void* cs_read_rw_to_memory(SDL_RWops* rw, int* size, void* mem_ctx) {
     SDL_RWclose(rw);
 
     if (nb_read_total != res_size) {
-        METAENGINE_SOUND_FREE(data, NULL);
+        ME_SOUND_FREE(data, NULL);
         return NULL;
     }
 
@@ -2022,7 +2022,7 @@ cs_audio_source_t* cs_load_wav_rw(SDL_RWops* context, cs_error_t* err) {
     char* wav = (char*)cs_read_rw_to_memory(context, &size, s_ctx->mem_ctx);
     if (!memory) return NULL;
     cs_audio_source_t* audio = cs_read_mem_wav(wav, length, err);
-    METAENGINE_SOUND_FREE(wav, s_ctx->mem_ctx);
+    ME_SOUND_FREE(wav, s_ctx->mem_ctx);
     return audio;
 }
 
@@ -2039,17 +2039,17 @@ cs_audio_source_t* cs_read_mem_ogg(const void* memory, size_t length, cs_error_t
     int sample_rate;
     int sample_count = stb_vorbis_decode_memory((const unsigned char*)memory, (int)length, &channel_count, &sample_rate, &samples);
     if (sample_count <= 0) {
-        if (err) *err = METAENGINE_SOUND_ERROR_STB_VORBIS_DECODE_FAILED;
+        if (err) *err = ME_SOUND_ERROR_STB_VORBIS_DECODE_FAILED;
         return NULL;
     }
-    audio = (cs_audio_source_t*)METAENGINE_SOUND_ALLOC(sizeof(cs_audio_source_t), s_ctx->mem_ctx);
-    METAENGINE_SOUND_MEMSET(audio, 0, sizeof(*audio));
+    audio = (cs_audio_source_t*)ME_SOUND_ALLOC(sizeof(cs_audio_source_t), s_ctx->mem_ctx);
+    ME_SOUND_MEMSET(audio, 0, sizeof(*audio));
 
     {
-        int wide_count = (int)METAENGINE_SOUND_ALIGN(sample_count, 4) / 4;
+        int wide_count = (int)ME_SOUND_ALIGN(sample_count, 4) / 4;
         int wide_offset = sample_count & 3;
         float* sample = (float*)alloca(sizeof(float) * 4 + 16);
-        sample = (float*)METAENGINE_SOUND_ALIGN(sample, 16);
+        sample = (float*)ME_SOUND_ALIGN(sample, 16);
         cs__m128* a = NULL;
         cs__m128* b = NULL;
 
@@ -2092,8 +2092,8 @@ cs_audio_source_t* cs_read_mem_ogg(const void* memory, size_t length, cs_error_t
                 break;
 
             default:
-                if (err) *err = METAENGINE_SOUND_ERROR_OGG_UNSUPPORTED_CHANNEL_COUNT;
-                METAENGINE_SOUND_ASSERT(false);
+                if (err) *err = ME_SOUND_ERROR_OGG_UNSUPPORTED_CHANNEL_COUNT;
+                ME_SOUND_ASSERT(false);
         }
 
         audio->sample_rate = sample_rate;
@@ -2105,7 +2105,7 @@ cs_audio_source_t* cs_read_mem_ogg(const void* memory, size_t length, cs_error_t
         free(samples);
     }
 
-    if (err) *err = METAENGINE_SOUND_ERROR_NONE;
+    if (err) *err = ME_SOUND_ERROR_NONE;
     return audio;
 }
 
@@ -2114,18 +2114,18 @@ cs_audio_source_t* cs_load_ogg(const char* path, cs_error_t* err) {
     void* memory = cs_read_file_to_memory(path, &length, NULL);
     if (!memory) return NULL;
     cs_audio_source_t* audio = cs_read_mem_ogg(memory, length, err);
-    METAENGINE_SOUND_FREE(memory, NULL);
+    ME_SOUND_FREE(memory, NULL);
     return audio;
 }
 
-#if METAENGINE_SOUND_PLATFORM == METAENGINE_SOUND_SDL && defined(SDL_rwops_h_) && defined(METAENGINE_SOUND_SDL_RWOPS)
+#if ME_SOUND_PLATFORM == ME_SOUND_SDL && defined(SDL_rwops_h_) && defined(ME_SOUND_SDL_RWOPS)
 
 cs_audio_source_t* cs_load_ogg_rw(SDL_RWops* rw, cs_error_t* err) {
     int length;
     void* memory = cs_read_rw_to_memory(rw, &length, s_ctx->mem_ctx);
     if (!memory) return NULL;
     cs_audio_source_t* audio = cs_read_ogg_wav(memory, length, err);
-    METAENGINE_SOUND_FREE(memory, s_ctx->mem_ctx);
+    ME_SOUND_FREE(memory, s_ctx->mem_ctx);
     return audio;
 }
 
@@ -2150,8 +2150,8 @@ static cs_sound_inst_t* s_inst_music(cs_audio_source_t* src, float volume) {
     if (cs_list_empty(&s_ctx->free_sounds)) {
         s_add_page();
     }
-    METAENGINE_SOUND_ASSERT(!cs_list_empty(&s_ctx->free_sounds));
-    cs_sound_inst_t* inst = METAENGINE_SOUND_LIST_HOST(cs_sound_inst_t, node, cs_list_pop_back(&s_ctx->free_sounds));
+    ME_SOUND_ASSERT(!cs_list_empty(&s_ctx->free_sounds));
+    cs_sound_inst_t* inst = ME_SOUND_LIST_HOST(cs_sound_inst_t, node, cs_list_pop_back(&s_ctx->free_sounds));
     inst->is_music = true;
     inst->looped = s_ctx->music_looped;
     if (!s_ctx->music_paused) inst->paused = false;
@@ -2169,8 +2169,8 @@ static cs_sound_inst_t* s_inst(cs_audio_source_t* src, cs_sound_params_t params)
     if (cs_list_empty(&s_ctx->free_sounds)) {
         s_add_page();
     }
-    METAENGINE_SOUND_ASSERT(!cs_list_empty(&s_ctx->free_sounds));
-    cs_sound_inst_t* inst = METAENGINE_SOUND_LIST_HOST(cs_sound_inst_t, node, cs_list_pop_back(&s_ctx->free_sounds));
+    ME_SOUND_ASSERT(!cs_list_empty(&s_ctx->free_sounds));
+    cs_sound_inst_t* inst = ME_SOUND_LIST_HOST(cs_sound_inst_t, node, cs_list_pop_back(&s_ctx->free_sounds));
     float pan = params.pan;
     if (pan > 1.0f)
         pan = 1.0f;
@@ -2192,21 +2192,21 @@ static cs_sound_inst_t* s_inst(cs_audio_source_t* src, cs_sound_params_t params)
 }
 
 void cs_music_play(cs_audio_source_t* audio_source, float fade_in_time) {
-    if (s_ctx->music_state != METAENGINE_SOUND_MUSIC_STATE_PLAYING) {
+    if (s_ctx->music_state != ME_SOUND_MUSIC_STATE_PLAYING) {
         cs_music_stop(0);
     }
 
     if (fade_in_time < 0) fade_in_time = 0;
     if (fade_in_time) {
-        s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_FADE_IN;
+        s_ctx->music_state = ME_SOUND_MUSIC_STATE_FADE_IN;
     } else {
-        s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_PLAYING;
+        s_ctx->music_state = ME_SOUND_MUSIC_STATE_PLAYING;
     }
     s_ctx->fade = fade_in_time;
     s_ctx->t = 0;
 
-    METAENGINE_SOUND_ASSERT(s_ctx->music_playing == NULL);
-    METAENGINE_SOUND_ASSERT(s_ctx->music_next == NULL);
+    ME_SOUND_ASSERT(s_ctx->music_playing == NULL);
+    ME_SOUND_ASSERT(s_ctx->music_next == NULL);
     cs_sound_inst_t* inst = s_inst_music(audio_source, fade_in_time == 0 ? 1.0f : 0);
     s_ctx->music_playing = inst;
 }
@@ -2226,46 +2226,46 @@ void cs_music_stop(float fade_out_time) {
         }
         s_ctx->music_playing = NULL;
         s_ctx->music_next = NULL;
-        s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_NONE;
+        s_ctx->music_state = ME_SOUND_MUSIC_STATE_NONE;
     } else {
         switch (s_ctx->music_state) {
-            case METAENGINE_SOUND_MUSIC_STATE_NONE:
+            case ME_SOUND_MUSIC_STATE_NONE:
                 break;
 
-            case METAENGINE_SOUND_MUSIC_STATE_PLAYING:
-                s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_FADE_OUT;
+            case ME_SOUND_MUSIC_STATE_PLAYING:
+                s_ctx->music_state = ME_SOUND_MUSIC_STATE_FADE_OUT;
                 s_ctx->fade = fade_out_time;
                 s_ctx->t = 0;
                 break;
 
-            case METAENGINE_SOUND_MUSIC_STATE_FADE_OUT:
+            case ME_SOUND_MUSIC_STATE_FADE_OUT:
                 break;
 
-            case METAENGINE_SOUND_MUSIC_STATE_FADE_IN: {
-                s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_FADE_OUT;
+            case ME_SOUND_MUSIC_STATE_FADE_IN: {
+                s_ctx->music_state = ME_SOUND_MUSIC_STATE_FADE_OUT;
                 s_ctx->t = s_smoothstep(((s_ctx->fade - s_ctx->t) / s_ctx->fade));
                 s_ctx->fade = fade_out_time;
             } break;
 
-            case METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_0: {
-                s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_FADE_OUT;
+            case ME_SOUND_MUSIC_STATE_SWITCH_TO_0: {
+                s_ctx->music_state = ME_SOUND_MUSIC_STATE_FADE_OUT;
                 s_ctx->t = s_smoothstep(((s_ctx->fade - s_ctx->t) / s_ctx->fade));
                 s_ctx->fade = fade_out_time;
                 s_ctx->music_next = NULL;
             } break;
 
-            case METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_1:
+            case ME_SOUND_MUSIC_STATE_SWITCH_TO_1:
                 // Fall-through.
 
-            case METAENGINE_SOUND_MUSIC_STATE_CROSSFADE: {
-                s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_FADE_OUT;
+            case ME_SOUND_MUSIC_STATE_CROSSFADE: {
+                s_ctx->music_state = ME_SOUND_MUSIC_STATE_FADE_OUT;
                 s_ctx->t = s_smoothstep(((s_ctx->fade - s_ctx->t) / s_ctx->fade));
                 s_ctx->fade = fade_out_time;
                 s_ctx->music_playing = s_ctx->music_next;
                 s_ctx->music_next = NULL;
             } break;
 
-            case METAENGINE_SOUND_MUSIC_STATE_PAUSED:
+            case ME_SOUND_MUSIC_STATE_PAUSED:
                 cs_music_stop(0);
         }
     }
@@ -2285,16 +2285,16 @@ void cs_music_set_loop(bool true_to_loop) {
 }
 
 void cs_music_pause() {
-    if (s_ctx->music_state == METAENGINE_SOUND_MUSIC_STATE_PAUSED) return;
+    if (s_ctx->music_state == ME_SOUND_MUSIC_STATE_PAUSED) return;
     if (s_ctx->music_playing) s_ctx->music_playing->paused = true;
     if (s_ctx->music_next) s_ctx->music_next->paused = true;
     s_ctx->music_paused = true;
     s_ctx->music_state_to_resume_from_paused = s_ctx->music_state;
-    s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_PAUSED;
+    s_ctx->music_state = ME_SOUND_MUSIC_STATE_PAUSED;
 }
 
 void cs_music_resume() {
-    if (s_ctx->music_state != METAENGINE_SOUND_MUSIC_STATE_PAUSED) return;
+    if (s_ctx->music_state != ME_SOUND_MUSIC_STATE_PAUSED) return;
     if (s_ctx->music_playing) s_ctx->music_playing->paused = false;
     if (s_ctx->music_next) s_ctx->music_next->paused = false;
     s_ctx->music_state = s_ctx->music_state_to_resume_from_paused;
@@ -2305,51 +2305,51 @@ void cs_music_switch_to(cs_audio_source_t* audio_source, float fade_out_time, fl
     if (fade_out_time < 0) fade_out_time = 0;
 
     switch (s_ctx->music_state) {
-        case METAENGINE_SOUND_MUSIC_STATE_NONE:
+        case ME_SOUND_MUSIC_STATE_NONE:
             cs_music_play(audio_source, fade_in_time);
             break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_PLAYING: {
-            METAENGINE_SOUND_ASSERT(s_ctx->music_next == NULL);
+        case ME_SOUND_MUSIC_STATE_PLAYING: {
+            ME_SOUND_ASSERT(s_ctx->music_next == NULL);
             cs_sound_inst_t* inst = s_inst_music(audio_source, fade_in_time == 0 ? 1.0f : 0);
             s_ctx->music_next = inst;
 
             s_ctx->fade = fade_out_time;
             s_ctx->fade_switch_1 = fade_in_time;
             s_ctx->t = 0;
-            s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_0;
+            s_ctx->music_state = ME_SOUND_MUSIC_STATE_SWITCH_TO_0;
         } break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_FADE_OUT: {
-            METAENGINE_SOUND_ASSERT(s_ctx->music_next == NULL);
+        case ME_SOUND_MUSIC_STATE_FADE_OUT: {
+            ME_SOUND_ASSERT(s_ctx->music_next == NULL);
             cs_sound_inst_t* inst = s_inst_music(audio_source, fade_in_time == 0 ? 1.0f : 0);
             s_ctx->music_next = inst;
 
             s_ctx->fade_switch_1 = fade_in_time;
-            s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_0;
+            s_ctx->music_state = ME_SOUND_MUSIC_STATE_SWITCH_TO_0;
         } break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_FADE_IN: {
-            METAENGINE_SOUND_ASSERT(s_ctx->music_next == NULL);
+        case ME_SOUND_MUSIC_STATE_FADE_IN: {
+            ME_SOUND_ASSERT(s_ctx->music_next == NULL);
             cs_sound_inst_t* inst = s_inst_music(audio_source, fade_in_time == 0 ? 1.0f : 0);
             s_ctx->music_next = inst;
 
             s_ctx->fade_switch_1 = fade_in_time;
             s_ctx->t = s_smoothstep(((s_ctx->fade - s_ctx->t) / s_ctx->fade));
-            s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_0;
+            s_ctx->music_state = ME_SOUND_MUSIC_STATE_SWITCH_TO_0;
         } break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_0: {
-            METAENGINE_SOUND_ASSERT(s_ctx->music_next != NULL);
+        case ME_SOUND_MUSIC_STATE_SWITCH_TO_0: {
+            ME_SOUND_ASSERT(s_ctx->music_next != NULL);
             cs_sound_inst_t* inst = s_inst_music(audio_source, fade_in_time == 0 ? 1.0f : 0);
             s_ctx->music_next->active = false;
             s_ctx->music_next = inst;
             s_ctx->fade_switch_1 = fade_in_time;
         } break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_CROSSFADE:  // Fall-through.
-        case METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_1: {
-            METAENGINE_SOUND_ASSERT(s_ctx->music_next != NULL);
+        case ME_SOUND_MUSIC_STATE_CROSSFADE:  // Fall-through.
+        case ME_SOUND_MUSIC_STATE_SWITCH_TO_1: {
+            ME_SOUND_ASSERT(s_ctx->music_next != NULL);
             cs_sound_inst_t* inst = s_inst_music(audio_source, fade_in_time == 0 ? 1.0f : 0);
             s_ctx->music_playing = s_ctx->music_next;
             s_ctx->music_next = inst;
@@ -2357,10 +2357,10 @@ void cs_music_switch_to(cs_audio_source_t* audio_source, float fade_out_time, fl
             s_ctx->t = s_smoothstep(((s_ctx->fade - s_ctx->t) / s_ctx->fade));
             s_ctx->fade_switch_1 = fade_in_time;
             s_ctx->fade = fade_out_time;
-            s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_0;
+            s_ctx->music_state = ME_SOUND_MUSIC_STATE_SWITCH_TO_0;
         } break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_PAUSED:
+        case ME_SOUND_MUSIC_STATE_PAUSED:
             cs_music_stop(0);
             cs_music_switch_to(audio_source, fade_out_time, fade_in_time);
             break;
@@ -2371,12 +2371,12 @@ void cs_music_crossfade(cs_audio_source_t* audio_source, float cross_fade_time) 
     if (cross_fade_time < 0) cross_fade_time = 0;
 
     switch (s_ctx->music_state) {
-        case METAENGINE_SOUND_MUSIC_STATE_NONE:
+        case ME_SOUND_MUSIC_STATE_NONE:
             cs_music_play(audio_source, cross_fade_time);
 
-        case METAENGINE_SOUND_MUSIC_STATE_PLAYING: {
-            METAENGINE_SOUND_ASSERT(s_ctx->music_next == NULL);
-            s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_CROSSFADE;
+        case ME_SOUND_MUSIC_STATE_PLAYING: {
+            ME_SOUND_ASSERT(s_ctx->music_next == NULL);
+            s_ctx->music_state = ME_SOUND_MUSIC_STATE_CROSSFADE;
 
             cs_sound_inst_t* inst = s_inst_music(audio_source, cross_fade_time == 0 ? 1.0f : 0);
             inst->paused = false;
@@ -2386,12 +2386,12 @@ void cs_music_crossfade(cs_audio_source_t* audio_source, float cross_fade_time) 
             s_ctx->t = 0;
         } break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_FADE_OUT:
-            METAENGINE_SOUND_ASSERT(s_ctx->music_next == NULL);
+        case ME_SOUND_MUSIC_STATE_FADE_OUT:
+            ME_SOUND_ASSERT(s_ctx->music_next == NULL);
             // Fall-through.
 
-        case METAENGINE_SOUND_MUSIC_STATE_FADE_IN: {
-            s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_CROSSFADE;
+        case ME_SOUND_MUSIC_STATE_FADE_IN: {
+            s_ctx->music_state = ME_SOUND_MUSIC_STATE_CROSSFADE;
 
             cs_sound_inst_t* inst = s_inst_music(audio_source, cross_fade_time == 0 ? 1.0f : 0);
             inst->paused = false;
@@ -2400,8 +2400,8 @@ void cs_music_crossfade(cs_audio_source_t* audio_source, float cross_fade_time) 
             s_ctx->fade = cross_fade_time;
         } break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_0: {
-            s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_CROSSFADE;
+        case ME_SOUND_MUSIC_STATE_SWITCH_TO_0: {
+            s_ctx->music_state = ME_SOUND_MUSIC_STATE_CROSSFADE;
             s_ctx->music_next->active = false;
 
             cs_sound_inst_t* inst = s_inst_music(audio_source, cross_fade_time == 0 ? 1.0f : 0);
@@ -2411,9 +2411,9 @@ void cs_music_crossfade(cs_audio_source_t* audio_source, float cross_fade_time) 
             s_ctx->fade = cross_fade_time;
         } break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_SWITCH_TO_1:  // Fall-through.
-        case METAENGINE_SOUND_MUSIC_STATE_CROSSFADE: {
-            s_ctx->music_state = METAENGINE_SOUND_MUSIC_STATE_CROSSFADE;
+        case ME_SOUND_MUSIC_STATE_SWITCH_TO_1:  // Fall-through.
+        case ME_SOUND_MUSIC_STATE_CROSSFADE: {
+            s_ctx->music_state = ME_SOUND_MUSIC_STATE_CROSSFADE;
             s_ctx->music_playing->active = false;
             s_ctx->music_playing = s_ctx->music_next;
 
@@ -2424,7 +2424,7 @@ void cs_music_crossfade(cs_audio_source_t* audio_source, float cross_fade_time) 
             s_ctx->fade = cross_fade_time;
         } break;
 
-        case METAENGINE_SOUND_MUSIC_STATE_PAUSED:
+        case ME_SOUND_MUSIC_STATE_PAUSED:
             cs_music_stop(0);
             cs_music_crossfade(audio_source, cross_fade_time);
     }
@@ -2438,10 +2438,10 @@ uint64_t cs_music_get_sample_index() {
 }
 
 cs_error_t cs_music_set_sample_index(uint64_t sample_index) {
-    if (s_ctx->music_playing) return METAENGINE_SOUND_ERROR_INVALID_SOUND;
-    if (sample_index > s_ctx->music_playing->audio->sample_count) return METAENGINE_SOUND_ERROR_TRIED_TO_SET_SAMPLE_INDEX_BEYOND_THE_AUDIO_SOURCES_SAMPLE_COUNT;
+    if (s_ctx->music_playing) return ME_SOUND_ERROR_INVALID_SOUND;
+    if (sample_index > s_ctx->music_playing->audio->sample_count) return ME_SOUND_ERROR_TRIED_TO_SET_SAMPLE_INDEX_BEYOND_THE_AUDIO_SOURCES_SAMPLE_COUNT;
     s_ctx->music_playing->sample_index = sample_index;
-    return METAENGINE_SOUND_ERROR_NONE;
+    return ME_SOUND_ERROR_NONE;
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -2516,10 +2516,10 @@ void cs_sound_set_volume(cs_playing_sound_t sound, float volume_0_to_1) {
 
 cs_error_t cs_sound_set_sample_index(cs_playing_sound_t sound, uint64_t sample_index) {
     cs_sound_inst_t* inst = s_get_inst(sound);
-    if (!inst) return METAENGINE_SOUND_ERROR_INVALID_SOUND;
-    if (sample_index > inst->audio->sample_count) return METAENGINE_SOUND_ERROR_TRIED_TO_SET_SAMPLE_INDEX_BEYOND_THE_AUDIO_SOURCES_SAMPLE_COUNT;
+    if (!inst) return ME_SOUND_ERROR_INVALID_SOUND;
+    if (sample_index > inst->audio->sample_count) return ME_SOUND_ERROR_TRIED_TO_SET_SAMPLE_INDEX_BEYOND_THE_AUDIO_SOURCES_SAMPLE_COUNT;
     inst->sample_index = sample_index;
-    return METAENGINE_SOUND_ERROR_NONE;
+    return ME_SOUND_ERROR_NONE;
 }
 
 void cs_set_playing_sounds_volume(float volume_0_to_1) {
@@ -2536,7 +2536,7 @@ void cs_stop_all_playing_sounds() {
     cs_list_node_t* end = cs_list_end(&s_ctx->playing_sounds);
 
     do {
-        cs_sound_inst_t* inst = METAENGINE_SOUND_LIST_HOST(cs_sound_inst_t, node, playing_sound);
+        cs_sound_inst_t* inst = ME_SOUND_LIST_HOST(cs_sound_inst_t, node, playing_sound);
         cs_list_node_t* next = playing_sound->next;
         if (inst != s_ctx->music_playing && inst != s_ctx->music_next) {
             inst->active = false;  // Let cs_mix handle cleaning this up.

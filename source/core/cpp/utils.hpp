@@ -14,11 +14,11 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include "core/alloc.hpp"
 #include "core/const.h"
 #include "core/core.hpp"
 #include "core/mathlib.hpp"
-// #include "scripting/lua/lua_wrapper.hpp"
+#include "core/memory.h"
+// #include "scripting/lua_wrapper.hpp"
 #include "libs/cJSON.h"
 // #include "sdl_wrapper.h"
 

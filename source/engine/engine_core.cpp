@@ -2,7 +2,7 @@
 
 #include "engine/engine_core.h"
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/cpp/utils.hpp"
 #include "core/utils/utility.hpp"
 
@@ -47,7 +47,7 @@ void UpdateTime() {
 
 void WaitUntilNextFrame() {}
 
-F32 GetFPS() { return Time.framesPerSecond; }
+f32 GetFPS() { return Time.framesPerSecond; }
 
 void InitFPS() {
     // Initialize FPS at 0
@@ -65,11 +65,11 @@ void ProcessTickTime() {
         Time.frameCount = 0;
 
         // calculate "feels like" fps
-        F32 sum = 0;
-        F32 num = 0.01;
+        f32 sum = 0;
+        f32 num = 0.01;
 
         for (int i = 0; i < TraceTimeNum; i++) {
-            F32 weight = Time.frameTimesTrace[i];
+            f32 weight = Time.frameTimesTrace[i];
             sum += weight * Time.frameTimesTrace[i];
             num += weight;
         }
@@ -103,7 +103,7 @@ void ProcessTickTime() {
     for (int i = 1; i < TraceTimeNum; i++) {
         Time.frameTimesTrace[i - 1] = Time.frameTimesTrace[i];
     }
-    Time.frameTimesTrace[TraceTimeNum - 1] = (U16)(ME_gettime() - Time.now);
+    Time.frameTimesTrace[TraceTimeNum - 1] = (u16)(ME_gettime() - Time.now);
 
     Time.lastTime = Time.now;
 }

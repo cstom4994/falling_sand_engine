@@ -21,11 +21,11 @@ void CrtShader::Update(int w, int h) {
 void WaterFlowPassShader::Update(int w, int h) {
     int res_loc = R_GetUniformLocation(this->shader, "resolution");
 
-    F32 res[2] = {(F32)w, (F32)h};
+    f32 res[2] = {(f32)w, (f32)h};
     R_SetUniformfv(res_loc, 2, 1, res);
 }
 
-void WaterShader::Update(F32 t, int w, int h, R_Image *maskImg, int mask_x, int mask_y, int mask_w, int mask_h, int scale, R_Image *flowImg, int overlay, bool showFlow, bool pixelated) {
+void WaterShader::Update(f32 t, int w, int h, R_Image *maskImg, int mask_x, int mask_y, int mask_w, int mask_h, int scale, R_Image *flowImg, int overlay, bool showFlow, bool pixelated) {
     int time_loc = R_GetUniformLocation(this->shader, "time");
     int res_loc = R_GetUniformLocation(this->shader, "resolution");
     int mask_loc = R_GetUniformLocation(this->shader, "mask");
@@ -39,14 +39,14 @@ void WaterShader::Update(F32 t, int w, int h, R_Image *maskImg, int mask_x, int 
 
     R_SetUniformf(time_loc, t);
 
-    F32 res[2] = {(F32)w, (F32)h};
+    f32 res[2] = {(f32)w, (f32)h};
     R_SetUniformfv(res_loc, 2, 1, res);
 
     R_SetShaderImage(maskImg, mask_loc, 1);
 
-    F32 res2[2] = {(F32)mask_x, (F32)mask_y};
+    f32 res2[2] = {(f32)mask_x, (f32)mask_y};
     R_SetUniformfv(mask_pos_loc, 2, 1, res2);
-    F32 res3[2] = {(F32)mask_w, (F32)mask_h};
+    f32 res3[2] = {(f32)mask_w, (f32)mask_h};
     R_SetUniformfv(mask_size_loc, 2, 1, res3);
 
     R_SetUniformf(scale_loc, scale);
@@ -79,21 +79,21 @@ void NewLightingShader::SetDitheringEnabled(bool ditheringEnabled) {
     this->lastDitheringEnabled = ditheringEnabled;
 }
 
-void NewLightingShader::SetQuality(F32 quality) {
+void NewLightingShader::SetQuality(f32 quality) {
     int lightingQuality_loc = R_GetUniformLocation(this->shader, "lightingQuality");
     R_SetUniformf(lightingQuality_loc, quality);
 
     this->lastQuality = quality;
 }
 
-void NewLightingShader::SetInside(F32 inside) {
+void NewLightingShader::SetInside(f32 inside) {
     int inside_loc = R_GetUniformLocation(this->shader, "inside");
     R_SetUniformf(inside_loc, inside);
 
     this->lastInside = inside;
 }
 
-void NewLightingShader::SetBounds(F32 minX, F32 minY, F32 maxX, F32 maxY) {
+void NewLightingShader::SetBounds(f32 minX, f32 minY, f32 maxX, f32 maxY) {
     int minX_loc = R_GetUniformLocation(this->shader, "minX");
     int minY_loc = R_GetUniformLocation(this->shader, "minY");
     int maxX_loc = R_GetUniformLocation(this->shader, "maxX");
@@ -105,7 +105,7 @@ void NewLightingShader::SetBounds(F32 minX, F32 minY, F32 maxX, F32 maxY) {
     R_SetUniformf(maxY_loc, maxY);
 }
 
-void NewLightingShader::Update(R_Image *tex, R_Image *emit, F32 x, F32 y) {
+void NewLightingShader::Update(R_Image *tex, R_Image *emit, f32 x, f32 y) {
     int txrmap_loc = R_GetUniformLocation(this->shader, "txrmap");
     int emitmap_loc = R_GetUniformLocation(this->shader, "emitmap");
     int txrsize_loc = R_GetUniformLocation(this->shader, "texSize");
@@ -114,10 +114,10 @@ void NewLightingShader::Update(R_Image *tex, R_Image *emit, F32 x, F32 y) {
     this->lastLx = x;
     this->lastLy = y;
 
-    F32 res[2] = {x, y};
+    f32 res[2] = {x, y};
     R_SetUniformfv(t0_loc, 2, 1, res);
 
-    F32 tres[2] = {(F32)tex->w, (F32)tex->h};
+    f32 tres[2] = {(f32)tex->w, (f32)tex->h};
     R_SetUniformfv(txrsize_loc, 2, 1, tres);
 
     R_SetShaderImage(tex, txrmap_loc, 1);
@@ -128,7 +128,7 @@ void FireShader::Update(R_Image *tex) {
     int firemap_loc = R_GetUniformLocation(this->shader, "firemap");
     int txrsize_loc = R_GetUniformLocation(this->shader, "texSize");
 
-    F32 tres[2] = {(F32)tex->w, (F32)tex->h};
+    f32 tres[2] = {(f32)tex->w, (f32)tex->h};
     R_SetUniformfv(txrsize_loc, 2, 1, tres);
 
     R_SetShaderImage(tex, firemap_loc, 1);
@@ -138,7 +138,7 @@ void Fire2Shader::Update(R_Image *tex) {
     int firemap_loc = R_GetUniformLocation(this->shader, "firemap");
     int txrsize_loc = R_GetUniformLocation(this->shader, "texSize");
 
-    F32 tres[2] = {(F32)tex->w, (F32)tex->h};
+    f32 tres[2] = {(f32)tex->w, (f32)tex->h};
     R_SetUniformfv(txrsize_loc, 2, 1, tres);
 
     R_SetShaderImage(tex, firemap_loc, 1);

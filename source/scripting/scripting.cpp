@@ -10,23 +10,23 @@
 #include <vector>
 
 #include "background.hpp"
-#include "core/alloc.hpp"
-#include "core/core.h"
 #include "core/core.hpp"
 #include "core/cpp/utils.hpp"
 #include "core/debug.hpp"
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
+#include "core/memory.h"
+#include "core/utils/utility.hpp"
 #include "engine/engine_funcwrap.hpp"
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "internal/builtin_lpeg.h"
-// #include "libs/lua/ffi.h"
-#include "core/utils/utility.hpp"
 #include "meta/reflection.hpp"
 #include "renderer/renderer_gpu.h"
-#include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/ffi/ffi.h"
+#include "scripting/lua_wrapper.hpp"
+#include "scripting/lua_wrapper_ext.hpp"
 #include "ui/imgui/imgui_impl.hpp"
 
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
@@ -102,7 +102,7 @@ static int metadot_run_lua_file_script(lua_State *L) {
     auto &LuaCore = Scripting::GetSingletonPtr()->Lua->s_lua;
     ME_ASSERT_E(&LuaCore);
     if (ME_str_starts_with(string, "Script:")) ME_str_replace_with(string, "Script:", METADOT_RESLOC("data/scripts/"));
-    RunScriptFromFile(string.c_str());
+    script_runfile(string.c_str());
     return 0;
 }
 
@@ -143,9 +143,9 @@ static int ls(lua_State *L) {
 static void add_packagepath(const char *p) {
     auto &s_lua = Scripting::GetSingletonPtr()->Lua->s_lua;
     ME_ASSERT_E(&s_lua);
-    s_lua.dostring(MetaEngine::Format("package.path = "
-                                      "'{0}/?.lua;' .. package.path",
-                                      p),
+    s_lua.dostring(std::format("package.path = "
+                               "'{0}/?.lua;' .. package.path",
+                               p),
                    s_lua.globalTable());
 }
 
@@ -227,8 +227,10 @@ static void InitLua(LuaCore *lc) {
 
     LoadImGuiBindings(lc->L);
 
-    // metadot_preload_auto(lc->L, luaopen_ffi, "ffi");
     ME_preload_auto(lc->L, luaopen_lpeg, "lpeg");
+
+    ME_preload_auto(lc->L, ffi_module_open, "ffi");
+    ME_preload_auto(lc->L, luaopen_lbind, "lbind");
 
 #define REGISTER_LUAFUNC(_f) lc->s_lua[#_f] = LuaWrapper::function(_f)
 
@@ -251,24 +253,24 @@ static void InitLua(LuaCore *lc) {
 
 #undef REGISTER_LUAFUNC
 
-    lc->s_lua.dostring(MetaEngine::Format("package.path = "
-                                          "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
-                                          "?/?.lua;' .. package.path",
-                                          METADOT_RESLOC("data/scripts"), metadot_path_normalize(std::filesystem::current_path().string().c_str())),
+    lc->s_lua.dostring(std::format("package.path = "
+                                   "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
+                                   "?/?.lua;' .. package.path",
+                                   METADOT_RESLOC("data/scripts"), normalizePath(std::filesystem::current_path().string()).c_str()),
                        lc->s_lua.globalTable());
 
-    lc->s_lua.dostring(MetaEngine::Format("package.cpath = "
-                                          "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
-                                          "?/?.{2};' .. package.cpath",
-                                          METADOT_RESLOC("data/scripts"), metadot_path_normalize(std::filesystem::current_path().string().c_str()), "dll"),
+    lc->s_lua.dostring(std::format("package.cpath = "
+                                   "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
+                                   "?/?.{2};' .. package.cpath",
+                                   METADOT_RESLOC("data/scripts"), normalizePath(std::filesystem::current_path().string()).c_str(), "dll"),
                        lc->s_lua.globalTable());
 
-    RunScriptFromFile("data/scripts/startup.lua");
+    script_runfile("data/scripts/startup.lua");
 }
 
 static void EndLua(LuaCore *_struct) {}
 
-void RunScriptInConsole(LuaCore *_struct, const char *c) {
+void run_script_in_console(LuaCore *_struct, const char *c) {
     luaL_loadstring(_struct->L, c);
     auto result = ME_debug_pcall(_struct->L, 0, LUA_MULTRET, 0);
     if (result != LUA_OK) {
@@ -277,7 +279,7 @@ void RunScriptInConsole(LuaCore *_struct, const char *c) {
     }
 }
 
-void RunScriptFromFile(const char *filePath) {
+void script_runfile(const char *filePath) {
     FUTIL_ASSERT_EXIST(filePath);
 
     int result = luaL_loadfile(Scripting::GetSingletonPtr()->Lua->L, METADOT_RESLOC(filePath));
@@ -316,14 +318,14 @@ static void UpdateMeo(){
 #endif
 
 void Scripting::Init() {
-    METADOT_NEW(C, Lua, LuaCore);
+    Lua = new LuaCore;
     InitLua(Lua);
 }
 
 void Scripting::End() {
 
     EndLua(Lua);
-    METADOT_DELETE(C, Lua, LuaCore);
+    delete Lua;
 }
 
 void Scripting::Update() {

@@ -2,7 +2,7 @@
 #ifndef ME_LUAWRAPPER_H
 #define ME_LUAWRAPPER_H
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "libs/lua/lua.hpp"
 
 #ifdef ME_PLATFORM_WINDOWS

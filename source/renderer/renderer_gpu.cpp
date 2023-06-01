@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "core/const.h"
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/macros.hpp"
 #include "core/sdl_wrapper.h"
 #include "core/utils/utility.hpp"
@@ -25,7 +25,7 @@ typedef struct R_RendererRegistration {
     void (*freeFn)(R_Renderer *);
 } R_RendererRegistration;
 
-static bool gpu_renderer_register_is_initialized = R_false;
+static bool gpu_renderer_register_is_initialized = false;
 
 static R_Renderer *gpu_renderer;
 static R_RendererRegistration gpu_renderer_register;
@@ -166,8 +166,8 @@ static Uint32 gpu_init_windowID = 0;
 static R_InitFlagEnum gpu_preinit_flags = R_DEFAULT_INIT_FLAGS;
 static R_InitFlagEnum gpu_required_features = 0;
 
-static bool gpu_initialized_SDL_core = R_false;
-static bool gpu_initialized_SDL = R_false;
+static bool gpu_initialized_SDL_core = false;
+static bool gpu_initialized_SDL = false;
 
 void R_SetCurrentRenderer(R_RendererID id) {
     gpu_current_renderer = R_GetRenderer(id);
@@ -188,7 +188,7 @@ void R_SetCoordinateMode(bool use_math_coords) {
 }
 
 bool R_GetCoordinateMode(void) {
-    if (gpu_current_renderer == NULL) return R_false;
+    if (gpu_current_renderer == NULL) return false;
 
     return gpu_current_renderer->coordinate_mode;
 }
@@ -386,9 +386,9 @@ R_Target *R_InitRendererByID(R_RendererID renderer_request, Uint16 w, Uint16 h, 
             renderer = gpu_renderer_register.createFn(renderer_request);
         }
 
-        if (renderer == R_null) {
+        if (renderer == nullptr) {
             R_PushErrorCode(__func__, R_ERROR_BACKEND_ERROR, "Failed to create new renderer.");
-            return R_null;
+            return nullptr;
         }
 
         gpu_renderer = renderer;
@@ -412,7 +412,7 @@ R_Target *R_InitRendererByID(R_RendererID renderer_request, Uint16 w, Uint16 h, 
 }
 
 bool R_IsFeatureEnabled(R_FeatureEnum feature) {
-    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return R_false;
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return false;
 
     return ((gpu_current_renderer->enabled_features & feature) == feature);
 }
@@ -438,14 +438,14 @@ void R_MakeCurrent(R_Target *target, Uint32 windowID) {
 }
 
 bool R_SetFullscreen(bool enable_fullscreen, bool use_desktop_resolution) {
-    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return R_false;
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return false;
 
     return SetFullscreen(gpu_current_renderer, enable_fullscreen, use_desktop_resolution);
 }
 
 bool R_GetFullscreen(void) {
     R_Target *target = R_GetContextTarget();
-    if (target == NULL) return R_false;
+    if (target == NULL) return false;
     return (SDL_GetWindowFlags(SDL_GetWindowFromID(target->context->windowID)) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0;
 }
 
@@ -457,13 +457,13 @@ R_Target *R_GetActiveTarget(void) {
 }
 
 bool R_SetActiveTarget(R_Target *target) {
-    if (gpu_current_renderer == NULL) return R_false;
+    if (gpu_current_renderer == NULL) return false;
 
     return SetActiveTarget(gpu_current_renderer, target);
 }
 
 bool R_AddDepthBuffer(R_Target *target) {
-    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL || target == NULL) return R_false;
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL || target == NULL) return false;
 
     return AddDepthBuffer(gpu_current_renderer, target);
 }
@@ -481,7 +481,7 @@ void R_SetDepthFunction(R_Target *target, R_ComparisonEnum compare_operation) {
 }
 
 bool R_SetWindowResolution(Uint16 w, Uint16 h) {
-    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL || w == 0 || h == 0) return R_false;
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL || w == 0 || h == 0) return false;
 
     return SetWindowResolution(gpu_current_renderer, w, h);
 }
@@ -717,7 +717,7 @@ metadot_rect R_MakeRect(float x, float y, float w, float h) {
     return r;
 }
 
-ME_Color R_MakeColor(U8 r, U8 g, U8 b, U8 a) {
+ME_Color R_MakeColor(u8 r, u8 g, u8 b, u8 a) {
     ME_Color c;
     c.r = r;
     c.g = g;
@@ -745,7 +745,7 @@ void R_UnsetViewport(R_Target *target) {
 }
 
 R_Camera R_GetDefaultCamera(void) {
-    R_Camera cam = {0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, -100.0f, 100.0f, R_true};
+    R_Camera cam = {0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, -100.0f, 100.0f, true};
     return cam;
 }
 
@@ -769,7 +769,7 @@ void R_EnableCamera(R_Target *target, bool use_camera) {
 }
 
 bool R_IsCameraEnabled(R_Target *target) {
-    if (target == NULL) return R_false;
+    if (target == NULL) return false;
     return target->use_camera;
 }
 
@@ -810,7 +810,7 @@ void R_UpdateImageBytes(R_Image *image, const metadot_rect *image_rect, const un
 }
 
 bool R_ReplaceImage(R_Image *image, void *surface, const metadot_rect *surface_rect) {
-    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return R_false;
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return false;
 
     return ReplaceImage(gpu_current_renderer, image, surface, surface_rect);
 }
@@ -873,7 +873,7 @@ static SDL_Surface *gpu_copy_raw_surface_data(unsigned char *data, int width, in
 
     // Copy row-by-row in case the pitch doesn't match
     for (i = 0; i < height; ++i) {
-        memcpy((U8 *)result->pixels + i * result->pitch, data + channels * width * i, channels * width);
+        memcpy((u8 *)result->pixels + i * result->pitch, data + channels * width * i, channels * width);
     }
 
     if (result != NULL && result->format->palette != NULL) {
@@ -883,7 +883,7 @@ static SDL_Surface *gpu_copy_raw_surface_data(unsigned char *data, int width, in
         ME_Color colors[256];
 
         for (i = 0; i < 256; i++) {
-            colors[i].r = colors[i].g = colors[i].b = (U8)i;
+            colors[i].r = colors[i].g = colors[i].b = (u8)i;
         }
 
         /* Set palette */
@@ -1121,10 +1121,10 @@ metadot_rect R_SetClipRect(R_Target *target, metadot_rect rect) {
         return r;
     }
 
-    return SetClip(gpu_current_renderer, target, (I16)rect.x, (I16)rect.y, (Uint16)rect.w, (Uint16)rect.h);
+    return SetClip(gpu_current_renderer, target, (i16)rect.x, (i16)rect.y, (Uint16)rect.w, (Uint16)rect.h);
 }
 
-metadot_rect R_SetClip(R_Target *target, I16 x, I16 y, Uint16 w, Uint16 h) {
+metadot_rect R_SetClip(R_Target *target, i16 x, i16 y, Uint16 w, Uint16 h) {
     if (target == NULL || gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) {
         metadot_rect r = {0, 0, 0, 0};
         return r;
@@ -1141,12 +1141,12 @@ void R_UnsetClip(R_Target *target) {
 
 /* Adapted from SDL_IntersectRect() */
 bool R_IntersectRect(metadot_rect A, metadot_rect B, metadot_rect *result) {
-    bool has_horiz_intersection = R_false;
+    bool has_horiz_intersection = false;
     float Amin, Amax, Bmin, Bmax;
     metadot_rect intersection;
 
     // Special case for empty rects
-    if (A.w <= 0.0f || A.h <= 0.0f || B.w <= 0.0f || B.h <= 0.0f) return R_false;
+    if (A.w <= 0.0f || A.h <= 0.0f || B.w <= 0.0f || B.h <= 0.0f) return false;
 
     // Horizontal intersection
     Amin = A.x;
@@ -1174,13 +1174,13 @@ bool R_IntersectRect(metadot_rect A, metadot_rect B, metadot_rect *result) {
 
     if (has_horiz_intersection && Amax > Amin) {
         if (result != NULL) *result = intersection;
-        return R_true;
+        return true;
     } else
-        return R_false;
+        return false;
 }
 
 bool R_IntersectClipRect(R_Target *target, metadot_rect B, metadot_rect *result) {
-    if (target == NULL) return R_false;
+    if (target == NULL) return false;
 
     if (!target->use_clip_rect) {
         metadot_rect A = {0, 0, (float)(target->w), (float)(target->h)};
@@ -1196,7 +1196,7 @@ void R_SetColor(R_Image *image, ME_Color color) {
     image->color = color;
 }
 
-void R_SetRGB(R_Image *image, U8 r, U8 g, U8 b) {
+void R_SetRGB(R_Image *image, u8 r, u8 g, u8 b) {
     ME_Color c;
     c.r = r;
     c.g = g;
@@ -1208,7 +1208,7 @@ void R_SetRGB(R_Image *image, U8 r, U8 g, U8 b) {
     image->color = c;
 }
 
-void R_SetRGBA(R_Image *image, U8 r, U8 g, U8 b, U8 a) {
+void R_SetRGBA(R_Image *image, u8 r, u8 g, u8 b, u8 a) {
     ME_Color c;
     c.r = r;
     c.g = g;
@@ -1234,7 +1234,7 @@ void R_SetTargetColor(R_Target *target, ME_Color color) {
     target->color = color;
 }
 
-void R_SetTargetRGB(R_Target *target, U8 r, U8 g, U8 b) {
+void R_SetTargetRGB(R_Target *target, u8 r, u8 g, u8 b) {
     ME_Color c;
     c.r = r;
     c.g = g;
@@ -1247,7 +1247,7 @@ void R_SetTargetRGB(R_Target *target, U8 r, U8 g, U8 b) {
     target->color = c;
 }
 
-void R_SetTargetRGBA(R_Target *target, U8 r, U8 g, U8 b, U8 a) {
+void R_SetTargetRGBA(R_Target *target, u8 r, u8 g, u8 b, u8 a) {
     ME_Color c;
     c.r = r;
     c.g = g;
@@ -1264,12 +1264,12 @@ void R_UnsetTargetColor(R_Target *target) {
     ME_Color c = {255, 255, 255, 255};
     if (target == NULL) return;
 
-    target->use_color = R_false;
+    target->use_color = false;
     target->color = c;
 }
 
 bool R_GetBlending(R_Image *image) {
-    if (image == NULL) return R_false;
+    if (image == NULL) return false;
 
     return image->use_blending;
 }
@@ -1468,7 +1468,7 @@ R_TextureHandle R_GetTextureHandle(R_Image *image) {
     return GetTextureHandle(image->renderer, image);
 }
 
-ME_Color R_GetPixel(R_Target *target, I16 x, I16 y) {
+ME_Color R_GetPixel(R_Target *target, i16 x, i16 y) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) {
         ME_Color c = {0, 0, 0, 0};
         return c;
@@ -1493,7 +1493,7 @@ void R_ClearColor(R_Target *target, ME_Color color) {
     ClearRGBA(gpu_current_renderer, target, color.r, color.g, color.b, GET_ALPHA(color));
 }
 
-void R_ClearRGB(R_Target *target, U8 r, U8 g, U8 b) {
+void R_ClearRGB(R_Target *target, u8 r, u8 g, u8 b) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -1501,7 +1501,7 @@ void R_ClearRGB(R_Target *target, U8 r, U8 g, U8 b) {
     ClearRGBA(gpu_current_renderer, target, r, g, b, 255);
 }
 
-void R_ClearRGBA(R_Target *target, U8 r, U8 g, U8 b, U8 a) {
+void R_ClearRGBA(R_Target *target, u8 r, u8 g, u8 b, u8 a) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -1538,7 +1538,7 @@ Uint32 R_CompileShader(R_ShaderEnum shader_type, const char *shader_source) {
 }
 
 bool R_LinkShaderProgram(Uint32 program_object) {
-    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return R_false;
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return false;
 
     return LinkShaderProgram(gpu_current_renderer, program_object);
 }
@@ -1601,7 +1601,7 @@ void R_DetachShader(Uint32 program_object, Uint32 shader_object) {
 bool R_IsDefaultShaderProgram(Uint32 program_object) {
     R_Context *context;
 
-    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return R_false;
+    if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return false;
 
     context = gpu_current_renderer->current_context_target->context;
     return (program_object == context->default_textured_shader_program || program_object == context->default_untextured_shader_program);
@@ -1633,7 +1633,7 @@ int R_GetAttributeLocation(Uint32 program_object, const char *attrib_name) {
 
 R_AttributeFormat R_MakeAttributeFormat(int num_elems_per_vertex, R_TypeEnum type, bool normalize, int stride_bytes, int offset_bytes) {
     R_AttributeFormat f;
-    f.is_per_sprite = R_false;
+    f.is_per_sprite = false;
     f.num_elems_per_value = num_elems_per_vertex;
     f.type = type;
     f.normalize = normalize;

@@ -545,7 +545,7 @@
 /* in Windows, can use specific Windows types */
 
 #define LUA_INTEGER		__int64
-#define LUA_INTEGER_FRMLEN	"I64"
+#define LUA_INTEGER_FRMLEN	"i64"
 
 #define LUA_MAXINTEGER		_I64_MAX
 #define LUA_MININTEGER		_I64_MIN

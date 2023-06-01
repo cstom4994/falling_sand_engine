@@ -3149,19 +3149,19 @@ START_ENUM(DataType)
 //    ImGuiDataType_S8,       // signed char / char (with sensible compilers)
 MAKE_ENUM(ImGuiDataType_S8, S8)
 //    ImGuiDataType_U8,       // unsigned char
-MAKE_ENUM(ImGuiDataType_U8, U8)
+MAKE_ENUM(ImGuiDataType_U8, u8)
 //    ImGuiDataType_S16,      // short
 MAKE_ENUM(ImGuiDataType_S16, S16)
 //    ImGuiDataType_U16,      // unsigned short
-MAKE_ENUM(ImGuiDataType_U16, U16)
+MAKE_ENUM(ImGuiDataType_U16, u16)
 //    ImGuiDataType_S32,      // int
 MAKE_ENUM(ImGuiDataType_S32, S32)
 //    ImGuiDataType_U32,      // unsigned int
-MAKE_ENUM(ImGuiDataType_U32, U32)
+MAKE_ENUM(ImGuiDataType_U32, u32)
 //    ImGuiDataType_S64,      // long long / __int64
 MAKE_ENUM(ImGuiDataType_S64, S64)
 //    ImGuiDataType_U64,      // unsigned long long / unsigned __int64
-MAKE_ENUM(ImGuiDataType_U64, U64)
+MAKE_ENUM(ImGuiDataType_U64, u64)
 //    ImGuiDataType_Float,    // float
 MAKE_ENUM(ImGuiDataType_Float, Float)
 //    ImGuiDataType_Double,   // double

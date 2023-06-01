@@ -2,7 +2,7 @@
 #define ME_TABLEINTERFACE_H
 
 #include "lua_error.h"
-#include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/lua_wrapper.hpp"
 
 class TableInterface {
 private:

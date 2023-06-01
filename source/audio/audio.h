@@ -1,7 +1,7 @@
 
 
-#ifndef METAENGINE_AUDIO_H
-#define METAENGINE_AUDIO_H
+#ifndef ME_AUDIO_H
+#define ME_AUDIO_H
 
 #include <cmath>
 #include <iostream>
@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/macros.hpp"
 #include "core/mathlib.hpp"
 #include "engine/engine.h"
@@ -17,17 +17,13 @@
 //--------------------------------------------------------------------------------------------------
 // C API
 
-#ifdef __cplusplus
-extern "C" {
-#endif  // __cplusplus
+typedef struct ME_Audio ME_Audio;
 
-typedef struct METAENGINE_Audio METAENGINE_Audio;
-
-METAENGINE_Audio *METADOT_CDECL metadot_audio_load_ogg(const char *path /*= NULL*/);
-METAENGINE_Audio *METADOT_CDECL metadot_audio_load_wav(const char *path /*= NULL*/);
-METAENGINE_Audio *METADOT_CDECL metadot_audio_load_ogg_from_memory(void *memory, int byte_count);
-METAENGINE_Audio *METADOT_CDECL metadot_audio_load_wav_from_memory(void *memory, int byte_count);
-void METADOT_CDECL metadot_audio_destroy(METAENGINE_Audio *audio);
+ME_Audio *METADOT_CDECL metadot_audio_load_ogg(const char *path /*= NULL*/);
+ME_Audio *METADOT_CDECL metadot_audio_load_wav(const char *path /*= NULL*/);
+ME_Audio *METADOT_CDECL metadot_audio_load_ogg_from_memory(void *memory, int byte_count);
+ME_Audio *METADOT_CDECL metadot_audio_load_wav_from_memory(void *memory, int byte_count);
+void METADOT_CDECL metadot_audio_destroy(ME_Audio *audio);
 
 // -------------------------------------------------------------------------------------------------
 
@@ -38,33 +34,33 @@ void METADOT_CDECL metadot_audio_set_pause(bool true_for_paused);
 
 // -------------------------------------------------------------------------------------------------
 
-void METADOT_CDECL metadot_music_play(METAENGINE_Audio *audio_source, float fade_in_time /*= 0*/);
+void METADOT_CDECL metadot_music_play(ME_Audio *audio_source, float fade_in_time /*= 0*/);
 void METADOT_CDECL metadot_music_stop(float fade_out_time /*= 0*/);
 void METADOT_CDECL metadot_music_set_volume(float volume);
 void METADOT_CDECL metadot_music_set_loop(bool true_to_loop);
 void METADOT_CDECL metadot_music_pause();
 void METADOT_CDECL metadot_music_resume();
-void METADOT_CDECL metadot_music_switch_to(METAENGINE_Audio *audio_source, float fade_out_time /*= 0*/, float fade_in_time /*= 0*/);
-void METADOT_CDECL metadot_music_crossfade(METAENGINE_Audio *audio_source, float cross_fade_time /*= 0*/);
+void METADOT_CDECL metadot_music_switch_to(ME_Audio *audio_source, float fade_out_time /*= 0*/, float fade_in_time /*= 0*/);
+void METADOT_CDECL metadot_music_crossfade(ME_Audio *audio_source, float cross_fade_time /*= 0*/);
 uint64_t METADOT_CDECL metadot_music_get_sample_index();
-METAENGINE_Result METADOT_CDECL metadot_music_set_sample_index(uint64_t sample_index);
+void METADOT_CDECL metadot_music_set_sample_index(uint64_t sample_index);
 
 // -------------------------------------------------------------------------------------------------
 
-typedef struct METAENGINE_SoundParams {
+typedef struct ME_SoundParams {
     bool paused;
     bool looped;
     float volume;
     float pan;
     float delay;
-} METAENGINE_SoundParams;
+} ME_SoundParams;
 
-typedef struct METAENGINE_Sound {
+typedef struct ME_Sound {
     uint64_t id;
-} METAENGINE_Sound;
+} ME_Sound;
 
-ME_INLINE METAENGINE_SoundParams METADOT_CDECL metadot_sound_params_defaults() {
-    METAENGINE_SoundParams params;
+ME_INLINE ME_SoundParams METADOT_CDECL metadot_sound_params_defaults() {
+    ME_SoundParams params;
     params.paused = false;
     params.looped = false;
     params.volume = 1.0f;
@@ -73,37 +69,33 @@ ME_INLINE METAENGINE_SoundParams METADOT_CDECL metadot_sound_params_defaults() {
     return params;
 }
 
-METAENGINE_Sound METADOT_CDECL metadot_play_sound(METAENGINE_Audio *audio_source, METAENGINE_SoundParams params /*= metadot_sound_params_defaults()*/, METAENGINE_Result *err /*= NULL*/);
+ME_Sound METADOT_CDECL metadot_play_sound(ME_Audio *audio_source, ME_SoundParams params /*= metadot_sound_params_defaults()*/, int *err /*= NULL*/);
 
-bool METADOT_CDECL metadot_sound_is_active(METAENGINE_Sound sound);
-bool METADOT_CDECL metadot_sound_get_is_paused(METAENGINE_Sound sound);
-bool METADOT_CDECL metadot_sound_get_is_looped(METAENGINE_Sound sound);
-float METADOT_CDECL metadot_sound_get_volume(METAENGINE_Sound sound);
-uint64_t METADOT_CDECL metadot_sound_get_sample_index(METAENGINE_Sound sound);
-void METADOT_CDECL metadot_sound_set_is_paused(METAENGINE_Sound sound, bool true_for_paused);
-void METADOT_CDECL metadot_sound_set_is_looped(METAENGINE_Sound sound, bool true_for_looped);
-void METADOT_CDECL metadot_sound_set_volume(METAENGINE_Sound sound, float volume);
-void METADOT_CDECL metadot_sound_set_sample_index(METAENGINE_Sound sound, uint64_t sample_index);
-
-#ifdef __cplusplus
-}
-#endif  // __cplusplus
+bool METADOT_CDECL metadot_sound_is_active(ME_Sound sound);
+bool METADOT_CDECL metadot_sound_get_is_paused(ME_Sound sound);
+bool METADOT_CDECL metadot_sound_get_is_looped(ME_Sound sound);
+float METADOT_CDECL metadot_sound_get_volume(ME_Sound sound);
+uint64_t METADOT_CDECL metadot_sound_get_sample_index(ME_Sound sound);
+void METADOT_CDECL metadot_sound_set_is_paused(ME_Sound sound, bool true_for_paused);
+void METADOT_CDECL metadot_sound_set_is_looped(ME_Sound sound, bool true_for_looped);
+void METADOT_CDECL metadot_sound_set_volume(ME_Sound sound, float volume);
+void METADOT_CDECL metadot_sound_set_sample_index(ME_Sound sound, uint64_t sample_index);
 
 //--------------------------------------------------------------------------------------------------
 // C++ API
 
 namespace MetaEngine {
 
-using Audio = METAENGINE_Audio;
+using Audio = ME_Audio;
 
-struct SoundParams : public METAENGINE_SoundParams {
-    SoundParams() { *(METAENGINE_SoundParams *)this = metadot_sound_params_defaults(); }
-    SoundParams(METAENGINE_SoundParams sp) { *(METAENGINE_SoundParams *)this = sp; }
+struct SoundParams : public ME_SoundParams {
+    SoundParams() { *(ME_SoundParams *)this = metadot_sound_params_defaults(); }
+    SoundParams(ME_SoundParams sp) { *(ME_SoundParams *)this = sp; }
 };
 
-struct Sound : public METAENGINE_Sound {
+struct Sound : public ME_Sound {
     Sound() { id = -1; }
-    Sound(METAENGINE_Sound s) { *(METAENGINE_Sound *)this = s; }
+    Sound(ME_Sound s) { *(ME_Sound *)this = s; }
 };
 
 ME_INLINE Audio *audio_load_ogg(const char *path = NULL) { return metadot_audio_load_ogg(path); }
@@ -134,7 +126,7 @@ ME_INLINE uint64_t music_get_sample_index() { return metadot_music_get_sample_in
 
 // -------------------------------------------------------------------------------------------------
 
-ME_INLINE Sound sound_play(Audio *audio_source, SoundParams params = SoundParams(), Result *err = NULL) { return metadot_play_sound(audio_source, params, err); }
+ME_INLINE Sound sound_play(Audio *audio_source, SoundParams params = SoundParams(), int *err = NULL) { return metadot_play_sound(audio_source, params, err); }
 
 ME_INLINE bool sound_is_active(Sound sound) { return metadot_sound_is_active(sound); }
 ME_INLINE bool sound_get_is_paused(Sound sound) { return metadot_sound_get_is_paused(sound); }
@@ -172,4 +164,4 @@ public:
     bool IsEventPlaying(const std::string &strEventName) const;
 };
 
-#endif  // METAENGINE_AUDIO_H
+#endif  // ME_AUDIO_H

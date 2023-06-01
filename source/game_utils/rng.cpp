@@ -22,4 +22,4 @@ void RNG_Delete(RNG* rng) {
     if (NULL != rng) delete rng;
 }
 
-U32 RNG_Next(RNG* rng) { return pcg32_random_r(&rng->rng); }
+u32 RNG_Next(RNG* rng) { return pcg32_random_r(&rng->rng); }

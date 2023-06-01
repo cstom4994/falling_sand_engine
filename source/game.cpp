@@ -15,7 +15,6 @@
 
 #include "background.hpp"
 #include "core/const.h"
-#include "core/core.h"
 #include "core/core.hpp"
 #include "core/cpp/promise.hpp"
 #include "core/cpp/utils.hpp"
@@ -57,7 +56,7 @@ Game::Game(int argc, char *argv[]) {
             [](MetaEngine::Promise::Promise &d) { d.fail([](long n, int m) { METADOT_BUG("UncaughtException parameters = %d %d", (int)n, m); }).fail([]() { METADOT_ERROR("UncaughtException"); }); });
 
     // Start memory management including GC
-    METAENGINE_Memory_Init(argc, argv);
+    ME_mem_init(argc, argv);
 
     METADOT_INIT();
     METADOT_REGISTER_THREAD("Application thread");
@@ -71,8 +70,12 @@ Game::~Game() {
     global.game = nullptr;
     METADOT_SHUTDOWN();
 
-    // Stop memory management and GC
-    METAENGINE_Memory_End();
+    // Stop memory setting and GC
+    ME_mem_end();
+
+#if defined(ME_LEAK_TEST)
+    ME_get_leaks_info();
+#endif
 }
 
 int Game::init(int argc, char *argv[]) {
@@ -94,16 +97,16 @@ int Game::init(int argc, char *argv[]) {
     // Initialize Gameplay script system before scripting system initialization
     METADOT_INFO("Loading gameplay script...");
 
-    GameIsolate_.gameplayscript = MetaEngine::CreateRef<GameplayScriptSystem>(2);
+    GameIsolate_.gameplayscript = ME::create_ref<GameplayScriptSystem>(2);
     GameIsolate_.systemList.push_back(GameIsolate_.gameplayscript);
 
-    GameIsolate_.ui = MetaEngine::CreateRef<UISystem>(4);
+    GameIsolate_.ui = ME::create_ref<UISystem>(4);
     GameIsolate_.systemList.push_back(GameIsolate_.ui);
 
-    GameIsolate_.shaderworker = MetaEngine::CreateRef<ShaderWorkerSystem>(6, SystemFlags::SystemFlags_Render);
+    GameIsolate_.shaderworker = ME::create_ref<ShaderWorkerSystem>(6, SystemFlags::SystemFlags_Render);
     GameIsolate_.systemList.push_back(GameIsolate_.shaderworker);
 
-    GameIsolate_.backgrounds = MetaEngine::CreateRef<BackgroundSystem>(8);
+    GameIsolate_.backgrounds = ME::create_ref<BackgroundSystem>(8);
     GameIsolate_.systemList.push_back(GameIsolate_.backgrounds);
 
     // Initialize scripting system
@@ -127,8 +130,8 @@ int Game::init(int argc, char *argv[]) {
 
     // register & set up materials
     METADOT_INFO("Setting up materials...");
-    movingTiles = new U16[global.GameData_.materials_count];
-    METADOT_NEW(C, debugDraw, DebugDraw, Render.target);
+    movingTiles = new u16[global.GameData_.materials_count];
+    debugDraw = new DebugDraw(Render.target);
 
     global.audio.LoadEvent("event:/World/Explode", "explode.ogg");
     global.audio.LoadEvent("event:/Music/Title", "title.ogg");
@@ -139,10 +142,10 @@ int Game::init(int argc, char *argv[]) {
 
     // Initialize the world
     METADOT_INFO("Initializing world...");
-    GameIsolate_.world = MetaEngine::CreateScope<World>();
+    GameIsolate_.world = ME::create_scope<World>();
     GameIsolate_.world->noSaveLoad = true;
-    GameIsolate_.world->init(METADOT_RESLOC("saves/mainMenu"), (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
-                             (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, Render.target, &global.audio);
+    GameIsolate_.world->init(METADOT_RESLOC("saves/mainMenu"), (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
+                             (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, Render.target, &global.audio);
 
     {
         // set up main menu ui
@@ -170,8 +173,8 @@ int Game::init(int argc, char *argv[]) {
     }
 
     // init threadpools
-    METADOT_NEW(C, GameIsolate_.updateDirtyPool, MetaEngine::ThreadPool, 4);
-    METADOT_NEW(C, GameIsolate_.updateDirtyPool2, MetaEngine::ThreadPool, 2);
+    GameIsolate_.updateDirtyPool = new MetaEngine::ThreadPool(4);
+    GameIsolate_.updateDirtyPool2 = new MetaEngine::ThreadPool(2);
 
     return this->run(argc, argv);
 }
@@ -336,34 +339,34 @@ void Game::createTexture() {
 
     auto init_pixels = [&]() {
         // create texture pixel buffers
-        TexturePack_.pixels = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixels = std::vector<u8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
         TexturePack_.pixels_ar = &TexturePack_.pixels[0];
 
-        TexturePack_.pixelsLayer2 = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsLayer2 = std::vector<u8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
         TexturePack_.pixelsLayer2_ar = &TexturePack_.pixelsLayer2[0];
 
-        TexturePack_.pixelsBackground = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsBackground = std::vector<u8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
         TexturePack_.pixelsBackground_ar = &TexturePack_.pixelsBackground[0];
 
-        TexturePack_.pixelsObjects = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
+        TexturePack_.pixelsObjects = std::vector<u8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, ME_ALPHA_TRANSPARENT);
         TexturePack_.pixelsObjects_ar = &TexturePack_.pixelsObjects[0];
 
-        TexturePack_.pixelsTemp = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
+        TexturePack_.pixelsTemp = std::vector<u8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, ME_ALPHA_TRANSPARENT);
         TexturePack_.pixelsTemp_ar = &TexturePack_.pixelsTemp[0];
 
-        TexturePack_.pixelsCells = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, METAENGINE_ALPHA_TRANSPARENT);
+        TexturePack_.pixelsCells = std::vector<u8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, ME_ALPHA_TRANSPARENT);
         TexturePack_.pixelsCells_ar = &TexturePack_.pixelsCells[0];
 
-        TexturePack_.pixelsLoading = std::vector<U8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, METAENGINE_ALPHA_TRANSPARENT);
+        TexturePack_.pixelsLoading = std::vector<u8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, ME_ALPHA_TRANSPARENT);
         TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
 
-        TexturePack_.pixelsFire = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsFire = std::vector<u8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
         TexturePack_.pixelsFire_ar = &TexturePack_.pixelsFire[0];
 
-        TexturePack_.pixelsFlow = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsFlow = std::vector<u8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
         TexturePack_.pixelsFlow_ar = &TexturePack_.pixelsFlow[0];
 
-        TexturePack_.pixelsEmission = std::vector<U8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
+        TexturePack_.pixelsEmission = std::vector<u8>(GameIsolate_.world->width * GameIsolate_.world->height * 4, 0);
         TexturePack_.pixelsEmission_ar = &TexturePack_.pixelsEmission[0];
     };
 
@@ -404,7 +407,7 @@ int Game::run(int argc, char *argv[]) {
     global.GameData_.ofsY = (global.GameData_.ofsY - Screen.windowHeight / 2) / 2 * 3 + Screen.windowHeight / 2;
 
     InitFPS();
-    objectDelete = new U8[GameIsolate_.world->width * GameIsolate_.world->height];
+    objectDelete = new u8[GameIsolate_.world->width * GameIsolate_.world->height];
 
     fadeInStart = ME_gettime();
     fadeInLength = 250;
@@ -525,22 +528,22 @@ int Game::run(int argc, char *argv[]) {
                         RigidBody *cur = (*rbs)[i];
                         if (!static_cast<bool>(cur->surface)) continue;
                         if (cur->body->IsEnabled()) {
-                            F32 s = sin(-cur->body->GetAngle());
-                            F32 c = cos(-cur->body->GetAngle());
+                            f32 s = sin(-cur->body->GetAngle());
+                            f32 c = cos(-cur->body->GetAngle());
                             bool upd = false;
-                            for (F32 xx = -3; xx <= 3; xx += 0.5) {
-                                for (F32 yy = -3; yy <= 3; yy += 0.5) {
+                            for (f32 xx = -3; xx <= 3; xx += 0.5) {
+                                for (f32 yy = -3; yy <= 3; yy += 0.5) {
                                     if (abs(xx) + abs(yy) == 6) continue;
                                     // rotate point
 
-                                    F32 tx = x + xx - cur->body->GetPosition().x;
-                                    F32 ty = y + yy - cur->body->GetPosition().y;
+                                    f32 tx = x + xx - cur->body->GetPosition().x;
+                                    f32 ty = y + yy - cur->body->GetPosition().y;
 
                                     int ntx = (int)(tx * c - ty * s);
                                     int nty = (int)(tx * s + ty * c);
 
                                     if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                        U32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
+                                        u32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
                                         if (((pixel >> 24) & 0xff) != 0x00) {
                                             R_GET_PIXEL(cur->surface, ntx, nty) = 0x00000000;
                                             upd = true;
@@ -616,22 +619,22 @@ int Game::run(int argc, char *argv[]) {
 
                                     bool connect = false;
                                     if (cur->body->IsEnabled()) {
-                                        F32 s = sin(-cur->body->GetAngle());
-                                        F32 c = cos(-cur->body->GetAngle());
+                                        f32 s = sin(-cur->body->GetAngle());
+                                        f32 c = cos(-cur->body->GetAngle());
                                         bool upd = false;
-                                        for (F32 xx = -3; xx <= 3; xx += 0.5) {
-                                            for (F32 yy = -3; yy <= 3; yy += 0.5) {
+                                        for (f32 xx = -3; xx <= 3; xx += 0.5) {
+                                            for (f32 yy = -3; yy <= 3; yy += 0.5) {
                                                 if (abs(xx) + abs(yy) == 6) continue;
                                                 // rotate point
 
-                                                F32 tx = x + xx - cur->body->GetPosition().x;
-                                                F32 ty = y + yy - cur->body->GetPosition().y;
+                                                f32 tx = x + xx - cur->body->GetPosition().x;
+                                                f32 ty = y + yy - cur->body->GetPosition().y;
 
                                                 int ntx = (int)(tx * c - ty * s);
                                                 int nty = (int)(tx * s + ty * c);
 
                                                 if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                                    U32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
+                                                    u32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
                                                     if (((pixel >> 24) & 0xff) != 0x00) {
                                                         connect = true;
                                                     }
@@ -651,18 +654,18 @@ int Game::run(int argc, char *argv[]) {
                             } else if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Tool)) {
                                 // break with pickaxe
 
-                                F32 breakSize = pl->heldItem->breakSize;
+                                f32 breakSize = pl->heldItem->breakSize;
 
-                                int x = (int)(pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x + 10 * (F32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
-                                int y = (int)(pl_we->y + pl_we->hh / 2.0f + GameIsolate_.world->loadZone.y + 10 * (F32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
+                                int x = (int)(pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x + 10 * (f32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
+                                int y = (int)(pl_we->y + pl_we->hh / 2.0f + GameIsolate_.world->loadZone.y + 10 * (f32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
 
                                 C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, (int)breakSize, (int)breakSize, 32, SDL_PIXELFORMAT_ARGB8888);
 
                                 int n = 0;
                                 for (int xx = 0; xx < breakSize; xx++) {
                                     for (int yy = 0; yy < breakSize; yy++) {
-                                        F32 cx = (F32)((xx / breakSize) - 0.5);
-                                        F32 cy = (F32)((yy / breakSize) - 0.5);
+                                        f32 cx = (f32)((xx / breakSize) - 0.5);
+                                        f32 cy = (f32)((yy / breakSize) - 0.5);
 
                                         if (cx * cx + cy * cy > 0.25f) continue;
 
@@ -680,14 +683,14 @@ int Game::run(int argc, char *argv[]) {
                                     global.audio.PlayEvent("event:/Player/Impact");
                                     b2PolygonShape s;
                                     s.SetAsBox(1, 1);
-                                    RigidBody *rb = GameIsolate_.world->makeRigidBody(b2_dynamicBody, (F32)x, (F32)y, 0, s, 1, (F32)0.3, tex);
+                                    RigidBody *rb = GameIsolate_.world->makeRigidBody(b2_dynamicBody, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
 
                                     b2Filter bf = {};
                                     bf.categoryBits = 0x0001;
                                     bf.maskBits = 0xffff;
                                     rb->body->GetFixtureList()[0].SetFilterData(bf);
 
-                                    rb->body->SetLinearVelocity({(F32)((rand() % 100) / 100.0 - 0.5), (F32)((rand() % 100) / 100.0 - 0.5)});
+                                    rb->body->SetLinearVelocity({(f32)((rand() % 100) / 100.0 - 0.5), (f32)((rand() % 100) / 100.0 - 0.5)});
 
                                     GameIsolate_.world->rigidBodies.push_back(rb);
                                     GameIsolate_.world->updateRigidBodyHitbox(rb);
@@ -733,9 +736,9 @@ int Game::run(int argc, char *argv[]) {
 
                                     int dx = pl->hammerX - x;
                                     int dy = pl->hammerY - y;
-                                    F32 len = sqrtf(dx * dx + dy * dy);
-                                    F32 udx = dx / len;
-                                    F32 udy = dy / len;
+                                    f32 len = sqrtf(dx * dx + dy * dy);
+                                    f32 udx = dx / len;
+                                    f32 udy = dy / len;
 
                                     int ex = pl->hammerX + dx;
                                     int ey = pl->hammerY + dy;
@@ -745,8 +748,8 @@ int Game::run(int argc, char *argv[]) {
                                     int nSegments = 1 + len / 10;
                                     std::vector<std::tuple<int, int>> points = {};
                                     for (int i = 0; i < nSegments; i++) {
-                                        int sx = pl->hammerX + (int)((F32)(dx / nSegments) * (i + 1));
-                                        int sy = pl->hammerY + (int)((F32)(dy / nSegments) * (i + 1));
+                                        int sx = pl->hammerX + (int)((f32)(dx / nSegments) * (i + 1));
+                                        int sy = pl->hammerY + (int)((f32)(dy / nSegments) * (i + 1));
                                         sx += rand() % 3 - 1;
                                         sy += rand() % 3 - 1;
                                         points.push_back(std::tuple<int, int>(sx, sy));
@@ -823,16 +826,16 @@ int Game::run(int argc, char *argv[]) {
                         bool connect = false;
                         if (!static_cast<bool>(cur->surface)) continue;
                         if (cur->body->IsEnabled()) {
-                            F32 s = sin(-cur->body->GetAngle());
-                            F32 c = cos(-cur->body->GetAngle());
+                            f32 s = sin(-cur->body->GetAngle());
+                            f32 c = cos(-cur->body->GetAngle());
                             bool upd = false;
-                            for (F32 xx = -3; xx <= 3; xx += 0.5) {
-                                for (F32 yy = -3; yy <= 3; yy += 0.5) {
+                            for (f32 xx = -3; xx <= 3; xx += 0.5) {
+                                for (f32 yy = -3; yy <= 3; yy += 0.5) {
                                     if (abs(xx) + abs(yy) == 6) continue;
                                     // rotate point
 
-                                    F32 tx = x + xx - cur->body->GetPosition().x;
-                                    F32 ty = y + yy - cur->body->GetPosition().y;
+                                    f32 tx = x + xx - cur->body->GetPosition().x;
+                                    f32 ty = y + yy - cur->body->GetPosition().y;
 
                                     int ntx = (int)(tx * c - ty * s);
                                     int nty = (int)(tx * s + ty * c);
@@ -955,12 +958,12 @@ int Game::run(int argc, char *argv[]) {
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
                         if (cur->body->IsEnabled() && static_cast<bool>(cur->surface)) {
-                            F32 s = sin(-cur->body->GetAngle());
-                            F32 c = cos(-cur->body->GetAngle());
+                            f32 s = sin(-cur->body->GetAngle());
+                            f32 c = cos(-cur->body->GetAngle());
                             bool upd = false;
 
-                            F32 tx = msx - cur->body->GetPosition().x;
-                            F32 ty = msy - cur->body->GetPosition().y;
+                            f32 tx = msx - cur->body->GetPosition().x;
+                            f32 ty = msy - cur->body->GetPosition().y;
 
                             int ntx = (int)(tx * c - ty * s);
                             int nty = (int)(tx * s + ty * c);
@@ -1034,10 +1037,10 @@ int Game::run(int argc, char *argv[]) {
             R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight, {0, 0, 0, 255});
         } else if (fadeInStart > 0 && fadeInLength > 0) {
 
-            F32 thru = 1 - (F32)(Time.now - fadeInStart) / fadeInLength;
+            f32 thru = 1 - (f32)(Time.now - fadeInStart) / fadeInLength;
 
             if (thru >= 0 && thru <= 1) {
-                R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight, {0, 0, 0, (U8)(thru * 255)});
+                R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight, {0, 0, 0, (u8)(thru * 255)});
             } else {
                 fadeInStart = 0;
                 fadeInLength = 0;
@@ -1049,10 +1052,10 @@ int Game::run(int argc, char *argv[]) {
             fadeOutStart = Time.now;
         } else if (fadeOutStart > 0 && fadeOutLength > 0) {
 
-            F32 thru = (F32)(Time.now - fadeOutStart) / fadeOutLength;
+            f32 thru = (f32)(Time.now - fadeOutStart) / fadeOutLength;
 
             if (thru >= 0 && thru <= 1) {
-                R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight, {0, 0, 0, (U8)(thru * 255)});
+                R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight, {0, 0, 0, (u8)(thru * 255)});
             } else {
                 R_RectangleFilled(Render.target, 0, 0, Screen.windowWidth, Screen.windowHeight, {0, 0, 0, 255});
                 fadeOutStart = 0;
@@ -1079,7 +1082,7 @@ int Game::exit() {
     running = false;
 
     // release resources & shutdown
-    std::vector<MetaEngine::Ref<IGameSystem>>::reverse_iterator backwardIterator;
+    std::vector<ME::ref<IGameSystem>>::reverse_iterator backwardIterator;
     for (backwardIterator = GameIsolate_.systemList.rbegin(); backwardIterator != GameIsolate_.systemList.rend(); backwardIterator++) {
         backwardIterator->get()->Destory();
     }
@@ -1090,11 +1093,11 @@ int Game::exit() {
 
     delete[] objectDelete;
 
-    METADOT_DELETE(C, debugDraw, DebugDraw);
+    delete debugDraw;
     delete[] movingTiles;
 
-    METADOT_DELETE(C, GameIsolate_.updateDirtyPool, ThreadPool);
-    METADOT_DELETE(C, GameIsolate_.updateDirtyPool2, ThreadPool);
+    delete GameIsolate_.updateDirtyPool;
+    delete GameIsolate_.updateDirtyPool2;
 
     if (GameIsolate_.world.get()) {
         auto *p = GameIsolate_.world.release();
@@ -1152,8 +1155,8 @@ void Game::updateFrameEarly() {
         for (auto &cur : GameIsolate_.world->rigidBodies) {
             ME_ASSERT_E(cur);
             if (cur->body->IsEnabled()) {
-                F32 s = sin(cur->body->GetAngle());
-                F32 c = cos(cur->body->GetAngle());
+                f32 s = sin(cur->body->GetAngle());
+                f32 c = cos(cur->body->GetAngle());
                 bool upd = false;
 
                 for (int xx = 0; xx < cur->matWidth; xx++) {
@@ -1233,7 +1236,7 @@ void Game::updateFrameEarly() {
         if (n > 0) {
             b2PolygonShape s;
             s.SetAsBox(1, 1);
-            RigidBody *rb = GameIsolate_.world->makeRigidBody(b2_dynamicBody, (F32)x, (F32)y, 0, s, 1, (F32)0.3, tex);
+            RigidBody *rb = GameIsolate_.world->makeRigidBody(b2_dynamicBody, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
             for (int tx = 0; tx < tex->w; tx++) {
                 b2Filter bf = {};
                 bf.categoryBits = 0x0002;
@@ -1332,16 +1335,16 @@ void Game::updateFrameEarly() {
                 if (ControlSystem::lmouse_down && pl->heldItem->carry.size() > 0) {
                     // shoot fluid from container
 
-                    int x = (int)(pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x + 10 * (F32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f));
-                    int y = (int)(pl_we->y + pl_we->hh / 2.0f + GameIsolate_.world->loadZone.y + 10 * (F32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f));
+                    int x = (int)(pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x + 10 * (f32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f));
+                    int y = (int)(pl_we->y + pl_we->hh / 2.0f + GameIsolate_.world->loadZone.y + 10 * (f32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f));
 
                     MaterialInstance mat = pl->heldItem->carry[pl->heldItem->carry.size() - 1];
                     pl->heldItem->carry.pop_back();
-                    GameIsolate_.world->addCell(new CellData(mat, (F32)x, (F32)y, (F32)(pl_we->vx / 2 + (rand() % 10 - 5) / 10.0f + 1.5f * (F32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f)),
-                                                             (F32)(pl_we->vy / 2 + -(rand() % 5 + 5) / 10.0f + 1.5f * (F32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f)), 0, (F32)0.1));
+                    GameIsolate_.world->addCell(new CellData(mat, (f32)x, (f32)y, (f32)(pl_we->vx / 2 + (rand() % 10 - 5) / 10.0f + 1.5f * (f32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f)),
+                                                             (f32)(pl_we->vy / 2 + -(rand() % 5 + 5) / 10.0f + 1.5f * (f32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f)), 0, (f32)0.1));
 
                     int i = (int)pl->heldItem->carry.size();
-                    i = (int)((i / (F32)pl->heldItem->capacity) * pl->heldItem->fill.size());
+                    i = (int)((i / (f32)pl->heldItem->capacity) * pl->heldItem->fill.size());
                     U16Point pt = pl->heldItem->fill[i];
                     R_GET_PIXEL(pl->heldItem->surface, pt.x, pt.y) = 0x00;
 
@@ -1353,17 +1356,17 @@ void Game::updateFrameEarly() {
                 } else {
                     // pick up fluid into container
 
-                    F32 breakSize = pl->heldItem->breakSize;
+                    f32 breakSize = pl->heldItem->breakSize;
 
-                    int x = (int)(pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x + 10 * (F32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
-                    int y = (int)(pl_we->y + pl_we->hh / 2.0f + GameIsolate_.world->loadZone.y + 10 * (F32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
+                    int x = (int)(pl_we->x + pl_we->hw / 2.0f + GameIsolate_.world->loadZone.x + 10 * (f32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
+                    int y = (int)(pl_we->y + pl_we->hh / 2.0f + GameIsolate_.world->loadZone.y + 10 * (f32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
 
                     int n = 0;
                     for (int xx = 0; xx < breakSize; xx++) {
                         for (int yy = 0; yy < breakSize; yy++) {
                             if (pl->heldItem->capacity == 0 || (pl->heldItem->carry.size() < pl->heldItem->capacity)) {
-                                F32 cx = (F32)((xx / breakSize) - 0.5);
-                                F32 cy = (F32)((yy / breakSize) - 0.5);
+                                f32 cx = (f32)((xx / breakSize) - 0.5);
+                                f32 cy = (f32)((yy / breakSize) - 0.5);
 
                                 if (cx * cx + cy * cy > 0.25f) continue;
 
@@ -1372,9 +1375,9 @@ void Game::updateFrameEarly() {
                                     pl->heldItem->carry.push_back(GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width]);
 
                                     int i = (int)pl->heldItem->carry.size() - 1;
-                                    i = (int)((i / (F32)pl->heldItem->capacity) * pl->heldItem->fill.size());
+                                    i = (int)((i / (f32)pl->heldItem->capacity) * pl->heldItem->fill.size());
                                     U16Point pt = pl->heldItem->fill[i];
-                                    U32 c = GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].color;
+                                    u32 c = GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].color;
                                     R_GET_PIXEL(pl->heldItem->surface, pt.x, pt.y) = (GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].mat->alpha << 24) + c;
 
                                     pl->heldItem->texture = R_CopyImageFromSurface(pl->heldItem->surface);
@@ -1401,7 +1404,7 @@ void Game::updateFrameEarly() {
         int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / Screen.gameScale);
 
         bool swapped = false;
-        F32 hoverDelta = 10.0 * Time.deltaTime / 1000.0;
+        f32 hoverDelta = 10.0 * Time.deltaTime / 1000.0;
 
         // this copies the vector
         std::vector<RigidBody *> rbs = GameIsolate_.world->rigidBodies;
@@ -1411,22 +1414,22 @@ void Game::updateFrameEarly() {
             ME_ASSERT_E(cur);
 
             if (swapped) {
-                cur->hover = (F32)std::fmax(0, cur->hover - hoverDelta);
+                cur->hover = (f32)std::fmax(0, cur->hover - hoverDelta);
                 continue;
             }
 
             bool connect = false;
             if (cur->body->IsEnabled()) {
-                F32 s = sin(-cur->body->GetAngle());
-                F32 c = cos(-cur->body->GetAngle());
+                f32 s = sin(-cur->body->GetAngle());
+                f32 c = cos(-cur->body->GetAngle());
                 bool upd = false;
-                for (F32 xx = -3; xx <= 3; xx += 0.5) {
-                    for (F32 yy = -3; yy <= 3; yy += 0.5) {
+                for (f32 xx = -3; xx <= 3; xx += 0.5) {
+                    for (f32 yy = -3; yy <= 3; yy += 0.5) {
                         if (abs(xx) + abs(yy) == 6) continue;
                         // rotate point
 
-                        F32 tx = x + xx - cur->body->GetPosition().x;
-                        F32 ty = y + yy - cur->body->GetPosition().y;
+                        f32 tx = x + xx - cur->body->GetPosition().x;
+                        f32 ty = y + yy - cur->body->GetPosition().y;
 
                         int ntx = (int)(tx * c - ty * s);
                         int nty = (int)(tx * s + ty * c);
@@ -1447,9 +1450,9 @@ void Game::updateFrameEarly() {
 
             if (connect) {
                 swapped = true;
-                cur->hover = (F32)std::fmin(1, cur->hover + hoverDelta);
+                cur->hover = (f32)std::fmin(1, cur->hover + hoverDelta);
             } else {
-                cur->hover = (F32)std::fmax(0, cur->hover - hoverDelta);
+                cur->hover = (f32)std::fmax(0, cur->hover - hoverDelta);
             }
         }
 
@@ -1538,8 +1541,8 @@ void Game::tick() {
             if (cur->surface == nullptr) continue;
             if (!cur->body->IsEnabled()) continue;
 
-            F32 x = cur->body->GetPosition().x;
-            F32 y = cur->body->GetPosition().y;
+            f32 x = cur->body->GetPosition().x;
+            f32 y = cur->body->GetPosition().y;
 
             // draw
 
@@ -1547,7 +1550,7 @@ void Game::tick() {
             R_Target *tgtLQ = cur->back ? TexturePack_.textureObjectsBack->target : TexturePack_.textureObjectsLQ->target;
             int scaleObjTex = GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1;
 
-            metadot_rect r = {x * scaleObjTex, y * scaleObjTex, (F32)cur->surface->w * scaleObjTex, (F32)cur->surface->h * scaleObjTex};
+            metadot_rect r = {x * scaleObjTex, y * scaleObjTex, (f32)cur->surface->w * scaleObjTex, (f32)cur->surface->h * scaleObjTex};
 
             if (cur->texNeedsUpdate) {
                 if (cur->texture != nullptr) {
@@ -1558,18 +1561,18 @@ void Game::tick() {
                 cur->texNeedsUpdate = false;
             }
 
-            R_BlitRectX(cur->texture, NULL, tgt, &r, cur->body->GetAngle() * 180 / (F32)M_PI, 0, 0, R_FLIP_NONE);
+            R_BlitRectX(cur->texture, NULL, tgt, &r, cur->body->GetAngle() * 180 / (f32)M_PI, 0, 0, R_FLIP_NONE);
 
             // draw outline
 
-            U8 outlineAlpha = (U8)(cur->hover * 255);
+            u8 outlineAlpha = (u8)(cur->hover * 255);
             if (outlineAlpha > 0) {
                 ME_Color col = {0xff, 0xff, 0x80, outlineAlpha};
                 R_SetShapeBlendMode(R_BLEND_NORMAL_FACTOR_ALPHA);  // SDL_BLENDMODE_BLEND
                 for (auto &l : cur->outline) {
                     MEvec2 *vec = new MEvec2[l.GetNumPoints()];
                     for (int j = 0; j < l.GetNumPoints(); j++) {
-                        vec[j] = {(F32)l.GetPoint(j).x / Screen.gameScale, (F32)l.GetPoint(j).y / Screen.gameScale};
+                        vec[j] = {(f32)l.GetPoint(j).x / Screen.gameScale, (f32)l.GetPoint(j).y / Screen.gameScale};
                     }
                     MetaEngine::Drawing::drawPolygon(tgtLQ, col, vec, (int)x, (int)y, Screen.gameScale, l.GetNumPoints(), cur->body->GetAngle(), 0, 0);
                     delete[] vec;
@@ -1579,8 +1582,8 @@ void Game::tick() {
 
             // displace fluids
 
-            F32 s = sin(cur->body->GetAngle());
-            F32 c = cos(cur->body->GetAngle());
+            f32 s = sin(cur->body->GetAngle());
+            f32 c = cos(cur->body->GetAngle());
 
             std::vector<std::pair<int, int>> checkDirs = {{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
@@ -1604,22 +1607,22 @@ void Game::tick() {
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             break;
                         } else if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND) {
-                            GameIsolate_.world->addCell(new CellData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3), (F32)((rand() % 10 - 5) / 10.0f),
-                                                                     (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
+                            GameIsolate_.world->addCell(new CellData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (f32)wxd, (f32)(wyd - 3), (f32)((rand() % 10 - 5) / 10.0f),
+                                                                     (f32)(-(rand() % 5 + 5) / 10.0f), 0, (f32)0.1));
                             GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
-                            cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (F32)0.99, cur->body->GetLinearVelocity().y * (F32)0.99});
-                            cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (F32)0.98);
+                            cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (f32)0.99, cur->body->GetLinearVelocity().y * (f32)0.99});
+                            cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (f32)0.98);
                             break;
                         } else if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
-                            GameIsolate_.world->addCell(new CellData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (F32)wxd, (F32)(wyd - 3), (F32)((rand() % 10 - 5) / 10.0f),
-                                                                     (F32)(-(rand() % 5 + 5) / 10.0f), 0, (F32)0.1));
+                            GameIsolate_.world->addCell(new CellData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (f32)wxd, (f32)(wyd - 3), (f32)((rand() % 10 - 5) / 10.0f),
+                                                                     (f32)(-(rand() % 5 + 5) / 10.0f), 0, (f32)0.1));
                             GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
-                            cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (F32)0.998, cur->body->GetLinearVelocity().y * (F32)0.998});
-                            cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (F32)0.99);
+                            cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (f32)0.998, cur->body->GetLinearVelocity().y * (f32)0.998});
+                            cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (f32)0.99);
                             break;
                         }
                     }
@@ -1654,10 +1657,10 @@ void Game::tick() {
         // Tick Cam zoom
 
         if (state == INGAME && (ControlSystem::ZOOM_IN->get() || ControlSystem::ZOOM_OUT->get())) {
-            F32 CamZoomIn = (F32)(ControlSystem::ZOOM_IN->get());
-            F32 CamZoomOut = (F32)(ControlSystem::ZOOM_OUT->get());
+            f32 CamZoomIn = (f32)(ControlSystem::ZOOM_IN->get());
+            f32 CamZoomOut = (f32)(ControlSystem::ZOOM_OUT->get());
 
-            F32 deltaScale = CamZoomIn - CamZoomOut;
+            f32 deltaScale = CamZoomIn - CamZoomOut;
             int oldScale = Screen.gameScale;
             Screen.gameScale += deltaScale;
             if (Screen.gameScale < 1) Screen.gameScale = 1;
@@ -1681,11 +1684,11 @@ void Game::tick() {
 
         // int pitch;
         // void* vdpixels_ar = texture->data;
-        // U8* dpixels_ar = (U8*)vdpixels_ar;
-        U8 *dpixels_ar = TexturePack_.pixels_ar;
-        U8 *dpixelsFire_ar = TexturePack_.pixelsFire_ar;
-        U8 *dpixelsFlow_ar = TexturePack_.pixelsFlow_ar;
-        U8 *dpixelsEmission_ar = TexturePack_.pixelsEmission_ar;
+        // u8* dpixels_ar = (u8*)vdpixels_ar;
+        u8 *dpixels_ar = TexturePack_.pixels_ar;
+        u8 *dpixelsFire_ar = TexturePack_.pixelsFire_ar;
+        u8 *dpixelsFlow_ar = TexturePack_.pixelsFlow_ar;
+        u8 *dpixelsEmission_ar = TexturePack_.pixelsEmission_ar;
 
         std::vector<std::future<void>> results = {};
 
@@ -1697,7 +1700,7 @@ void Game::tick() {
 
             memset(cellPixels, 0, (size_t)GameIsolate_.world->width * GameIsolate_.world->height * 4);
 
-            GameIsolate_.world->renderCells((U8 **)&cellPixels);
+            GameIsolate_.world->renderCells((u8 **)&cellPixels);
             GameIsolate_.world->tickCells();
 
             // SDL_SetRenderTarget(renderer, NULL);
@@ -1717,11 +1720,11 @@ void Game::tick() {
             if (cur->surface == nullptr) continue;
             if (!cur->body->IsEnabled()) continue;
 
-            F32 x = cur->body->GetPosition().x;
-            F32 y = cur->body->GetPosition().y;
+            f32 x = cur->body->GetPosition().x;
+            f32 y = cur->body->GetPosition().y;
 
-            F32 s = sin(cur->body->GetAngle());
-            F32 c = cos(cur->body->GetAngle());
+            f32 s = sin(cur->body->GetAngle());
+            f32 c = cos(cur->body->GetAngle());
 
             std::vector<std::pair<int, int>> checkDirs = {{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
             for (int tx = 0; tx < cur->matWidth; tx++) {
@@ -1817,27 +1820,27 @@ void Game::tick() {
                     hadDirty = true;
                     movingTiles[GameIsolate_.world->tiles[i].mat->id]++;
                     if (GameIsolate_.world->tiles[i].mat->physicsType == PhysicsType::AIR) {
-                        dpixels_ar[offset + 0] = 0;                             // b
-                        dpixels_ar[offset + 1] = 0;                             // g
-                        dpixels_ar[offset + 2] = 0;                             // r
-                        dpixels_ar[offset + 3] = METAENGINE_ALPHA_TRANSPARENT;  // a
+                        dpixels_ar[offset + 0] = 0;                     // b
+                        dpixels_ar[offset + 1] = 0;                     // g
+                        dpixels_ar[offset + 2] = 0;                     // r
+                        dpixels_ar[offset + 3] = ME_ALPHA_TRANSPARENT;  // a
 
-                        dpixelsFire_ar[offset + 0] = 0;                             // b
-                        dpixelsFire_ar[offset + 1] = 0;                             // g
-                        dpixelsFire_ar[offset + 2] = 0;                             // r
-                        dpixelsFire_ar[offset + 3] = METAENGINE_ALPHA_TRANSPARENT;  // a
+                        dpixelsFire_ar[offset + 0] = 0;                     // b
+                        dpixelsFire_ar[offset + 1] = 0;                     // g
+                        dpixelsFire_ar[offset + 2] = 0;                     // r
+                        dpixelsFire_ar[offset + 3] = ME_ALPHA_TRANSPARENT;  // a
 
-                        dpixelsEmission_ar[offset + 0] = 0;                             // b
-                        dpixelsEmission_ar[offset + 1] = 0;                             // g
-                        dpixelsEmission_ar[offset + 2] = 0;                             // r
-                        dpixelsEmission_ar[offset + 3] = METAENGINE_ALPHA_TRANSPARENT;  // a
+                        dpixelsEmission_ar[offset + 0] = 0;                     // b
+                        dpixelsEmission_ar[offset + 1] = 0;                     // g
+                        dpixelsEmission_ar[offset + 2] = 0;                     // r
+                        dpixelsEmission_ar[offset + 3] = ME_ALPHA_TRANSPARENT;  // a
 
                         GameIsolate_.world->flowY[i] = 0;
                         GameIsolate_.world->flowX[i] = 0;
                     } else {
-                        U32 color = GameIsolate_.world->tiles[i].color;
-                        U32 emit = GameIsolate_.world->tiles[i].mat->emitColor;
-                        // F32 br = GameIsolate_.world->light[i];
+                        u32 color = GameIsolate_.world->tiles[i].color;
+                        u32 emit = GameIsolate_.world->tiles[i].mat->emitColor;
+                        // f32 br = GameIsolate_.world->light[i];
                         dpixels_ar[offset + 2] = ((color >> 0) & 0xff);                    // b
                         dpixels_ar[offset + 1] = ((color >> 8) & 0xff);                    // g
                         dpixels_ar[offset + 0] = ((color >> 16) & 0xff);                   // r
@@ -1857,11 +1860,11 @@ void Game::tick() {
                         }
                         if (GameIsolate_.world->tiles[i].mat->physicsType == PhysicsType::SOUP) {
 
-                            F32 newFlowX = GameIsolate_.world->prevFlowX[i] + (GameIsolate_.world->flowX[i] - GameIsolate_.world->prevFlowX[i]) * 0.25;
-                            F32 newFlowY = GameIsolate_.world->prevFlowY[i] + (GameIsolate_.world->flowY[i] - GameIsolate_.world->prevFlowY[i]) * 0.25;
+                            f32 newFlowX = GameIsolate_.world->prevFlowX[i] + (GameIsolate_.world->flowX[i] - GameIsolate_.world->prevFlowX[i]) * 0.25;
+                            f32 newFlowY = GameIsolate_.world->prevFlowY[i] + (GameIsolate_.world->flowY[i] - GameIsolate_.world->prevFlowY[i]) * 0.25;
                             if (newFlowY < 0) newFlowY *= 0.5;
 
-                            F64 a;
+                            f64 a;
                             // r g b a
                             dpixelsFlow_ar[offset + 2] = 0;
                             a = newFlowY * (3.0 / GameIsolate_.world->tiles[i].mat->iterations + 0.5) / 4.0 + 0.5;
@@ -1885,8 +1888,8 @@ void Game::tick() {
         }));
 
         // void* vdpixelsLayer2_ar = textureLayer2->data;
-        // U8* dpixelsLayer2_ar = (U8*)vdpixelsLayer2_ar;
-        U8 *dpixelsLayer2_ar = TexturePack_.pixelsLayer2_ar;
+        // u8* dpixelsLayer2_ar = (u8*)vdpixelsLayer2_ar;
+        u8 *dpixelsLayer2_ar = TexturePack_.pixelsLayer2_ar;
         results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
             for (int i = 0; i < GameIsolate_.world->width * GameIsolate_.world->height; i++) {
                 /*for (int x = 0; x < GameIsolate_.world->width; x++) {
@@ -1897,21 +1900,21 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
                     hadLayer2Dirty = true;
                     if (GameIsolate_.world->layer2[i].mat->physicsType == PhysicsType::AIR) {
                         if (GameIsolate_.globaldef.draw_background_grid) {
-                            U32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
+                            u32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
                             dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff;   // b
                             dpixelsLayer2_ar[offset + 1] = (color >> 8) & 0xff;   // g
                             dpixelsLayer2_ar[offset + 0] = (color >> 16) & 0xff;  // r
                             dpixelsLayer2_ar[offset + 3] = SDL_ALPHA_OPAQUE;      // a
                             continue;
                         } else {
-                            dpixelsLayer2_ar[offset + 0] = 0;                             // b
-                            dpixelsLayer2_ar[offset + 1] = 0;                             // g
-                            dpixelsLayer2_ar[offset + 2] = 0;                             // r
-                            dpixelsLayer2_ar[offset + 3] = METAENGINE_ALPHA_TRANSPARENT;  // a
+                            dpixelsLayer2_ar[offset + 0] = 0;                     // b
+                            dpixelsLayer2_ar[offset + 1] = 0;                     // g
+                            dpixelsLayer2_ar[offset + 2] = 0;                     // r
+                            dpixelsLayer2_ar[offset + 3] = ME_ALPHA_TRANSPARENT;  // a
                             continue;
                         }
                     }
-                    U32 color = GameIsolate_.world->layer2[i].color;
+                    u32 color = GameIsolate_.world->layer2[i].color;
                     dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff;                       // b
                     dpixelsLayer2_ar[offset + 1] = (color >> 8) & 0xff;                       // g
                     dpixelsLayer2_ar[offset + 0] = (color >> 16) & 0xff;                      // r
@@ -1921,8 +1924,8 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
         }));
 
         // void* vdpixelsBackground_ar = textureBackground->data;
-        // U8* dpixelsBackground_ar = (U8*)vdpixelsBackground_ar;
-        U8 *dpixelsBackground_ar = TexturePack_.pixelsBackground_ar;
+        // u8* dpixelsBackground_ar = (u8*)vdpixelsBackground_ar;
+        u8 *dpixelsBackground_ar = TexturePack_.pixelsBackground_ar;
         results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
             for (int i = 0; i < GameIsolate_.world->width * GameIsolate_.world->height; i++) {
                 /*for (int x = 0; x < GameIsolate_.world->width; x++) {
@@ -1932,7 +1935,7 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
 
                 if (GameIsolate_.world->backgroundDirty[i]) {
                     hadBackgroundDirty = true;
-                    U32 color = GameIsolate_.world->background[i];
+                    u32 color = GameIsolate_.world->background[i];
                     dpixelsBackground_ar[offset + 2] = (color >> 0) & 0xff;   // b
                     dpixelsBackground_ar[offset + 1] = (color >> 8) & 0xff;   // g
                     dpixelsBackground_ar[offset + 0] = (color >> 16) & 0xff;  // r
@@ -2038,10 +2041,10 @@ void Game::tickChunkLoading() {
 
             if (GameIsolate_.world->dirty[i]) {
                 if (GameIsolate_.world->tiles[i].mat->physicsType == PhysicsType::AIR) {
-                    UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, 0, 0, 0, METAENGINE_ALPHA_TRANSPARENT);
+                    UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, 0, 0, 0, ME_ALPHA_TRANSPARENT);
                 } else {
-                    U32 color = GameIsolate_.world->tiles[i].color;
-                    U32 emit = GameIsolate_.world->tiles[i].mat->emitColor;
+                    u32 color = GameIsolate_.world->tiles[i].color;
+                    u32 emit = GameIsolate_.world->tiles[i].mat->emitColor;
                     UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, GameIsolate_.world->tiles[i].mat->alpha);
                     UCH_SET_PIXEL(TexturePack_.pixelsEmission_ar, offset, (emit >> 0) & 0xff, (emit >> 8) & 0xff, (emit >> 16) & 0xff, (emit >> 24) & 0xff);
                 }
@@ -2050,19 +2053,19 @@ void Game::tickChunkLoading() {
             if (GameIsolate_.world->layer2Dirty[i]) {
                 if (GameIsolate_.world->layer2[i].mat->physicsType == PhysicsType::AIR) {
                     if (GameIsolate_.globaldef.draw_background_grid) {
-                        U32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
+                        u32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
                         UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, SDL_ALPHA_OPAQUE);
                     } else {
-                        UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, 0, 0, 0, METAENGINE_ALPHA_TRANSPARENT);
+                        UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, 0, 0, 0, ME_ALPHA_TRANSPARENT);
                     }
                     continue;
                 }
-                U32 color = GameIsolate_.world->layer2[i].color;
+                u32 color = GameIsolate_.world->layer2[i].color;
                 UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, GameIsolate_.world->layer2[i].mat->alpha);
             }
 
             if (GameIsolate_.world->backgroundDirty[i]) {
-                U32 color = GameIsolate_.world->background[i];
+                u32 color = GameIsolate_.world->background[i];
                 UCH_SET_PIXEL(TexturePack_.pixelsBackground_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, (color >> 24) & 0xff);
             }
 #undef UCH_SET_PIXEL
@@ -2151,7 +2154,7 @@ void Game::tickChunkLoading() {
 
 #define CLEARPIXEL(pixels, ofs)                                 \
     pixels[ofs + 0] = pixels[ofs + 1] = pixels[ofs + 2] = 0xff; \
-    pixels[ofs + 3] = METAENGINE_ALPHA_TRANSPARENT
+    pixels[ofs + 3] = ME_ALPHA_TRANSPARENT
 
 #define CLEARPIXEL_C(offset)                              \
     CLEARPIXEL(TexturePack_.pixels_ar, offset);           \
@@ -2219,13 +2222,13 @@ void Game::tickPlayer() {
             }
         }
 
-        pl_we->vy += (F32)(((ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) ? (pl_we->vy > -1 ? -0.8 : -0.35) : 0) + (ControlSystem::PLAYER_DOWN->get() ? 0.1 : 0));
+        pl_we->vy += (f32)(((ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) ? (pl_we->vy > -1 ? -0.8 : -0.35) : 0) + (ControlSystem::PLAYER_DOWN->get() ? 0.1 : 0));
         if (ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) {
             global.audio.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
-                CellData *p = new CellData(TilesCreateLava(), (F32)(pl_we->x + GameIsolate_.world->loadZone.x + pl_we->hw / 2 + rand() % 5 - 2 + pl_we->vx),
-                                           (F32)(pl_we->y + GameIsolate_.world->loadZone.y + pl_we->hh + pl_we->vy), (F32)((rand() % 10 - 5) / 10.0f + pl_we->vx / 2.0f),
-                                           (F32)((rand() % 10) / 10.0f + 1 + pl_we->vy / 2.0f), 0, (F32)0.025);
+                CellData *p = new CellData(TilesCreateLava(), (f32)(pl_we->x + GameIsolate_.world->loadZone.x + pl_we->hw / 2 + rand() % 5 - 2 + pl_we->vx),
+                                           (f32)(pl_we->y + GameIsolate_.world->loadZone.y + pl_we->hh + pl_we->vy), (f32)((rand() % 10 - 5) / 10.0f + pl_we->vx / 2.0f),
+                                           (f32)((rand() % 10) / 10.0f + 1 + pl_we->vy / 2.0f), 0, (f32)0.025);
                 p->temporary = true;
                 p->lifetime = 120;
                 GameIsolate_.world->addCell(p);
@@ -2235,29 +2238,29 @@ void Game::tickPlayer() {
         }
 
         if (pl_we->vy > 0) {
-            global.audio.SetEventParameter("event:/Player/Wind", "Wind", (F32)(pl_we->vy / 12.0));
+            global.audio.SetEventParameter("event:/Player/Wind", "Wind", (f32)(pl_we->vy / 12.0));
         } else {
             global.audio.SetEventParameter("event:/Player/Wind", "Wind", 0);
         }
 
-        pl_we->vx += (F32)((ControlSystem::PLAYER_LEFT->get() ? (pl_we->vx > 0 ? -0.4 : -0.2) : 0) + (ControlSystem::PLAYER_RIGHT->get() ? (pl_we->vx < 0 ? 0.4 : 0.2) : 0));
-        if (!ControlSystem::PLAYER_LEFT->get() && !ControlSystem::PLAYER_RIGHT->get()) pl_we->vx *= (F32)(pl_we->ground ? 0.85 : 0.96);
+        pl_we->vx += (f32)((ControlSystem::PLAYER_LEFT->get() ? (pl_we->vx > 0 ? -0.4 : -0.2) : 0) + (ControlSystem::PLAYER_RIGHT->get() ? (pl_we->vx < 0 ? 0.4 : 0.2) : 0));
+        if (!ControlSystem::PLAYER_LEFT->get() && !ControlSystem::PLAYER_RIGHT->get()) pl_we->vx *= (f32)(pl_we->ground ? 0.85 : 0.96);
         if (pl_we->vx > 4.5) pl_we->vx = 4.5;
         if (pl_we->vx < -4.5) pl_we->vx = -4.5;
     } else {
         if (state == INGAME) {
-            global.GameData_.freeCamX += (F32)((ControlSystem::PLAYER_LEFT->get() ? -5 : 0) + (ControlSystem::PLAYER_RIGHT->get() ? 5 : 0));
-            global.GameData_.freeCamY += (F32)((ControlSystem::PLAYER_UP->get() ? -5 : 0) + (ControlSystem::PLAYER_DOWN->get() ? 5 : 0));
+            global.GameData_.freeCamX += (f32)((ControlSystem::PLAYER_LEFT->get() ? -5 : 0) + (ControlSystem::PLAYER_RIGHT->get() ? 5 : 0));
+            global.GameData_.freeCamY += (f32)((ControlSystem::PLAYER_UP->get() ? -5 : 0) + (ControlSystem::PLAYER_DOWN->get() ? 5 : 0));
         } else {
         }
     }
 
     if (GameIsolate_.world->player) {
 
-        global.GameData_.desCamX = (F32)(-(mx - (Screen.windowWidth / 2)) / 4);
-        global.GameData_.desCamY = (F32)(-(my - (Screen.windowHeight / 2)) / 4);
+        global.GameData_.desCamX = (f32)(-(mx - (Screen.windowWidth / 2)) / 4);
+        global.GameData_.desCamY = (f32)(-(my - (Screen.windowHeight / 2)) / 4);
 
-        pl->holdAngle = (F32)(atan2(global.GameData_.desCamY, global.GameData_.desCamX) * 180 / (F32)M_PI);
+        pl->holdAngle = (f32)(atan2(global.GameData_.desCamY, global.GameData_.desCamX) * 180 / (f32)M_PI);
 
         global.GameData_.desCamX = 0;
         global.GameData_.desCamY = 0;
@@ -2308,7 +2311,7 @@ void Game::tickPlayer() {
                         int y = sind == -1 ? wmy : sind / GameIsolate_.world->width;
 
                         std::function<void(MaterialInstance, int, int)> makeCell = [&](MaterialInstance tile, int xPos, int yPos) {
-                            CellData *par = new CellData(tile, xPos, yPos, 0, 0, 0, (F32)0.01f);
+                            CellData *par = new CellData(tile, xPos, yPos, 0, 0, 0, (f32)0.01f);
                             par->vx = (rand() % 10 - 5) / 5.0f * 1.0f;
                             par->vy = (rand() % 10 - 5) / 5.0f * 1.0f;
                             par->ax = -par->vx / 10.0f;
@@ -2418,22 +2421,22 @@ void Game::tickPlayer() {
                             RigidBody *cur = (*rbs)[i];
                             if (!static_cast<bool>(cur->surface)) continue;
                             if (cur->body->IsEnabled()) {
-                                F32 s = sin(-cur->body->GetAngle());
-                                F32 c = cos(-cur->body->GetAngle());
+                                f32 s = sin(-cur->body->GetAngle());
+                                f32 c = cos(-cur->body->GetAngle());
                                 bool upd = false;
                                 for (int xx = -rad; xx <= rad; xx++) {
                                     for (int yy = -rad; yy <= rad; yy++) {
                                         if ((yy == -rad || yy == rad) && (xx == -rad || x == rad)) continue;
                                         // rotate point
 
-                                        F32 tx = x + xx - cur->body->GetPosition().x;
-                                        F32 ty = y + yy - cur->body->GetPosition().y;
+                                        f32 tx = x + xx - cur->body->GetPosition().x;
+                                        f32 ty = y + yy - cur->body->GetPosition().y;
 
                                         int ntx = (int)(tx * c - ty * s);
                                         int nty = (int)(tx * s + ty * c);
 
                                         if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                            U32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
+                                            u32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
                                             if (((pixel >> 24) & 0xff) != 0x00) {
                                                 R_GET_PIXEL(cur->surface, ntx, nty) = 0x00000000;
                                                 upd = true;
@@ -2467,8 +2470,8 @@ void Game::tickPlayer() {
                                                                            cur->ay = 0.01f;
                                                                        }
 
-                                                                       F32 tdx = cur->targetX - cur->x;
-                                                                       F32 tdy = cur->targetY - cur->y;
+                                                                       f32 tdx = cur->targetX - cur->x;
+                                                                       f32 tdy = cur->targetY - cur->y;
 
                                                                        if (tdx * tdx + tdy * tdy < 10 * 10) {
                                                                            cur->temporary = true;
@@ -2499,8 +2502,8 @@ void Game::tickProfiler() {
         // // ProfilerDrawStats(&data);
     }
 
-    if (MemCurrentUsageBytes() >= Core.max_mem) {
-    }
+    // if (MemCurrentUsageBytes() >= Core.max_mem) {
+    // }
 }
 
 void Game::updateFrameLate() {
@@ -2518,7 +2521,7 @@ void Game::updateFrameLate() {
             auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
             if (Time.now - Time.lastTickTime <= Time.mspt) {
-                F32 thruTick = (F32)((Time.now - Time.lastTickTime) / Time.mspt);
+                f32 thruTick = (f32)((Time.now - Time.lastTickTime) / Time.mspt);
 
                 global.GameData_.plPosX = pl_we->x + (int)(pl_we->vx * thruTick);
                 global.GameData_.plPosY = pl_we->y + (int)(pl_we->vy * thruTick);
@@ -2527,29 +2530,29 @@ void Game::updateFrameLate() {
                 global.GameData_.plPosY = pl_we->y;
             }
 
-            // plPosX = (F32)(plPosX + (pl_we->x - plPosX) / 25.0);
-            // plPosY = (F32)(plPosY + (pl_we->y - plPosY) / 25.0);
+            // plPosX = (f32)(plPosX + (pl_we->x - plPosX) / 25.0);
+            // plPosY = (f32)(plPosY + (pl_we->y - plPosY) / 25.0);
 
             nofsX = (int)(-((int)global.GameData_.plPosX + pl_we->hw / 2 + GameIsolate_.world->loadZone.x) * Screen.gameScale + Screen.windowWidth / 2);
             nofsY = (int)(-((int)global.GameData_.plPosY + pl_we->hh / 2 + GameIsolate_.world->loadZone.y) * Screen.gameScale + Screen.windowHeight / 2);
         } else {
-            global.GameData_.plPosX = (F32)(global.GameData_.plPosX + (global.GameData_.freeCamX - global.GameData_.plPosX) / 50.0f);
-            global.GameData_.plPosY = (F32)(global.GameData_.plPosY + (global.GameData_.freeCamY - global.GameData_.plPosY) / 50.0f);
+            global.GameData_.plPosX = (f32)(global.GameData_.plPosX + (global.GameData_.freeCamX - global.GameData_.plPosX) / 50.0f);
+            global.GameData_.plPosY = (f32)(global.GameData_.plPosY + (global.GameData_.freeCamY - global.GameData_.plPosY) / 50.0f);
 
             nofsX = (int)(-(global.GameData_.plPosX + 0 + GameIsolate_.world->loadZone.x) * Screen.gameScale + Screen.windowWidth / 2.0f);
             nofsY = (int)(-(global.GameData_.plPosY + 0 + GameIsolate_.world->loadZone.y) * Screen.gameScale + Screen.windowHeight / 2.0f);
         }
 
-        accLoadX += (nofsX - global.GameData_.ofsX) / (F32)Screen.gameScale;
-        accLoadY += (nofsY - global.GameData_.ofsY) / (F32)Screen.gameScale;
+        accLoadX += (nofsX - global.GameData_.ofsX) / (f32)Screen.gameScale;
+        accLoadY += (nofsY - global.GameData_.ofsY) / (f32)Screen.gameScale;
         // METADOT_BUG("{0:f} {0:f}", plPosX, plPosY);
         // METADOT_BUG("a {0:d} {0:d}", nofsX, nofsY);
         // METADOT_BUG("{0:d} {0:d}", nofsX - ofsX, nofsY - ofsY);
         global.GameData_.ofsX += (nofsX - global.GameData_.ofsX);
         global.GameData_.ofsY += (nofsY - global.GameData_.ofsY);
 
-        global.GameData_.camX = (F32)(global.GameData_.camX + (global.GameData_.desCamX - global.GameData_.camX) * (Time.now - Time.lastTime) / 250.0f);
-        global.GameData_.camY = (F32)(global.GameData_.camY + (global.GameData_.desCamY - global.GameData_.camY) * (Time.now - Time.lastTime) / 250.0f);
+        global.GameData_.camX = (f32)(global.GameData_.camX + (global.GameData_.desCamX - global.GameData_.camX) * (Time.now - Time.lastTime) / 250.0f);
+        global.GameData_.camY = (f32)(global.GameData_.camY + (global.GameData_.desCamY - global.GameData_.camY) * (Time.now - Time.lastTime) / 250.0f);
     }
 }
 
@@ -2609,7 +2612,7 @@ void Game::renderEarly() {
                 }
             }
             if (!anyFalse) {
-                U32 tmp = loadingOnColor;
+                u32 tmp = loadingOnColor;
                 loadingOnColor = loadingOffColor;
                 loadingOffColor = tmp;
             }
@@ -2636,7 +2639,7 @@ void Game::renderEarly() {
             R_Clear(TexturePack_.textureEntities->target);
             R_Clear(TexturePack_.textureEntitiesLQ->target);
             if (GameIsolate_.world->player) {
-                F32 thruTick = (F32)((Time.now - Time.lastTickTime) / Time.mspt);
+                f32 thruTick = (f32)((Time.now - Time.lastTickTime) / Time.mspt);
 
                 R_SetBlendMode(TexturePack_.textureEntities, R_BLEND_ADD);
                 R_SetBlendMode(TexturePack_.textureEntitiesLQ, R_BLEND_ADD);
@@ -2656,7 +2659,7 @@ void Game::renderEarly() {
 
                                 int dx = x - pl->hammerX;
                                 int dy = y - pl->hammerY;
-                                F32 len = sqrt(dx * dx + dy * dy);
+                                f32 len = sqrt(dx * dx + dy * dy);
                                 if (len > 40) {
                                     dx = dx / len * 40;
                                     dy = dy / len * 40;
@@ -2711,16 +2714,16 @@ void Game::renderLate() {
         BackgroundObject *bg = GameIsolate_.backgrounds->Get("TEST_OVERWORLD");
         if (!bg->layers.empty() && GameIsolate_.globaldef.draw_background && Screen.gameScale <= bg->layers[0]->surface.size() && GameIsolate_.world->loadZone.y > -5 * CHUNK_H) {
             R_SetShapeBlendMode(R_BLEND_SET);
-            ME_Color col = {static_cast<U8>((bg->solid >> 16) & 0xff), static_cast<U8>((bg->solid >> 8) & 0xff), static_cast<U8>((bg->solid >> 0) & 0xff), 0xff};
+            ME_Color col = {static_cast<u8>((bg->solid >> 16) & 0xff), static_cast<u8>((bg->solid >> 8) & 0xff), static_cast<u8>((bg->solid >> 0) & 0xff), 0xff};
             R_ClearColor(Render.target, col);
 
             metadot_rect *dst = new metadot_rect;
             metadot_rect *src = new metadot_rect;
 
-            F32 arX = (F32)Screen.windowWidth / (bg->layers[0]->surface[0]->w);
-            F32 arY = (F32)Screen.windowHeight / (bg->layers[0]->surface[0]->h);
+            f32 arX = (f32)Screen.windowWidth / (bg->layers[0]->surface[0]->w);
+            f32 arY = (f32)Screen.windowHeight / (bg->layers[0]->surface[0]->h);
 
-            F64 time = ME_gettime() / 1000.0;
+            f64 time = ME_gettime() / 1000.0;
 
             R_SetShapeBlendMode(R_BLEND_NORMAL);
 
@@ -2735,7 +2738,7 @@ void Game::renderLate() {
                 int tw = texture->w;
                 int th = texture->h;
 
-                int iter = (int)ceil((F32)Screen.windowWidth / (tw)) + 1;
+                int iter = (int)ceil((f32)Screen.windowWidth / (tw)) + 1;
                 for (int n = 0; n < iter; n++) {
 
                     src->x = 0;
@@ -2747,10 +2750,10 @@ void Game::renderLate() {
                              GameIsolate_.world->width / 2.0f * Screen.gameScale - tw / 2.0f;
                     dst->y = ((global.GameData_.ofsY + global.GameData_.camY) + GameIsolate_.world->loadZone.y * Screen.gameScale) * cur->parralaxY +
                              GameIsolate_.world->height / 2.0f * Screen.gameScale - th / 2.0f - Screen.windowHeight / 3.0f * (Screen.gameScale - 1);
-                    dst->w = (F32)tw;
-                    dst->h = (F32)th;
+                    dst->w = (f32)tw;
+                    dst->h = (f32)th;
 
-                    dst->x += (F32)(Screen.gameScale * fmod(cur->moveX * time, tw));
+                    dst->x += (f32)(Screen.gameScale * fmod(cur->moveX * time, tw));
 
                     // TODO: optimize
                     while (dst->x >= Screen.windowWidth - 10) dst->x -= (iter * tw);
@@ -2789,8 +2792,8 @@ void Game::renderLate() {
             delete src;
         }
 
-        metadot_rect r1 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX), (F32)(global.GameData_.ofsY + global.GameData_.camY), (F32)(GameIsolate_.world->width * Screen.gameScale),
-                                       (F32)(GameIsolate_.world->height * Screen.gameScale)};
+        metadot_rect r1 = metadot_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * Screen.gameScale),
+                                       (f32)(GameIsolate_.world->height * Screen.gameScale)};
         R_SetBlendMode(TexturePack_.textureBackground, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureBackground, NULL, Render.target, &r1);
 
@@ -2814,7 +2817,7 @@ void Game::renderLate() {
             }
 
             GameIsolate_.shaderworker->waterShader->Activate();
-            F32 t = (Time.now - Time.startTime) / 1000.0;
+            f32 t = (Time.now - Time.startTime) / 1000.0;
             GameIsolate_.shaderworker->waterShader->Update(t, Render.target->w * Screen.gameScale, Render.target->h * Screen.gameScale, TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, Screen.gameScale,
                                                            TexturePack_.textureFlowSpead, GameIsolate_.globaldef.water_overlay, GameIsolate_.globaldef.water_showFlow,
                                                            GameIsolate_.globaldef.water_pixelated);
@@ -2868,17 +2871,17 @@ void Game::renderLate() {
         }
 
         if (GameIsolate_.globaldef.draw_shaders && GameIsolate_.world) {
-            F32 lightTx;
-            F32 lightTy;
+            f32 lightTx;
+            f32 lightTy;
 
             if (GameIsolate_.world->player) {
                 auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
-                lightTx = (GameIsolate_.world->loadZone.x + pl_we->x + pl_we->hw / 2.0f) / (F32)GameIsolate_.world->width;
-                lightTy = (GameIsolate_.world->loadZone.y + pl_we->y + pl_we->hh / 2.0f) / (F32)GameIsolate_.world->height;
+                lightTx = (GameIsolate_.world->loadZone.x + pl_we->x + pl_we->hw / 2.0f) / (f32)GameIsolate_.world->width;
+                lightTy = (GameIsolate_.world->loadZone.y + pl_we->y + pl_we->hh / 2.0f) / (f32)GameIsolate_.world->height;
             } else {
-                lightTx = lmsx / (F32)GameIsolate_.world->width;
-                lightTy = lmsy / (F32)GameIsolate_.world->height;
+                lightTx = lmsx / (f32)GameIsolate_.world->width;
+                lightTy = lmsy / (f32)GameIsolate_.world->height;
             }
 
             if (GameIsolate_.shaderworker->newLightingShader->lastLx != lightTx || GameIsolate_.shaderworker->newLightingShader->lastLy != lightTy) needToRerenderLighting = true;
@@ -2899,11 +2902,11 @@ void Game::renderLate() {
                 }
             }
 
-            GameIsolate_.shaderworker->newLightingShader->insideDes = std::min(std::max(0.0f, (F32)nBg / ((range * 2) * (range * 2))), 1.0f);
+            GameIsolate_.shaderworker->newLightingShader->insideDes = std::min(std::max(0.0f, (f32)nBg / ((range * 2) * (range * 2))), 1.0f);
             GameIsolate_.shaderworker->newLightingShader->insideCur +=
                     (GameIsolate_.shaderworker->newLightingShader->insideDes - GameIsolate_.shaderworker->newLightingShader->insideCur) / 2.0f * (Time.deltaTime / 1000.0f);
 
-            F32 ins = GameIsolate_.shaderworker->newLightingShader->insideCur < 0.05 ? 0.0 : GameIsolate_.shaderworker->newLightingShader->insideCur;
+            f32 ins = GameIsolate_.shaderworker->newLightingShader->insideCur < 0.05 ? 0.0 : GameIsolate_.shaderworker->newLightingShader->insideCur;
             if (GameIsolate_.shaderworker->newLightingShader->lastInside != ins) needToRerenderLighting = true;
             GameIsolate_.shaderworker->newLightingShader->SetInside(ins);
             GameIsolate_.shaderworker->newLightingShader->SetBounds(GameIsolate_.world->tickZone.x * GameIsolate_.globaldef.hd_objects_size,
@@ -2960,11 +2963,11 @@ void Game::renderOverlays() {
     snprintf(fpsText, sizeof(fpsText), "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, Time.feelsLikeFps);
     MetaEngine::Drawing::drawText(fpsText, {255, 255, 255, 255}, Screen.windowWidth - ImGui::CalcTextSize(fpsText).x, 0);
 
-    metadot_rect r1 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX), (F32)(global.GameData_.ofsY + global.GameData_.camY), (F32)(GameIsolate_.world->width * Screen.gameScale),
-                                   (F32)(GameIsolate_.world->height * Screen.gameScale)};
-    metadot_rect r2 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale),
-                                   (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale), (F32)(GameIsolate_.world->tickZone.w * Screen.gameScale),
-                                   (F32)(GameIsolate_.world->tickZone.h * Screen.gameScale)};
+    metadot_rect r1 = metadot_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * Screen.gameScale),
+                                   (f32)(GameIsolate_.world->height * Screen.gameScale)};
+    metadot_rect r2 = metadot_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale),
+                                   (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale), (f32)(GameIsolate_.world->tickZone.w * Screen.gameScale),
+                                   (f32)(GameIsolate_.world->tickZone.h * Screen.gameScale)};
 
     if (GameIsolate_.globaldef.draw_temperature_map) {
         R_SetBlendMode(TexturePack_.temperatureMap, R_BLEND_NORMAL);
@@ -2972,9 +2975,9 @@ void Game::renderOverlays() {
     }
 
     if (GameIsolate_.globaldef.draw_load_zones) {
-        metadot_rect r2m = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->meshZone.x * Screen.gameScale),
-                                        (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->meshZone.y * Screen.gameScale),
-                                        (F32)(GameIsolate_.world->meshZone.w * Screen.gameScale), (F32)(GameIsolate_.world->meshZone.h * Screen.gameScale)};
+        metadot_rect r2m = metadot_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->meshZone.x * Screen.gameScale),
+                                        (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->meshZone.y * Screen.gameScale),
+                                        (f32)(GameIsolate_.world->meshZone.w * Screen.gameScale), (f32)(GameIsolate_.world->meshZone.h * Screen.gameScale)};
 
         R_Rectangle2(Render.target, r2m, {0x00, 0xff, 0xff, 0xff});
         MetaEngine::Drawing::drawTextWithPlate(Render.target, CC("刚体物理更新区域"), {255, 255, 255, 255}, r2m.x + 4, r2m.y + 4);
@@ -2986,31 +2989,31 @@ void Game::renderOverlays() {
         ME_Color col = {0xff, 0x00, 0x00, 0x20};
         R_SetShapeBlendMode(R_BLEND_NORMAL);
 
-        metadot_rect r3 = metadot_rect{(F32)(0), (F32)(0), (F32)((global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale)), (F32)(Screen.windowHeight)};
+        metadot_rect r3 = metadot_rect{(f32)(0), (f32)(0), (f32)((global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale)), (f32)(Screen.windowHeight)};
         R_Rectangle2(Render.target, r3, col);
 
         metadot_rect r4 = metadot_rect{
-                (F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale + GameIsolate_.world->tickZone.w * Screen.gameScale), (F32)(0),
-                (F32)((Screen.windowWidth) - (global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale + GameIsolate_.world->tickZone.w * Screen.gameScale)),
-                (F32)(Screen.windowHeight)};
+                (f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale + GameIsolate_.world->tickZone.w * Screen.gameScale), (f32)(0),
+                (f32)((Screen.windowWidth) - (global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale + GameIsolate_.world->tickZone.w * Screen.gameScale)),
+                (f32)(Screen.windowHeight)};
         R_Rectangle2(Render.target, r4, col);
 
         metadot_rect r5 =
-                metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale), (F32)(0),
-                             (F32)(GameIsolate_.world->tickZone.w * Screen.gameScale), (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale)};
+                metadot_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale), (f32)(0),
+                             (f32)(GameIsolate_.world->tickZone.w * Screen.gameScale), (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale)};
         R_Rectangle2(Render.target, r5, col);
 
         metadot_rect r6 = metadot_rect{
-                (F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale),
-                (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale + GameIsolate_.world->tickZone.h * Screen.gameScale),
-                (F32)(GameIsolate_.world->tickZone.w * Screen.gameScale),
-                (F32)(Screen.windowHeight - (global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale + GameIsolate_.world->tickZone.h * Screen.gameScale))};
+                (f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale),
+                (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale + GameIsolate_.world->tickZone.h * Screen.gameScale),
+                (f32)(GameIsolate_.world->tickZone.w * Screen.gameScale),
+                (f32)(Screen.windowHeight - (global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale + GameIsolate_.world->tickZone.h * Screen.gameScale))};
         R_Rectangle2(Render.target, r6, col);
 
         col = {0x00, 0xff, 0x00, 0xff};
-        metadot_rect r7 = metadot_rect{(F32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->width / 2 * Screen.gameScale - (Screen.windowWidth / 3 * Screen.gameScale / 2)),
-                                       (F32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->height / 2 * Screen.gameScale - (Screen.windowHeight / 3 * Screen.gameScale / 2)),
-                                       (F32)(Screen.windowWidth / 3 * Screen.gameScale), (F32)(Screen.windowHeight / 3 * Screen.gameScale)};
+        metadot_rect r7 = metadot_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->width / 2 * Screen.gameScale - (Screen.windowWidth / 3 * Screen.gameScale / 2)),
+                                       (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->height / 2 * Screen.gameScale - (Screen.windowHeight / 3 * Screen.gameScale / 2)),
+                                       (f32)(Screen.windowWidth / 3 * Screen.gameScale), (f32)(Screen.windowHeight / 3 * Screen.gameScale)};
         R_Rectangle2(Render.target, r7, col);
     }
 
@@ -3019,8 +3022,8 @@ void Game::renderOverlays() {
         // for(size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
         //    RigidBody cur = *GameIsolate_.world->rigidBodies[i];
 
-        //    F32 x = cur.body->GetPosition().x;
-        //    F32 y = cur.body->GetPosition().y;
+        //    f32 x = cur.body->GetPosition().x;
+        //    f32 y = cur.body->GetPosition().y;
         //    x = ((x)*Screen.gameScale + ofsX + camX);
         //    y = ((y)*Screen.gameScale + ofsY + camY);
 
@@ -3028,7 +3031,7 @@ void Game::renderOverlays() {
         //    SDL_RenderCopyEx(renderer, cur.texture, NULL, r, cur.body->GetAngle() * 180 / M_PI, new SDL_Point{ 0, 0 }, SDL_RendererFlip::SDL_FLIP_NONE);
         //    delete r;*/
 
-        //    U32 color = 0x0000ff;
+        //    u32 color = 0x0000ff;
 
         //    SDL_Color col = {(color >> 16) & 0xff, (color >> 8) & 0xff, (color >> 0) & 0xff, 0xff};
 
@@ -3053,12 +3056,12 @@ void Game::renderOverlays() {
         // if(GameIsolate_.world->player) {
         //     RigidBody cur = *pl->rb;
 
-        //    F32 x = cur.body->GetPosition().x;
-        //    F32 y = cur.body->GetPosition().y;
+        //    f32 x = cur.body->GetPosition().x;
+        //    f32 y = cur.body->GetPosition().y;
         //    x = ((x)*Screen.gameScale + ofsX + camX);
         //    y = ((y)*Screen.gameScale + ofsY + camY);
 
-        //    U32 color = 0x0000ff;
+        //    u32 color = 0x0000ff;
 
         //    SDL_Color col = {(color >> 16) & 0xff, (color >> 8) & 0xff, (color >> 0) & 0xff, 0xff};
 
@@ -3082,12 +3085,12 @@ void Game::renderOverlays() {
         // for(size_t i = 0; i < GameIsolate_.world->worldRigidBodies.size(); i++) {
         //     RigidBody cur = *GameIsolate_.world->worldRigidBodies[i];
 
-        //    F32 x = cur.body->GetPosition().x;
-        //    F32 y = cur.body->GetPosition().y;
+        //    f32 x = cur.body->GetPosition().x;
+        //    f32 y = cur.body->GetPosition().y;
         //    x = ((x)*Screen.gameScale + ofsX + camX);
         //    y = ((y)*Screen.gameScale + ofsY + camY);
 
-        //    U32 color = 0x00ff00;
+        //    u32 color = 0x00ff00;
 
         //    SDL_Color col = {(color >> 16) & 0xff, (color >> 8) & 0xff, (color >> 0) & 0xff, 0xff};
 
@@ -3125,8 +3128,8 @@ void Game::renderOverlays() {
                 Chunk *ch = GameIsolate_.world->getChunk(cx, cy);
                 SDL_Color col = {255, 0, 0, 255};
 
-                F32 x = ((ch->x * CHUNK_W + GameIsolate_.world->loadZone.x) * Screen.gameScale + global.GameData_.ofsX + global.GameData_.camX);
-                F32 y = ((ch->y * CHUNK_H + GameIsolate_.world->loadZone.y) * Screen.gameScale + global.GameData_.ofsY + global.GameData_.camY);
+                f32 x = ((ch->x * CHUNK_W + GameIsolate_.world->loadZone.x) * Screen.gameScale + global.GameData_.ofsX + global.GameData_.camX);
+                f32 y = ((ch->y * CHUNK_H + GameIsolate_.world->loadZone.y) * Screen.gameScale + global.GameData_.ofsY + global.GameData_.camY);
 
                 R_Rectangle(Render.target, x, y, x + CHUNK_W * Screen.gameScale, y + CHUNK_H * Screen.gameScale, {50, 50, 0, 255});
 
@@ -3152,7 +3155,7 @@ void Game::renderOverlays() {
     }
 
     // Drawing::drawText("fps",
-    //                   MetaEngine::Format("{} FPS\n Feels Like: {} FPS", Time.fps,
+    //                   std::format("{} FPS\n Feels Like: {} FPS", Time.fps,
     //                               Time.feelsLikeFps),
     //                   Screen.windowWidth, 20);
 
@@ -3167,13 +3170,13 @@ void Game::renderOverlays() {
         int pposY = global.GameData_.plPosY;
         int pchx = (int)((pposX / CHUNK_W) * chSize);
         int pchy = (int)((pposY / CHUNK_H) * chSize);
-        int pchxf = (int)(((F32)pposX / CHUNK_W) * chSize);
-        int pchyf = (int)(((F32)pposY / CHUNK_H) * chSize);
+        int pchxf = (int)(((f32)pposX / CHUNK_W) * chSize);
+        int pchyf = (int)(((f32)pposY / CHUNK_H) * chSize);
 
         R_Rectangle(Render.target, centerX - chSize * CHUNK_UNLOAD_DIST + chSize, centerY - chSize * CHUNK_UNLOAD_DIST + chSize, centerX + chSize * CHUNK_UNLOAD_DIST + chSize,
                     centerY + chSize * CHUNK_UNLOAD_DIST + chSize, {0xcc, 0xcc, 0xcc, 0xff});
 
-        metadot_rect r = {0, 0, (F32)chSize, (F32)chSize};
+        metadot_rect r = {0, 0, (f32)chSize, (f32)chSize};
         for (auto &p : GameIsolate_.world->chunkCache) {
             if (p.first == INT_MIN) continue;
             int cx = p.first;
@@ -3204,11 +3207,11 @@ void Game::renderOverlays() {
             }
         }
 
-        int loadx = (int)(((F32)-GameIsolate_.world->loadZone.x / CHUNK_W) * chSize);
-        int loady = (int)(((F32)-GameIsolate_.world->loadZone.y / CHUNK_H) * chSize);
+        int loadx = (int)(((f32)-GameIsolate_.world->loadZone.x / CHUNK_W) * chSize);
+        int loady = (int)(((f32)-GameIsolate_.world->loadZone.y / CHUNK_H) * chSize);
 
-        int loadx2 = (int)(((F32)(-GameIsolate_.world->loadZone.x + GameIsolate_.world->loadZone.w) / CHUNK_W) * chSize);
-        int loady2 = (int)(((F32)(-GameIsolate_.world->loadZone.y + GameIsolate_.world->loadZone.h) / CHUNK_H) * chSize);
+        int loadx2 = (int)(((f32)(-GameIsolate_.world->loadZone.x + GameIsolate_.world->loadZone.w) / CHUNK_W) * chSize);
+        int loady2 = (int)(((f32)(-GameIsolate_.world->loadZone.y + GameIsolate_.world->loadZone.h) / CHUNK_H) * chSize);
         R_Rectangle(Render.target, centerX - pchx + loadx, centerY - pchy + loady, centerX - pchx + loadx2, centerY - pchy + loady2, {0x00, 0xff, 0xff, 0xff});
 
         R_Rectangle(Render.target, centerX - pchx + pchxf, centerY - pchy + pchyf, centerX + 1 - pchx + pchxf, centerY + 1 - pchy + pchyf, {0x00, 0xff, 0x00, 0xff});
@@ -3267,7 +3270,7 @@ void Game::renderOverlays() {
             }
         }
 
-        const char *buffAsStdStr1 = R"(
+        constexpr const char *buffAsStdStr1 = R"(
 {0} {1}
 XY: {2:.2f} / {3:.2f}
 V: {4:.2f} / {5:.2f}
@@ -3282,7 +3285,7 @@ ReadyToMerge ({16})
 
         // Drawing::drawText(
         //         "info",
-        //         MetaEngine::Format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GameData_.plPosX,
+        //         std::format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GameData_.plPosX,
         //                     GameData_.plPosY,
         //                     GameIsolate_.world->player
         //                             ? pl_we->vx
@@ -3309,9 +3312,9 @@ ReadyToMerge ({16})
             pl_vy = pl_we->vy;
         }
 
-        auto a = MetaEngine::Format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, global.GameData_.plPosX, global.GameData_.plPosY, pl_vx, pl_vy, (int)GameIsolate_.world->cells.size(),
-                                    (int)GameIsolate_.world->Reg().entity_count(), rbCt, (int)GameIsolate_.world->rigidBodies.size(), (int)GameIsolate_.world->worldRigidBodies.size(), rbTriACt,
-                                    rbTriCt, rbTriWCt, chCt, (int)GameIsolate_.world->readyToReadyToMerge.size(), (int)GameIsolate_.world->readyToMerge.size());
+        auto a = std::format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, global.GameData_.plPosX, global.GameData_.plPosY, pl_vx, pl_vy, (int)GameIsolate_.world->cells.size(),
+                             (int)GameIsolate_.world->Reg().entity_count(), rbCt, (int)GameIsolate_.world->rigidBodies.size(), (int)GameIsolate_.world->worldRigidBodies.size(), rbTriACt, rbTriCt,
+                             rbTriWCt, chCt, (int)GameIsolate_.world->readyToReadyToMerge.size(), (int)GameIsolate_.world->readyToMerge.size());
 
         MetaEngine::Drawing::drawText(a, {255, 255, 255, 255}, 10, 0);
 
@@ -3421,8 +3424,8 @@ void Game::renderTemperatureMap(World *world) {
     for (int x = 0; x < GameIsolate_.world->width; x++) {
         for (int y = 0; y < GameIsolate_.world->height; y++) {
             auto t = GameIsolate_.world->tiles[x + y * GameIsolate_.world->width];
-            I32 temp = t.temperature;
-            U32 color = (U8)((temp + 1024) / 2048.0f * 255);
+            i32 temp = t.temperature;
+            u32 color = (u8)((temp + 1024) / 2048.0f * 255);
 
             const unsigned int offset = (GameIsolate_.world->width * 4 * y) + x * 4;
             TexturePack_.pixelsTemp_ar[offset + 0] = color;  // b
@@ -3463,9 +3466,9 @@ int Game::getAimSurface(int dist) {
     int dcx = this->mx - Screen.windowWidth / 2;
     int dcy = this->my - Screen.windowHeight / 2;
 
-    F32 len = sqrtf(dcx * dcx + dcy * dcy);
-    F32 udx = dcx / len;
-    F32 udy = dcy / len;
+    f32 len = sqrtf(dcx * dcx + dcy * dcy);
+    f32 udx = dcx / len;
+    f32 udy = dcy / len;
 
     int mmx = Screen.windowWidth / 2.0f + udx * dist;
     int mmy = Screen.windowHeight / 2.0f + udy * dist;
@@ -3497,7 +3500,7 @@ void Game::quitToMainMenu() {
 
     std::string worldName = "mainMenu";
 
-    METADOT_INFO("Loading main menu @ %s", METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str()));
+    METADOT_INFO("Loading main menu @ %s", METADOT_RESLOC(std::format("saves/{0}", worldName).c_str()));
     gameUI.visible_mainmenu = false;
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
@@ -3506,12 +3509,12 @@ void Game::quitToMainMenu() {
 
     WorldGenerator *generator = new MaterialTestGenerator();
 
-    std::string wpStr = METADOT_RESLOC(MetaEngine::Format("saves/{0}", worldName).c_str());
+    std::string wpStr = METADOT_RESLOC(std::format("saves/{0}", worldName).c_str());
 
-    GameIsolate_.world = MetaEngine::CreateScope<World>();
+    GameIsolate_.world = ME::create_scope<World>();
     GameIsolate_.world->noSaveLoad = true;
-    GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (F64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
-                             (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (F64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, Render.target, &global.audio, generator);
+    GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
+                             (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, Render.target, &global.audio, generator);
 
     METADOT_INFO("Queueing chunk loading...");
     for (int x = -CHUNK_W * 4; x < GameIsolate_.world->width + CHUNK_W * 4; x += CHUNK_W) {
@@ -3549,9 +3552,9 @@ int Game::getAimSolidSurface(int dist) {
     int dcx = this->mx - Screen.windowWidth / 2;
     int dcy = this->my - Screen.windowHeight / 2;
 
-    F32 len = sqrtf(dcx * dcx + dcy * dcy);
-    F32 udx = dcx / len;
-    F32 udy = dcy / len;
+    f32 len = sqrtf(dcx * dcx + dcy * dcy);
+    f32 udx = dcx / len;
+    f32 udy = dcy / len;
 
     int mmx = Screen.windowWidth / 2.0f + udx * dist;
     int mmy = Screen.windowHeight / 2.0f + udy * dist;
@@ -3575,8 +3578,8 @@ int Game::getAimSolidSurface(int dist) {
 }
 
 void Game::updateMaterialSounds() {
-    U16 waterCt = std::min(movingTiles[MaterialsList::WATER.id], (U16)5000);
-    F32 water = (F32)waterCt / 3000;
+    u16 waterCt = std::min(movingTiles[MaterialsList::WATER.id], (u16)5000);
+    f32 water = (f32)waterCt / 3000;
     // METADOT_BUG("{} / {} = {}", waterCt, 3000, water);
     global.audio.SetEventParameter("event:/World/WaterFlow", "FlowIntensity", water);
 }

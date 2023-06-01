@@ -109,13 +109,13 @@ static inline f32 floatCos(f32 radians) {
 
 
 
-F32 math_perlin(F32 x, F32 y, F32 z, int x_wrap, int y_wrap, int z_wrap) { return stb_perlin_noise3(x, y, z, x_wrap, y_wrap, z_wrap); }
+f32 math_perlin(f32 x, f32 y, f32 z, int x_wrap, int y_wrap, int z_wrap) { return stb_perlin_noise3(x, y, z, x_wrap, y_wrap, z_wrap); }
 
 #pragma region NewMATH
 
-F32 NewMaths::vec22angle(MEvec2 v2) { return atan2f(v2.y, v2.x); }
+f32 NewMaths::vec22angle(MEvec2 v2) { return atan2f(v2.y, v2.x); }
 
-F32 NewMaths::clamp(F32 input, F32 min, F32 max) {
+f32 NewMaths::clamp(f32 input, f32 min, f32 max) {
     if (input < min)
         return min;
     else if (input > max)
@@ -144,32 +144,32 @@ uint64_t NewMaths::rand_XOR() {
 int NewMaths::rand_range(int min, int max) {
     // return min + rand() / (RAND_MAX / (max - min + 1) + 1);
     return min + NewMaths::rand_XOR() % (max - min + 1);
-    // return (F32)rand()/ RAND_MAX * (max - min + 1) + min;
+    // return (f32)rand()/ RAND_MAX * (max - min + 1) + min;
 }
 
-inline F64 NewMaths::random_double() {
+inline f64 NewMaths::random_double() {
     // Returns a random real in [0,1).
     return rand() / (RAND_MAX + 1.0);
 }
 
-inline F64 NewMaths::random_double(F64 min, F64 max) {
+inline f64 NewMaths::random_double(f64 min, f64 max) {
     // Returns a random real in [min,max).
     return min + (max - min) * random_double();
 }
 struct NewMaths::v2 {
     union {
-        F32 e[2];
+        f32 e[2];
         struct {
-            F32 x, y;
+            f32 x, y;
         };
     };
 
     v2() : e{0, 0} {}
-    v2(F32 e0, F32 e1) : e{e0, e1} {}
+    v2(f32 e0, f32 e1) : e{e0, e1} {}
 
     NewMaths::v2 operator-() const { return NewMaths::v2(-e[0], -e[1]); }
-    F32 operator[](int i) const { return e[i]; }
-    F32 &operator[](int i) { return e[i]; }
+    f32 operator[](int i) const { return e[i]; }
+    f32 &operator[](int i) { return e[i]; }
 
     NewMaths::v2 &operator+=(const NewMaths::v2 &v) {
         e[0] += v.e[0];
@@ -182,20 +182,20 @@ struct NewMaths::v2 {
         return *this;
     }
 
-    NewMaths::v2 &operator*=(const F32 t) {
+    NewMaths::v2 &operator*=(const f32 t) {
         e[0] *= t;
         e[1] *= t;
         return *this;
     }
 
-    NewMaths::v2 &operator/=(const F32 t) { return *this *= 1 / t; }
+    NewMaths::v2 &operator/=(const f32 t) { return *this *= 1 / t; }
 
-    F32 length_squared() const { return e[0] * e[0] + e[1] * e[1]; }
+    f32 length_squared() const { return e[0] * e[0] + e[1] * e[1]; }
 
-    F32 length() const { return sqrt(length_squared()); }
+    f32 length() const { return sqrt(length_squared()); }
 
     NewMaths::v2 normalize() {
-        F32 lengf = length();
+        f32 lengf = length();
 
         if (lengf > 0)
             return NewMaths::v2(x / lengf, y / lengf);
@@ -203,17 +203,17 @@ struct NewMaths::v2 {
             return NewMaths::v2(0, 0);
     }
 
-    F32 dot(NewMaths::v2 V) {
-        F32 result = x * V.x + y * V.y;
+    f32 dot(NewMaths::v2 V) {
+        f32 result = x * V.x + y * V.y;
         return result;
     }
     NewMaths::v2 perpendicular() { return NewMaths::v2(y, -x); }
-    F32 perpdot(NewMaths::v2 V) {
-        F32 result = x * V.y - y * V.x;
+    f32 perpdot(NewMaths::v2 V) {
+        f32 result = x * V.y - y * V.x;
         return result;
     }
-    F32 cross(NewMaths::v2 V) {
-        F32 result = x * V.y - y * V.x;
+    f32 cross(NewMaths::v2 V) {
+        f32 result = x * V.y - y * V.x;
         return result;
     }
 
@@ -222,7 +222,7 @@ struct NewMaths::v2 {
         return result;
     }
 
-    F32 angle(NewMaths::v2 V)  // returns signed angle in radians
+    f32 angle(NewMaths::v2 V)  // returns signed angle in radians
     {
         return atan2(x * V.y - y * V.x, x * V.x + y * V.y);
     }
@@ -236,17 +236,17 @@ NewMaths::v2 operator+(NewMaths::v2 a, NewMaths::v2 b) {
     NewMaths::v2 tojesus(a.x + b.x, a.y + b.y);
     return tojesus;
 }
-NewMaths::v2 operator-(NewMaths::v2 a, F32 b) {
+NewMaths::v2 operator-(NewMaths::v2 a, f32 b) {
     NewMaths::v2 tojesus(a.x - b, a.y - b);
     return tojesus;
 }
 
-NewMaths::v2 operator+(NewMaths::v2 a, F32 b) {
+NewMaths::v2 operator+(NewMaths::v2 a, f32 b) {
     NewMaths::v2 tojesus(a.x + b, a.y + b);
     return tojesus;
 }
 
-NewMaths::v2 operator*(NewMaths::v2 a, F32 b) {
+NewMaths::v2 operator*(NewMaths::v2 a, f32 b) {
     NewMaths::v2 tojesus(a.x * b, a.y * b);
     return tojesus;
 }
@@ -255,12 +255,12 @@ NewMaths::v2 operator*(NewMaths::v2 a, NewMaths::v2 b) {
     return tojesus;
 }
 
-NewMaths::v2 operator*(F32 b, NewMaths::v2 a) {
+NewMaths::v2 operator*(f32 b, NewMaths::v2 a) {
     NewMaths::v2 tojesus(a.x * b, a.y * b);
     return tojesus;
 }
 
-NewMaths::v2 operator/(NewMaths::v2 a, F32 b) {
+NewMaths::v2 operator/(NewMaths::v2 a, f32 b) {
     NewMaths::v2 tojesus(a.x / b, a.y / b);
     return tojesus;
 }
@@ -269,28 +269,28 @@ NewMaths::v2 operator/(NewMaths::v2 a, NewMaths::v2 b) {
     return tojesus;
 }
 
-F32 NewMaths::v2_distance_2Points(NewMaths::v2 A, NewMaths::v2 B) { return sqrt((A.x - B.x) * (A.x - B.x) + (A.y - B.y) * (A.y - B.y)); }
+f32 NewMaths::v2_distance_2Points(NewMaths::v2 A, NewMaths::v2 B) { return sqrt((A.x - B.x) * (A.x - B.x) + (A.y - B.y) * (A.y - B.y)); }
 
 NewMaths::v2 NewMaths::unitvec_AtoB(NewMaths::v2 A, NewMaths::v2 B) {
-    F32 n = NewMaths::v2_distance_2Points(A, B);
+    f32 n = NewMaths::v2_distance_2Points(A, B);
     return ((B - A) / n);
 }
 
-F32 NewMaths::signed_angle_v2(NewMaths::v2 A, NewMaths::v2 B) { return atan2(A.x * B.y - A.y * B.x, A.x * B.x + A.y * B.y); }
+f32 NewMaths::signed_angle_v2(NewMaths::v2 A, NewMaths::v2 B) { return atan2(A.x * B.y - A.y * B.x, A.x * B.x + A.y * B.y); }
 
-NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 P, F32 sine, F32 cosine) { return NewMaths::v2(NewMaths::v2(cosine, -sine).dot(P), NewMaths::v2(sine, cosine).dot(P)); }
-NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 P, F32 Angle) {
-    F32 sine = sin(Angle);
-    F32 cosine = cos(Angle);
+NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 P, f32 sine, f32 cosine) { return NewMaths::v2(NewMaths::v2(cosine, -sine).dot(P), NewMaths::v2(sine, cosine).dot(P)); }
+NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 P, f32 Angle) {
+    f32 sine = sin(Angle);
+    f32 cosine = cos(Angle);
     return NewMaths::Rotate2D(P, sine, cosine);
 }
-NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 p, NewMaths::v2 o, F32 angle) {
+NewMaths::v2 NewMaths::Rotate2D(NewMaths::v2 p, NewMaths::v2 o, f32 angle) {
     // Demonstration: https://www.desmos.com/calculator/8aaegifsba
-    F32 s = sin(angle);
-    F32 c = cos(angle);
+    f32 s = sin(angle);
+    f32 c = cos(angle);
 
-    F32 x = (p.x - o.x) * c - (p.y - o.y) * s + o.x;
-    F32 y = (p.x - o.x) * s + (p.y - o.y) * c + o.y;
+    f32 x = (p.x - o.x) * c - (p.y - o.y) * s + o.x;
+    f32 y = (p.x - o.x) * s + (p.y - o.y) * c + o.y;
 
     return NewMaths::v2(x, y);
 }
@@ -309,7 +309,7 @@ bool NewMaths::PointInRectangle(NewMaths::v2 P, NewMaths::v2 A, NewMaths::v2 B, 
         return false;
 }
 
-int NewMaths::sign(F32 x) {
+int NewMaths::sign(f32 x) {
     if (x > 0)
         return 1;
     else if (x < 0)
@@ -318,20 +318,20 @@ int NewMaths::sign(F32 x) {
         return 0;
 }
 
-static F32 NewMaths::dot(NewMaths::v2 A, NewMaths::v2 B) { return A.x * B.x + A.y * B.y; }
+static f32 NewMaths::dot(NewMaths::v2 A, NewMaths::v2 B) { return A.x * B.x + A.y * B.y; }
 
-static F32 NewMaths::perpdot(NewMaths::v2 A, NewMaths::v2 B) { return A.x * B.y - A.y * B.x; }
+static f32 NewMaths::perpdot(NewMaths::v2 A, NewMaths::v2 B) { return A.x * B.y - A.y * B.x; }
 
 static bool operator==(NewMaths::v2 A, NewMaths::v2 B) { return A.x == B.x && A.y == B.y; }
 
-static F32 abso(F32 F) { return F > 0 ? F : -F; };
+static f32 abso(f32 F) { return F > 0 ? F : -F; };
 
-static NewMaths::v2 rand_vector(F32 length) { return NewMaths::v2(NewMaths::rand_range(-100, 100) * 0.01f * length, NewMaths::rand_range(-100, 100) * 0.01f * length); }
+static NewMaths::v2 rand_vector(f32 length) { return NewMaths::v2(NewMaths::rand_range(-100, 100) * 0.01f * length, NewMaths::rand_range(-100, 100) * 0.01f * length); }
 
 // --------------- Vector Functions ---------------
 
 MEvec3 NewMaths::NormalizeVector(MEvec3 v) {
-    F32 l = sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+    f32 l = sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
     if (l == 0) return VECTOR3_ZERO;
 
     v.x *= 1 / l;
@@ -354,9 +354,9 @@ MEvec3 NewMaths::Subtract(MEvec3 a, MEvec3 b) {
     return a;
 }
 
-MEvec3 NewMaths::ScalarMult(MEvec3 v, F32 s) { return MEvec3{v.x * s, v.y * s, v.z * s}; }
+MEvec3 NewMaths::ScalarMult(MEvec3 v, f32 s) { return MEvec3{v.x * s, v.y * s, v.z * s}; }
 
-F64 NewMaths::Distance(MEvec3 a, MEvec3 b) {
+f64 NewMaths::Distance(MEvec3 a, MEvec3 b) {
     MEvec3 AMinusB = Subtract(a, b);
     return sqrt(UTIL_dot(AMinusB, AMinusB));
 }
@@ -364,12 +364,12 @@ F64 NewMaths::Distance(MEvec3 a, MEvec3 b) {
 MEvec3 NewMaths::VectorProjection(MEvec3 a, MEvec3 b) {
     // https://en.wikipedia.org/wiki/Vector_projection
     MEvec3 normalizedB = NormalizeVector(b);
-    F64 a1 = UTIL_dot(a, normalizedB);
+    f64 a1 = UTIL_dot(a, normalizedB);
     return ScalarMult(normalizedB, a1);
 }
 
 MEvec3 NewMaths::Reflection(MEvec3 *v1, MEvec3 *v2) {
-    F32 dotpr = UTIL_dot(*v2, *v1);
+    f32 dotpr = UTIL_dot(*v2, *v1);
     MEvec3 result;
     result.x = v2->x * 2 * dotpr;
     result.y = v2->y * 2 * dotpr;
@@ -384,7 +384,7 @@ MEvec3 NewMaths::Reflection(MEvec3 *v1, MEvec3 *v2) {
 
 MEvec3 NewMaths::RotatePoint(MEvec3 p, MEvec3 r, MEvec3 pivot) { return Add(RotateVector(Subtract(p, pivot), EulerAnglesToMatrix3x3(r)), pivot); }
 
-F64 NewMaths::DistanceFromPointToLine2D(MEvec3 lP1, MEvec3 lP2, MEvec3 p) {
+f64 NewMaths::DistanceFromPointToLine2D(MEvec3 lP1, MEvec3 lP2, MEvec3 p) {
     // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
     return fabsf((lP2.y - lP1.y) * p.x - (lP2.x - lP1.x) * p.y + lP2.x * lP1.y - lP2.y * lP1.x) / Distance(lP1, lP2);
 }
@@ -420,11 +420,11 @@ MEvec3 NewMaths::Matrix3x3ToEulerAngles(Matrix3x3 m) {
     MEvec3 rotation = VECTOR3_ZERO;
     rotation.x = atan2(m.m[1][2], m.m[2][2]);
 
-    F32 c2 = sqrt(m.m[0][0] * m.m[0][0] + m.m[0][1] * m.m[0][1]);
+    f32 c2 = sqrt(m.m[0][0] * m.m[0][0] + m.m[0][1] * m.m[0][1]);
     rotation.y = atan2(-m.m[0][2], c2);
 
-    F32 s1 = sin(rotation.x);
-    F32 c1 = cos(rotation.x);
+    f32 s1 = sin(rotation.x);
+    f32 c1 = cos(rotation.x);
     rotation.z = atan2(s1 * m.m[2][0] - c1 * m.m[1][0], c1 * m.m[1][1] - s1 * m.m[2][1]);
 
     return ScalarMult(rotation, 180.0 / PI);
@@ -432,12 +432,12 @@ MEvec3 NewMaths::Matrix3x3ToEulerAngles(Matrix3x3 m) {
 
 NewMaths::Matrix3x3 NewMaths::EulerAnglesToMatrix3x3(MEvec3 rotation) {
 
-    F32 s1 = sin(rotation.x * PI / 180.0);
-    F32 c1 = cos(rotation.x * PI / 180.0);
-    F32 s2 = sin(rotation.y * PI / 180.0);
-    F32 c2 = cos(rotation.y * PI / 180.0);
-    F32 s3 = sin(rotation.z * PI / 180.0);
-    F32 c3 = cos(rotation.z * PI / 180.0);
+    f32 s1 = sin(rotation.x * PI / 180.0);
+    f32 c1 = cos(rotation.x * PI / 180.0);
+    f32 s2 = sin(rotation.y * PI / 180.0);
+    f32 c2 = cos(rotation.y * PI / 180.0);
+    f32 s3 = sin(rotation.z * PI / 180.0);
+    f32 c3 = cos(rotation.z * PI / 180.0);
 
     Matrix3x3 m = {{{c2 * c3, c2 * s3, -s2}, {s1 * s2 * c3 - c1 * s3, s1 * s2 * s3 + c1 * c3, s1 * c2}, {c1 * s2 * c3 + s1 * s3, c1 * s2 * s3 - s1 * c3, c1 * c2}}};
 
@@ -467,7 +467,7 @@ NewMaths::Matrix3x3 NewMaths::MultiplyMatrix3x3(Matrix3x3 a, Matrix3x3 b) {
 
 NewMaths::Matrix4x4 NewMaths::Identity4x4() { return Matrix4x4{{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}}; }
 
-NewMaths::Matrix4x4 NewMaths::GetProjectionMatrix(F32 rightPlane, F32 leftPlane, F32 topPlane, F32 bottomPlane, F32 nearPlane, F32 farPlane) {
+NewMaths::Matrix4x4 NewMaths::GetProjectionMatrix(f32 rightPlane, f32 leftPlane, f32 topPlane, f32 bottomPlane, f32 nearPlane, f32 farPlane) {
     Matrix4x4 matrix = {{{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}};
 
     matrix.m[0][0] = 2.0f / (rightPlane - leftPlane);
@@ -483,11 +483,11 @@ NewMaths::Matrix4x4 NewMaths::GetProjectionMatrix(F32 rightPlane, F32 leftPlane,
 
 // --------------- Numeric functions ---------------
 
-F32 NewMaths::Lerp(F64 t, F32 a, F32 b) { return (1 - t) * a + t * b; }
+f32 NewMaths::Lerp(f64 t, f32 a, f32 b) { return (1 - t) * a + t * b; }
 
-int NewMaths::Step(F32 edge, F32 x) { return x < edge ? 0 : 1; }
+int NewMaths::Step(f32 edge, f32 x) { return x < edge ? 0 : 1; }
 
-F32 NewMaths::Smoothstep(F32 edge0, F32 edge1, F32 x) {
+f32 NewMaths::Smoothstep(f32 edge0, f32 edge1, f32 x) {
     // Scale, bias and saturate x to 0..1 range
     x = UTIL_clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
     // Evaluate polynomial
@@ -500,8 +500,8 @@ int NewMaths::Modulus(int a, int b) {
     return r < 0 ? r + b : r;
 }
 
-F32 NewMaths::fModulus(F32 a, F32 b) {
-    F32 r = fmod(a, b);
+f32 NewMaths::fModulus(f32 a, f32 b) {
+    f32 r = fmod(a, b);
     return r < 0 ? r + b : r;
 }
 
@@ -830,104 +830,104 @@ bool TestLineAABB(const CVector2<PointType> &p0, const CVector2<PointType> &p1, 
 #define CUTE_C2_IMPLEMENTATION
 #include "libs/cute/cute_c2.h"
 
-METAENGINE_STATIC_ASSERT(METAENGINE_POLY_MAX_VERTS == C2_MAX_POLYGON_VERTS, "Must be equal.");
+ME_STATIC_ASSERT(ME_POLY_MAX_VERTS == C2_MAX_POLYGON_VERTS, "Must be equal.");
 
-METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_V2) == sizeof(c2v), "Must be equal.");
-METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_SinCos) == sizeof(c2r), "Must be equal.");
-METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Transform) == sizeof(c2x), "Must be equal.");
-METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_M2x2) == sizeof(c2m), "Must be equal.");
-METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Halfspace) == sizeof(c2h), "Must be equal.");
-METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Ray) == sizeof(c2Ray), "Must be equal.");
-METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Raycast) == sizeof(c2Raycast), "Must be equal.");
-METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Manifold) == sizeof(c2Manifold), "Must be equal.");
-METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_GjkCache) == sizeof(c2GJKCache), "Must be equal.");
-METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Circle) == sizeof(c2Circle), "Must be equal.");
-METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Aabb) == sizeof(c2AABB), "Must be equal.");
-METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Capsule) == sizeof(c2Capsule), "Must be equal.");
-METAENGINE_STATIC_ASSERT(sizeof(METAENGINE_Poly) == sizeof(c2Poly), "Must be equal.");
+ME_STATIC_ASSERT(sizeof(ME_V2) == sizeof(c2v), "Must be equal.");
+ME_STATIC_ASSERT(sizeof(ME_SinCos) == sizeof(c2r), "Must be equal.");
+ME_STATIC_ASSERT(sizeof(ME_Transform) == sizeof(c2x), "Must be equal.");
+ME_STATIC_ASSERT(sizeof(ME_M2x2) == sizeof(c2m), "Must be equal.");
+ME_STATIC_ASSERT(sizeof(ME_Halfspace) == sizeof(c2h), "Must be equal.");
+ME_STATIC_ASSERT(sizeof(ME_Ray) == sizeof(c2Ray), "Must be equal.");
+ME_STATIC_ASSERT(sizeof(ME_Raycast) == sizeof(c2Raycast), "Must be equal.");
+ME_STATIC_ASSERT(sizeof(ME_Manifold) == sizeof(c2Manifold), "Must be equal.");
+ME_STATIC_ASSERT(sizeof(ME_GjkCache) == sizeof(c2GJKCache), "Must be equal.");
+ME_STATIC_ASSERT(sizeof(ME_Circle) == sizeof(c2Circle), "Must be equal.");
+ME_STATIC_ASSERT(sizeof(ME_Aabb) == sizeof(c2AABB), "Must be equal.");
+ME_STATIC_ASSERT(sizeof(ME_Capsule) == sizeof(c2Capsule), "Must be equal.");
+ME_STATIC_ASSERT(sizeof(ME_Poly) == sizeof(c2Poly), "Must be equal.");
 
-bool metadot_circle_to_circle(METAENGINE_Circle A, METAENGINE_Circle B) { return !!c2CircletoCircle(*(c2Circle *)&A, *(c2Circle *)&B); }
+bool metadot_circle_to_circle(ME_Circle A, ME_Circle B) { return !!c2CircletoCircle(*(c2Circle *)&A, *(c2Circle *)&B); }
 
-bool metadot_circle_to_aabb(METAENGINE_Circle A, METAENGINE_Aabb B) { return !!c2CircletoAABB(*(c2Circle *)&A, *(c2AABB *)&B); }
+bool metadot_circle_to_aabb(ME_Circle A, ME_Aabb B) { return !!c2CircletoAABB(*(c2Circle *)&A, *(c2AABB *)&B); }
 
-bool metadot_circle_to_capsule(METAENGINE_Circle A, METAENGINE_Capsule B) { return !!c2CircletoCapsule(*(c2Circle *)&A, *(c2Capsule *)&B); }
+bool metadot_circle_to_capsule(ME_Circle A, ME_Capsule B) { return !!c2CircletoCapsule(*(c2Circle *)&A, *(c2Capsule *)&B); }
 
-bool metadot_aabb_to_aabb(METAENGINE_Aabb A, METAENGINE_Aabb B) { return !!c2AABBtoAABB(*(c2AABB *)&A, *(c2AABB *)&B); }
+bool metadot_aabb_to_aabb(ME_Aabb A, ME_Aabb B) { return !!c2AABBtoAABB(*(c2AABB *)&A, *(c2AABB *)&B); }
 
-bool metadot_aabb_to_capsule(METAENGINE_Aabb A, METAENGINE_Capsule B) { return !!c2AABBtoCapsule(*(c2AABB *)&A, *(c2Capsule *)&B); }
+bool metadot_aabb_to_capsule(ME_Aabb A, ME_Capsule B) { return !!c2AABBtoCapsule(*(c2AABB *)&A, *(c2Capsule *)&B); }
 
-bool metadot_capsule_to_capsule(METAENGINE_Capsule A, METAENGINE_Capsule B) { return !!c2CapsuletoCapsule(*(c2Capsule *)&A, *(c2Capsule *)&B); }
+bool metadot_capsule_to_capsule(ME_Capsule A, ME_Capsule B) { return !!c2CapsuletoCapsule(*(c2Capsule *)&A, *(c2Capsule *)&B); }
 
-bool metadot_circle_to_poly(METAENGINE_Circle A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx) { return !!c2CircletoPoly(*(c2Circle *)&A, (c2Poly *)B, (c2x *)bx); }
+bool metadot_circle_to_poly(ME_Circle A, const ME_Poly *B, const ME_Transform *bx) { return !!c2CircletoPoly(*(c2Circle *)&A, (c2Poly *)B, (c2x *)bx); }
 
-bool metadot_aabb_to_poly(METAENGINE_Aabb A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx) { return !!c2AABBtoPoly(*(c2AABB *)&A, (c2Poly *)B, (c2x *)bx); }
+bool metadot_aabb_to_poly(ME_Aabb A, const ME_Poly *B, const ME_Transform *bx) { return !!c2AABBtoPoly(*(c2AABB *)&A, (c2Poly *)B, (c2x *)bx); }
 
-bool metadot_capsule_to_poly(METAENGINE_Capsule A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx) { return !!c2CapsuletoPoly(*(c2Capsule *)&A, (c2Poly *)B, (c2x *)bx); }
+bool metadot_capsule_to_poly(ME_Capsule A, const ME_Poly *B, const ME_Transform *bx) { return !!c2CapsuletoPoly(*(c2Capsule *)&A, (c2Poly *)B, (c2x *)bx); }
 
-bool metadot_poly_to_poly(const METAENGINE_Poly *A, const METAENGINE_Transform *ax, const METAENGINE_Poly *B, const METAENGINE_Transform *bx) {
+bool metadot_poly_to_poly(const ME_Poly *A, const ME_Transform *ax, const ME_Poly *B, const ME_Transform *bx) {
     return !!c2PolytoPoly((c2Poly *)A, (c2x *)ax, (c2Poly *)B, (c2x *)bx);
 }
 
-bool metadot_ray_to_circle(METAENGINE_Ray A, METAENGINE_Circle B, METAENGINE_Raycast *out) { return !!c2RaytoCircle(*(c2Ray *)&A, *(c2Circle *)&B, (c2Raycast *)out); }
+bool metadot_ray_to_circle(ME_Ray A, ME_Circle B, ME_Raycast *out) { return !!c2RaytoCircle(*(c2Ray *)&A, *(c2Circle *)&B, (c2Raycast *)out); }
 
-bool metadot_ray_to_aabb(METAENGINE_Ray A, METAENGINE_Aabb B, METAENGINE_Raycast *out) { return !!c2RaytoAABB(*(c2Ray *)&A, *(c2AABB *)&B, (c2Raycast *)out); }
+bool metadot_ray_to_aabb(ME_Ray A, ME_Aabb B, ME_Raycast *out) { return !!c2RaytoAABB(*(c2Ray *)&A, *(c2AABB *)&B, (c2Raycast *)out); }
 
-bool metadot_ray_to_capsule(METAENGINE_Ray A, METAENGINE_Capsule B, METAENGINE_Raycast *out) { return !!c2RaytoCapsule(*(c2Ray *)&A, *(c2Capsule *)&B, (c2Raycast *)out); }
+bool metadot_ray_to_capsule(ME_Ray A, ME_Capsule B, ME_Raycast *out) { return !!c2RaytoCapsule(*(c2Ray *)&A, *(c2Capsule *)&B, (c2Raycast *)out); }
 
-bool metadot_ray_to_poly(METAENGINE_Ray A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx_ptr, METAENGINE_Raycast *out) {
+bool metadot_ray_to_poly(ME_Ray A, const ME_Poly *B, const ME_Transform *bx_ptr, ME_Raycast *out) {
     return !!c2RaytoPoly(*(c2Ray *)&A, (c2Poly *)B, (c2x *)bx_ptr, (c2Raycast *)out);
 }
 
-void metadot_circle_to_circle_manifold(METAENGINE_Circle A, METAENGINE_Circle B, METAENGINE_Manifold *m) { c2CircletoCircleManifold(*(c2Circle *)&A, *(c2Circle *)&B, (c2Manifold *)m); }
+void metadot_circle_to_circle_manifold(ME_Circle A, ME_Circle B, ME_Manifold *m) { c2CircletoCircleManifold(*(c2Circle *)&A, *(c2Circle *)&B, (c2Manifold *)m); }
 
-void metadot_circle_to_aabb_manifold(METAENGINE_Circle A, METAENGINE_Aabb B, METAENGINE_Manifold *m) { c2CircletoAABBManifold(*(c2Circle *)&A, *(c2AABB *)&B, (c2Manifold *)m); }
+void metadot_circle_to_aabb_manifold(ME_Circle A, ME_Aabb B, ME_Manifold *m) { c2CircletoAABBManifold(*(c2Circle *)&A, *(c2AABB *)&B, (c2Manifold *)m); }
 
-void metadot_circle_to_capsule_manifold(METAENGINE_Circle A, METAENGINE_Capsule B, METAENGINE_Manifold *m) { c2CircletoCapsuleManifold(*(c2Circle *)&A, *(c2Capsule *)&B, (c2Manifold *)m); }
+void metadot_circle_to_capsule_manifold(ME_Circle A, ME_Capsule B, ME_Manifold *m) { c2CircletoCapsuleManifold(*(c2Circle *)&A, *(c2Capsule *)&B, (c2Manifold *)m); }
 
-void metadot_aabb_to_aabb_manifold(METAENGINE_Aabb A, METAENGINE_Aabb B, METAENGINE_Manifold *m) { c2AABBtoAABBManifold(*(c2AABB *)&A, *(c2AABB *)&B, (c2Manifold *)m); }
+void metadot_aabb_to_aabb_manifold(ME_Aabb A, ME_Aabb B, ME_Manifold *m) { c2AABBtoAABBManifold(*(c2AABB *)&A, *(c2AABB *)&B, (c2Manifold *)m); }
 
-void metadot_aabb_to_capsule_manifold(METAENGINE_Aabb A, METAENGINE_Capsule B, METAENGINE_Manifold *m) { c2AABBtoCapsuleManifold(*(c2AABB *)&A, *(c2Capsule *)&B, (c2Manifold *)m); }
+void metadot_aabb_to_capsule_manifold(ME_Aabb A, ME_Capsule B, ME_Manifold *m) { c2AABBtoCapsuleManifold(*(c2AABB *)&A, *(c2Capsule *)&B, (c2Manifold *)m); }
 
-void metadot_capsule_to_capsule_manifold(METAENGINE_Capsule A, METAENGINE_Capsule B, METAENGINE_Manifold *m) { c2CapsuletoCapsuleManifold(*(c2Capsule *)&A, *(c2Capsule *)&B, (c2Manifold *)m); }
+void metadot_capsule_to_capsule_manifold(ME_Capsule A, ME_Capsule B, ME_Manifold *m) { c2CapsuletoCapsuleManifold(*(c2Capsule *)&A, *(c2Capsule *)&B, (c2Manifold *)m); }
 
-void metadot_circle_to_poly_manifold(METAENGINE_Circle A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx, METAENGINE_Manifold *m) {
+void metadot_circle_to_poly_manifold(ME_Circle A, const ME_Poly *B, const ME_Transform *bx, ME_Manifold *m) {
     c2CircletoPolyManifold(*(c2Circle *)&A, (c2Poly *)B, (c2x *)bx, (c2Manifold *)m);
 }
 
-void metadot_aabb_to_poly_manifold(METAENGINE_Aabb A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx, METAENGINE_Manifold *m) {
+void metadot_aabb_to_poly_manifold(ME_Aabb A, const ME_Poly *B, const ME_Transform *bx, ME_Manifold *m) {
     c2AABBtoPolyManifold(*(c2AABB *)&A, (c2Poly *)B, (c2x *)bx, (c2Manifold *)m);
 }
 
-void metadot_capsule_to_poly_manifold(METAENGINE_Capsule A, const METAENGINE_Poly *B, const METAENGINE_Transform *bx, METAENGINE_Manifold *m) {
+void metadot_capsule_to_poly_manifold(ME_Capsule A, const ME_Poly *B, const ME_Transform *bx, ME_Manifold *m) {
     c2CapsuletoPolyManifold(*(c2Capsule *)&A, (c2Poly *)B, (c2x *)bx, (c2Manifold *)m);
 }
 
-void metadot_poly_to_poly_manifold(const METAENGINE_Poly *A, const METAENGINE_Transform *ax, const METAENGINE_Poly *B, const METAENGINE_Transform *bx, METAENGINE_Manifold *m) {
+void metadot_poly_to_poly_manifold(const ME_Poly *A, const ME_Transform *ax, const ME_Poly *B, const ME_Transform *bx, ME_Manifold *m) {
     c2PolytoPolyManifold((c2Poly *)A, (c2x *)ax, (c2Poly *)B, (c2x *)bx, (c2Manifold *)m);
 }
 
-float metadot_gjk(const void *A, METAENGINE_ShapeType typeA, const METAENGINE_Transform *ax_ptr, const void *B, METAENGINE_ShapeType typeB, const METAENGINE_Transform *bx_ptr, METAENGINE_V2 *outA,
-                  METAENGINE_V2 *outB, int use_radius, int *iterations, METAENGINE_GjkCache *cache) {
+float metadot_gjk(const void *A, ME_ShapeType typeA, const ME_Transform *ax_ptr, const void *B, ME_ShapeType typeB, const ME_Transform *bx_ptr, ME_V2 *outA,
+                  ME_V2 *outB, int use_radius, int *iterations, ME_GjkCache *cache) {
     return c2GJK(A, (C2_TYPE)typeA, (c2x *)ax_ptr, B, (C2_TYPE)typeB, (c2x *)bx_ptr, (c2v *)outA, (c2v *)outB, use_radius, iterations, (c2GJKCache *)cache);
 }
 
-METAENGINE_ToiResult metadot_toi(const void *A, METAENGINE_ShapeType typeA, const METAENGINE_Transform *ax_ptr, METAENGINE_V2 vA, const void *B, METAENGINE_ShapeType typeB,
-                                 const METAENGINE_Transform *bx_ptr, METAENGINE_V2 vB, int use_radius) {
-    METAENGINE_ToiResult result;
+ME_ToiResult metadot_toi(const void *A, ME_ShapeType typeA, const ME_Transform *ax_ptr, ME_V2 vA, const void *B, ME_ShapeType typeB,
+                                 const ME_Transform *bx_ptr, ME_V2 vB, int use_radius) {
+    ME_ToiResult result;
     c2TOIResult c2result = c2TOI(A, (C2_TYPE)typeA, (c2x *)ax_ptr, *(c2v *)&vA, B, (C2_TYPE)typeB, (c2x *)bx_ptr, *(c2v *)&vB, use_radius);
-    result = *(METAENGINE_ToiResult *)&c2result;
+    result = *(ME_ToiResult *)&c2result;
     return result;
 }
 
-void metadot_inflate(void *shape, METAENGINE_ShapeType type, float skin_factor) { c2Inflate(shape, (C2_TYPE)type, skin_factor); }
+void metadot_inflate(void *shape, ME_ShapeType type, float skin_factor) { c2Inflate(shape, (C2_TYPE)type, skin_factor); }
 
-int metadot_hull(METAENGINE_V2 *verts, int count) { return c2Hull((c2v *)verts, count); }
+int metadot_hull(ME_V2 *verts, int count) { return c2Hull((c2v *)verts, count); }
 
-void metadot_norms(METAENGINE_V2 *verts, METAENGINE_V2 *norms, int count) { c2Norms((c2v *)verts, (c2v *)norms, count); }
+void metadot_norms(ME_V2 *verts, ME_V2 *norms, int count) { c2Norms((c2v *)verts, (c2v *)norms, count); }
 
-void metadot_make_poly(METAENGINE_Poly *p) { c2MakePoly((c2Poly *)p); }
+void metadot_make_poly(ME_Poly *p) { c2MakePoly((c2Poly *)p); }
 
-METAENGINE_V2 metadot_centroid(const METAENGINE_V2 *metadot_verts, int count) {
+ME_V2 metadot_centroid(const ME_V2 *metadot_verts, int count) {
     using namespace MetaEngine;
     const v2 *verts = (const v2 *)metadot_verts;
     if (count == 0)
@@ -936,15 +936,15 @@ METAENGINE_V2 metadot_centroid(const METAENGINE_V2 *metadot_verts, int count) {
         return verts[0];
     else if (count == 2)
         return (verts[0] + verts[1]) * 0.5f;
-    METAENGINE_V2 c = metadot_v2(0, 0);
+    ME_V2 c = metadot_v2(0, 0);
     float area_sum = 0;
-    METAENGINE_V2 p0 = verts[0];
+    ME_V2 p0 = verts[0];
     for (int i = 0; i < count; ++i) {
-        METAENGINE_V2 p1 = verts[0] - p0;
-        METAENGINE_V2 p2 = verts[i] - p0;
-        METAENGINE_V2 p3 = (i + 1 == count ? verts[0] : verts[i + 1]) - p0;
-        METAENGINE_V2 e1 = p2 - p1;
-        METAENGINE_V2 e2 = p3 - p1;
+        ME_V2 p1 = verts[0] - p0;
+        ME_V2 p2 = verts[i] - p0;
+        ME_V2 p3 = (i + 1 == count ? verts[0] : verts[i + 1]) - p0;
+        ME_V2 e1 = p2 - p1;
+        ME_V2 e2 = p3 - p1;
         float area = 0.5f * metadot_cross(e1, e2);
         area_sum += area;
         c = c + (p1 + p2 + p3) * area * (1.0f / 3.0f);
@@ -952,15 +952,15 @@ METAENGINE_V2 metadot_centroid(const METAENGINE_V2 *metadot_verts, int count) {
     return c * (1.0f / area_sum) + p0;
 }
 
-int metadot_collided(const void *A, const METAENGINE_Transform *ax, METAENGINE_ShapeType typeA, const void *B, const METAENGINE_Transform *bx, METAENGINE_ShapeType typeB) {
+int metadot_collided(const void *A, const ME_Transform *ax, ME_ShapeType typeA, const void *B, const ME_Transform *bx, ME_ShapeType typeB) {
     return c2Collided(A, (c2x *)ax, (C2_TYPE)typeA, B, (c2x *)bx, (C2_TYPE)typeB);
 }
 
-void metadot_collide(const void *A, const METAENGINE_Transform *ax, METAENGINE_ShapeType typeA, const void *B, const METAENGINE_Transform *bx, METAENGINE_ShapeType typeB, METAENGINE_Manifold *m) {
+void metadot_collide(const void *A, const ME_Transform *ax, ME_ShapeType typeA, const void *B, const ME_Transform *bx, ME_ShapeType typeB, ME_Manifold *m) {
     c2Collide(A, (c2x *)ax, (C2_TYPE)typeA, B, (c2x *)bx, (C2_TYPE)typeB, (c2Manifold *)m);
 }
 
-bool metadot_cast_ray(METAENGINE_Ray A, const void *B, const METAENGINE_Transform *bx, METAENGINE_ShapeType typeB, METAENGINE_Raycast *out) {
+bool metadot_cast_ray(ME_Ray A, const void *B, const ME_Transform *bx, ME_ShapeType typeB, ME_Raycast *out) {
     return c2CastRay(*(c2Ray *)&A, B, (c2x *)bx, (C2_TYPE)typeB, (c2Raycast *)out);
 }
 

@@ -8,14 +8,12 @@
 #include <filesystem>
 #include <fstream>
 
-#include "core/alloc.hpp"
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/cpp/utils.hpp"
+#include "core/memory.h"
 #include "core/platform.h"
-#include "core/stl/stl.h"
 #include "datapackage.h"
 #include "engine/engine.h"
-#include "core/platform.h"
 
 IMPLENGINE();
 
@@ -27,8 +25,7 @@ bool InitFilesystem() {
 
     for (int i = 0; i < 3; ++i) {
         if (std::filesystem::exists(currentDir / "Data")) {
-            Core.gamepath = metadot_path_normalize(currentDir.string().c_str());
-            // s_DataPath = currentDir / "Data";
+            Core.gamepath = normalizePath(currentDir.string()).c_str();
             METADOT_INFO("Game data path detected: %s (Base: %s)", Core.gamepath.c_str(), std::filesystem::current_path().string().c_str());
 
             // if (metadot_is_error(err)) {
@@ -60,156 +57,9 @@ bool InitFilesystem() {
 #endif
 }
 
-#define METAENGINE_FILE_SYSTEM_BUFFERED_IO_SIZE (2 * METAENGINE_MB)
+#define ME_FILE_SYSTEM_BUFFERED_IO_SIZE (2 * ME_MB)
 
-char* metadot_path_get_filename(const char* path) {
-    int at = slast_index_of(path, '/');
-    if (at == -1) return NULL;
-    return smake(path + at + 1);
-}
-
-char* metadot_path_get_filename_no_ext(const char* path) {
-    int at = slast_index_of(path, '.');
-    if (at == -1) return NULL;
-    char* s = (char*)metadot_path_get_filename(path);
-    at = slast_index_of(s, '.');
-    if (at == -1 || at == 0) {
-        sfree(s);
-        return NULL;
-    }
-    serase(s, at, slen(s) - at);
-    return s;
-}
-
-char* metadot_path_get_ext(const char* path) {
-    int at = slast_index_of(path, '.');
-    if (at == -1 || path[at + 1] == 0 || path[at + 1] == '/') return NULL;
-    return smake(path + at);
-}
-
-char* metadot_path_pop(const char* path) {
-    char* in = (char*)path;
-    if (sisdyna(in)) {
-        if (slast(in) == '/') spop(in);
-        int at = slast_index_of(path, '/');
-        if (at == -1 || at == 0) return sset(in, "/");
-        serase(in, at, slen(in) - at);
-        return in;
-    } else {
-        char* s = sdup(path);
-        if (slast(s) == '/') spop(s);
-        int at = slast_index_of(path, '/');
-        if (at == -1 || at == 0) return sset(s, "/");
-        serase(s, at, slen(s) - at);
-        return s;
-    }
-}
-
-char* metadot_path_pop_n(const char* path, int n) {
-    char* s = (char*)path;
-    while (n--) {
-        s = sppop(s);
-    }
-    return s;
-}
-
-char* metadot_path_compact(const char* path, int n) {
-    int len = (int)METAENGINE_STRLEN(path);
-    if (n <= 6) return NULL;
-    if (len < n) return sdup(path);
-    int at = slast_index_of(path, '/');
-    if (at == -1 || at == 0) {
-        char* s = sdup(path);
-        serase(s, n, slen(s) - n);
-        serase(s, n - 3, 3);
-        return sappend(s, "...");
-    }
-    int remaining = len - at - 1;
-    if (remaining >= n - 3) {
-        char* s = smake("...");
-        sappend_range(s, path, path + at - 6);
-        return sappend(s, "...");
-    } else {
-        char* s = sdup(path);
-        int len_s = slen(s);
-        int to_erase = len_s - (remaining - 3);
-        serase(s, remaining - 3, to_erase);
-        sappend(s, "...");
-        return sappend(s, path + at);
-    }
-}
-
-char* metadot_path_directory_of(const char* path) {
-    if (!*path || *path == '.' && METAENGINE_STRLEN(path) < 3) return NULL;
-    if (sequ(path, "../")) return NULL;
-    if (sequ(path, "/")) return NULL;
-    int at = slast_index_of(path, '/');
-    if (at == -1) return NULL;
-    if (at == 0) return smake("/");
-    char* s = smake(path);
-    serase(s, at, slen(s) - at);
-    at = slast_index_of(s, '/');
-    if (at == -1) {
-        int l = slen(s);
-        if (slen(s) == 2) {
-            return s;
-        } else {
-            s[0] = '/';
-            return s;
-        }
-    }
-    return serase(s, 0, at);
-}
-
-char* metadot_path_top_directory(const char* path) {
-    int at = sfirst_index_of(path, '/');
-    if (at == -1) return NULL;
-    int next = sfirst_index_of(path + at + 1, '/');
-    if (next == -1) return smake("/");
-    char* s = sdup(path);
-    return serase(s, next + 1, slen(s) - (next + 1));
-}
-
-char* metadot_path_normalize(const char* path) {
-    char* result = NULL;
-    int len = (int)METAENGINE_STRLEN(path);
-    if (*path != '\\' && *path != '/') {
-        bool windows_drive = len >= 2 && path[1] == ':';
-        if (!windows_drive) {
-            spush(result, '/');
-        }
-    }
-    bool prev_was_dot = false;
-    bool prev_was_dotdot = false;
-    for (int i = 0; i < len; ++i) {
-        char c = path[i];
-        int l = slen(result);
-        if (c == '\\' || c == '/') {
-            if (!prev_was_dot) {
-                spush(result, '/');
-            } else if (prev_was_dotdot) {
-                sppop(result);
-                spush(result, '/');
-            }
-            prev_was_dot = false;
-            prev_was_dotdot = false;
-        } else if (c == '.') {
-            if (prev_was_dot) {
-                prev_was_dotdot = true;
-            }
-            prev_was_dot = true;
-        } else {
-            spush(result, c);
-            prev_was_dot = false;
-            prev_was_dotdot = false;
-        }
-    }
-    sreplace(result, "//", "/");
-    if (slen(result) > 1 && slast(result) == '/') spop(result);
-    return result;
-}
-
-std::vector<char> fs_read_entire_file_to_memory(const char* path, size_t &size) {
+std::vector<char> fs_read_entire_file_to_memory(const char* path, size_t& size) {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     std::streamsize size_ = file.tellg();
     file.seekg(0, std::ios::beg);
@@ -224,9 +74,42 @@ std::vector<char> fs_read_entire_file_to_memory(const char* path, size_t &size) 
     }
 }
 
-std::string normalizePath(const std::string& messyPath) {
+std::string normalizePath2(const std::string& messyPath) {
     std::filesystem::path path(messyPath);
-    std::filesystem::path canonicalPath = std::filesystem::weakly_canonical(path);
+    std::filesystem::path canonicalPath = std::filesystem::canonical(path);
     std::string npath = canonicalPath.make_preferred().string();
     return npath;
+}
+
+std::string normalizePath(const std::string& path, char delimiter) {
+    static constexpr char delims[] = "/\\";
+    static const auto error = std::logic_error("bad path");
+
+    std::string norm;
+    norm.reserve(path.size() / 2);  // random guess, should be benchmarked
+
+    for (auto it = path.begin(); it != path.end(); it++) {
+        if (std::any_of(std::begin(delims), std::end(delims), [it](auto c) { return c == *it; })) {
+            if (norm.empty() || norm.back() != delimiter) norm.push_back(delimiter);
+        } else if (*it == '.') {
+            if (++it == path.end()) break;
+            if (std::any_of(std::begin(delims), std::end(delims), [it](auto c) { return c == *it; })) {
+                continue;
+            }
+            if (*it != '.') throw error;
+            if (norm.empty() || norm.back() != delimiter) throw error;
+
+            norm.pop_back();
+            while (!norm.empty()) {
+                norm.pop_back();
+                if (norm.back() == delimiter) {
+                    norm.pop_back();
+                    break;
+                }
+            }
+        } else
+            norm.push_back(*it);
+    }
+    if (!norm.empty() && norm.back() != delimiter) norm.push_back(delimiter);
+    return norm;
 }

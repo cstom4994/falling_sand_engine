@@ -7,7 +7,7 @@
 #include <cstdio>
 #include <ctime>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/memory.h"
 #include "core/platform.h"
 #include "scripting/scripting.hpp"

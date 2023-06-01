@@ -16,7 +16,7 @@ public:
 
     static T *GetSingletonPtr() {
         if (myInstance.get() == NULL) {
-            MetaEngine::Ref<T> t(new T);
+            ME::ref<T> t(new T);
             myInstance = t;
         }
 
@@ -26,18 +26,18 @@ public:
     static T &GetSingleton() { return (*GetSingletonPtr()); }
 
     static void Delete() {
-        MetaEngine::Ref<T> t;
+        ME::ref<T> t;
         myInstance = t;
     }
 
 protected:
     CSingleton() {}
 
-    static MetaEngine::Ref<T> myInstance;
+    static ME::ref<T> myInstance;
 };
 
 template <typename T>
-MetaEngine::Ref<T> CSingleton<T>::myInstance;
+ME::ref<T> CSingleton<T>::myInstance;
 
 //=============================================================================
 
@@ -67,7 +67,7 @@ public:
 
     static T *GetSingletonPtr() {
         if (myInstance.get() == NULL) {
-            MetaEngine::Ref<T> t(::new T);
+            ME::ref<T> t(::new T);
             myInstance = t;
         }
 
@@ -77,7 +77,7 @@ public:
     static T &GetSingleton() { return (*GetSingletonPtr()); }
 
     static void Delete() {
-        MetaEngine::Ref<T> t;
+        ME::ref<T> t;
         myInstance = t;
     }
 
@@ -86,11 +86,11 @@ public:
     T &operator*() const { return GetSingleton(); }
 
 private:
-    static MetaEngine::Ref<T> myInstance;
+    static ME::ref<T> myInstance;
 };
 
 template <typename T>
-MetaEngine::Ref<T> CSingletonPtr<T>::myInstance;
+ME::ref<T> CSingletonPtr<T>::myInstance;
 
 template <typename T>
 inline T *GetSingletonPtr() {

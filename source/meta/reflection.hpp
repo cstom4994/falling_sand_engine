@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "core/basic_types.h"
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/cpp/templatelist.hpp"
 #include "meta/static_relfection.hpp"
 

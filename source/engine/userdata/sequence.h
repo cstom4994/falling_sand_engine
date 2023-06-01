@@ -4,7 +4,7 @@
 #include <cstdlib>
 
 #include "core/utils/tableinterface.h"
-#include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/lua_wrapper.hpp"
 
 class Sequence {
 private:

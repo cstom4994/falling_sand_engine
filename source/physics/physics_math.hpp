@@ -57,10 +57,10 @@ struct PVec2 {
     }
 
     /// Read from and indexed element.
-    float operator()(I32 i) const { return (&x)[i]; }
+    float operator()(i32 i) const { return (&x)[i]; }
 
     /// Write to an indexed element.
-    float &operator()(I32 i) { return (&x)[i]; }
+    float &operator()(i32 i) { return (&x)[i]; }
 
     /// Add a vector to this vector.
     void operator+=(const PVec2 &v) {
@@ -548,7 +548,7 @@ inline void b2Swap(T &a, T &b) {
 /// that recursively "folds" the upper bits into the lower bits. This process yields a bit vector with
 /// the same most significant 1 as x, but all 1's below it. Adding 1 to that value yields the next
 /// largest power of 2. For a 32-bit value:"
-inline U32 b2NextPowerOfTwo(U32 x) {
+inline u32 b2NextPowerOfTwo(u32 x) {
     x |= (x >> 1);
     x |= (x >> 2);
     x |= (x >> 4);
@@ -557,7 +557,7 @@ inline U32 b2NextPowerOfTwo(U32 x) {
     return x + 1;
 }
 
-inline bool b2IsPowerOfTwo(U32 x) {
+inline bool b2IsPowerOfTwo(u32 x) {
     bool result = x > 0 && (x & (x - 1)) == 0;
     return result;
 }
@@ -590,7 +590,7 @@ inline void PSweep::Normalize() {
 
 #pragma region TPPL
 
-typedef F64 tppl_float;
+typedef f64 tppl_float;
 
 #define TPPL_CCW 1
 #define TPPL_CW -1
@@ -927,9 +927,9 @@ public:
 
 #pragma endregion TPPL
 
-void simplify_section(const std::vector<MEvec2> &pts, F32 tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted = 0);
-std::vector<MEvec2> simplify(const std::vector<MEvec2> &vertices, F32 tolerance);
-F32 pDistance(F32 x, F32 y, F32 x1, F32 y1, F32 x2, F32 y2);
+void simplify_section(const std::vector<MEvec2> &pts, f32 tolerance, size_t i, size_t j, std::vector<bool> *mark_map, size_t omitted = 0);
+std::vector<MEvec2> simplify(const std::vector<MEvec2> &vertices, f32 tolerance);
+f32 pDistance(f32 x, f32 y, f32 x1, f32 y1, f32 x2, f32 y2);
 
 //  * A simple implementation of the marching squares algorithm that can identify
 //  * perimeters in an supplied byte array. The array of data over which this

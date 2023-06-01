@@ -35,7 +35,7 @@ void MetaEngine::Drawing::drawPolygon(R_Target *target, ME_Color col, MEvec2 *ve
     }
 }
 
-U32 MetaEngine::Drawing::darkenColor(U32 color, float brightness) {
+u32 MetaEngine::Drawing::darkenColor(u32 color, float brightness) {
     int a = (color >> 24) & 0xFF;
     int r = (int)(((color >> 16) & 0xFF) * brightness);
     int g = (int)(((color >> 8) & 0xFF) * brightness);
@@ -551,7 +551,7 @@ PVec2 DebugDraw::transform(const PVec2 &pt) {
     return PVec2(x, y);
 }
 
-void DebugDraw::DrawPolygon(const PVec2 *vertices, I32 vertexCount, const ME_Color &color) {
+void DebugDraw::DrawPolygon(const PVec2 *vertices, i32 vertexCount, const ME_Color &color) {
     PVec2 *verts = new PVec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) {
@@ -564,7 +564,7 @@ void DebugDraw::DrawPolygon(const PVec2 *vertices, I32 vertexCount, const ME_Col
     delete[] verts;
 }
 
-void DebugDraw::DrawSolidPolygon(const PVec2 *vertices, I32 vertexCount, const ME_Color &color) {
+void DebugDraw::DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, const ME_Color &color) {
     PVec2 *verts = new PVec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) {

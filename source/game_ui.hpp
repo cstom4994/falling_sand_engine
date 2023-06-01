@@ -8,7 +8,7 @@
 #include "game_datastruct.hpp"
 #include "ui/imgui/imgui_impl.hpp"
 #include "renderer/renderer_gpu.h"
-#include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/lua_wrapper.hpp"
 #include "world.hpp"
 
 class Game;
@@ -43,7 +43,7 @@ public:
     std::vector<R_Image *> DebugDrawUI__images = {};
     std::vector<R_Image *> DebugDrawUI__tools_images = {};
     Material *DebugDrawUI__selectedMaterial = &MaterialsList::GENERIC_AIR;
-    U8 DebugDrawUI__brushSize = 5;
+    u8 DebugDrawUI__brushSize = 5;
 
     // OptionsUI
     int OptionsUI__item_current_idx = 0;

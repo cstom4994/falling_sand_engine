@@ -5,7 +5,7 @@
 #include <deque>
 #include <vector>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/utils/utility.hpp"
 #include "libs/imgui/imgui.h"
 #include "libs/imgui/imgui_internal.h"

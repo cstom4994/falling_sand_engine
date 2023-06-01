@@ -4,10 +4,9 @@
 
 #include <string.h>
 
-#include "core/sdl_wrapper.h"
-#include "core/alloc.hpp"
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/io/filesystem.h"
+#include "core/memory.h"
 #include "core/sdl_wrapper.h"
 #include "engine/engine.h"
 #include "libs/external/stb_image.h"
@@ -79,7 +78,7 @@ Texture *LoadTextureData(const char *path) { return LoadTextureInternal(path, SD
 
 Texture *LoadTexture(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
 
-Texture *LoadTextureInternal(const char *path, U32 pixelFormat) {
+Texture *LoadTextureInternal(const char *path, u32 pixelFormat) {
 
     // https://wiki.libsdl.org/SDL_CreateRGBSurfaceFrom
 
@@ -94,7 +93,7 @@ Texture *LoadTextureInternal(const char *path, U32 pixelFormat) {
 
     // Set up the pixel format color masks for RGB(A) byte arrays.
     // Only STBI_rgb (3) and STBI_rgb_alpha (4) are supported here!
-    U32 rmask, gmask, bmask, amask;
+    u32 rmask, gmask, bmask, amask;
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     int shift = (req_format == STBI_rgb) ? 8 : 0;
     rmask = 0xff000000 >> shift;
@@ -131,7 +130,7 @@ Texture *LoadTextureInternal(const char *path, U32 pixelFormat) {
     return tex;
 }
 
-C_Surface *ScaleSurface(C_Surface *src, F32 x, F32 y) {
+C_Surface *ScaleSurface(C_Surface *src, f32 x, f32 y) {
     C_Surface *dest = SDL_CreateRGBSurface(src->flags, src->w * x, src->h * y, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
 
     C_Rect *srcR = new C_Rect;

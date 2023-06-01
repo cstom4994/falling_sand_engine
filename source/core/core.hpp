@@ -35,161 +35,242 @@
 #include <utility>
 #include <vector>
 
-#include "core/alloc.hpp"
-#include "core/core.h"
+#include "core/basic_types.h"
 #include "core/cpp/struct.hpp"
 #include "core/macros.hpp"
 
-#define METADOT_CALLABLE(func_name) [](auto... args) -> decltype(auto) { return func_name(std::move(args)...); }
+#define METADOT_INT8_MAX 0x7F
+#define METADOT_UINT8_MAX 0xFF
+#define METADOT_INT16_MAX 0x7FFF
+#define METADOT_UINT16_MAX 0xFFFF
+#define METADOT_INT32_MAX 0x7FFFFFFF
+#define METADOT_UINT32_MAX 0xFFFFFFFF
+#define METADOT_INT64_MAX 0x7FFFFFFFFFFFFFFF
+#define METADOT_UINT64_MAX 0xFFFFFFFFFFFFFFFF
 
-template <typename T, size_t Size>
-class SizeChecker {
-    static_assert(sizeof(T) == Size, "Check the size of integral types");
-};
+#define METADOT_OK 0
+#define METADOT_FAILED 1
 
-template class SizeChecker<I64, 8>;
+typedef struct Pixel {
+    u8 b;
+    u8 g;
+    u8 r;
+    u8 a;
+} Pixel;
 
-template class SizeChecker<I32, 4>;
+#pragma region endian_h
 
-template class SizeChecker<I16, 2>;
+// MetaDot endian
+// https://github.com/mikepb/endian.h
 
-template class SizeChecker<I8, 1>;
+#if (defined(_WIN16) || defined(_WIN32) || defined(_WIN64)) && !defined(__WINDOWS__)
 
-template class SizeChecker<U64, 8>;
+#define __WINDOWS__
 
-template class SizeChecker<U32, 4>;
+#endif
 
-template class SizeChecker<U16, 2>;
+#if defined(__linux__) || defined(__CYGWIN__)
 
-template class SizeChecker<U8, 1>;
+#include <endian.h>
 
-namespace MetaEngine {
+#elif defined(__APPLE__)
 
-static inline U16 swapuint16(U16 x) { return (x >> 8) | (x << 8); }
+#include <libkern/OSByteOrder.h>
 
-static inline U32 swapuint32(U32 x) { return ((x & 0x000000FF) << 24) | ((x & 0x0000FF00) << 8) | ((x & 0x00FF0000) >> 8) | ((x & 0xFF000000) >> 24); }
+#define htobe16(x) OSSwapHostToBigInt16(x)
+#define htole16(x) OSSwapHostToLittleInt16(x)
+#define be16toh(x) OSSwapBigToHostInt16(x)
+#define le16toh(x) OSSwapLittleToHostInt16(x)
 
-static inline U64 swapuint64(U64 x) {
-    return ((x << 56) & 0xFF00000000000000ULL) | ((x << 40) & 0x00FF000000000000ULL) | ((x << 24) & 0x0000FF0000000000ULL) | ((x << 8) & 0x000000FF00000000ULL) | ((x >> 8) & 0x00000000FF000000ULL) |
-           ((x >> 24) & 0x0000000000FF0000ULL) | ((x >> 40) & 0x000000000000FF00ULL) | ((x >> 56) & 0x00000000000000FFULL);
-}
+#define htobe32(x) OSSwapHostToBigInt32(x)
+#define htole32(x) OSSwapHostToLittleInt32(x)
+#define be32toh(x) OSSwapBigToHostInt32(x)
+#define le32toh(x) OSSwapLittleToHostInt32(x)
 
-// Function types
+#define htobe64(x) OSSwapHostToBigInt64(x)
+#define htole64(x) OSSwapHostToLittleInt64(x)
+#define be64toh(x) OSSwapBigToHostInt64(x)
+#define le64toh(x) OSSwapLittleToHostInt64(x)
 
+#define __BYTE_ORDER BYTE_ORDER
+#define __BIG_ENDIAN BIG_ENDIAN
+#define __LITTLE_ENDIAN LITTLE_ENDIAN
+#define __PDP_ENDIAN PDP_ENDIAN
+
+#elif defined(__OpenBSD__)
+
+#include <sys/endian.h>
+
+#elif defined(__NetBSD__) || defined(__FreeBSD__) || defined(__DragonFly__)
+
+#include <sys/endian.h>
+
+#define be16toh(x) betoh16(x)
+#define le16toh(x) letoh16(x)
+
+#define be32toh(x) betoh32(x)
+#define le32toh(x) letoh32(x)
+
+#define be64toh(x) betoh64(x)
+#define le64toh(x) letoh64(x)
+
+#elif defined(__WINDOWS__)
+
+#include <winsock2.h>
+
+#if BYTE_ORDER == LITTLE_ENDIAN
+
+#define htobe16(x) htons(x)
+#define htole16(x) (x)
+#define be16toh(x) ntohs(x)
+#define le16toh(x) (x)
+
+#define htobe32(x) htonl(x)
+#define htole32(x) (x)
+#define be32toh(x) ntohl(x)
+#define le32toh(x) (x)
+
+#define htobe64(x) htonll(x)
+#define htole64(x) (x)
+#define be64toh(x) ntohll(x)
+#define le64toh(x) (x)
+
+#elif BYTE_ORDER == BIG_ENDIAN
+
+/* that would be xbox 360 */
+#define htobe16(x) (x)
+#define htole16(x) __builtin_bswap16(x)
+#define be16toh(x) (x)
+#define le16toh(x) __builtin_bswap16(x)
+
+#define htobe32(x) (x)
+#define htole32(x) __builtin_bswap32(x)
+#define be32toh(x) (x)
+#define le32toh(x) __builtin_bswap32(x)
+
+#define htobe64(x) (x)
+#define htole64(x) __builtin_bswap64(x)
+#define be64toh(x) (x)
+#define le64toh(x) __builtin_bswap64(x)
+
+#else
+
+#error byte order not supported
+
+#endif
+
+#define __BYTE_ORDER BYTE_ORDER
+#define __BIG_ENDIAN BIG_ENDIAN
+#define __LITTLE_ENDIAN LITTLE_ENDIAN
+#define __PDP_ENDIAN PDP_ENDIAN
+
+#else
+
+#error platform not supported
+
+#endif
+
+#pragma endregion endian_h
+
+#pragma region engine_framework
+
+#include <stdint.h>
+
+#ifndef NOMINMAX
+#define NOMINMAX WINDOWS_IS_ANNOYING_AINT_IT
+#endif
+
+#ifdef ME_PLATFORM_WINDOWS
+#define METADOT_CDECL __cdecl
+#else
+#define METADOT_CDECL
+#endif
+
+#define ME_UNUSED(x) (void)x
+#define ME_ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#define ME_KB 1024
+#define ME_MB (ME_KB * ME_KB)
+#define ME_GB (ME_MB * ME_MB)
+#define ME_SERIALIZE_CHECK(x)                          \
+    do {                                               \
+        if ((x) != SERIALIZE_SUCCESS) goto cute_error; \
+    } while (0)
+#define ME_STATIC_ASSERT(condition, error_message_string) static_assert(condition, error_message_string)
+#define ME_STRINGIZE_INTERNAL(...) #__VA_ARGS__
+#define ME_STRINGIZE(...) ME_STRINGIZE_INTERNAL(__VA_ARGS__)
+#define ME_OFFSET_OF(T, member) ((size_t)((uintptr_t)(&(((T *)0)->member))))
+#define ME_DEBUG_PRINTF(...)
+#define ME_ALIGN_TRUNCATE(v, n) ((v) & ~((n)-1))
+#define ME_ALIGN_FORWARD(v, n) ME_ALIGN_TRUNCATE((v) + (n)-1, (n))
+#define ME_ALIGN_TRUNCATE_PTR(p, n) ((void *)ME_ALIGN_TRUNCATE((uintptr_t)(p), n))
+#define ME_ALIGN_FORWARD_PTR(p, n) ((void *)ME_ALIGN_FORWARD((uintptr_t)(p), n))
+
+#ifdef ME_PLATFORM_WINDOWS
+
+#if !defined(_INITIALIZER_LIST_) && !defined(_INITIALIZER_LIST) && !defined(_LIBCPP_INITIALIZER_LIST)
+#define _INITIALIZER_LIST_        // MSVC
+#define _INITIALIZER_LIST         // GCC
+#define _LIBCPP_INITIALIZER_LIST  // Clang
+// Will probably need to add more here for more compilers later.
+
+namespace std {
 template <typename T>
-using MetaFunction = std::function<T>;
-using VoidFunction = std::function<void(void)>;
-using AnyEventCallback = std::function<bool(void *backendEvent)>;
-
-}  // namespace MetaEngine
-
-namespace MetaEngine {
-
-class ArgBase {
+class initializer_list {
 public:
-    ArgBase() {}
-    virtual ~ArgBase() {}
-    virtual void Format(std::ostringstream &ss, const std::string &fmt) = 0;
-};
+    using value_type = T;
+    using reference = const T &;
+    using const_reference = const T &;
+    using size_type = size_t;
 
-template <class T>
-class Arg : public ArgBase {
-public:
-    Arg(T arg) : m_arg(arg) {}
-    virtual ~Arg() {}
-    virtual void Format(std::ostringstream &ss, const std::string &fmt) { ss << m_arg; }
+    using iterator = const T *;
+    using const_iterator = const T *;
+
+    constexpr initializer_list() noexcept : m_first(0), m_last(0) {}
+
+    constexpr initializer_list(const T *first, const T *last) noexcept : m_first(first), m_last(last) {}
+
+    constexpr const T *begin() const noexcept { return m_first; }
+    constexpr const T *end() const noexcept { return m_last; }
+    constexpr size_t size() const noexcept { return (size_t)(m_last - m_first); }
 
 private:
-    T m_arg;
+    const T *m_first;
+    const T *m_last;
 };
-
-class ArgArray : public std::vector<ArgBase *> {
-public:
-    ArgArray() {}
-    ~ArgArray() {
-        std::for_each(begin(), end(), [](ArgBase *p) { delete p; });
-    }
-};
-
-static void FormatItem(std::ostringstream &ss, const std::string &item, const ArgArray &args) {
-    int index = 0;
-    int alignment = 0;
-    std::string fmt;
-
-    char *endptr = nullptr;
-    index = strtol(&item[0], &endptr, 10);
-    if (index < 0 || index >= args.size()) {
-        return;
-    }
-
-    if (*endptr == ',') {
-        alignment = strtol(endptr + 1, &endptr, 10);
-        if (alignment > 0) {
-            ss << std::right << std::setw(alignment);
-        } else if (alignment < 0) {
-            ss << std::left << std::setw(-alignment);
-        }
-    }
-
-    if (*endptr == ':') {
-        fmt = endptr + 1;
-    }
-
-    args[index]->Format(ss, fmt);
-
-    return;
-}
 
 template <class T>
-static void Transfer(ArgArray &argArray, T t) {
-    argArray.push_back(new Arg<T>(t));
+constexpr const T *begin(initializer_list<T> list) noexcept {
+    return list.begin();
 }
-
-template <class T, typename... Args>
-static void Transfer(ArgArray &argArray, T t, Args &&...args) {
-    Transfer(argArray, t);
-    Transfer(argArray, args...);
+template <class T>
+constexpr const T *end(initializer_list<T> list) noexcept {
+    return list.end();
 }
+}  // namespace std
 
-template <typename... Args>
-std::string Format(const std::string &format, Args &&...args) {
-    if (sizeof...(args) == 0) {
-        return format;
+#endif
+
+#else  // ME_PLATFORM_WINDOWS
+
+#include <initializer_list>
+
+#endif  // ME_PLATFORM_WINDOWS
+
+// Not sure where to put this... Here is good I guess.
+ME_INLINE uint64_t metadot_fnv1a(const void *data, int size) {
+    const char *s = (const char *)data;
+    uint64_t h = 14695981039346656037ULL;
+    char c = 0;
+    while (size--) {
+        h = h ^ (uint64_t)(*s++);
+        h = h * 1099511628211ULL;
     }
-
-    ArgArray argArray;
-    Transfer(argArray, args...);
-    size_t start = 0;
-    size_t pos = 0;
-    std::ostringstream ss;
-    while (true) {
-        pos = format.find('{', start);
-        if (pos == std::string::npos) {
-            ss << format.substr(start);
-            break;
-        }
-
-        ss << format.substr(start, pos - start);
-        if (format[pos + 1] == '{') {
-            ss << '{';
-            start = pos + 2;
-            continue;
-        }
-
-        start = pos + 1;
-        pos = format.find('}', start);
-        if (pos == std::string::npos) {
-            ss << format.substr(start - 1);
-            break;
-        }
-
-        FormatItem(ss, format.substr(start, pos - start), argArray);
-        start = pos + 1;
-    }
-
-    return ss.str();
+    return h;
 }
-}  // namespace MetaEngine
+
+#pragma endregion engine_framework
+
+#define METADOT_CALLABLE(func_name) [](auto... args) -> decltype(auto) { return func_name(std::move(args)...); }
 
 // ImGuiData Types
 
@@ -245,35 +326,18 @@ METADOT_STRUCT(MarkdownData, data);
     }                                                                               \
     enum class TEnum : TBase
 
-//--------------------------------------------------------------------------------------------------------------------------------//
-// MEMORY FUNCTIONS USED BY LIBRARY
-
-#ifndef METAENGINE_MALLOC
-#define METAENGINE_MALLOC(s) METADOT_GC_ALLOC((s))
-#endif
-
-#ifndef METAENGINE_FREE
-#define METAENGINE_FREE(p) METADOT_GC_DEALLOC((p))
-#endif
-
-#ifndef METAENGINE_REALLOC
-#define METAENGINE_REALLOC(p, s) METADOT_GC_REALLOC(p, s)
-#endif
-
-namespace MetaEngine {
+// A portable and safe way to add byte offset to any pointer
+// https://stackoverflow.com/questions/15934111/portable-and-safe-way-to-add-byte-offset-to-any-pointer
 template <typename T>
-using Scope = std::unique_ptr<T>;
-template <typename T, typename... Args>
-constexpr Scope<T> CreateScope(Args &&...args) {
-    return std::make_unique<T>(std::forward<Args>(args)...);
+inline void addOffset(std::ptrdiff_t offset, T *&ptr) {
+    if (!ptr) return;
+    ptr = (T *)((unsigned char *)ptr + offset);
 }
 
 template <typename T>
-using Ref = std::shared_ptr<T>;
-template <typename T, typename... Args>
-constexpr Ref<T> CreateRef(Args &&...args) {
-    return std::make_shared<T>(std::forward<Args>(args)...);
+inline T *addOffsetR(std::ptrdiff_t offset, T *ptr) {
+    if (!ptr) return nullptr;
+    return (T *)((unsigned char *)ptr + offset);
 }
-}  // namespace MetaEngine
 
-#endif  // !_CORE_H
+#endif

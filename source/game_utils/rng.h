@@ -11,4 +11,4 @@ typedef struct RNG {
 
 RNG* RNG_Create();
 void RNG_Delete(RNG* rng);
-U32 RNG_Next(RNG* rng);
+u32 RNG_Next(RNG* rng);

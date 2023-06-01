@@ -30,7 +30,7 @@ struct GlobalDEF {
     int water_overlay;
     bool water_showFlow;
     bool water_pixelated;
-    F32 lightingQuality;
+    f32 lightingQuality;
     bool draw_light_overlay;
     bool simpleLighting;
     bool lightingEmission;

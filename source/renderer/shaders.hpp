@@ -10,18 +10,18 @@
 #include "renderer/renderer_gpu.h"
 
 // Loads a shader and prepends version/compatibility info before compiling it.
-U32 METAENGINE_Shaders_LoadShader(R_ShaderEnum shader_type, const char *filename);
-R_ShaderBlock METAENGINE_Shaders_LoadShaderProgram(U32 *p, const char *vertex_shader_file, const char *fragment_shader_file);
-void METAENGINE_Shaders_FreeShader(U32 p);
+u32 ME_Shaders_LoadShader(R_ShaderEnum shader_type, const char *filename);
+R_ShaderBlock ME_Shaders_LoadShaderProgram(u32 *p, const char *vertex_shader_file, const char *fragment_shader_file);
+void ME_Shaders_FreeShader(u32 p);
 
 class ShaderBase {
 public:
-    U32 shader;
+    u32 shader;
     R_ShaderBlock block;
     const char *vertex_shader_file;
     const char *fragment_shader_file;
 
-    U32 Init();
+    u32 Init();
     void Unload();
     void Activate();
 };

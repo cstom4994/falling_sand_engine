@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "audio/audio.h"
-#include "core/alloc.hpp"
 #include "core/debug.hpp"
 #include "core/macros.hpp"
+#include "core/memory.h"
 #include "core/profiler/profiler.h"
 #include "core/sdl_wrapper.h"
 #include "game_datastruct.hpp"

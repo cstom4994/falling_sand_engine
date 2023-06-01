@@ -25,10 +25,10 @@ protected:
     SystemFlags flags = SystemFlags::SystemFlags_Default;
 
 public:
-    U32 priority;
+    u32 priority;
 
 public:
-    IGameSystem(U32 p = -1, SystemFlags f = SystemFlags::SystemFlags_Default, std::string n = "unknown system") {
+    IGameSystem(u32 p = -1, SystemFlags f = SystemFlags::SystemFlags_Default, std::string n = "unknown system") {
         if (p != -1) {
             priority = p;
         }
@@ -50,11 +50,11 @@ public:
     virtual void RegisterLua(LuaWrapper::State &s_lua) = 0;
 };
 
-METAENGINE_GUI_DEFINE_BEGIN(template <>, IGameSystem)
+ME_GUI_DEFINE_BEGIN(template <>, IGameSystem)
 ImGui::Text("%s %d", var.getName().c_str(), var.priority);
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
-#define REGISTER_SYSTEM(name) name(U32 p, SystemFlags f = SystemFlags::SystemFlags_Default) : IGameSystem(p, f, #name){};
+#define REGISTER_SYSTEM(name) name(u32 p, SystemFlags f = SystemFlags::SystemFlags_Default) : IGameSystem(p, f, #name){};
 
 class GameplayScriptSystem : public IGameSystem {
 public:
@@ -68,9 +68,9 @@ public:
 
 Biome *BiomeGet(std::string name);
 
-METAENGINE_GUI_DEFINE_BEGIN(template <typename T>, Property<T>)
+ME_GUI_DEFINE_BEGIN(template <typename T>, Property<T>)
 ImGui::Auto(var.get_value());
-METAENGINE_GUI_DEFINE_END
+ME_GUI_DEFINE_END
 
 // class IGameObject {
 // public:

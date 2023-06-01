@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/core.hpp"
 #include "core/cpp/utils.hpp"
 #include "core/global.hpp"
@@ -69,7 +69,7 @@ void ChunkRead(Chunk *_struct) {
     if (layer2 == NULL) throw std::runtime_error("Failed to allocate memory for Chunk layer2 array.");
     // MaterialInstance *tiles = new MaterialInstance[CHUNK_W * CHUNK_H];
     // MaterialInstance *layer2 = new MaterialInstance[CHUNK_W * CHUNK_H];
-    U32 *background = new U32[CHUNK_W * CHUNK_H];
+    u32 *background = new u32[CHUNK_W * CHUNK_H];
 
     datapack_node *dp;
     char *s;
@@ -110,14 +110,14 @@ void ChunkRead(Chunk *_struct) {
         // 	myfile.read((char*)&content, sizeof(unsigned int));
         // 	int id = content;
         // 	myfile.read((char*)&content, sizeof(unsigned int));
-        // 	U32 color = content;
+        // 	u32 color = content;
         // 	tiles[i] = MaterialInstance(global.GameData_.materials_container[id], color);
         // }
         // for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
         // 	myfile.read((char*)&content, sizeof(unsigned int));
         // 	int id = content;
         // 	myfile.read((char*)&content, sizeof(unsigned int));
-        // 	U32 color = content;
+        // 	u32 color = content;
         // 	layer2[i] = MaterialInstance(global.GameData_.materials_container[id], color);
         // }
         // for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
@@ -195,7 +195,7 @@ void ChunkRead(Chunk *_struct) {
     _struct->hasTileCache = true;
 }
 
-void ChunkWrite(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer2, U32 *background) {
+void ChunkWrite(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer2, u32 *background) {
     _struct->tiles = tiles;
     _struct->layer2 = layer2;
     _struct->background = background;
@@ -217,8 +217,8 @@ void ChunkWrite(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer
 
     MaterialInstanceData *buf = new MaterialInstanceData[CHUNK_W * CHUNK_H * 2];
     for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
-        buf[i] = {(U16)tiles[i].mat->id, tiles[i].color, tiles[i].temperature};
-        buf[CHUNK_W * CHUNK_H + i] = {(U16)layer2[i].mat->id, layer2[i].color, layer2[i].temperature};
+        buf[i] = {(u16)tiles[i].mat->id, tiles[i].color, tiles[i].temperature};
+        buf[CHUNK_W * CHUNK_H + i] = {(u16)layer2[i].mat->id, layer2[i].color, layer2[i].temperature};
     }
 
     const char *const src = (char *)buf;
@@ -234,7 +234,7 @@ void ChunkWrite(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer
     }
 
     // if(compressed_data_size > 0){
-    //     METADOT_BUG("Compression data1 ratio: %f", (F32)compressed_data_size / src_size * 100);
+    //     METADOT_BUG("Compression data1 ratio: %f", (f32)compressed_data_size / src_size * 100);
     // }
 
     char *n_compressed_data = (char *)realloc(compressed_data, compressed_data_size);
@@ -256,7 +256,7 @@ void ChunkWrite(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer
     }
 
     // if(compressed_data_size2 > 0){
-    //     METADOT_BUG("Compression data2 ratio: %f", (F32)compressed_data_size2 / src_size2 * 100);
+    //     METADOT_BUG("Compression data2 ratio: %f", (f32)compressed_data_size2 / src_size2 * 100);
     // }
 
     char *n_compressed_data2 = (char *)realloc(compressed_data2, (size_t)compressed_data_size2);

@@ -9,6 +9,6 @@
 #endif
 
 int main(int argc, char *argv[]) {
-    const auto game = MetaEngine::CreateScope<Game>(argc, argv);
+    const auto game = ME::create_scope<Game>(argc, argv);
     return game->init(argc, argv);
 }

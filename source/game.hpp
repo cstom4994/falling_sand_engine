@@ -46,7 +46,7 @@ enum EnumGameState { MAIN_MENU, LOADING, INGAME };
 class Game {
 public:
     using EventCallbackFn = std::function<void(MetaEngine::Event &)>;
-    using SystemList = std::vector<MetaEngine::Ref<IGameSystem>>;
+    using SystemList = std::vector<ME::ref<IGameSystem>>;
 
 public:
     EnumGameState state = LOADING;
@@ -54,51 +54,51 @@ public:
 
     DebugDraw *debugDraw;
 
-    I32 ent_prevLoadZoneX = 0;
-    I32 ent_prevLoadZoneY = 0;
+    i32 ent_prevLoadZoneX = 0;
+    i32 ent_prevLoadZoneY = 0;
 
-    U16 *movingTiles;
+    u16 *movingTiles;
 
-    I32 mx = 0;
-    I32 my = 0;
-    I32 lastDrawMX = 0;
-    I32 lastDrawMY = 0;
-    I32 lastEraseMX = 0;
-    I32 lastEraseMY = 0;
+    i32 mx = 0;
+    i32 my = 0;
+    i32 lastDrawMX = 0;
+    i32 lastDrawMY = 0;
+    i32 lastEraseMX = 0;
+    i32 lastEraseMY = 0;
 
-    U8 *objectDelete = nullptr;
+    u8 *objectDelete = nullptr;
 
-    U32 loadingOnColor = 0;
-    U32 loadingOffColor = 0;
+    u32 loadingOnColor = 0;
+    u32 loadingOffColor = 0;
 
     RNG *RNG = nullptr;
 
 public:
     bool running = true;
 
-    F32 accLoadX = 0;
-    F32 accLoadY = 0;
+    f32 accLoadX = 0;
+    f32 accLoadY = 0;
 
-    I64 fadeInStart = 0;
-    I64 fadeInLength = 0;
-    I32 fadeInWaitFrames = 0;
-    I32 fadeOutWaitFrames = 0;
-    I64 fadeOutStart = 0;
-    I64 fadeOutLength = 0;
+    i64 fadeInStart = 0;
+    i64 fadeInLength = 0;
+    i32 fadeInWaitFrames = 0;
+    i32 fadeOutWaitFrames = 0;
+    i64 fadeOutStart = 0;
+    i64 fadeOutLength = 0;
     ME::meta::any_function fadeOutCallback = []() {};
 
     EventCallbackFn EventCallback;
 
     struct {
-        MetaEngine::Ref<BackgroundSystem> backgrounds;
-        MetaEngine::Ref<GameplayScriptSystem> gameplayscript;
-        MetaEngine::Ref<ShaderWorkerSystem> shaderworker;
-        MetaEngine::Ref<UISystem> ui;
+        ME::ref<BackgroundSystem> backgrounds;
+        ME::ref<GameplayScriptSystem> gameplayscript;
+        ME::ref<ShaderWorkerSystem> shaderworker;
+        ME::ref<UISystem> ui;
 
         SystemList systemList = {};
 
         GlobalDEF globaldef;
-        MetaEngine::Scope<World> world;
+        ME::scope<World> world;
         TexturePack *texturepack = nullptr;
 
         MetaEngine::ThreadPool *updateDirtyPool = nullptr;
@@ -109,8 +109,8 @@ public:
         R_Image *backgroundImage = nullptr;
 
         R_Image *loadingTexture = nullptr;
-        std::vector<U8> pixelsLoading;
-        U8 *pixelsLoading_ar = nullptr;
+        std::vector<u8> pixelsLoading;
+        u8 *pixelsLoading_ar = nullptr;
         int loadingScreenW = 0;
         int loadingScreenH = 0;
 
@@ -118,42 +118,42 @@ public:
         R_Image *lightingTexture = nullptr;
 
         R_Image *emissionTexture = nullptr;
-        std::vector<U8> pixelsEmission;
-        U8 *pixelsEmission_ar = nullptr;
+        std::vector<u8> pixelsEmission;
+        u8 *pixelsEmission_ar = nullptr;
 
         R_Image *texture = nullptr;
-        std::vector<U8> pixels;
-        U8 *pixels_ar = nullptr;
+        std::vector<u8> pixels;
+        u8 *pixels_ar = nullptr;
         R_Image *textureLayer2 = nullptr;
-        std::vector<U8> pixelsLayer2;
-        U8 *pixelsLayer2_ar = nullptr;
+        std::vector<u8> pixelsLayer2;
+        u8 *pixelsLayer2_ar = nullptr;
         R_Image *textureBackground = nullptr;
-        std::vector<U8> pixelsBackground;
-        U8 *pixelsBackground_ar = nullptr;
+        std::vector<u8> pixelsBackground;
+        u8 *pixelsBackground_ar = nullptr;
         R_Image *textureObjects = nullptr;
         R_Image *textureObjectsLQ = nullptr;
-        std::vector<U8> pixelsObjects;
-        U8 *pixelsObjects_ar = nullptr;
+        std::vector<u8> pixelsObjects;
+        u8 *pixelsObjects_ar = nullptr;
         R_Image *textureObjectsBack = nullptr;
         R_Image *textureCells = nullptr;
-        std::vector<U8> pixelsCells;
-        U8 *pixelsCells_ar = nullptr;
+        std::vector<u8> pixelsCells;
+        u8 *pixelsCells_ar = nullptr;
         R_Image *textureEntities = nullptr;
         R_Image *textureEntitiesLQ = nullptr;
 
         R_Image *textureFire = nullptr;
         R_Image *texture2Fire = nullptr;
-        std::vector<U8> pixelsFire;
-        U8 *pixelsFire_ar = nullptr;
+        std::vector<u8> pixelsFire;
+        u8 *pixelsFire_ar = nullptr;
 
         R_Image *textureFlowSpead = nullptr;
         R_Image *textureFlow = nullptr;
-        std::vector<U8> pixelsFlow;
-        U8 *pixelsFlow_ar = nullptr;
+        std::vector<u8> pixelsFlow;
+        u8 *pixelsFlow_ar = nullptr;
 
         R_Image *temperatureMap = nullptr;
-        std::vector<U8> pixelsTemp;
-        U8 *pixelsTemp_ar = nullptr;
+        std::vector<u8> pixelsTemp;
+        u8 *pixelsTemp_ar = nullptr;
     } TexturePack_;
 
 public:

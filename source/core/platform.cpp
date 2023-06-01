@@ -6,7 +6,7 @@
 #include "audio/audio.h"
 #include "audio/sound.h"
 #include "core/const.h"
-#include "core/core.h"
+#include "core/core.hpp"
 #include "core/global.hpp"
 #include "core/io/filesystem.h"
 #include "core/io/packer.hpp"
@@ -139,7 +139,7 @@ int metadot_initwindow() {
 
     Core.window = SDL_CreateWindow(win_game, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Screen.windowWidth, Screen.windowHeight, SDL_flags);
 
-    if (Core.window == R_null) {
+    if (Core.window == nullptr) {
         METADOT_ERROR("Could not create SDL_Window: %s", SDL_GetError());
         return METADOT_FAILED;
     }
@@ -338,13 +338,7 @@ char *metadot_clipboard_get() {
     return text;
 }
 
-METAENGINE_Result metadot_clipboard_set(const char *string) {
-    int ret = SDL_SetClipboardText(string);
-    if (ret)
-        return metadot_result_error("Unable to set clipboard data.");
-    else
-        return metadot_result_success();
-}
+void metadot_clipboard_set(const char *string) { SDL_SetClipboardText(string); }
 
 bool ME_fs_directory_exists(const std::filesystem::path &path, std::filesystem::file_status status) {
     if (std::filesystem::status_known(status) ? std::filesystem::exists(status) : std::filesystem::exists(path)) {

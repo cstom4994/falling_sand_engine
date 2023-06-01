@@ -14,26 +14,26 @@
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "renderer/renderer_gpu.h"
-#include "scripting/lua/lua_wrapper.hpp"
+#include "scripting/lua_wrapper.hpp"
 
 struct BackgroundLayer {
     std::vector<C_Surface *> surface;
     std::vector<R_Image *> texture;
     Texture *tex;
-    F32 parralaxX;
-    F32 parralaxY;
-    F32 moveX;
-    F32 moveY;
-    BackgroundLayer(Texture *texture, F32 parallaxX, F32 parallaxY, F32 moveX, F32 moveY);
+    f32 parralaxX;
+    f32 parralaxY;
+    f32 moveX;
+    f32 moveY;
+    BackgroundLayer(Texture *texture, f32 parallaxX, f32 parallaxY, f32 moveX, f32 moveY);
     ~BackgroundLayer();
     void init();
 };
 
 class BackgroundObject {
 public:
-    U32 solid;
-    std::vector<MetaEngine::Ref<BackgroundLayer>> layers;
-    explicit BackgroundObject(U32 solid, std::vector<MetaEngine::Ref<BackgroundLayer>> layers) : solid(std::move(solid)), layers(std::move(layers)){};
+    u32 solid;
+    std::vector<ME::ref<BackgroundLayer>> layers;
+    explicit BackgroundObject(u32 solid, std::vector<ME::ref<BackgroundLayer>> layers) : solid(std::move(solid)), layers(std::move(layers)){};
     void Init();
 };
 

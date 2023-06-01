@@ -16,7 +16,7 @@
 #include "physics/box2d.h"
 #include "renderer/renderer_gpu.h"
 
-#define R_GET_PIXEL(surface, x, y) *((U32 *)((U8 *)surface->pixels + ((y)*surface->pitch) + ((x) * sizeof(U32))))
+#define R_GET_PIXEL(surface, x, y) *((u32 *)((u8 *)surface->pixels + ((y)*surface->pitch) + ((x) * sizeof(u32))))
 
 struct ShaderBase;
 
@@ -32,7 +32,7 @@ class Drawing {
 public:
     static MEvec2 rotate_point(float cx, float cy, float angle, MEvec2 p);
     static void drawPolygon(R_Target *renderer, ME_Color col, MEvec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
-    static U32 darkenColor(U32 col, float brightness);
+    static u32 darkenColor(u32 col, float brightness);
     static void drawText(std::string text, ME_Color col, int x, int y);
     static void drawTextWithPlate(R_Target *target, std::string text, ME_Color col, int x, int y, ME_Color backcolor = {77, 77, 77, 140});
 };
@@ -79,7 +79,7 @@ void IntrospectVertexArray(const char *label, GLuint vao);
 class DebugDraw {
 
 private:
-    U32 m_drawFlags;
+    u32 m_drawFlags;
 
 public:
     enum {
@@ -101,15 +101,15 @@ public:
     void Create();
     void Destroy();
 
-    void SetFlags(U32 flags) { m_drawFlags = flags; }
-    U32 GetFlags() const { return m_drawFlags; }
-    void AppendFlags(U32 flags) { m_drawFlags |= flags; }
-    void ClearFlags(U32 flags) { m_drawFlags &= ~flags; }
+    void SetFlags(u32 flags) { m_drawFlags = flags; }
+    u32 GetFlags() const { return m_drawFlags; }
+    void AppendFlags(u32 flags) { m_drawFlags |= flags; }
+    void ClearFlags(u32 flags) { m_drawFlags &= ~flags; }
 
     PVec2 transform(const PVec2 &pt);
 
-    void DrawPolygon(const PVec2 *vertices, I32 vertexCount, const ME_Color &color);
-    void DrawSolidPolygon(const PVec2 *vertices, I32 vertexCount, const ME_Color &color);
+    void DrawPolygon(const PVec2 *vertices, i32 vertexCount, const ME_Color &color);
+    void DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, const ME_Color &color);
     void DrawCircle(const PVec2 &center, float radius, const ME_Color &color);
     void DrawSolidCircle(const PVec2 &center, float radius, const PVec2 &axis, const ME_Color &color);
     void DrawSegment(const PVec2 &p1, const PVec2 &p2, const ME_Color &color);
