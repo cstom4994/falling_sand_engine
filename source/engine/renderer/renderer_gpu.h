@@ -383,10 +383,10 @@ struct R_Target {
     void *data;
     u16 w, h;
     u16 base_w, base_h;  // The true dimensions of the underlying image or window
-    metadot_rect clip_rect;
+    ME_Rect clip_rect;
     ME_Color color;
 
-    metadot_rect viewport;
+    ME_Rect viewport;
 
     /*! Perspective and object viewing transforms. */
     int matrix_mode;
@@ -860,14 +860,14 @@ void R_GetVirtualCoords(R_Target *target, float *x, float *y, float displayX, fl
 /*! Reset the logical size of the given target to its original value. */
 void R_UnsetVirtualResolution(R_Target *target);
 
-/*! \return A metadot_rect with the given values. */
-metadot_rect R_MakeRect(float x, float y, float w, float h);
+/*! \return A ME_Rect with the given values. */
+ME_Rect R_MakeRect(float x, float y, float w, float h);
 
 /*! \return An ME_Color with the given values. */
 ME_Color R_MakeColor(u8 r, u8 g, u8 b, u8 a);
 
 /*! Sets the given target's viewport. */
-void R_SetViewport(R_Target *target, metadot_rect viewport);
+void R_SetViewport(R_Target *target, ME_Rect viewport);
 
 /*! Resets the given target's viewport to the entire target area. */
 void R_UnsetViewport(R_Target *target);
@@ -910,21 +910,21 @@ void R_SetDepthFunction(R_Target *target, R_ComparisonEnum compare_operation);
 ME_Color R_GetPixel(R_Target *target, i16 x, i16 y);
 
 /*! Sets the clipping rect for the given render target. */
-metadot_rect R_SetClipRect(R_Target *target, metadot_rect rect);
+ME_Rect R_SetClipRect(R_Target *target, ME_Rect rect);
 
 /*! Sets the clipping rect for the given render target. */
-metadot_rect R_SetClip(R_Target *target, i16 x, i16 y, u16 w, u16 h);
+ME_Rect R_SetClip(R_Target *target, i16 x, i16 y, u16 w, u16 h);
 
 /*! Turns off clipping for the given target. */
 void R_UnsetClip(R_Target *target);
 
 /*! Returns true if the given rects A and B overlap, in which case it also fills the given result rect with the intersection.  `result` can be NULL if you don't need the intersection. */
-bool R_IntersectRect(metadot_rect A, metadot_rect B, metadot_rect *result);
+bool R_IntersectRect(ME_Rect A, ME_Rect B, ME_Rect *result);
 
 /*! Returns true if the given target's clip rect and the given B rect overlap, in which case it also fills the given result rect with the intersection.  `result` can be NULL if you don't need the
  * intersection. If the target doesn't have a clip rect enabled, this uses the whole target area.
  */
-bool R_IntersectClipRect(R_Target *target, metadot_rect B, metadot_rect *result);
+bool R_IntersectClipRect(R_Target *target, ME_Rect B, ME_Rect *result);
 
 /*! Sets the modulation color for subsequent drawing of images and shapes on the given target.
  *  This has a cumulative effect with the image coloring functions.
@@ -985,13 +985,13 @@ void R_SetImageVirtualResolution(R_Image *image, u16 w, u16 h);
 void R_UnsetImageVirtualResolution(R_Image *image);
 
 /*! Update an image from surface data.  Ignores virtual resolution on the image so the number of pixels needed from the surface is known. */
-void R_UpdateImage(R_Image *image, const metadot_rect *image_rect, void *surface, const metadot_rect *surface_rect);
+void R_UpdateImage(R_Image *image, const ME_Rect *image_rect, void *surface, const ME_Rect *surface_rect);
 
 /*! Update an image from an array of pixel data.  Ignores virtual resolution on the image so the number of pixels needed from the surface is known. */
-void R_UpdateImageBytes(R_Image *image, const metadot_rect *image_rect, const unsigned char *bytes, int bytes_per_row);
+void R_UpdateImageBytes(R_Image *image, const ME_Rect *image_rect, const unsigned char *bytes, int bytes_per_row);
 
 /*! Update an image from surface data, replacing its underlying texture to allow for size changes.  Ignores virtual resolution on the image so the number of pixels needed from the surface is known. */
-bool R_ReplaceImage(R_Image *image, void *surface, const metadot_rect *surface_rect);
+bool R_ReplaceImage(R_Image *image, void *surface, const ME_Rect *surface_rect);
 
 /*! Loads mipmaps for the given image, if supported by the renderer. */
 void R_GenerateMipmaps(R_Image *image);
@@ -1056,7 +1056,7 @@ R_TextureHandle R_GetTextureHandle(R_Image *image);
 R_Image *R_CopyImageFromSurface(void *surface);
 
 /*! Like R_CopyImageFromSurface but enable to copy only part of the surface.*/
-R_Image *R_CopyImageFromSurfaceRect(void *surface, metadot_rect *surface_rect);
+R_Image *R_CopyImageFromSurfaceRect(void *surface, ME_Rect *surface_rect);
 
 /*! Copy R_Target data into a new R_Image.  Don't forget to R_FreeImage() the image.*/
 R_Image *R_CopyImageFromTarget(R_Target *target);
@@ -1255,14 +1255,14 @@ void R_ClearRGBA(R_Target *target, u8 r, u8 g, u8 b, u8 a);
  * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
  * \param x Destination x-position
  * \param y Destination y-position */
-void R_Blit(R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y);
+void R_Blit(R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y);
 
 /*! Rotates and draws the given image to the given render target.
  * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
  * \param x Destination x-position
  * \param y Destination y-position
  * \param degrees Rotation angle (in degrees) */
-void R_BlitRotate(R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float degrees);
+void R_BlitRotate(R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y, float degrees);
 
 /*! Scales and draws the given image to the given render target.
  * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
@@ -1270,7 +1270,7 @@ void R_BlitRotate(R_Image *image, metadot_rect *src_rect, R_Target *target, floa
  * \param y Destination y-position
  * \param scaleX Horizontal stretch factor
  * \param scaleY Vertical stretch factor */
-void R_BlitScale(R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float scaleX, float scaleY);
+void R_BlitScale(R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y, float scaleX, float scaleY);
 
 /*! Scales, rotates, and draws the given image to the given render target.
  * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
@@ -1279,7 +1279,7 @@ void R_BlitScale(R_Image *image, metadot_rect *src_rect, R_Target *target, float
  * \param degrees Rotation angle (in degrees)
  * \param scaleX Horizontal stretch factor
  * \param scaleY Vertical stretch factor */
-void R_BlitTransform(R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float degrees, float scaleX, float scaleY);
+void R_BlitTransform(R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y, float degrees, float scaleX, float scaleY);
 
 /*! Scales, rotates around a pivot point, and draws the given image to the given render target.  The drawing point (x, y) coincides with the pivot point on the src image (pivot_x, pivot_y).
  * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
@@ -1290,13 +1290,13 @@ void R_BlitTransform(R_Image *image, metadot_rect *src_rect, R_Target *target, f
  * \param degrees Rotation angle (in degrees)
  * \param scaleX Horizontal stretch factor
  * \param scaleY Vertical stretch factor */
-void R_BlitTransformX(R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY);
+void R_BlitTransformX(R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY);
 
 /*! Draws the given image to the given render target, scaling it to fit the destination region.
  * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
  * \param dest_rect The region of the destination target image to draw upon.  Pass NULL for the entire target.
  */
-void R_BlitRect(R_Image *image, metadot_rect *src_rect, R_Target *target, metadot_rect *dest_rect);
+void R_BlitRect(R_Image *image, ME_Rect *src_rect, R_Target *target, ME_Rect *dest_rect);
 
 /*! Draws the given image to the given render target, scaling it to fit the destination region.
  * \param src_rect The region of the source image to use.  Pass NULL for the entire image.
@@ -1306,7 +1306,7 @@ void R_BlitRect(R_Image *image, metadot_rect *src_rect, R_Target *target, metado
  * \param pivot_y Pivot y-position (in image coordinates)
  * \param flip_direction A R_FlipEnum value (or bitwise OR'd combination) that specifies which direction the image should be flipped.
  */
-void R_BlitRectX(R_Image *image, metadot_rect *src_rect, R_Target *target, metadot_rect *dest_rect, float degrees, float pivot_x, float pivot_y, R_FlipEnum flip_direction);
+void R_BlitRectX(R_Image *image, ME_Rect *src_rect, R_Target *target, ME_Rect *dest_rect, float degrees, float pivot_x, float pivot_y, R_FlipEnum flip_direction);
 
 /*! Renders triangles from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
  * \param values A tightly-packed array of vertex position (e.g. x,y), texture coordinates (e.g. s,t), and color (e.g. r,g,b,a) values.  Texture coordinates and color values are expected to be already
@@ -1495,7 +1495,7 @@ void R_Rectangle(R_Target *target, float x1, float y1, float x2, float y2, ME_Co
  * \param rect The rectangular area to draw
  * \param color The color of the shape to render
  */
-void R_Rectangle2(R_Target *target, metadot_rect rect, ME_Color color);
+void R_Rectangle2(R_Target *target, ME_Rect rect, ME_Color color);
 
 /*! Renders a colored filled rectangle.
  * \param target The destination render target
@@ -1512,7 +1512,7 @@ void R_RectangleFilled(R_Target *target, float x1, float y1, float x2, float y2,
  * \param rect The rectangular area to draw
  * \param color The color of the shape to render
  */
-void R_RectangleFilled2(R_Target *target, metadot_rect rect, ME_Color color);
+void R_RectangleFilled2(R_Target *target, ME_Rect rect, ME_Color color);
 
 /*! Renders a colored rounded (filleted) rectangle outline.
  * \param target The destination render target
@@ -1531,7 +1531,7 @@ void R_RectangleRound(R_Target *target, float x1, float y1, float x2, float y2, 
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void R_RectangleRound2(R_Target *target, metadot_rect rect, float radius, ME_Color color);
+void R_RectangleRound2(R_Target *target, ME_Rect rect, float radius, ME_Color color);
 
 /*! Renders a colored filled rounded (filleted) rectangle.
  * \param target The destination render target
@@ -1550,7 +1550,7 @@ void R_RectangleRoundFilled(R_Target *target, float x1, float y1, float x2, floa
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void R_RectangleRoundFilled2(R_Target *target, metadot_rect rect, float radius, ME_Color color);
+void R_RectangleRoundFilled2(R_Target *target, ME_Rect rect, float radius, ME_Color color);
 
 /*! Renders a colored polygon outline.  The vertices are expected to define a convex polygon.
  * \param target The destination render target
@@ -1783,16 +1783,16 @@ typedef struct R_RendererImpl {
     R_Image *(*CopyImage)(R_Renderer *renderer, R_Image *image);
 
     /*! \see R_UpdateImage */
-    void (*UpdateImage)(R_Renderer *renderer, R_Image *image, const metadot_rect *image_rect, void *surface, const metadot_rect *surface_rect);
+    void (*UpdateImage)(R_Renderer *renderer, R_Image *image, const ME_Rect *image_rect, void *surface, const ME_Rect *surface_rect);
 
     /*! \see R_UpdateImageBytes */
-    void (*UpdateImageBytes)(R_Renderer *renderer, R_Image *image, const metadot_rect *image_rect, const unsigned char *bytes, int bytes_per_row);
+    void (*UpdateImageBytes)(R_Renderer *renderer, R_Image *image, const ME_Rect *image_rect, const unsigned char *bytes, int bytes_per_row);
 
     /*! \see R_ReplaceImage */
-    bool (*ReplaceImage)(R_Renderer *renderer, R_Image *image, void *surface, const metadot_rect *surface_rect);
+    bool (*ReplaceImage)(R_Renderer *renderer, R_Image *image, void *surface, const ME_Rect *surface_rect);
 
     /*! \see R_CopyImageFromSurface() */
-    R_Image *(*CopyImageFromSurface)(R_Renderer *renderer, void *surface, const metadot_rect *surface_rect);
+    R_Image *(*CopyImageFromSurface)(R_Renderer *renderer, void *surface, const ME_Rect *surface_rect);
 
     /*! \see R_CopyImageFromTarget() */
     R_Image *(*CopyImageFromTarget)(R_Renderer *renderer, R_Target *target);
@@ -1813,19 +1813,19 @@ typedef struct R_RendererImpl {
     void (*FreeTarget)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_Blit() */
-    void (*Blit)(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y);
+    void (*Blit)(R_Renderer *renderer, R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y);
 
     /*! \see R_BlitRotate() */
-    void (*BlitRotate)(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float degrees);
+    void (*BlitRotate)(R_Renderer *renderer, R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y, float degrees);
 
     /*! \see R_BlitScale() */
-    void (*BlitScale)(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float scaleX, float scaleY);
+    void (*BlitScale)(R_Renderer *renderer, R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y, float scaleX, float scaleY);
 
     /*! \see R_BlitTransform */
-    void (*BlitTransform)(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float degrees, float scaleX, float scaleY);
+    void (*BlitTransform)(R_Renderer *renderer, R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y, float degrees, float scaleX, float scaleY);
 
     /*! \see R_BlitTransformX() */
-    void (*BlitTransformX)(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY);
+    void (*BlitTransformX)(R_Renderer *renderer, R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY);
 
     /*! \see R_PrimitiveBatchV() */
     void (*PrimitiveBatchV)(R_Renderer *renderer, R_Image *image, R_Target *target, R_PrimitiveEnum primitive_type, unsigned short num_vertices, void *values, unsigned int num_indices,
@@ -1835,7 +1835,7 @@ typedef struct R_RendererImpl {
     void (*GenerateMipmaps)(R_Renderer *renderer, R_Image *image);
 
     /*! \see R_SetClip() */
-    metadot_rect (*SetClip)(R_Renderer *renderer, R_Target *target, i16 x, i16 y, u16 w, u16 h);
+    ME_Rect (*SetClip)(R_Renderer *renderer, R_Target *target, i16 x, i16 y, u16 w, u16 h);
 
     /*! \see R_UnsetClip() */
     void (*UnsetClip)(R_Renderer *renderer, R_Target *target);

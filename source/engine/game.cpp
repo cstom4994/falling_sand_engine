@@ -30,20 +30,20 @@
 #include "engine/core/utils/utility.hpp"
 #include "engine/engine.h"
 #include "engine/event/applicationevent.hpp"
+#include "engine/game_utils/cells.h"
+#include "engine/game_utils/mdplot.h"
+#include "engine/meta/reflection.hpp"
+#include "engine/renderer/gpu.hpp"
+#include "engine/renderer/renderer_gpu.h"
+#include "engine/scripting/scripting.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "game_shaders.hpp"
 #include "game_ui.hpp"
-#include "engine/game_utils/cells.h"
-#include "engine/game_utils/mdplot.h"
 #include "libs/glad/glad.h"
 #include "libs/imgui/imgui.h"
-#include "engine/meta/reflection.hpp"
 #include "reflectionflat.hpp"
-#include "engine/renderer/gpu.hpp"
-#include "engine/renderer/renderer_gpu.h"
-#include "engine/scripting/scripting.hpp"
 #include "world_generator.cpp"
 
 Global global;
@@ -147,30 +147,34 @@ int Game::init(int argc, char *argv[]) {
     GameIsolate_.world->init(METADOT_RESLOC("saves/mainMenu"), (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
                              (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, Render.target, &global.audio);
 
-    {
-        // set up main menu ui
+    // set up main menu ui
 
-        METADOT_INFO("Setting up main menu...");
-        std::string displayMode = "windowed";
+    METADOT_INFO("Setting up main menu...");
+    std::string displayMode = "windowed";
 
-        if (displayMode == "windowed") {
-            metadot_set_displaymode(engine_displaymode::WINDOWED);
-        } else if (displayMode == "borderless") {
-            metadot_set_displaymode(engine_displaymode::BORDERLESS);
-        } else if (displayMode == "fullscreen") {
-            metadot_set_displaymode(engine_displaymode::FULLSCREEN);
-        }
-
-        int w;
-        int h;
-        SDL_GetWindowSize(Core.window, &w, &h);
-        R_SetWindowResolution(w, h);
-        R_ResetProjection(Render.realTarget);
-        ResolutionChanged(w, h);
-
-        metadot_set_VSync(false);
-        metadot_set_minimize_onlostfocus(false);
+    if (displayMode == "windowed") {
+        metadot_set_displaymode(engine_displaymode::WINDOWED);
+    } else if (displayMode == "borderless") {
+        metadot_set_displaymode(engine_displaymode::BORDERLESS);
+    } else if (displayMode == "fullscreen") {
+        metadot_set_displaymode(engine_displaymode::FULLSCREEN);
     }
+
+    int w;
+    int h;
+    SDL_GetWindowSize(Core.window, &w, &h);
+    R_SetWindowResolution(w, h);
+    R_ResetProjection(Render.realTarget);
+    ResolutionChanged(w, h);
+
+    metadot_set_VSync(false);
+    metadot_set_minimize_onlostfocus(false);
+
+    fontcache.resize({(float)w, (float)h});
+
+    fontcache.ME_fontcache_init();
+
+    // fontcache.ME_fontcache_load();
 
     // init threadpools
     GameIsolate_.updateDirtyPool = new MetaEngine::ThreadPool(4);
@@ -931,7 +935,7 @@ int Game::run(int argc, char *argv[]) {
 
         Scripting::GetSingletonPtr()->UpdateRender();
 
-        // metadot_rect rct{0, 0, 150, 150};
+        // ME_Rect rct{0, 0, 150, 150};
         // RenderTextureRect(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
 
         // Update UI
@@ -940,6 +944,8 @@ int Game::run(int argc, char *argv[]) {
 
         R_ActivateShaderProgram(0, NULL);
         R_FlushBlitBuffer();
+
+        fontcache.ME_fontcache_drawcmd();
 
         if (GameIsolate_.globaldef.draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
 
@@ -1086,6 +1092,9 @@ int Game::exit() {
     for (backwardIterator = GameIsolate_.systemList.rbegin(); backwardIterator != GameIsolate_.systemList.rend(); backwardIterator++) {
         backwardIterator->get()->Destory();
     }
+
+    fontcache.ME_fontcache_end();
+
     Scripting::GetSingletonPtr()->End();
     Scripting::Delete();
 
@@ -1550,7 +1559,7 @@ void Game::tick() {
             R_Target *tgtLQ = cur->back ? TexturePack_.textureObjectsBack->target : TexturePack_.textureObjectsLQ->target;
             int scaleObjTex = GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1;
 
-            metadot_rect r = {x * scaleObjTex, y * scaleObjTex, (f32)cur->surface->w * scaleObjTex, (f32)cur->surface->h * scaleObjTex};
+            ME_Rect r = {x * scaleObjTex, y * scaleObjTex, (f32)cur->surface->w * scaleObjTex, (f32)cur->surface->h * scaleObjTex};
 
             if (cur->texNeedsUpdate) {
                 if (cur->texture != nullptr) {
@@ -2717,8 +2726,8 @@ void Game::renderLate() {
             ME_Color col = {static_cast<u8>((bg->solid >> 16) & 0xff), static_cast<u8>((bg->solid >> 8) & 0xff), static_cast<u8>((bg->solid >> 0) & 0xff), 0xff};
             R_ClearColor(Render.target, col);
 
-            metadot_rect *dst = new metadot_rect;
-            metadot_rect *src = new metadot_rect;
+            ME_Rect *dst = new ME_Rect;
+            ME_Rect *src = new ME_Rect;
 
             f32 arX = (f32)Screen.windowWidth / (bg->layers[0]->surface[0]->w);
             f32 arY = (f32)Screen.windowHeight / (bg->layers[0]->surface[0]->h);
@@ -2792,8 +2801,8 @@ void Game::renderLate() {
             delete src;
         }
 
-        metadot_rect r1 = metadot_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * Screen.gameScale),
-                                       (f32)(GameIsolate_.world->height * Screen.gameScale)};
+        ME_Rect r1 = ME_Rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * Screen.gameScale),
+                             (f32)(GameIsolate_.world->height * Screen.gameScale)};
         R_SetBlendMode(TexturePack_.textureBackground, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureBackground, NULL, Render.target, &r1);
 
@@ -2963,11 +2972,11 @@ void Game::renderOverlays() {
     snprintf(fpsText, sizeof(fpsText), "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, Time.feelsLikeFps);
     MetaEngine::Drawing::drawText(fpsText, {255, 255, 255, 255}, Screen.windowWidth - ImGui::CalcTextSize(fpsText).x, 0);
 
-    metadot_rect r1 = metadot_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * Screen.gameScale),
-                                   (f32)(GameIsolate_.world->height * Screen.gameScale)};
-    metadot_rect r2 = metadot_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale),
-                                   (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale), (f32)(GameIsolate_.world->tickZone.w * Screen.gameScale),
-                                   (f32)(GameIsolate_.world->tickZone.h * Screen.gameScale)};
+    ME_Rect r1 = ME_Rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * Screen.gameScale),
+                         (f32)(GameIsolate_.world->height * Screen.gameScale)};
+    ME_Rect r2 = ME_Rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale),
+                         (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale), (f32)(GameIsolate_.world->tickZone.w * Screen.gameScale),
+                         (f32)(GameIsolate_.world->tickZone.h * Screen.gameScale)};
 
     if (GameIsolate_.globaldef.draw_temperature_map) {
         R_SetBlendMode(TexturePack_.temperatureMap, R_BLEND_NORMAL);
@@ -2975,9 +2984,9 @@ void Game::renderOverlays() {
     }
 
     if (GameIsolate_.globaldef.draw_load_zones) {
-        metadot_rect r2m = metadot_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->meshZone.x * Screen.gameScale),
-                                        (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->meshZone.y * Screen.gameScale),
-                                        (f32)(GameIsolate_.world->meshZone.w * Screen.gameScale), (f32)(GameIsolate_.world->meshZone.h * Screen.gameScale)};
+        ME_Rect r2m = ME_Rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->meshZone.x * Screen.gameScale),
+                              (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->meshZone.y * Screen.gameScale), (f32)(GameIsolate_.world->meshZone.w * Screen.gameScale),
+                              (f32)(GameIsolate_.world->meshZone.h * Screen.gameScale)};
 
         R_Rectangle2(Render.target, r2m, {0x00, 0xff, 0xff, 0xff});
         MetaEngine::Drawing::drawTextWithPlate(Render.target, CC("刚体物理更新区域"), {255, 255, 255, 255}, r2m.x + 4, r2m.y + 4);
@@ -2989,21 +2998,20 @@ void Game::renderOverlays() {
         ME_Color col = {0xff, 0x00, 0x00, 0x20};
         R_SetShapeBlendMode(R_BLEND_NORMAL);
 
-        metadot_rect r3 = metadot_rect{(f32)(0), (f32)(0), (f32)((global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale)), (f32)(Screen.windowHeight)};
+        ME_Rect r3 = ME_Rect{(f32)(0), (f32)(0), (f32)((global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale)), (f32)(Screen.windowHeight)};
         R_Rectangle2(Render.target, r3, col);
 
-        metadot_rect r4 = metadot_rect{
+        ME_Rect r4 = ME_Rect{
                 (f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale + GameIsolate_.world->tickZone.w * Screen.gameScale), (f32)(0),
                 (f32)((Screen.windowWidth) - (global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale + GameIsolate_.world->tickZone.w * Screen.gameScale)),
                 (f32)(Screen.windowHeight)};
         R_Rectangle2(Render.target, r4, col);
 
-        metadot_rect r5 =
-                metadot_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale), (f32)(0),
+        ME_Rect r5 = ME_Rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale), (f32)(0),
                              (f32)(GameIsolate_.world->tickZone.w * Screen.gameScale), (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale)};
         R_Rectangle2(Render.target, r5, col);
 
-        metadot_rect r6 = metadot_rect{
+        ME_Rect r6 = ME_Rect{
                 (f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale),
                 (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale + GameIsolate_.world->tickZone.h * Screen.gameScale),
                 (f32)(GameIsolate_.world->tickZone.w * Screen.gameScale),
@@ -3011,9 +3019,9 @@ void Game::renderOverlays() {
         R_Rectangle2(Render.target, r6, col);
 
         col = {0x00, 0xff, 0x00, 0xff};
-        metadot_rect r7 = metadot_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->width / 2 * Screen.gameScale - (Screen.windowWidth / 3 * Screen.gameScale / 2)),
-                                       (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->height / 2 * Screen.gameScale - (Screen.windowHeight / 3 * Screen.gameScale / 2)),
-                                       (f32)(Screen.windowWidth / 3 * Screen.gameScale), (f32)(Screen.windowHeight / 3 * Screen.gameScale)};
+        ME_Rect r7 = ME_Rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->width / 2 * Screen.gameScale - (Screen.windowWidth / 3 * Screen.gameScale / 2)),
+                             (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->height / 2 * Screen.gameScale - (Screen.windowHeight / 3 * Screen.gameScale / 2)),
+                             (f32)(Screen.windowWidth / 3 * Screen.gameScale), (f32)(Screen.windowHeight / 3 * Screen.gameScale)};
         R_Rectangle2(Render.target, r7, col);
     }
 
@@ -3176,7 +3184,7 @@ void Game::renderOverlays() {
         R_Rectangle(Render.target, centerX - chSize * CHUNK_UNLOAD_DIST + chSize, centerY - chSize * CHUNK_UNLOAD_DIST + chSize, centerX + chSize * CHUNK_UNLOAD_DIST + chSize,
                     centerY + chSize * CHUNK_UNLOAD_DIST + chSize, {0xcc, 0xcc, 0xcc, 0xff});
 
-        metadot_rect r = {0, 0, (f32)chSize, (f32)chSize};
+        ME_Rect r = {0, 0, (f32)chSize, (f32)chSize};
         for (auto &p : GameIsolate_.world->chunkCache) {
             if (p.first == INT_MIN) continue;
             int cx = p.first;

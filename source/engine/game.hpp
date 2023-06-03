@@ -15,27 +15,28 @@
 #include <thread>
 #include <unordered_map>
 
-#include "engine/audio/audio.h"
 #include "background.hpp"
+#include "cvar.hpp"
+#include "engine/audio/audio.h"
 #include "engine/core/const.h"
 #include "engine/core/cpp/utils.hpp"
 #include "engine/core/debug.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/macros.hpp"
-#include "cvar.hpp"
 #include "engine/event/applicationevent.hpp"
 #include "engine/event/event.hpp"
 #include "engine/event/inputevent.hpp"
+#include "engine/game_utils/rng.h"
+#include "engine/physics/box2d.h"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "game_shaders.hpp"
-#include "engine/game_utils/rng.h"
-#include "engine/physics/box2d.h"
 // #include "libs/parallel_hashmap/phmap.h"
 #include "engine/meta/reflection.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/scripting.hpp"
+#include "engine/ui/font.hpp"
 #include "engine/ui/imgui_layer.hpp"
 #include "engine/ui/ui.hpp"
 #include "world.hpp"
@@ -52,6 +53,7 @@ public:
     EnumGameState stateAfterLoad = MAIN_MENU;
 
     DebugDraw *debugDraw;
+    ME_fontcache fontcache;
 
     i32 ent_prevLoadZoneX = 0;
     i32 ent_prevLoadZoneY = 0;

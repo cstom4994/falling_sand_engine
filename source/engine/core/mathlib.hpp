@@ -28,12 +28,10 @@ typedef struct U16Point {
     u16 y;
 } U16Point;
 
-typedef struct metadot_rect {
+typedef struct ME_Rect {
     float x, y;
     float w, h;
-} metadot_rect;
-
-typedef signed int metadot_bool;
+} ME_Rect;
 
 #define VECTOR3_ZERO \
     MEvec3 { 0.0f, 0.0f, 0.0f }
@@ -124,44 +122,6 @@ f32 fModulus(f32 a, f32 b);
 }  // namespace NewMaths
 
 #pragma endregion NewMATH
-
-#pragma region PCG
-
-struct pcg_state_setseq_64 {  // Internals are *Private*.
-    uint64_t state;           // RNG state.  All values are possible.
-    uint64_t inc;             // Controls which RNG sequence (stream) is
-                              // selected. Must *always* be odd.
-};
-typedef struct pcg_state_setseq_64 pcg32_random_t;
-
-// If you *must* statically initialize it, here's one.
-
-#define PCG32_INITIALIZER \
-    { 0x853c49e6748fea9bULL, 0xda3e39cb94b95bdbULL }
-
-// pcg32_srandom(initstate, initseq)
-// pcg32_srandom_r(rng, initstate, initseq):
-//     Seed the rng.  Specified in two parts, state initializer and a
-//     sequence selection constant (a.k.a. stream id)
-
-void pcg32_srandom(uint64_t initstate, uint64_t initseq);
-void pcg32_srandom_r(pcg32_random_t *rng, uint64_t initstate, uint64_t initseq);
-
-// pcg32_random()
-// pcg32_random_r(rng)
-//     Generate a uniformly distributed 32-bit random number
-
-uint32_t pcg32_random(void);
-uint32_t pcg32_random_r(pcg32_random_t *rng);
-
-// pcg32_boundedrand(bound):
-// pcg32_boundedrand_r(rng, bound):
-//     Generate a uniformly distributed number, r, where 0 <= r < bound
-
-uint32_t pcg32_boundedrand(uint32_t bound);
-uint32_t pcg32_boundedrand_r(pcg32_random_t *rng, uint32_t bound);
-
-#pragma endregion PCG
 
 #pragma region PORO
 
@@ -1112,7 +1072,7 @@ typedef struct ME_Transform {
 // 2d plane, aka line.
 typedef struct ME_Halfspace {
     ME_V2 n;  // normal
-    float d;          // distance to origin; d = ax + by = dot(n, p)
+    float d;  // distance to origin; d = ax + by = dot(n, p)
 } ME_Halfspace;
 
 // A ray is a directional line segment. It starts at an endpoint and extends into another direction
@@ -1120,12 +1080,12 @@ typedef struct ME_Halfspace {
 typedef struct ME_Ray {
     ME_V2 p;  // position
     ME_V2 d;  // direction (normalized)
-    float t;          // distance along d from position p to find endpoint of ray
+    float t;  // distance along d from position p to find endpoint of ray
 } ME_Ray;
 
 // The results for a raycast query.
 typedef struct ME_Raycast {
-    float t;          // time of impact
+    float t;  // time of impact
     ME_V2 n;  // normal of surface at impact (unit length)
 } ME_Raycast;
 
@@ -1139,12 +1099,6 @@ typedef struct ME_Aabb {
     ME_V2 min;
     ME_V2 max;
 } ME_Aabb;
-
-// Box that cannot rotate defined with integers instead of floats. Not used for collision detection,
-// but still sometimes useful.
-typedef struct ME_Rect {
-    int w, h, x, y;
-} ME_Rect;
 
 #define ME_PI 3.14159265f
 
@@ -1310,9 +1264,7 @@ ME_INLINE int metadot_safe_norm_int(int a) { return a == 0 ? 0 : metadot_sign_in
 ME_INLINE ME_V2 metadot_neg_v2(ME_V2 a) { return metadot_v2(-a.x, -a.y); }
 ME_INLINE ME_V2 metadot_lerp_v2(ME_V2 a, ME_V2 b, float t) { return metadot_add_v2(a, metadot_mul_v2_f(metadot_sub_v2(b, a), t)); }
 ME_INLINE ME_V2 metadot_bezier(ME_V2 a, ME_V2 c0, ME_V2 b, float t) { return metadot_lerp_v2(metadot_lerp_v2(a, c0, t), metadot_lerp_v2(c0, b, t), t); }
-ME_INLINE ME_V2 metadot_bezier2(ME_V2 a, ME_V2 c0, ME_V2 c1, ME_V2 b, float t) {
-    return metadot_bezier(metadot_lerp_v2(a, c0, t), metadot_lerp_v2(c0, c1, t), metadot_lerp_v2(c1, b, t), t);
-}
+ME_INLINE ME_V2 metadot_bezier2(ME_V2 a, ME_V2 c0, ME_V2 c1, ME_V2 b, float t) { return metadot_bezier(metadot_lerp_v2(a, c0, t), metadot_lerp_v2(c0, c1, t), metadot_lerp_v2(c1, b, t), t); }
 ME_INLINE int metadot_lesser_v2(ME_V2 a, ME_V2 b) { return a.x < b.x && a.y < b.y; }
 ME_INLINE int metadot_greater_v2(ME_V2 a, ME_V2 b) { return a.x > b.x && a.y > b.y; }
 ME_INLINE int metadot_lesser_equal_v2(ME_V2 a, ME_V2 b) { return a.x <= b.x && a.y <= b.y; }
@@ -1537,9 +1489,7 @@ ME_INLINE ME_Halfspace metadot_mulT_tf_hs(ME_Transform a, ME_Halfspace b) {
     return c;
 }
 ME_INLINE ME_V2 metadot_intersect_halfspace(ME_V2 a, ME_V2 b, float da, float db) { return metadot_add_v2(a, metadot_mul_v2_f(metadot_sub_v2(b, a), (da / (da - db)))); }
-ME_INLINE ME_V2 metadot_intersect_halfspace2(ME_Halfspace h, ME_V2 a, ME_V2 b) {
-    return metadot_intersect_halfspace(a, b, metadot_distance_hs(h, a), metadot_distance_hs(h, b));
-}
+ME_INLINE ME_V2 metadot_intersect_halfspace2(ME_Halfspace h, ME_V2 a, ME_V2 b) { return metadot_intersect_halfspace(a, b, metadot_distance_hs(h, a), metadot_distance_hs(h, b)); }
 
 //--------------------------------------------------------------------------------------------------
 // AABB helpers.
@@ -1679,7 +1629,7 @@ typedef struct ME_Poly {
     int count;
     ME_V2 verts[ME_POLY_MAX_VERTS];
     ME_V2 norms[ME_POLY_MAX_VERTS];  // Pointing perpendicular along the poly's surface.
-                                                     // Rotated vert[i] to vert[i + 1] 90 degrees CCW + normalized.
+                                     // Rotated vert[i] to vert[i + 1] 90 degrees CCW + normalized.
 } ME_Poly;
 
 // 2D capsule shape. It's like a shrink-wrap of 2 circles connected by a rod.
@@ -1793,16 +1743,16 @@ typedef struct ME_GjkCache {
 //     less than 100.0f. If you need large shapes, you should use tiny collision geometry for all
 //     function here, and simply render the geometry larger on-screen by scaling it up.
 //
-float METADOT_CDECL metadot_gjk(const void *A, ME_ShapeType typeA, const ME_Transform *ax_ptr, const void *B, ME_ShapeType typeB, const ME_Transform *bx_ptr,
-                                ME_V2 *outA, ME_V2 *outB, int use_radius, int *iterations, ME_GjkCache *cache);
+float METADOT_CDECL metadot_gjk(const void *A, ME_ShapeType typeA, const ME_Transform *ax_ptr, const void *B, ME_ShapeType typeB, const ME_Transform *bx_ptr, ME_V2 *outA, ME_V2 *outB, int use_radius,
+                                int *iterations, ME_GjkCache *cache);
 
 // Stores results of a time of impact calculation done by `metadot_toi`.
 typedef struct ME_ToiResult {
-    int hit;          // 1 if shapes were touching at the TOI, 0 if they never hit.
-    float toi;        // The time of impact between two shapes.
-    ME_V2 n;  // Surface normal from shape A to B at the time of impact.
-    ME_V2 p;  // Point of contact between shapes A and B at time of impact.
-    int iterations;   // Number of iterations the solver underwent.
+    int hit;         // 1 if shapes were touching at the TOI, 0 if they never hit.
+    float toi;       // The time of impact between two shapes.
+    ME_V2 n;         // Surface normal from shape A to B at the time of impact.
+    ME_V2 p;         // Point of contact between shapes A and B at time of impact.
+    int iterations;  // Number of iterations the solver underwent.
 } ME_ToiResult;
 
 // This is an advanced function, intended to be used by people who know what they're doing.
@@ -1834,8 +1784,8 @@ typedef struct ME_ToiResult {
 //    See the function `metadot_inflate` for some more details.
 // 4. Compute the collision manifold between the inflated shapes (for example, use poly_ttoPolyManifold).
 // 5. Gently push the shapes apart. This will give the next call to metadot_toi some breathing room.
-ME_ToiResult METADOT_CDECL metadot_toi(const void *A, ME_ShapeType typeA, const ME_Transform *ax_ptr, ME_V2 vA, const void *B, ME_ShapeType typeB,
-                                               const ME_Transform *bx_ptr, ME_V2 vB, int use_radius);
+ME_ToiResult METADOT_CDECL metadot_toi(const void *A, ME_ShapeType typeA, const ME_Transform *ax_ptr, ME_V2 vA, const void *B, ME_ShapeType typeB, const ME_Transform *bx_ptr, ME_V2 vB,
+                                       int use_radius);
 
 // Inflating a shape.
 //
@@ -1865,8 +1815,7 @@ ME_V2 METADOT_CDECL metadot_centroid(const ME_V2 *verts, int count);
 // For AABBs/Circles/Capsules ax and bx are ignored. For polys ax and bx can define
 // model to world transformations (for polys only), or be NULL for identity transforms.
 int METADOT_CDECL metadot_collided(const void *A, const ME_Transform *ax, ME_ShapeType typeA, const void *B, const ME_Transform *bx, ME_ShapeType typeB);
-void METADOT_CDECL metadot_collide(const void *A, const ME_Transform *ax, ME_ShapeType typeA, const void *B, const ME_Transform *bx, ME_ShapeType typeB,
-                                   ME_Manifold *m);
+void METADOT_CDECL metadot_collide(const void *A, const ME_Transform *ax, ME_ShapeType typeA, const void *B, const ME_Transform *bx, ME_ShapeType typeB, ME_Manifold *m);
 bool METADOT_CDECL metadot_cast_ray(ME_Ray A, const void *B, const ME_Transform *bx, ME_ShapeType typeB, ME_Raycast *out);
 
 //--------------------------------------------------------------------------------------------------

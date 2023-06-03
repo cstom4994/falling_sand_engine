@@ -97,7 +97,7 @@ typedef struct ContextData_OpenGL_3 {
     unsigned int last_shape;
     bool last_use_blending;
     R_BlendMode last_blend_mode;
-    metadot_rect last_viewport;
+    ME_Rect last_viewport;
     R_Camera last_camera;
     bool last_camera_inverted;
 
@@ -140,8 +140,8 @@ typedef struct TargetData_OpenGL_3 {
 
 #if defined(ME_OPENGL)
 
-void row_upload_texture(const unsigned char *pixels, metadot_rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel);
-void copy_upload_texture(const unsigned char *pixels, metadot_rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel);
+void row_upload_texture(const unsigned char *pixels, ME_Rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel);
+void copy_upload_texture(const unsigned char *pixels, ME_Rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel);
 void init_features(R_Renderer *renderer);
 void extBindFramebuffer(R_Renderer *renderer, GLuint handle);
 void bindTexture(R_Renderer *renderer, R_Image *image);
@@ -167,7 +167,7 @@ void disableTexturing(R_Renderer *renderer);
 SDL_Color get_complete_mod_color(R_Renderer *renderer, R_Target *target, R_Image *image);
 void prepareToRenderImage(R_Renderer *renderer, R_Target *target, R_Image *image);
 void prepareToRenderShapes(R_Renderer *renderer, unsigned int shape);
-void forceChangeViewport(R_Target *target, metadot_rect viewport);
+void forceChangeViewport(R_Target *target, ME_Rect viewport);
 void changeViewport(R_Target *target);
 void applyTargetCamera(R_Target *target);
 bool equal_cameras(R_Camera a, R_Camera b);
@@ -212,21 +212,21 @@ SDL_PixelFormat *AllocFormat(GLenum glFormat);
 void FreeFormat(SDL_PixelFormat *format);
 SDL_Surface *copySurfaceIfNeeded(R_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, GLenum *surfaceFormatResult);
 R_Image *CopyImage(R_Renderer *renderer, R_Image *image);
-void UpdateImage(R_Renderer *renderer, R_Image *image, const metadot_rect *image_rect, void *surface, const metadot_rect *surface_rect);
-void UpdateImageBytes(R_Renderer *renderer, R_Image *image, const metadot_rect *image_rect, const unsigned char *bytes, int bytes_per_row);
-bool ReplaceImage(R_Renderer *renderer, R_Image *image, void *surface, const metadot_rect *surface_rect);
-R_Image *CopyImageFromSurface(R_Renderer *renderer, void *surface, const metadot_rect *surface_rect);
+void UpdateImage(R_Renderer *renderer, R_Image *image, const ME_Rect *image_rect, void *surface, const ME_Rect *surface_rect);
+void UpdateImageBytes(R_Renderer *renderer, R_Image *image, const ME_Rect *image_rect, const unsigned char *bytes, int bytes_per_row);
+bool ReplaceImage(R_Renderer *renderer, R_Image *image, void *surface, const ME_Rect *surface_rect);
+R_Image *CopyImageFromSurface(R_Renderer *renderer, void *surface, const ME_Rect *surface_rect);
 R_Image *CopyImageFromTarget(R_Renderer *renderer, R_Target *target);
 void FreeImage(R_Renderer *renderer, R_Image *image);
 R_Target *GetTarget(R_Renderer *renderer, R_Image *image);
 void FreeTargetData(R_Renderer *renderer, R_TARGET_DATA *data);
 void FreeContext(R_Context *context);
 void FreeTarget(R_Renderer *renderer, R_Target *target);
-void Blit(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y);
-void BlitRotate(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float degrees);
-void BlitScale(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float scaleX, float scaleY);
-void BlitTransform(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float degrees, float scaleX, float scaleY);
-void BlitTransformX(R_Renderer *renderer, R_Image *image, metadot_rect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY);
+void Blit(R_Renderer *renderer, R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y);
+void BlitRotate(R_Renderer *renderer, R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y, float degrees);
+void BlitScale(R_Renderer *renderer, R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y, float scaleX, float scaleY);
+void BlitTransform(R_Renderer *renderer, R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y, float degrees, float scaleX, float scaleY);
+void BlitTransformX(R_Renderer *renderer, R_Image *image, ME_Rect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY);
 
 #ifdef R_USE_BUFFER_PIPELINE
 void refresh_attribute_data(R_CONTEXT_DATA *cdata);
@@ -238,7 +238,7 @@ void SetAttributefv(R_Renderer *renderer, int location, int num_elements, float 
 void PrimitiveBatchV(R_Renderer *renderer, R_Image *image, R_Target *target, R_PrimitiveEnum primitive_type, unsigned short num_vertices, void *values, unsigned int num_indices,
                      unsigned short *indices, R_BatchFlagEnum flags);
 void GenerateMipmaps(R_Renderer *renderer, R_Image *image);
-metadot_rect SetClip(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y, Uint16 w, Uint16 h);
+ME_Rect SetClip(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y, Uint16 w, Uint16 h);
 void UnsetClip(R_Renderer *renderer, R_Target *target);
 ME_Color GetPixel(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y);
 void SetImageFilter(R_Renderer *renderer, R_Image *image, R_FilterEnum filter);

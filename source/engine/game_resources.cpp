@@ -188,8 +188,8 @@ Texture *LoadAsepriteTexture(const char *path) {
     return tex;
 }
 
-void RenderTextureRect(Texture *tex, R_Target *target, int x, int y, metadot_rect *clip) {
-    metadot_rect dst;
+void RenderTextureRect(Texture *tex, R_Target *target, int x, int y, ME_Rect *clip) {
+    ME_Rect dst;
     dst.x = x;
     dst.y = y;
     if (clip != nullptr) {

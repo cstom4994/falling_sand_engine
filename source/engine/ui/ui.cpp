@@ -207,7 +207,7 @@ void UISystem::UIRendererDraw() {
             if (Img) {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
-                metadot_rect dest{.x = (float)(e.second->x + p_x), .y = (float)(e.second->y + p_y), .w = (float)e.second->w, .h = (float)e.second->h};
+                ME_Rect dest{.x = (float)(e.second->x + p_x), .y = (float)(e.second->y + p_y), .w = (float)e.second->w, .h = (float)e.second->h};
                 R_BlitRect(Img, NULL, Render.target, &dest);
             }
         }
@@ -216,7 +216,7 @@ void UISystem::UIRendererDraw() {
             if (Img) {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
-                metadot_rect dest{.x = (float)(e.second->x), .y = (float)(e.second->y), .w = (float)(e.second->w), .h = (float)(e.second->h)};
+                ME_Rect dest{.x = (float)(e.second->x), .y = (float)(e.second->y), .w = (float)(e.second->w), .h = (float)(e.second->h)};
                 R_BlitRect(Img, NULL, Render.target, &dest);
             }
         }
@@ -256,7 +256,7 @@ void UISystem::UIRendererDraw() {
 
 void UISystem::UIRendererDrawImGui() { uidata->imgui->Draw(); }
 
-f32 BoxDistence(metadot_rect box, MEvec2 A) {
+f32 BoxDistence(ME_Rect box, MEvec2 A) {
     if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;
     return 0;
 }
@@ -292,7 +292,7 @@ void UISystem::UIRendererUpdate() {
             p_y = 0;
         }
 
-        metadot_rect rect{.x = (float)e.second->x + p_x, .y = (float)e.second->y + p_y, .w = (float)e.second->w, .h = (float)e.second->h};
+        ME_Rect rect{.x = (float)e.second->x + p_x, .y = (float)e.second->y + p_y, .w = (float)e.second->w, .h = (float)e.second->h};
         if (e.second->type == ElementType::windowElement) {
             // Focus window
             if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) {
@@ -415,7 +415,7 @@ bool UISystem::UIIsMouseOnControls() {
     int x = ControlSystem::mouse_x, y = ControlSystem::mouse_y;
 
     for (auto &&e : uidata->elementLists) {
-        metadot_rect rect{.x = (float)e.second->x, .y = (float)e.second->y, .w = (float)e.second->w, .h = (float)e.second->h};
+        ME_Rect rect{.x = (float)e.second->x, .y = (float)e.second->y, .w = (float)e.second->w, .h = (float)e.second->h};
         if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) return true;
     }
     return false;

@@ -5,7 +5,6 @@
 
 // Random number generation
 typedef struct RNG {
-    pcg32_random_t rng;
     unsigned int root_seed;
 } RNG;
 

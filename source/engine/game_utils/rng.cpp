@@ -7,14 +7,9 @@
 #include "engine/core/utils/utility.hpp"
 
 RNG* RNG_Create() {
-    pcg32_random_t rng;
-    pcg32_srandom_r(&rng, ME_gettime(), 1);
-    unsigned int seed = pcg32_random_r(&rng);
-
+    srand(time(NULL));
     RNG* sRNG = new RNG;
-    sRNG->rng = rng;
-    sRNG->root_seed = seed;
-
+    sRNG->root_seed = rand();
     return sRNG;
 }
 
@@ -22,4 +17,4 @@ void RNG_Delete(RNG* rng) {
     if (NULL != rng) delete rng;
 }
 
-u32 RNG_Next(RNG* rng) { return pcg32_random_r(&rng->rng); }
+u32 RNG_Next(RNG* rng) { return rand(); }
