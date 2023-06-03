@@ -206,6 +206,9 @@ int metadot_initwindow() {
     METADOT_INFO("Max texture size: %ix%i", tex_w, tex_h);
 #endif
 
+    //glEnable(GL_DEBUG_OUTPUT);
+    //glDebugMessageCallback(ME::DebugOutputGL::GLerrorCallback, nullptr);
+
     global.audio.InitAudio();
 
     // METADOT_INFO("Initializing InitFont...");

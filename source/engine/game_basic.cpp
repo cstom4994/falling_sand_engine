@@ -33,7 +33,7 @@ static void textures_load(std::string name, std::string path) {}
 static void controls_init() { ControlSystem::InitKey(); }
 
 static void init_ecs() {
-    auto luacore = Scripting::GetSingletonPtr()->Lua;
+    auto luacore = Scripting::get_singleton_ptr()->Lua;
     auto &luawrap = luacore->s_lua;
 }
 
@@ -50,7 +50,7 @@ Biome *BiomeGet(std::string name) {
 void GameplayScriptSystem::Create() {
     METADOT_BUG("GameplayScriptSystem created");
 
-    auto luacore = Scripting::GetSingletonPtr()->Lua;
+    auto luacore = Scripting::get_singleton_ptr()->Lua;
     auto &luawrap = luacore->s_lua;
     luawrap.dofile(METADOT_RESLOC("data/scripts/game.lua"));
     luawrap["OnGameEngineLoad"]();
@@ -65,7 +65,7 @@ void GameplayScriptSystem::Create() {
 }
 
 void GameplayScriptSystem::Destory() {
-    auto luacore = Scripting::GetSingletonPtr()->Lua;
+    auto luacore = Scripting::get_singleton_ptr()->Lua;
     auto &luawrap = luacore->s_lua;
     auto EndFunc = luawrap["OnGameEngineUnLoad"];
     EndFunc();

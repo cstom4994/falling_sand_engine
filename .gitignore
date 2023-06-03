@@ -13,6 +13,7 @@ CMakeLists.txt
 *.dylib
 
 data/assets/
+data/*.pack
 dependencies/
 
 Resources/

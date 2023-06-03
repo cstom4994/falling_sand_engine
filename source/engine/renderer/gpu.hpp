@@ -72,9 +72,79 @@ ME_PRIVATE(void) ME_check_gl_error(const char *file, const int line) {
 
 #define ME_CHECK_GL_ERROR() ME_check_gl_error(__FILE__, __LINE__)
 
-namespace MetaEngine {
-const char *GLEnumToString(GLenum e);
+#define ME_GL_STATE_BACKUP()                                                     \
+    GLenum last_active_texture;                                                  \
+    glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint *)&last_active_texture);             \
+    glActiveTexture(GL_TEXTURE0);                                                \
+    GLuint last_program;                                                         \
+    glGetIntegerv(GL_CURRENT_PROGRAM, (GLint *)&last_program);                   \
+    GLuint last_texture;                                                         \
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint *)&last_texture);                \
+    GLuint last_array_buffer;                                                    \
+    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, (GLint *)&last_array_buffer);         \
+    GLint last_viewport[4];                                                      \
+    glGetIntegerv(GL_VIEWPORT, last_viewport);                                   \
+    GLint last_scissor_box[4];                                                   \
+    glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box);                             \
+    GLenum last_blend_src_rgb;                                                   \
+    glGetIntegerv(GL_BLEND_SRC_RGB, (GLint *)&last_blend_src_rgb);               \
+    GLenum last_blend_dst_rgb;                                                   \
+    glGetIntegerv(GL_BLEND_DST_RGB, (GLint *)&last_blend_dst_rgb);               \
+    GLenum last_blend_src_alpha;                                                 \
+    glGetIntegerv(GL_BLEND_SRC_ALPHA, (GLint *)&last_blend_src_alpha);           \
+    GLenum last_blend_dst_alpha;                                                 \
+    glGetIntegerv(GL_BLEND_DST_ALPHA, (GLint *)&last_blend_dst_alpha);           \
+    GLenum last_blend_equation_rgb;                                              \
+    glGetIntegerv(GL_BLEND_EQUATION_RGB, (GLint *)&last_blend_equation_rgb);     \
+    GLenum last_blend_equation_alpha;                                            \
+    glGetIntegerv(GL_BLEND_EQUATION_ALPHA, (GLint *)&last_blend_equation_alpha); \
+    GLboolean last_enable_blend = glIsEnabled(GL_BLEND);                         \
+    GLboolean last_enable_cull_face = glIsEnabled(GL_CULL_FACE);                 \
+    GLboolean last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);               \
+    GLboolean last_enable_stencil_test = glIsEnabled(GL_STENCIL_TEST);           \
+    GLboolean last_enable_scissor_test = glIsEnabled(GL_SCISSOR_TEST);           \
+    GLboolean last_enable_mutisample = glIsEnabled(GL_MULTISAMPLE);              \
+    GLboolean last_enable_framebuffer_srgb = glIsEnabled(GL_FRAMEBUFFER_SRGB)
 
+#define ME_GL_STATE_RESTORE()                                                                                \
+    glUseProgram(last_program);                                                                              \
+    glBindTexture(GL_TEXTURE_2D, last_texture);                                                              \
+    glActiveTexture(last_active_texture);                                                                    \
+    glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);                                                        \
+    glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);                             \
+    glBlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha); \
+    if (last_enable_blend)                                                                                   \
+        glEnable(GL_BLEND);                                                                                  \
+    else                                                                                                     \
+        glDisable(GL_BLEND);                                                                                 \
+    if (last_enable_cull_face)                                                                               \
+        glEnable(GL_CULL_FACE);                                                                              \
+    else                                                                                                     \
+        glDisable(GL_CULL_FACE);                                                                             \
+    if (last_enable_depth_test)                                                                              \
+        glEnable(GL_DEPTH_TEST);                                                                             \
+    else                                                                                                     \
+        glDisable(GL_DEPTH_TEST);                                                                            \
+    if (last_enable_stencil_test)                                                                            \
+        glEnable(GL_STENCIL_TEST);                                                                           \
+    else                                                                                                     \
+        glDisable(GL_STENCIL_TEST);                                                                          \
+    if (last_enable_scissor_test)                                                                            \
+        glEnable(GL_SCISSOR_TEST);                                                                           \
+    else                                                                                                     \
+        glDisable(GL_SCISSOR_TEST);                                                                          \
+    if (last_enable_mutisample)                                                                              \
+        glEnable(GL_MULTISAMPLE);                                                                            \
+    else                                                                                                     \
+        glDisable(GL_MULTISAMPLE);                                                                           \
+    if (last_enable_framebuffer_srgb)                                                                        \
+        glEnable(GL_FRAMEBUFFER_SRGB);                                                                       \
+    else                                                                                                     \
+        glDisable(GL_FRAMEBUFFER_SRGB);                                                                      \
+    glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);    \
+    glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3])
+
+namespace MetaEngine {
 class Drawing {
 public:
     static MEvec2 rotate_point(float cx, float cy, float angle, MEvec2 p);
@@ -83,8 +153,84 @@ public:
     static void drawText(std::string text, ME_Color col, int x, int y);
     static void drawTextWithPlate(R_Target *target, std::string text, ME_Color col, int x, int y, ME_Color backcolor = {77, 77, 77, 140});
 };
+}  // namespace MetaEngine
 
-namespace Detail {
+namespace ME {
+
+class DebugOutputGL final {
+public:
+    DebugOutputGL() {}
+    ~DebugOutputGL() {}
+
+    static void GLerrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *msg, const void *data) {
+        if (severity == GL_DEBUG_SEVERITY_NOTIFICATION || type == 0x8250) {
+            return;
+        }
+
+        METADOT_BUG("Catch from GL debug output \n   Source: ", getStringForSource(source), "\n   Type: ", getStringForType(type), "\n   Severity: ", getStringForSeverity(severity),
+                    "\n   DebugCall: ", msg);
+    }
+
+private:
+    static std::string getStringForSource(GLenum source) {
+        switch (source) {
+            case GL_DEBUG_SOURCE_API:
+                return "API";
+            case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+                return "Window system";
+            case GL_DEBUG_SOURCE_SHADER_COMPILER:
+                return "Shader compiler";
+            case GL_DEBUG_SOURCE_THIRD_PARTY:
+                return "Third party";
+            case GL_DEBUG_SOURCE_APPLICATION:
+                return "Application";
+            case GL_DEBUG_SOURCE_OTHER:
+                return "Other";
+            default:
+                assert(false);
+                return "";
+        }
+    }
+
+    static std::string getStringForType(GLenum type) {
+        switch (type) {
+            case GL_DEBUG_TYPE_ERROR:
+                return "Error";
+            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+                return "Deprecated behavior";
+            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+                return "Undefined behavior";
+            case GL_DEBUG_TYPE_PORTABILITY:
+                return "Portability issue";
+            case GL_DEBUG_TYPE_PERFORMANCE:
+                return "Performance issue";
+            case GL_DEBUG_TYPE_MARKER:
+                return "Stream annotation";
+            case GL_DEBUG_TYPE_OTHER:
+                return "Other";
+            default:
+                assert(false);
+                return "";
+        }
+    }
+
+    static std::string getStringForSeverity(GLenum severity) {
+        switch (severity) {
+            case GL_DEBUG_SEVERITY_HIGH:
+                return "High";
+            case GL_DEBUG_SEVERITY_MEDIUM:
+                return "Medium";
+            case GL_DEBUG_SEVERITY_LOW:
+                return "Low";
+            case GL_DEBUG_SEVERITY_NOTIFICATION:
+                return "Notification";
+            default:
+                assert(false);
+                return ("");
+        }
+    }
+};
+
 // Generator macro to avoid duplicating code all the time.
 #define R_INTROSPECTION_GENERATE_VARIABLE_RENDER(cputype, count, gltype, glread, glwrite, imguifunc) \
     {                                                                                                \
@@ -109,17 +255,13 @@ namespace Detail {
         if (modified) glwrite(program, location, 1, GL_FALSE, value);                                      \
     }
 
-void RenderUniformVariable(GLuint program, GLenum type, const char *name, GLint location);
+void render_uniform_variable(GLuint program, GLenum type, const char *name, GLint location);
 
-// #undef R_INTROSPECTION_GENERATE_VARIABLE_RENDER
-// #undef R_INTROSPECTION_GENERATE_MATRIX_RENDER
+float get_scrollable_height();
 
-float GetScrollableHeight();
-}  // namespace Detail
-
-void IntrospectShader(const char *label, GLuint program);
-void IntrospectVertexArray(const char *label, GLuint vao);
-}  // namespace MetaEngine
+void inspect_shader(const char *label, GLuint program);
+void inspect_vertex_array(const char *label, GLuint vao);
+}  // namespace ME
 
 #if 1
 

@@ -18,8 +18,10 @@
 #include "engine/core/profiler.hpp"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/game_datastruct.hpp"
+#include "engine/ui/console.h"
 #include "engine/ui/file_browser.h"
 #include "engine/ui/imgui_impl.hpp"
+#include "engine/ui/pack_editor.h"
 #include "libs/imgui/text_editor.h"
 
 #define ME_DESIRED_FRAME_RATE 30.0f
@@ -202,13 +204,17 @@ private:
     ImGui::FileBrowser fileDialog;
     ImGuiID dockspace_id;
 
+    // console
+    ME::MEconsole console;
+
+    // pack editor
+    pack_editor m_pack_editor;
+
 private:
     static void (*RendererShutdownFunction)();
     static void (*PlatformShutdownFunction)();
-
     static void (*RendererNewFrameFunction)();
     static void (*PlatformNewFrameFunction)();
-
     static void (*RenderFunction)(ImDrawData*);
 
 public:

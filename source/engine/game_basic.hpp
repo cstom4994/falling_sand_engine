@@ -9,6 +9,7 @@
 
 #include "engine/core/cpp/property.hpp"
 #include "engine/scripting/scripting.hpp"
+#include "engine/ui/imgui_helper.hpp"
 
 struct Biome;
 

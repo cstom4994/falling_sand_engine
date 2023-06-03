@@ -6,7 +6,7 @@
 
 void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs) {
 
-    auto GlobalDEF = Scripting::GetSingletonPtr()->Lua->s_lua["global_def"];
+    auto GlobalDEF = Scripting::get_singleton_ptr()->Lua->s_lua["global_def"];
 
     if (!GlobalDEF.isNilref()) {
         LoadLuaConfig(_struct, GlobalDEF, draw_frame_graph);
@@ -44,9 +44,11 @@ void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs) {
         LoadLuaConfig(_struct, GlobalDEF, draw_ui_debug);
         LoadLuaConfig(_struct, GlobalDEF, draw_imgui_debug);
         LoadLuaConfig(_struct, GlobalDEF, draw_profiler);
+        LoadLuaConfig(_struct, GlobalDEF, draw_console);
+        LoadLuaConfig(_struct, GlobalDEF, draw_pack_editor);
 
     } else {
-        METADOT_ERROR("GlobalDEF WAS NULL");
+        METADOT_ERROR("Load GlobalDEF failed");
     }
 
     gameUI.visible_debugdraw = openDebugUIs;
@@ -62,7 +64,7 @@ void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs) {
         _struct->draw_temperature_map = false;
     }
 
-    METADOT_INFO("SettingsData loaded");
+    METADOT_INFO("GlobalDEF loaded");
 }
 
 void LoadGlobalDEF(std::string globaldef_src) {}

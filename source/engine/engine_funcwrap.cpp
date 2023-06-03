@@ -199,7 +199,7 @@ static int flushImage(lua_State *L) {
     imageType *data = checkImage(L);
     if (!freeCheck(L, data)) return 0;
 
-    ME_Rect rect = {0, 0, (float)data->width, (float)data->height};
+    ME_rect rect = {0, 0, (float)data->width, (float)data->height};
     R_UpdateImage(data->texture, &rect, data->surface, &rect);
 
     return 0;
@@ -221,7 +221,7 @@ static int renderImage(lua_State *L) {
             }
         }
 
-        ME_Rect rect = {0, 0, (float)data->width, (float)data->height};
+        ME_rect rect = {0, 0, (float)data->width, (float)data->height};
         R_UpdateImage(data->texture, &rect, data->surface, &rect);
 
         data->lastRenderNum = TestData::paletteNum;
@@ -231,11 +231,11 @@ static int renderImage(lua_State *L) {
     int x = luaL_checkinteger(L, 2);
     int y = luaL_checkinteger(L, 3);
 
-    ME_Rect rect = {off(x, y)};
+    ME_rect rect = {off(x, y)};
 
     int top = lua_gettop(L);
     if (top > 7) {
-        ME_Rect srcRect = {(float)luaL_checkinteger(L, 4), (float)luaL_checkinteger(L, 5), clamp(luaL_checkinteger(L, 6), 0, data->width), clamp(luaL_checkinteger(L, 7), 0, data->height)};
+        ME_rect srcRect = {(float)luaL_checkinteger(L, 4), (float)luaL_checkinteger(L, 5), clamp(luaL_checkinteger(L, 6), 0, data->width), clamp(luaL_checkinteger(L, 7), 0, data->height)};
 
         int scale = luaL_checkinteger(L, 8);
 
@@ -244,14 +244,14 @@ static int renderImage(lua_State *L) {
 
         R_BlitRect(data->texture, &srcRect, Render.target, &rect);
     } else if (top > 6) {
-        ME_Rect srcRect = {(float)luaL_checkinteger(L, 4), (float)luaL_checkinteger(L, 5), (float)luaL_checkinteger(L, 6), (float)luaL_checkinteger(L, 7)};
+        ME_rect srcRect = {(float)luaL_checkinteger(L, 4), (float)luaL_checkinteger(L, 5), (float)luaL_checkinteger(L, 6), (float)luaL_checkinteger(L, 7)};
 
         rect.w = srcRect.w;
         rect.h = srcRect.h;
 
         R_BlitRect(data->texture, &srcRect, Render.target, &rect);
     } else if (top > 3) {
-        ME_Rect srcRect = {0, 0, (float)luaL_checkinteger(L, 4), (float)luaL_checkinteger(L, 5)};
+        ME_rect srcRect = {0, 0, (float)luaL_checkinteger(L, 4), (float)luaL_checkinteger(L, 5)};
 
         rect.w = srcRect.w;
         rect.h = srcRect.h;
@@ -553,7 +553,7 @@ static int gpu_draw_rectangle(lua_State *L) {
     int x = luaL_checkinteger(L, 1);
     int y = luaL_checkinteger(L, 2);
 
-    ME_Rect rect = {off(x, y), (float)luaL_checkinteger(L, 3), (float)luaL_checkinteger(L, 4)};
+    ME_rect rect = {off(x, y), (float)luaL_checkinteger(L, 3), (float)luaL_checkinteger(L, 4)};
 
     ME_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
     R_RectangleFilled2(Render.target, rect, colorS);
@@ -591,7 +591,7 @@ static int gpu_blit_pixels(lua_State *L) {
         int xp = (i - 1) % w;
         int yp = (i - 1) / w;
 
-        ME_Rect rect = {off(x + xp, y + yp), 1, 1};
+        ME_rect rect = {off(x + xp, y + yp), 1, 1};
 
         ME_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
         R_RectangleFilled2(Render.target, rect, colorS);

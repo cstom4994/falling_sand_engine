@@ -60,7 +60,7 @@ void MetaEngine::Drawing::drawTextWithPlate(R_Target *target, std::string text, 
         return #x;               \
         break;
 
-const char *MetaEngine::GLEnumToString(GLenum e) {
+const char *ME_gpu_glenum_string(GLenum e) {
     switch (e) {
         // shader:
         R_TO_STRING_GENERATOR(GL_VERTEX_SHADER);
@@ -98,9 +98,9 @@ const char *MetaEngine::GLEnumToString(GLenum e) {
         R_TO_STRING_GENERATOR(GL_FLOAT_VEC3);
         R_TO_STRING_GENERATOR(GL_FLOAT_VEC4);
         R_TO_STRING_GENERATOR(GL_DOUBLE);
-        // R_TO_STRING_GENERATOR(GL_DOUBLE_VEC2);
-        // R_TO_STRING_GENERATOR(GL_DOUBLE_VEC3);
-        // R_TO_STRING_GENERATOR(GL_DOUBLE_VEC4);
+        R_TO_STRING_GENERATOR(GL_DOUBLE_VEC2);
+        R_TO_STRING_GENERATOR(GL_DOUBLE_VEC3);
+        R_TO_STRING_GENERATOR(GL_DOUBLE_VEC4);
         R_TO_STRING_GENERATOR(GL_INT);
         R_TO_STRING_GENERATOR(GL_INT_VEC2);
         R_TO_STRING_GENERATOR(GL_INT_VEC3);
@@ -122,15 +122,15 @@ const char *MetaEngine::GLEnumToString(GLenum e) {
         R_TO_STRING_GENERATOR(GL_FLOAT_MAT3x4);
         R_TO_STRING_GENERATOR(GL_FLOAT_MAT4x2);
         R_TO_STRING_GENERATOR(GL_FLOAT_MAT4x3);
-        // R_TO_STRING_GENERATOR(GL_DOUBLE_MAT2);
-        // R_TO_STRING_GENERATOR(GL_DOUBLE_MAT3);
-        // R_TO_STRING_GENERATOR(GL_DOUBLE_MAT4);
-        // R_TO_STRING_GENERATOR(GL_DOUBLE_MAT2x3);
-        // R_TO_STRING_GENERATOR(GL_DOUBLE_MAT2x4);
-        // R_TO_STRING_GENERATOR(GL_DOUBLE_MAT3x2);
-        // R_TO_STRING_GENERATOR(GL_DOUBLE_MAT3x4);
-        // R_TO_STRING_GENERATOR(GL_DOUBLE_MAT4x2);
-        // R_TO_STRING_GENERATOR(GL_DOUBLE_MAT4x3);
+        R_TO_STRING_GENERATOR(GL_DOUBLE_MAT2);
+        R_TO_STRING_GENERATOR(GL_DOUBLE_MAT3);
+        R_TO_STRING_GENERATOR(GL_DOUBLE_MAT4);
+        R_TO_STRING_GENERATOR(GL_DOUBLE_MAT2x3);
+        R_TO_STRING_GENERATOR(GL_DOUBLE_MAT2x4);
+        R_TO_STRING_GENERATOR(GL_DOUBLE_MAT3x2);
+        R_TO_STRING_GENERATOR(GL_DOUBLE_MAT3x4);
+        R_TO_STRING_GENERATOR(GL_DOUBLE_MAT4x2);
+        R_TO_STRING_GENERATOR(GL_DOUBLE_MAT4x3);
         R_TO_STRING_GENERATOR(GL_SAMPLER_1D);
         R_TO_STRING_GENERATOR(GL_SAMPLER_2D);
         R_TO_STRING_GENERATOR(GL_SAMPLER_3D);
@@ -168,46 +168,45 @@ const char *MetaEngine::GLEnumToString(GLenum e) {
         R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_SAMPLER_BUFFER);
         R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_SAMPLER_2D_RECT);
 
-        // R_TO_STRING_GENERATOR(GL_IMAGE_1D);
-        // R_TO_STRING_GENERATOR(GL_IMAGE_2D);
-        // R_TO_STRING_GENERATOR(GL_IMAGE_3D);
-        // R_TO_STRING_GENERATOR(GL_IMAGE_2D_RECT);
-        // R_TO_STRING_GENERATOR(GL_IMAGE_CUBE);
-        // R_TO_STRING_GENERATOR(GL_IMAGE_BUFFER);
-        // R_TO_STRING_GENERATOR(GL_IMAGE_1D_ARRAY);
-        // R_TO_STRING_GENERATOR(GL_IMAGE_2D_ARRAY);
-        // R_TO_STRING_GENERATOR(GL_IMAGE_2D_MULTISAMPLE);
-        // R_TO_STRING_GENERATOR(GL_IMAGE_2D_MULTISAMPLE_ARRAY);
-        // R_TO_STRING_GENERATOR(GL_INT_IMAGE_1D);
-        // R_TO_STRING_GENERATOR(GL_INT_IMAGE_2D);
-        // R_TO_STRING_GENERATOR(GL_INT_IMAGE_3D);
-        // R_TO_STRING_GENERATOR(GL_INT_IMAGE_2D_RECT);
-        // R_TO_STRING_GENERATOR(GL_INT_IMAGE_CUBE);
-        // R_TO_STRING_GENERATOR(GL_INT_IMAGE_BUFFER);
-        // R_TO_STRING_GENERATOR(GL_INT_IMAGE_1D_ARRAY);
-        // R_TO_STRING_GENERATOR(GL_INT_IMAGE_2D_ARRAY);
-        // R_TO_STRING_GENERATOR(GL_INT_IMAGE_2D_MULTISAMPLE);
-        // R_TO_STRING_GENERATOR(GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY);
-        // R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_1D);
-        // R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D);
-        // R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_3D);
-        // R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D_RECT);
-        // R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_CUBE);
-        // R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_BUFFER);
-        // R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_1D_ARRAY);
-        // R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D_ARRAY);
-        // R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE);
-        // R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY);
-        // R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_ATOMIC_COUNTER);
+        R_TO_STRING_GENERATOR(GL_IMAGE_1D);
+        R_TO_STRING_GENERATOR(GL_IMAGE_2D);
+        R_TO_STRING_GENERATOR(GL_IMAGE_3D);
+        R_TO_STRING_GENERATOR(GL_IMAGE_2D_RECT);
+        R_TO_STRING_GENERATOR(GL_IMAGE_CUBE);
+        R_TO_STRING_GENERATOR(GL_IMAGE_BUFFER);
+        R_TO_STRING_GENERATOR(GL_IMAGE_1D_ARRAY);
+        R_TO_STRING_GENERATOR(GL_IMAGE_2D_ARRAY);
+        R_TO_STRING_GENERATOR(GL_IMAGE_2D_MULTISAMPLE);
+        R_TO_STRING_GENERATOR(GL_IMAGE_2D_MULTISAMPLE_ARRAY);
+        R_TO_STRING_GENERATOR(GL_INT_IMAGE_1D);
+        R_TO_STRING_GENERATOR(GL_INT_IMAGE_2D);
+        R_TO_STRING_GENERATOR(GL_INT_IMAGE_3D);
+        R_TO_STRING_GENERATOR(GL_INT_IMAGE_2D_RECT);
+        R_TO_STRING_GENERATOR(GL_INT_IMAGE_CUBE);
+        R_TO_STRING_GENERATOR(GL_INT_IMAGE_BUFFER);
+        R_TO_STRING_GENERATOR(GL_INT_IMAGE_1D_ARRAY);
+        R_TO_STRING_GENERATOR(GL_INT_IMAGE_2D_ARRAY);
+        R_TO_STRING_GENERATOR(GL_INT_IMAGE_2D_MULTISAMPLE);
+        R_TO_STRING_GENERATOR(GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY);
+        R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_1D);
+        R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D);
+        R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_3D);
+        R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D_RECT);
+        R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_CUBE);
+        R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_BUFFER);
+        R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_1D_ARRAY);
+        R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D_ARRAY);
+        R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE);
+        R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY);
+        R_TO_STRING_GENERATOR(GL_UNSIGNED_INT_ATOMIC_COUNTER);
     }
 
     static char buffer[32];
     std::sprintf(buffer, "Unknown GLenum: (0x%04x)", e);
     return buffer;
 }
-#undef R_TO_STRING_GENERATOR
 
-void MetaEngine::Detail::RenderUniformVariable(GLuint program, GLenum type, const char *name, GLint location) {
+void ME::render_uniform_variable(GLuint program, GLenum type, const char *name, GLint location) {
     static bool is_color = false;
     switch (type) {
         case GL_FLOAT:
@@ -257,6 +256,22 @@ void MetaEngine::Detail::RenderUniformVariable(GLuint program, GLenum type, cons
             R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 4, GL_INT, glGetUniformiv, glProgramUniform4iv, ImGui::DragInt4);
             break;
 
+        case GL_UNSIGNED_INT: {
+            ImGui::Text("GL_UNSIGNED_INT %s:", name);
+            ImGui::SameLine();
+            GLuint value[1];
+            glGetUniformuiv(program, location, &value[0]);
+            if (ImGui::DragScalar("", ImGuiDataType_U32, &value[0], 0.25f)) glProgramUniform1uiv(program, location, 1, &value[0]);
+        } break;
+
+        case GL_UNSIGNED_INT_VEC3: {
+            ImGui::Text("GL_UNSIGNED_INT_VEC3 %s:", name);
+            ImGui::SameLine();
+            GLuint value[1];
+            glGetUniformuiv(program, location, &value[0]);
+            if (ImGui::DragScalarN("", ImGuiDataType_U32, &value[0], 3, 0.25f)) glProgramUniform3uiv(program, location, 1, &value[0]);
+        } break;
+
         case GL_SAMPLER_2D:
             R_INTROSPECTION_GENERATE_VARIABLE_RENDER(GLint, 1, GL_SAMPLER_2D, glGetUniformiv, glProgramUniform1iv, ImGui::DragInt);
             break;
@@ -289,18 +304,40 @@ void MetaEngine::Detail::RenderUniformVariable(GLuint program, GLenum type, cons
             R_INTROSPECTION_GENERATE_MATRIX_RENDER(GLfloat, 4, 3, GL_FLOAT_MAT3x4, glGetUniformfv, glProgramUniformMatrix3x2fv, ImGui::DragFloat4);
             break;
 
+        case GL_BOOL: {
+            ImGui::Text("GL_BOOL %s:", name);
+            ImGui::SameLine();
+            GLuint value;
+            glGetUniformuiv(program, location, &value);
+            if (ImGui::Checkbox("", (bool *)&value)) glProgramUniform1uiv(program, location, 1, &value);
+        } break;
+
+        case GL_IMAGE_2D: {
+            ImGui::Text("GL_IMAGE_2D %s:", name);
+            // ImGui::SameLine();
+            GLuint value;
+            glGetUniformuiv(program, location, &value);
+            // if (ImGui::Checkbox("", (bool*)&value)) glProgramUniform1iv(program, location, 1, &value);
+            ImGui::Image((void *)(intptr_t)value, ImVec2(256, 256));
+        } break;
+
+        case GL_SAMPLER_CUBE: {
+            ImGui::Text("GL_SAMPLER_CUBE %s:", name);
+            // ImGui::SameLine();
+            GLuint value;
+            glGetUniformuiv(program, location, &value);
+            ImGui::Image((void *)(intptr_t)value, ImVec2(256, 256));
+        } break;
+
         default:
-            ImGui::Text("%s has type %s, which isn't supported yet!", name, GLEnumToString(type));
+            ImGui::TextColored(ME_rgba2imvec(255, 64, 64), "%s has type %s, which isn't supported yet!", name, ME_gpu_glenum_string(type));
             break;
     }
 }
 
-#undef R_INTROSPECTION_GENERATE_VARIABLE_RENDER
-#undef R_INTROSPECTION_GENERATE_MATRIX_RENDER
+float ME::get_scrollable_height() { return ImGui::GetTextLineHeight() * 16; }
 
-float MetaEngine::Detail::GetScrollableHeight() { return ImGui::GetTextLineHeight() * 16; }
-
-void MetaEngine::IntrospectShader(const char *label, GLuint program) {
+void ME::inspect_shader(const char *label, GLuint program) {
     ME_ASSERT(label != nullptr, ("The label supplied with program: {} is nullptr", program));
     ME_ASSERT(glIsProgram(program), ("The program: {} is not a valid shader program", program));
 
@@ -328,7 +365,7 @@ void MetaEngine::IntrospectShader(const char *label, GLuint program) {
                 ImGui::Indent();
                 ImGui::PushID(i);
                 ImGui::PushItemWidth(-1.0f);
-                Detail::RenderUniformVariable(program, type, name.data(), location);
+                render_uniform_variable(program, type, name.data(), location);
                 ImGui::PopItemWidth();
                 ImGui::PopID();
                 ImGui::Unindent();
@@ -357,10 +394,10 @@ void MetaEngine::IntrospectShader(const char *label, GLuint program) {
                 glGetShaderiv(shader, GL_SHADER_TYPE, &type);
 
                 ImGui::Indent();
-                auto string_type = GLEnumToString(type);
+                auto string_type = ME_gpu_glenum_string(type);
                 ImGui::PushID(string_type);
                 if (ImGui::CollapsingHeader(string_type)) {
-                    auto y_size = std::min(ImGui::CalcTextSize(source.data()).y, Detail::GetScrollableHeight());
+                    auto y_size = std::min(ImGui::CalcTextSize(source.data()).y, get_scrollable_height());
                     ImGui::InputTextMultiline("", source.data(), source.size(), ImVec2(-1.0f, y_size), ImGuiInputTextFlags_ReadOnly);
                 }
                 ImGui::PopID();
@@ -372,7 +409,7 @@ void MetaEngine::IntrospectShader(const char *label, GLuint program) {
     ImGui::PopID();
 }
 
-void MetaEngine::IntrospectVertexArray(const char *label, GLuint vao) {
+void ME::inspect_vertex_array(const char *label, GLuint vao) {
     ME_ASSERT(label != nullptr, ("The label supplied with VAO: %u is nullptr", vao));
     ME_ASSERT(glIsVertexArray(vao), ("The VAO: %u is not a valid vertex array object", vao));
 
@@ -446,7 +483,7 @@ void MetaEngine::IntrospectVertexArray(const char *label, GLuint vao) {
 
                 GLint type = 0;
                 glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_TYPE, &type);
-                ImGui::Text("Type: %s", GLEnumToString(type));
+                ImGui::Text("Type: %s", ME_gpu_glenum_string(type));
 
                 GLint dimensions = 0;
                 glGetVertexAttribiv(i, GL_VERTEX_ATTRIB_ARRAY_SIZE, &dimensions);
@@ -469,11 +506,11 @@ void MetaEngine::IntrospectVertexArray(const char *label, GLuint vao) {
 
                 GLint usage = 0;
                 glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_USAGE, &usage);
-                ImGui::Text("Usage: %s", GLEnumToString(usage));
+                ImGui::Text("Usage: %s", ME_gpu_glenum_string(usage));
 
                 // Create table with indexes and actual contents
                 if (ImGui::TreeNode("Buffer Contents")) {
-                    ImGui::BeginChild(ImGui::GetID("vbo contents"), ImVec2(-1.0f, Detail::GetScrollableHeight()), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
+                    ImGui::BeginChild(ImGui::GetID("vbo contents"), ImVec2(-1.0f, get_scrollable_height()), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
                     ImGui::Columns(dimensions + 1);
                     const char *descriptors[] = {"index", "x", "y", "z", "w"};
                     for (int j = 0; j < dimensions + 1; j++) {

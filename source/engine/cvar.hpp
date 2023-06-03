@@ -46,11 +46,13 @@ struct GlobalDEF {
     bool draw_ui_debug;
     bool draw_imgui_debug;
     bool draw_profiler;
+    bool draw_console;
+    bool draw_pack_editor;
 };
 METADOT_STRUCT(GlobalDEF, draw_frame_graph, draw_background, draw_background_grid, draw_load_zones, draw_physics_debug, draw_b2d_shape, draw_b2d_joint, draw_b2d_aabb, draw_b2d_pair,
                draw_b2d_centerMass, draw_chunk_state, draw_debug_stats, draw_material_info, draw_detailed_material_info, draw_uinode_bounds, draw_temperature_map, draw_cursor, ui_tweak, draw_shaders,
                water_overlay, water_showFlow, water_pixelated, lightingQuality, draw_light_overlay, simpleLighting, lightingEmission, lightingDithering, tick_world, tick_box2d, tick_temperature,
-               hd_objects, hd_objects_size, draw_ui_debug, draw_imgui_debug, draw_profiler);
+               hd_objects, hd_objects_size, draw_ui_debug, draw_imgui_debug, draw_profiler, draw_console, draw_pack_editor);
 
 void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs);
 void LoadGlobalDEF(std::string globaldef_src);

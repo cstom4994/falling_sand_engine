@@ -115,11 +115,11 @@ int profiler_draw_frame(profiler_frame *_data, void *_buffer, size_t _bufferSize
 
     if (noMove) ImGui::SetNextWindowPos(winpos);
 
-    ImGui::Begin(LANG("Profiler"), 0, noMove ? ImGuiWindowFlags_NoMove : 0);
+    ImGui::Begin(LANG("ui_profiler"), 0, noMove ? ImGuiWindowFlags_NoMove : 0);
 
     ImGui::BeginTabBar("ui_profiler_tabbar");
 
-    if (ImGui::BeginTabItem(LANG("帧监测"))) {
+    if (ImGui::BeginTabItem(CC("帧监测"))) {
 
         if (!noMove) winpos = ImGui::GetWindowPos();
 
@@ -134,7 +134,7 @@ int profiler_draw_frame(profiler_frame *_data, void *_buffer, size_t _bufferSize
         ImGui::Text("%.1f    ", 1000.0f / deltaTime);
         ImGui::PopStyleColor();
         ImGui::SameLine();
-        ImGui::Text("%s", LANG("帧耗时"));
+        ImGui::Text("%s", CC("帧耗时"));
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Text, col);
         ImGui::Text("%.3f ms   ", deltaTime);
@@ -606,13 +606,13 @@ inline void ImGuiInitStyle(const float pixel_ratio, const float dpi_scaling) {
     // style.GrabRounding = 4.0f;
 }
 
-#if defined(_METADOT_IMM32)
+#if defined(ME_IMM32)
 
 #if defined(_WIN32)
 #include <CommCtrl.h>
 #include <Windows.h>
 #include <vcruntime_string.h>
-#endif /* defined( _WIN32 ) */
+#endif
 
 static int common_control_initialize() {
     HMODULE comctl32 = nullptr;
@@ -670,10 +670,8 @@ ImGuiLayer::ImGuiLayer() {
     RenderFunction = ImGui_ImplOpenGL3_RenderDrawData;
 }
 
-static bool firstRun = false;
-
-#if defined(_METADOT_IMM32)
-ImGUIIMMCommunication imguiIMMCommunication{};
+#if defined(ME_IMM32)
+ME_imgui_imm imguiIMMCommunication{};
 #endif
 
 ME_PRIVATE(void *) ImGuiMalloc(size_t sz, void *user_data) { return ME_MALLOC(sz); }
@@ -741,10 +739,12 @@ void ImGuiLayer::Init() {
 
     ImGuiInitStyle(0.5f, 0.5f);
 
-#if defined(_METADOT_IMM32)
+#if defined(ME_IMM32)
     common_control_initialize();
-    VERIFY(imguiIMMCommunication.subclassify(Core.window));
+    ME_ASSERT_E(imguiIMMCommunication.subclassify(Core.window));
 #endif
+
+    m_pack_editor.init();
 
     editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
 
@@ -843,7 +843,7 @@ void ImGuiLayer::Init() {
     //    console_imgui->System().RegisterCommand(
     //            "lua", "dostring",
     //            [&](const char *s) {
-    //                auto &l = Scripting::GetSingletonPtr()->Lua;
+    //                auto &l = Scripting::get_singleton_ptr()->Lua;
     //                l->s_lua.dostring(s);
     //            },
     //            Command::Arg<String>(""));
@@ -854,13 +854,10 @@ void ImGuiLayer::Init() {
     //};
 
     // create_console();
-
-    firstRun = true;
 }
 
 void ImGuiLayer::End() {
-
-    // METADOT_DELETE(C, console_imgui, ImGuiConsole);
+    m_pack_editor.end();
 
     RendererShutdownFunction();
     PlatformShutdownFunction();
@@ -908,7 +905,7 @@ void ImGuiLayer::Update() {
 
     ImGuiIO &io = ImGui::GetIO();
 
-#if defined(_METADOT_IMM32)
+#if defined(ME_IMM32)
     imguiIMMCommunication();
 #endif
 
@@ -955,6 +952,11 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
     if (global.game->GameIsolate_.globaldef.draw_imgui_debug) {
         ImGui::ShowDemoWindow();
     }
+
+    bool interactingWithTextbox;
+    if (global.game->GameIsolate_.globaldef.draw_console) console.display_full(&interactingWithTextbox);
+
+    if (global.game->GameIsolate_.globaldef.draw_pack_editor) m_pack_editor.draw();
 
     auto cpos = editor.GetCursorPosition();
     if (global.game->GameIsolate_.globaldef.ui_tweak) {
@@ -1171,6 +1173,8 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                         }
                     }
                     ImGui::Checkbox("Profiler", &global.game->GameIsolate_.globaldef.draw_profiler);
+                    ImGui::Checkbox("控制台", &global.game->GameIsolate_.globaldef.draw_console);
+                    ImGui::Checkbox("包编辑器", &global.game->GameIsolate_.globaldef.draw_pack_editor);
                     ImGui::Checkbox("UI", &global.game->GameIsolate_.ui->uidata->elementLists["testElement1"]->visible);
                     if (ImGui::Button("Meo")) {
                     }
@@ -1188,7 +1192,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                 if (CollapsingHeader(ICON_LANG(ICON_FA_VECTOR_SQUARE, "ui_telemetry"))) {
                     GameUI::DrawDebugUI(global.game);
                 }
-#define INSPECTSHADER(_c) MetaEngine::IntrospectShader(#_c, global.game->GameIsolate_.shaderworker->_c->shader)
+#define INSPECTSHADER(_c) ME::inspect_shader(#_c, global.game->GameIsolate_.shaderworker->_c->shader)
                 if (CollapsingHeader(CC("GLSL"))) {
                     ImGui::Indent();
                     INSPECTSHADER(newLightingShader);

@@ -22,22 +22,22 @@
 #include "engine/core/macros.hpp"
 #include "engine/core/mathlib.hpp"
 #include "engine/core/memory.h"
-#include "engine/core/threadpool.hpp"
+#include "engine/core/utils/utility.hpp"
 #include "engine/engine.h"
-#include "game_datastruct.hpp"
-#include "game_resources.hpp"
 #include "engine/game_utils/cells.h"
 #include "engine/game_utils/jsonwarp.h"
-#include "npc.hpp"
 #include "engine/physics/box2d.h"
-#include "reflectionflat.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/scripting.hpp"
+#include "game_datastruct.hpp"
+#include "game_resources.hpp"
+#include "npc.hpp"
+#include "reflectionflat.hpp"
 #include "world_generator.cpp"
 
-MetaEngine::ThreadPool WorldSystem::tickPool(16);
-MetaEngine::ThreadPool WorldSystem::tickVisitedPool(16);
-MetaEngine::ThreadPool WorldSystem::updateRigidBodyHitboxPool(16);
+ME::thread_pool WorldSystem::tickPool(16);
+ME::thread_pool WorldSystem::tickVisitedPool(16);
+ME::thread_pool WorldSystem::updateRigidBodyHitboxPool(16);
 
 void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *audioEngine) { init(worldPath, w, h, target, audioEngine, new MaterialTestGenerator()); }
 
@@ -71,7 +71,7 @@ void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *a
     }
 
     this->target = target;
-    loadZone = {0, 0, w, h};
+    loadZone = {0, 0, (float)w, (float)h};
 
     noise.SetSeed(RNG_Next(global.game->RNG));
     noise.SetNoiseType(FastNoise::Perlin);
@@ -1874,8 +1874,8 @@ void World::tick() {
     tickCt++;
 
     for (int i = 0; i < 1; i++) {
-        int randX = rand() % tickZone.w;
-        int randY = rand() % tickZone.h;
+        int randX = rand() % (int)tickZone.w;
+        int randY = rand() % (int)tickZone.h;
         // setTile(tickZone.x + randX, tickZone.y + randY, MaterialInstance(&Materials::GENERIC_SOLID, 0x00ff00ff));
         physicsCheck(tickZone.x + randX, tickZone.y + randY);
     }
@@ -2197,10 +2197,10 @@ void World::tickObjects() {
     }
 
     int meshZoneSnap = 16;
-    int mzx = std::max((int)((minX - loadZone.x) / meshZoneSnap) * meshZoneSnap + loadZone.x, 0);
-    int mzy = std::max((int)((minY - loadZone.y) / meshZoneSnap) * meshZoneSnap + loadZone.y, 0);
-    meshZone = {mzx, mzy, std::min((int)ceil(((f64)maxX - mzx) / (f64)meshZoneSnap) * meshZoneSnap, width - mzx - 1),
-                std::min((int)ceil(((f64)maxY - mzy) / (f64)meshZoneSnap) * meshZoneSnap, height - mzy - 1)};
+    int mzx = std::max((int)((minX - loadZone.x) / meshZoneSnap) * meshZoneSnap + (int)loadZone.x, 0);
+    int mzy = std::max((int)((minY - loadZone.y) / meshZoneSnap) * meshZoneSnap + (int)loadZone.y, 0);
+    meshZone = {(float)mzx, (float)mzy, (float)std::min((int)ceil(((f64)maxX - mzx) / (f64)meshZoneSnap) * meshZoneSnap, width - mzx - 1),
+                (float)std::min((int)ceil(((f64)maxY - mzy) / (f64)meshZoneSnap) * meshZoneSnap, height - mzy - 1)};
 
     f32 timeStep = 33.0 / 1000.0;
 
@@ -2286,7 +2286,7 @@ void World::frame() {
     }
 
     for (int i = 0; i < readyToReadyToMerge.size(); i++) {
-        if (MetaEngine::future_is_ready(readyToReadyToMerge[i])) {
+        if (ME::future_is_ready(readyToReadyToMerge[i])) {
             Chunk *merge = readyToReadyToMerge[i].get();
 
             for (int j = 0; j < readyToMerge.size(); j++) {
@@ -2430,7 +2430,7 @@ void World::tickChunks() {
 
             if (changeX < 0) {
                 for (int i = 0; i < abs(changeX); i++) {
-                    if (((loadZone.x - changeX - i) + loadZone.w) % CHUNK_W == 0) {
+                    if ((((int)loadZone.x - changeX - i) + (int)loadZone.w) % CHUNK_W == 0) {
                         for (int y = -loadZone.y + tickZone.y - CHUNK_W * 4; y <= -loadZone.y + tickZone.h + CHUNK_H * 9; y += CHUNK_H) {
                             int cy = floor(y / (f32)CHUNK_H);
                             int cx = floor((-(loadZone.x - changeX - i) + tickZone.w) / (f32)CHUNK_W) + 1;
@@ -2442,7 +2442,7 @@ void World::tickChunks() {
                 }
 
                 for (int i = 0; i < abs(changeX); i++) {
-                    if (((loadZone.x - changeX - i - 1) + loadZone.w) % CHUNK_W == 0) {
+                    if ((((int)loadZone.x - changeX - i - 1) + (int)loadZone.w) % CHUNK_W == 0) {
                         for (int y = -loadZone.y + tickZone.y; y <= -loadZone.y + tickZone.h + CHUNK_H; y += CHUNK_H) {
                             int cy = floor(y / (f32)CHUNK_H);
                             int cx = ceil((-(loadZone.x - changeX + i)) / (f32)CHUNK_W);
@@ -2453,7 +2453,7 @@ void World::tickChunks() {
                 }
             } else if (changeX > 0) {
                 for (int i = 0; i < abs(changeX); i++) {
-                    if (((loadZone.x - changeX + i) + loadZone.w) % CHUNK_W == 0) {
+                    if ((((int)loadZone.x - changeX + i) + (int)loadZone.w) % CHUNK_W == 0) {
                         for (int y = -loadZone.y + tickZone.y - CHUNK_W * 4; y <= -loadZone.y + tickZone.h + CHUNK_H * 9; y += CHUNK_H) {
                             int cy = floor(y / (f32)CHUNK_H);
                             int cx = ceil((-(loadZone.x - changeX + i)) / (f32)CHUNK_W);
@@ -2465,7 +2465,7 @@ void World::tickChunks() {
                 }
 
                 for (int i = 0; i < abs(changeX); i++) {
-                    if (((loadZone.x - changeX + i + 1) + loadZone.w) % CHUNK_W == 0) {
+                    if ((((int)loadZone.x - changeX + i + 1) + (int)loadZone.w) % CHUNK_W == 0) {
                         for (int y = -loadZone.y + tickZone.y; y <= -loadZone.y + tickZone.h + CHUNK_H; y += CHUNK_H) {
                             int cy = floor(y / (f32)CHUNK_H);
                             int cx = floor((-(loadZone.x - changeX - i) + tickZone.w) / (f32)CHUNK_W) + 1;
@@ -2478,7 +2478,7 @@ void World::tickChunks() {
 
             if (changeY < 0) {
                 for (int i = 0; i < abs(changeY); i++) {
-                    if (((loadZone.y - changeY - i) + loadZone.h) % CHUNK_H == 0) {
+                    if ((((int)loadZone.y - changeY - i) + (int)loadZone.h) % CHUNK_H == 0) {
                         for (int x = -loadZone.x + tickZone.x - CHUNK_W * 4; x <= -loadZone.x + tickZone.w + CHUNK_W * 9; x += CHUNK_W) {
                             int cx = floor(x / (f32)CHUNK_W);
                             int cy = floor((-(loadZone.y - changeY - i) + tickZone.h) / (f32)CHUNK_H) + 1;
@@ -2490,7 +2490,7 @@ void World::tickChunks() {
                 }
 
                 for (int i = 0; i < abs(changeY); i++) {
-                    if (((loadZone.y - changeY - i - 1) + loadZone.h) % CHUNK_H == 0) {
+                    if ((((int)loadZone.y - changeY - i - 1) + (int)loadZone.h) % CHUNK_H == 0) {
                         for (int x = -loadZone.x + tickZone.x; x <= -loadZone.x + tickZone.w + CHUNK_W; x += CHUNK_W) {
                             int cx = floor(x / (f32)CHUNK_W);
                             int cy = ceil((-(loadZone.y - changeY + i)) / (f32)CHUNK_H);
@@ -2501,7 +2501,7 @@ void World::tickChunks() {
                 }
             } else if (changeY > 0) {
                 for (int i = 0; i < abs(changeY); i++) {
-                    if (((loadZone.y - changeY + i) + loadZone.h) % CHUNK_H == 0) {
+                    if ((((int)loadZone.y - changeY + i) + (int)loadZone.h) % CHUNK_H == 0) {
                         for (int x = -loadZone.x + tickZone.x - CHUNK_W * 4; x <= -loadZone.x + tickZone.w + CHUNK_W * 9; x += CHUNK_W) {
                             int cx = floor(x / (f32)CHUNK_W);
                             int cy = ceil((-(loadZone.y - changeY + i)) / (f32)CHUNK_H);
@@ -2513,7 +2513,7 @@ void World::tickChunks() {
                 }
 
                 for (int i = 0; i < abs(changeY); i++) {
-                    if (((loadZone.y - changeY + i + 1) + loadZone.h) % CHUNK_H == 0) {
+                    if ((((int)loadZone.y - changeY + i + 1) + (int)loadZone.h) % CHUNK_H == 0) {
                         for (int x = -loadZone.x + tickZone.x; x <= -loadZone.x + tickZone.w + CHUNK_W; x += CHUNK_W) {
                             int cx = floor(x / (f32)CHUNK_W);
                             int cy = floor((-(loadZone.y - changeY - i) + tickZone.h) / (f32)CHUNK_H) + 1;
@@ -3353,23 +3353,23 @@ void World::saveWorld() {
 
     this->metadata.save(this->worldName);
 
-    std::vector<std::future<void>> results = {};
+    // std::vector<std::future<void>> results = {};
 
     for (auto &p : this->chunkCache) {
         if (p.first == INT_MIN) continue;
         for (auto &p2 : p.second) {
             if (p2.first == INT_MIN) continue;
 
-            results.push_back(global.game->GameIsolate_.updateDirtyPool->push([&](int id) {
-                Chunk *m = p2.second;
-                this->unloadChunk(m);
-            }));
+            // results.push_back(global.game->GameIsolate_.updateDirtyPool->push([&](int id) {
+            Chunk *m = p2.second;
+            this->unloadChunk(m);
+            //}));
         }
     }
 
-    for (int i = 0; i < results.size(); i++) {
-        results[i].get();
-    }
+    // for (int i = 0; i < results.size(); i++) {
+    //     results[i].get();
+    // }
 }
 
 WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName, bool noSaveLoad) {

@@ -41,3 +41,5 @@ global_def.hd_objects_size = 3
 global_def.draw_ui_debug = false
 global_def.draw_imgui_debug =false
 global_def.draw_profiler = false
+global_def.draw_console = false
+global_def.draw_pack_editor = false

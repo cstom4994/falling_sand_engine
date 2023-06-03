@@ -12,9 +12,8 @@
 #include "chunk.hpp"
 #include "engine/audio/audio.h"
 #include "engine/core/const.h"
-#include "engine/core/cpp/2dhandle.h"
 #include "engine/core/macros.hpp"
-#include "engine/core/threadpool.hpp"
+#include "engine/core/utils/utility.hpp"
 #include "engine/ecs/ecs.hpp"
 #include "engine/physics/box2d.h"
 #include "engine/renderer/renderer_gpu.h"
@@ -54,9 +53,9 @@ METADOT_STRUCT(WorldMeta, worldName, lastOpenedVersion, lastOpenedTime);
 
 class WorldSystem {
 public:
-    static MetaEngine::ThreadPool tickPool;
-    static MetaEngine::ThreadPool tickVisitedPool;
-    static MetaEngine::ThreadPool updateRigidBodyHitboxPool;
+    static ME::thread_pool tickPool;
+    static ME::thread_pool tickVisitedPool;
+    static ME::thread_pool updateRigidBodyHitboxPool;
 };
 
 class World {
@@ -122,12 +121,12 @@ public:
     bool *lastActive = nullptr;
     bool *layer2Dirty = nullptr;
     bool *backgroundDirty = nullptr;
-    MetaEngine::CRect<int> loadZone;
-    MetaEngine::CRect<int> lastLoadZone{};
-    MetaEngine::CRect<int> tickZone{};
-    MetaEngine::CRect<int> meshZone{};
-    MetaEngine::CRect<int> lastMeshZone{};
-    MetaEngine::CRect<int> lastMeshLoadZone{};
+    ME_rect loadZone;
+    ME_rect lastLoadZone{};
+    ME_rect tickZone{};
+    ME_rect meshZone{};
+    ME_rect lastMeshZone{};
+    ME_rect lastMeshLoadZone{};
 
     MEvec2 gravity{};
     b2World *b2world = nullptr;

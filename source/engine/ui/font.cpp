@@ -141,7 +141,7 @@ ME_PRIVATE(GLint) ME_font_compile_shader(const std::string vs, const std::string
     return program;
 }
 
-ME_PRIVATE(void) compile_vbo(GLuint& dest_vb, GLuint& dest_ib, const ve_fontcache_vertex* verts, int nverts, const uint32_t* indices, int nindices) {
+ME_PRIVATE(void) compile_vbo(GLuint &dest_vb, GLuint &dest_ib, const ve_fontcache_vertex *verts, int nverts, const uint32_t *indices, int nindices) {
     if (dest_vb == 0 || dest_ib == 0) {
         GLuint buf[2];
         glGenBuffers(2, buf);
@@ -188,11 +188,8 @@ void ME_fontcache::ME_fontcache_drawcmd() {
 
     ME_profiler_scope_auto("Render.GUI.Font");
 
-    GLboolean last_enable_blend = glIsEnabled(GL_BLEND);
-    GLboolean last_enable_depth_test = glIsEnabled(GL_DEPTH_TEST);
-    GLboolean last_enable_mutisample = glIsEnabled(GL_MULTISAMPLE);
-    GLboolean last_enable_cull_face = glIsEnabled(GL_CULL_FACE);
-    GLboolean last_enable_framebuffer_srgb = glIsEnabled(GL_FRAMEBUFFER_SRGB);
+    // TODO: plz!!! optimize this method
+    ME_GL_STATE_BACKUP();
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -215,9 +212,9 @@ void ME_fontcache::ME_fontcache_drawcmd() {
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(ve_fontcache_vertex), 0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(ve_fontcache_vertex), (GLvoid*)(2 * sizeof(float)));
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, sizeof(ve_fontcache_vertex), (GLvoid *)(2 * sizeof(float)));
 
-    for (auto& dcall : drawlist->dcalls) {
+    for (auto &dcall : drawlist->dcalls) {
         if (dcall.pass == VE_FONTCACHE_FRAMEBUFFER_PASS_GLYPH) {
             glUseProgram(fontcache_shader_render_glyph);
             glBindFramebuffer(GL_FRAMEBUFFER, fontcache_fbo[0]);
@@ -254,10 +251,10 @@ void ME_fontcache::ME_fontcache_drawcmd() {
             glClear(GL_COLOR_BUFFER_BIT);
         }
         if (dcall.end_index - dcall.start_index == 0) continue;
-        glDrawElements(GL_TRIANGLES, dcall.end_index - dcall.start_index, GL_UNSIGNED_INT, (GLvoid*)(dcall.start_index * sizeof(uint32_t)));
+        glDrawElements(GL_TRIANGLES, dcall.end_index - dcall.start_index, GL_UNSIGNED_INT, (GLvoid *)(dcall.start_index * sizeof(uint32_t)));
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glDeleteBuffers(1, &vbo);
     glDeleteBuffers(1, &ibo);
@@ -265,26 +262,7 @@ void ME_fontcache::ME_fontcache_drawcmd() {
     ME_CHECK_GL_ERROR();
     ve_fontcache_flush_drawlist(&cache);
 
-    if (last_enable_blend)
-        glEnable(GL_BLEND);
-    else
-        glDisable(GL_BLEND);
-    if (last_enable_depth_test)
-        glEnable(GL_DEPTH_TEST);
-    else
-        glDisable(GL_DEPTH_TEST);
-    if (last_enable_mutisample)
-        glEnable(GL_MULTISAMPLE);
-    else
-        glDisable(GL_MULTISAMPLE);
-    if (last_enable_cull_face)
-        glEnable(GL_CULL_FACE);
-    else
-        glDisable(GL_CULL_FACE);
-    if (last_enable_framebuffer_srgb)
-        glEnable(GL_FRAMEBUFFER_SRGB);
-    else
-        glDisable(GL_FRAMEBUFFER_SRGB);
+    ME_GL_STATE_RESTORE();
 }
 
 #if 0
@@ -336,7 +314,7 @@ void test_font2( ve_font_id id )
 }
 #endif
 
-void ME_fontcache::ME_fontcache_load(const void* data, size_t data_size) {
+void ME_fontcache::ME_fontcache_load(const void *data, size_t data_size) {
     ve_fontcache_init(&cache);
     ve_fontcache_configure_snap(&cache, this->screen_w, this->screen_h);
     // ME_PRIVATE(std::vector<u8>) buffer;
@@ -344,7 +322,7 @@ void ME_fontcache::ME_fontcache_load(const void* data, size_t data_size) {
     basic_font = ve_fontcache_load(&cache, data, data_size, 42.0f);
 }
 
-void ME_fontcache::ME_fontcache_push(std::string& text, MEvec2 pos) {
+void ME_fontcache::ME_fontcache_push(std::string &text, MEvec2 pos) {
 
     ME_profiler_scope_auto("Render.GUI.Font.Post");
 

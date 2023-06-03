@@ -157,7 +157,7 @@ private:
     std::vector<FileRecord> fileRecords_;
 
     // IMPROVE: truncate when selectedFilename_.length() > inputNameBuf_.size() - 1
-    static constexpr size_t INPUT_NAME_BUF_SIZE = 512;
+    static constexpr size_t INPUT_NAME_BUF_SIZE = 128;
     std::unique_ptr<std::array<char, INPUT_NAME_BUF_SIZE>> inputNameBuf_;
 
     std::string openNewDirLabel_;

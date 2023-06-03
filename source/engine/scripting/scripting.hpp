@@ -7,7 +7,6 @@
 #include <map>
 #include <string>
 
-#include "engine/core/cpp/csingleton.h"
 #include "engine/core/cpp/struct.hpp"
 #include "engine/core/macros.hpp"
 #include "engine/core/utils/utility.hpp"
@@ -75,7 +74,7 @@ struct LuaCore {
 void print_error(lua_State *state, int result = 0);
 void script_runfile(const char *filePath);
 
-class Scripting : public MetaEngine::CSingleton<Scripting> {
+class Scripting : public ME::singleton<Scripting> {
 public:
     LuaCore *Lua;
 
@@ -89,7 +88,7 @@ public:
     void UpdateTick();
 
 private:
-    friend class MetaEngine::CSingleton<Scripting>;
+    friend class ME::singleton<Scripting>;
 };
 
 #endif

@@ -42,7 +42,7 @@ void BackgroundObject::Init() {
 }
 
 void NewBackgroundObject(std::string name, u32 solid, LuaWrapper::LuaRef table) {
-    auto &L = Scripting::GetSingletonPtr()->Lua->s_lua;
+    auto &L = Scripting::get_singleton_ptr()->Lua->s_lua;
     std::vector<LuaWrapper::LuaRef> b = table;
     std::vector<ME::ref<BackgroundLayer>> Layers;
 
@@ -69,7 +69,7 @@ BackgroundObject *BackgroundSystem::Get(std::string name) {
 void BackgroundSystem::Create() {
 
     // NewBackgroundObject("TEST_OVERWORLD");
-    auto &L = Scripting::GetSingletonPtr()->Lua->s_lua;
+    auto &L = Scripting::get_singleton_ptr()->Lua->s_lua;
 
     this->RegisterLua(L);
 

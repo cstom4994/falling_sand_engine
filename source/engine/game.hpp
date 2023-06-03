@@ -22,26 +22,31 @@
 #include "engine/core/cpp/utils.hpp"
 #include "engine/core/debug.hpp"
 #include "engine/core/io/filesystem.h"
+#include "engine/core/io/packer.hpp"
 #include "engine/core/macros.hpp"
 #include "engine/event/applicationevent.hpp"
 #include "engine/event/event.hpp"
 #include "engine/event/inputevent.hpp"
 #include "engine/game_utils/rng.h"
-#include "engine/physics/box2d.h"
-#include "game_basic.hpp"
-#include "game_datastruct.hpp"
-#include "game_resources.hpp"
-#include "game_shaders.hpp"
-// #include "libs/parallel_hashmap/phmap.h"
 #include "engine/meta/reflection.hpp"
+#include "engine/physics/box2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/scripting.hpp"
 #include "engine/ui/font.hpp"
 #include "engine/ui/imgui_layer.hpp"
 #include "engine/ui/ui.hpp"
+#include "game_basic.hpp"
+#include "game_datastruct.hpp"
+#include "game_resources.hpp"
+#include "game_shaders.hpp"
 #include "world.hpp"
 
 enum EnumGameState { MAIN_MENU, LOADING, INGAME };
+
+struct ME_assets_handle_t {
+    const u8 *data;
+    u32 size;
+};
 
 class Game {
 public:
@@ -98,12 +103,14 @@ public:
 
         SystemList systemList = {};
 
+        ME_pack_reader pack_reader;
+
         GlobalDEF globaldef;
         ME::scope<World> world;
         TexturePack *texturepack = nullptr;
 
-        MetaEngine::ThreadPool *updateDirtyPool = nullptr;
-        MetaEngine::ThreadPool *updateDirtyPool2 = nullptr;
+        ME::thread_pool *updateDirtyPool = nullptr;
+        ME::thread_pool *updateDirtyPool2 = nullptr;
     } GameIsolate_;
 
     struct {
@@ -192,6 +199,7 @@ public:
     int getAimSolidSurface(int dist);
     int getAimSurface(int dist);
     void quitToMainMenu();
+    ME_assets_handle_t get_assets(std::string path);
 };
 
 #endif

@@ -3,12 +3,10 @@
 
 #ifdef _WIN32
 
+#include <errno.h>
+#include <io.h>
 #include <stdlib.h>
 #include <windows.h>
-#include <io.h>
-#include <errno.h>
-
-static const char id[] = "$Id: tpl.c 107 2007-04-20 17:11:29Z thanson $";
 
 /**
  * @brief Map a file to a memory region

@@ -13,7 +13,7 @@
 ** the following conditions:
 **
 ** The above copyright notice and this permission notice shall be included
-** in all copies or substantial portions of the materials.
+** in all copies or substantial portions of the Materials.
 **
 ** THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 ** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF

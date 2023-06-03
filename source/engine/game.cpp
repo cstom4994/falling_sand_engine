@@ -21,12 +21,12 @@
 #include "engine/core/debug.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
+#include "engine/core/job.h"
 #include "engine/core/macros.hpp"
 #include "engine/core/mathlib.hpp"
 #include "engine/core/platform.h"
 #include "engine/core/profiler.hpp"
 #include "engine/core/sdl_wrapper.h"
-#include "engine/core/threadpool.hpp"
 #include "engine/core/utils/utility.hpp"
 #include "engine/engine.h"
 #include "engine/event/applicationevent.hpp"
@@ -57,6 +57,8 @@ Game::Game(int argc, char *argv[]) {
 
     // Start memory management including GC
     ME_mem_init(argc, argv);
+
+    ME_job::init();
 
     ME_profiler_init();
     ME_profiler_register_thread("Application thread");
@@ -111,10 +113,10 @@ int Game::init(int argc, char *argv[]) {
 
     // Initialize scripting system
     METADOT_INFO("Loading Script...");
-    Scripting::GetSingletonPtr()->Init();
+    Scripting::get_singleton_ptr()->Init();
 
     for (auto &s : GameIsolate_.systemList) {
-        s->RegisterLua(Scripting::GetSingletonPtr()->Lua->s_lua);
+        s->RegisterLua(Scripting::get_singleton_ptr()->Lua->s_lua);
         s->Create();
         // if (!s->getFlag(SystemFlags::SystemFlags_ImGui)) {
         //     s->Create();
@@ -123,6 +125,13 @@ int Game::init(int argc, char *argv[]) {
 
     // Test aseprite
     GameIsolate_.texturepack->testAse = LoadAsepriteTexture("data/assets/textures/Sprite-0003.ase");
+
+    ME_pack_result pack_result = ME_create_file_pack_reader("data/resources.pack", 0, 0, &GameIsolate_.pack_reader);
+
+    if (pack_result != SUCCESS_PACK_RESULT) {
+        METADOT_ERROR("%d", pack_result);
+        ME_ASSERT_E(0);
+    }
 
     // Initialize the rng seed
     this->RNG = RNG_Create();
@@ -174,11 +183,12 @@ int Game::init(int argc, char *argv[]) {
 
     fontcache.ME_fontcache_init();
 
-    // fontcache.ME_fontcache_load();
+    auto ui_font = get_assets(".\\fonts\\fusion-pixel.ttf");
+    fontcache.ME_fontcache_load(ui_font.data, ui_font.size);
 
     // init threadpools
-    GameIsolate_.updateDirtyPool = new MetaEngine::ThreadPool(4);
-    GameIsolate_.updateDirtyPool2 = new MetaEngine::ThreadPool(2);
+    GameIsolate_.updateDirtyPool = new ME::thread_pool(4);
+    GameIsolate_.updateDirtyPool2 = new ME::thread_pool(2);
 
     return this->run(argc, argv);
 }
@@ -904,8 +914,8 @@ int Game::run(int argc, char *argv[]) {
         if (GameIsolate_.globaldef.tick_world) updateFrameEarly();
 
         while (Time.now - Time.lastTickTime > (1000.0f / Time.maxTps)) {
-            Scripting::GetSingletonPtr()->UpdateTick();
-            Scripting::GetSingletonPtr()->Update();
+            Scripting::get_singleton_ptr()->UpdateTick();
+            Scripting::get_singleton_ptr()->Update();
             if (GameIsolate_.globaldef.tick_world) {
                 tick();
             }
@@ -933,9 +943,12 @@ int Game::run(int argc, char *argv[]) {
         renderLate();
         Render.target = Render.realTarget;
 
-        Scripting::GetSingletonPtr()->UpdateRender();
+        Scripting::get_singleton_ptr()->UpdateRender();
 
-        // ME_Rect rct{0, 0, 150, 150};
+        std::string test_text = "hello";
+        fontcache.ME_fontcache_push(test_text, {0.5, 0.5});
+
+        // ME_rect rct{0, 0, 150, 150};
         // RenderTextureRect(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
 
         // Update UI
@@ -944,8 +957,6 @@ int Game::run(int argc, char *argv[]) {
 
         R_ActivateShaderProgram(0, NULL);
         R_FlushBlitBuffer();
-
-        fontcache.ME_fontcache_drawcmd();
 
         if (GameIsolate_.globaldef.draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
 
@@ -1036,6 +1047,8 @@ int Game::run(int argc, char *argv[]) {
 
         GameIsolate_.ui->UIRendererDrawImGui();
 
+        fontcache.ME_fontcache_drawcmd();
+
         // render fade in/out
         if (fadeInWaitFrames > 0) {
             fadeInWaitFrames--;
@@ -1095,10 +1108,12 @@ int Game::exit() {
 
     fontcache.ME_fontcache_end();
 
-    Scripting::GetSingletonPtr()->End();
-    Scripting::Delete();
+    Scripting::get_singleton_ptr()->End();
+    Scripting::clean();
 
     ReleaseGameData();
+
+    ME_destroy_pack_reader(GameIsolate_.pack_reader);
 
     delete[] objectDelete;
 
@@ -1467,7 +1482,7 @@ void Game::updateFrameEarly() {
 
         // update GameIsolate_.world->tickZone
 
-        GameIsolate_.world->tickZone = {CHUNK_W, CHUNK_H, GameIsolate_.world->width - CHUNK_W * 2, GameIsolate_.world->height - CHUNK_H * 2};
+        GameIsolate_.world->tickZone = {CHUNK_W, CHUNK_H, (float)GameIsolate_.world->width - CHUNK_W * 2, (float)GameIsolate_.world->height - CHUNK_H * 2};
         if (GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w > GameIsolate_.world->width) {
             GameIsolate_.world->tickZone.x = GameIsolate_.world->width - GameIsolate_.world->tickZone.w;
         }
@@ -1559,7 +1574,7 @@ void Game::tick() {
             R_Target *tgtLQ = cur->back ? TexturePack_.textureObjectsBack->target : TexturePack_.textureObjectsLQ->target;
             int scaleObjTex = GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1;
 
-            ME_Rect r = {x * scaleObjTex, y * scaleObjTex, (f32)cur->surface->w * scaleObjTex, (f32)cur->surface->h * scaleObjTex};
+            ME_rect r = {x * scaleObjTex, y * scaleObjTex, (f32)cur->surface->w * scaleObjTex, (f32)cur->surface->h * scaleObjTex};
 
             if (cur->texNeedsUpdate) {
                 if (cur->texture != nullptr) {
@@ -2726,8 +2741,8 @@ void Game::renderLate() {
             ME_Color col = {static_cast<u8>((bg->solid >> 16) & 0xff), static_cast<u8>((bg->solid >> 8) & 0xff), static_cast<u8>((bg->solid >> 0) & 0xff), 0xff};
             R_ClearColor(Render.target, col);
 
-            ME_Rect *dst = new ME_Rect;
-            ME_Rect *src = new ME_Rect;
+            ME_rect *dst = new ME_rect;
+            ME_rect *src = new ME_rect;
 
             f32 arX = (f32)Screen.windowWidth / (bg->layers[0]->surface[0]->w);
             f32 arY = (f32)Screen.windowHeight / (bg->layers[0]->surface[0]->h);
@@ -2801,7 +2816,7 @@ void Game::renderLate() {
             delete src;
         }
 
-        ME_Rect r1 = ME_Rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * Screen.gameScale),
+        ME_rect r1 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * Screen.gameScale),
                              (f32)(GameIsolate_.world->height * Screen.gameScale)};
         R_SetBlendMode(TexturePack_.textureBackground, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureBackground, NULL, Render.target, &r1);
@@ -2972,9 +2987,9 @@ void Game::renderOverlays() {
     snprintf(fpsText, sizeof(fpsText), "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, Time.feelsLikeFps);
     MetaEngine::Drawing::drawText(fpsText, {255, 255, 255, 255}, Screen.windowWidth - ImGui::CalcTextSize(fpsText).x, 0);
 
-    ME_Rect r1 = ME_Rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * Screen.gameScale),
+    ME_rect r1 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * Screen.gameScale),
                          (f32)(GameIsolate_.world->height * Screen.gameScale)};
-    ME_Rect r2 = ME_Rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale),
+    ME_rect r2 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale),
                          (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale), (f32)(GameIsolate_.world->tickZone.w * Screen.gameScale),
                          (f32)(GameIsolate_.world->tickZone.h * Screen.gameScale)};
 
@@ -2984,7 +2999,7 @@ void Game::renderOverlays() {
     }
 
     if (GameIsolate_.globaldef.draw_load_zones) {
-        ME_Rect r2m = ME_Rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->meshZone.x * Screen.gameScale),
+        ME_rect r2m = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->meshZone.x * Screen.gameScale),
                               (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->meshZone.y * Screen.gameScale), (f32)(GameIsolate_.world->meshZone.w * Screen.gameScale),
                               (f32)(GameIsolate_.world->meshZone.h * Screen.gameScale)};
 
@@ -2998,20 +3013,20 @@ void Game::renderOverlays() {
         ME_Color col = {0xff, 0x00, 0x00, 0x20};
         R_SetShapeBlendMode(R_BLEND_NORMAL);
 
-        ME_Rect r3 = ME_Rect{(f32)(0), (f32)(0), (f32)((global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale)), (f32)(Screen.windowHeight)};
+        ME_rect r3 = ME_rect{(f32)(0), (f32)(0), (f32)((global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale)), (f32)(Screen.windowHeight)};
         R_Rectangle2(Render.target, r3, col);
 
-        ME_Rect r4 = ME_Rect{
+        ME_rect r4 = ME_rect{
                 (f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale + GameIsolate_.world->tickZone.w * Screen.gameScale), (f32)(0),
                 (f32)((Screen.windowWidth) - (global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale + GameIsolate_.world->tickZone.w * Screen.gameScale)),
                 (f32)(Screen.windowHeight)};
         R_Rectangle2(Render.target, r4, col);
 
-        ME_Rect r5 = ME_Rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale), (f32)(0),
+        ME_rect r5 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale), (f32)(0),
                              (f32)(GameIsolate_.world->tickZone.w * Screen.gameScale), (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale)};
         R_Rectangle2(Render.target, r5, col);
 
-        ME_Rect r6 = ME_Rect{
+        ME_rect r6 = ME_rect{
                 (f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * Screen.gameScale),
                 (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * Screen.gameScale + GameIsolate_.world->tickZone.h * Screen.gameScale),
                 (f32)(GameIsolate_.world->tickZone.w * Screen.gameScale),
@@ -3019,7 +3034,7 @@ void Game::renderOverlays() {
         R_Rectangle2(Render.target, r6, col);
 
         col = {0x00, 0xff, 0x00, 0xff};
-        ME_Rect r7 = ME_Rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->width / 2 * Screen.gameScale - (Screen.windowWidth / 3 * Screen.gameScale / 2)),
+        ME_rect r7 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->width / 2 * Screen.gameScale - (Screen.windowWidth / 3 * Screen.gameScale / 2)),
                              (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->height / 2 * Screen.gameScale - (Screen.windowHeight / 3 * Screen.gameScale / 2)),
                              (f32)(Screen.windowWidth / 3 * Screen.gameScale), (f32)(Screen.windowHeight / 3 * Screen.gameScale)};
         R_Rectangle2(Render.target, r7, col);
@@ -3184,7 +3199,7 @@ void Game::renderOverlays() {
         R_Rectangle(Render.target, centerX - chSize * CHUNK_UNLOAD_DIST + chSize, centerY - chSize * CHUNK_UNLOAD_DIST + chSize, centerX + chSize * CHUNK_UNLOAD_DIST + chSize,
                     centerY + chSize * CHUNK_UNLOAD_DIST + chSize, {0xcc, 0xcc, 0xcc, 0xff});
 
-        ME_Rect r = {0, 0, (f32)chSize, (f32)chSize};
+        ME_rect r = {0, 0, (f32)chSize, (f32)chSize};
         for (auto &p : GameIsolate_.world->chunkCache) {
             if (p.first == INT_MIN) continue;
             int cx = p.first;
@@ -3554,6 +3569,24 @@ void Game::quitToMainMenu() {
     R_UpdateImageBytes(TexturePack_.textureCells, NULL, &TexturePack_.pixelsCells[0], GameIsolate_.world->width * 4);
 
     gameUI.visible_mainmenu = true;
+}
+
+ME_assets_handle_t Game::get_assets(std::string path) {
+    ME_pack_result pack_result;
+
+    ME_assets_handle_t handle;
+
+    pack_result = ME_read_pack_path_item_data(GameIsolate_.pack_reader, path.c_str(), &handle.data, &handle.size);
+
+    if (pack_result != SUCCESS_PACK_RESULT) {
+        ME_destroy_pack_reader(GameIsolate_.pack_reader);
+        METADOT_ERROR("%d", pack_result);
+        ME_ASSERT_E(0);
+    }
+
+    ME_ASSERT_E(handle.data);
+
+    return handle;
 }
 
 int Game::getAimSolidSurface(int dist) {

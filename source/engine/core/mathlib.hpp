@@ -28,11 +28,6 @@ typedef struct U16Point {
     u16 y;
 } U16Point;
 
-typedef struct ME_Rect {
-    float x, y;
-    float w, h;
-} ME_Rect;
-
 #define VECTOR3_ZERO \
     MEvec3 { 0.0f, 0.0f, 0.0f }
 #define VECTOR3_FORWARD \
@@ -1862,7 +1857,7 @@ using Ray = ME_Ray;
 using Raycast = ME_Raycast;
 using Circle = ME_Circle;
 using Aabb = ME_Aabb;
-using Rect = ME_Rect;
+using Rect = ME_rect;
 using Poly = ME_Poly;
 using Capsule = ME_Capsule;
 using Manifold = ME_Manifold;
