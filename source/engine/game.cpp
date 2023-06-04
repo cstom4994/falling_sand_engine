@@ -36,6 +36,8 @@
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/scripting.hpp"
+#include "engine/ui/surface.h"
+#include "engine/ui/surface_gl.h"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
@@ -169,22 +171,30 @@ int Game::init(int argc, char *argv[]) {
         metadot_set_displaymode(engine_displaymode::FULLSCREEN);
     }
 
-    int w;
-    int h;
-    SDL_GetWindowSize(Core.window, &w, &h);
-    R_SetWindowResolution(w, h);
+    SDL_GetWindowSize(Core.window, &Screen.windowWidth, &Screen.windowHeight);
+    R_SetWindowResolution(Screen.windowWidth, Screen.windowHeight);
     R_ResetProjection(Render.realTarget);
-    ResolutionChanged(w, h);
+    ResolutionChanged(Screen.windowWidth, Screen.windowHeight);
 
     metadot_set_VSync(false);
     metadot_set_minimize_onlostfocus(false);
 
-    fontcache.resize({(float)w, (float)h});
+    fontcache.resize({(float)Screen.windowWidth, (float)Screen.windowHeight});
 
     fontcache.ME_fontcache_init();
 
     auto ui_font = get_assets(".\\fonts\\fusion-pixel.ttf");
     fontcache.ME_fontcache_load(ui_font.data, ui_font.size);
+
+    ME_profiler_graph_init(&this->fps, GRAPH_RENDER_FPS, "Frame Time");
+    ME_profiler_graph_init(&this->cpuGraph, GRAPH_RENDER_MS, "CPU Time");
+
+    surface = ME_surface_CreateGL3(ME_SURFACE_ANTIALIAS | ME_SURFACE_STENCIL_STROKES | ME_SURFACE_DEBUG);
+
+    fontNormal = ME_surface_CreateFont(surface, "fusion-pixel", "data/assets/fonts/fusion-pixel.ttf");
+    if (fontNormal == -1) {
+        METADOT_ERROR("Could not add font fusion-pixel.");
+    }
 
     // init threadpools
     GameIsolate_.updateDirtyPool = new ME::thread_pool(4);
@@ -391,6 +401,14 @@ void Game::createTexture() {
 
 int Game::run(int argc, char *argv[]) {
 
+    const float px_ratio = 1.0f;  // spoilers: it's 1.0f
+
+    ME_rect fbo_simple_rect = {65.0f, 10.0f, 50.0f, 50.0f};  // Blitting Destination
+    R_Image *fbo_simple = generateFBO(surface, fbo_simple_rect.w, fbo_simple_rect.h, surface_test_1);
+
+    ME_rect fbo_complex_rect = {0.0f, 0.0f, Screen.windowWidth, Screen.windowHeight};  // Blitting Destination
+    R_Image *fbo_complex = generateFBO(surface, fbo_complex_rect.w, fbo_complex_rect.h, surface_test_2);
+
     // start loading chunks
     METADOT_INFO("Queueing chunk loading...");
     for (int x = -CHUNK_W * 4; x < GameIsolate_.world->width + CHUNK_W * 4; x += CHUNK_W) {
@@ -426,6 +444,8 @@ int Game::run(int argc, char *argv[]) {
     fadeInStart = ME_gettime();
     fadeInLength = 250;
     fadeInWaitFrames = 5;
+
+    float arc_radius = 0.0f;
 
     // game loop
     while (this->running) {
@@ -945,8 +965,8 @@ int Game::run(int argc, char *argv[]) {
 
         Scripting::get_singleton_ptr()->UpdateRender();
 
-        std::string test_text = "hello";
-        fontcache.ME_fontcache_push(test_text, {0.5, 0.5});
+        // std::string test_text = "hello";
+        // fontcache.ME_fontcache_push(test_text, {0.5, 0.5});
 
         // ME_rect rct{0, 0, 150, 150};
         // RenderTextureRect(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
@@ -954,6 +974,26 @@ int Game::run(int argc, char *argv[]) {
         // Update UI
         GameIsolate_.ui->UIRendererUpdate();
         GameIsolate_.ui->UIRendererDraw();
+
+        arc_radius += 1.0f;
+
+        // R_BlitRectX(fbo_complex, NULL, Render.target, &fbo_complex_rect, 0.0f, 0.0f, 0.0f,
+        //             R_FLIP_VERTICAL);  // IMPORTANT: GPU_BlitRectX is required to use GPU_FLIP_VERTICAL which is required for MEsurface_GLframebuffer data (why???)
+        // R_BlitRectX(fbo_simple, NULL, Render.target, &fbo_simple_rect, 0.0f, 0.0f, 0.0f,
+        //             R_FLIP_VERTICAL);  // IMPORTANT: GPU_BlitRectX is required to use GPU_FLIP_VERTICAL which is required for MEsurface_GLframebuffer data (why???)
+
+        R_FlushBlitBuffer();  // IMPORTANT: run R_FlushBlitBuffer before BeginFrame
+        ME_surface_BeginFrame(surface, Screen.windowWidth, Screen.windowHeight, px_ratio);
+        // surface_test_1(surface, 10.0f, 10.0f, fbo_simple_rect.w, fbo_simple_rect.h);
+        // surface_test_3(surface, Screen.windowWidth / 2, Screen.windowHeight / 2, arc_radius);
+
+        if (GameIsolate_.globaldef.draw_debug_stats) {
+            ME_profiler_graph_render(this->surface, Screen.windowWidth - 210, Screen.windowHeight - 45, &this->fps);
+            ME_profiler_graph_render(this->surface, Screen.windowWidth - 210 - 200 - 5, Screen.windowHeight - 45, &this->cpuGraph);
+        }
+
+        ME_surface_EndFrame(surface);
+        R_ResetRendererState();
 
         R_ActivateShaderProgram(0, NULL);
         R_FlushBlitBuffer();
@@ -1090,6 +1130,9 @@ int Game::run(int argc, char *argv[]) {
         EngineUpdateEnd();
     }
 
+    R_FreeImage(fbo_simple);
+    R_FreeImage(fbo_complex);
+
     return exit();
 }
 
@@ -1105,6 +1148,8 @@ int Game::exit() {
     for (backwardIterator = GameIsolate_.systemList.rbegin(); backwardIterator != GameIsolate_.systemList.rend(); backwardIterator++) {
         backwardIterator->get()->Destory();
     }
+
+    ME_surface_DeleteGL3(this->surface);
 
     fontcache.ME_fontcache_end();
 
@@ -2514,16 +2559,26 @@ void Game::tickPlayer() {
 }
 
 void Game::tickProfiler() {
+    {
+        ME_profiler_scope_auto("Profiler");
 
-    if (global.game->GameIsolate_.globaldef.draw_profiler) {
-        static profiler_frame data;
-        ME_profiler_get_frame(&data);
+        float gpuTimes[3];
+        int i, n;
 
-        // // if (g_multi) ProfilerDrawFrameNavigation(g_frameInfos.data(), g_frameInfos.size());
+        if (global.game->GameIsolate_.globaldef.draw_profiler) {
+            static profiler_frame frame_data;
+            ME_profiler_get_frame(&frame_data);
+            // // if (g_multi) ProfilerDrawFrameNavigation(g_frameInfos.data(), g_frameInfos.size());
+            static char buffer[10 * 1024];
+            profiler_draw_frame(&frame_data, buffer, 10 * 1024);
+            // ProfilerDrawStats(&data);
+        }
 
-        static char buffer[10 * 1024];
-        profiler_draw_frame(&data, buffer, 10 * 1024);
-        // // ProfilerDrawStats(&data);
+        // Measure the CPU time taken excluding swap buffers (as the swap may wait for GPU)
+        float cpuTime = ME_gettime() - Time.now;
+
+        ME_profiler_graph_update(&fps, Time.deltaTime);
+        ME_profiler_graph_update(&cpuGraph, cpuTime);
     }
 
     // if (MemCurrentUsageBytes() >= Core.max_mem) {
@@ -2645,16 +2700,18 @@ void Game::renderEarly() {
 
             Time.lastLoadingTick = Time.now;
         } else {
-            // #ifdef _WIN32
-            //             Sleep(5);
-            // #else
-            //             sleep(5 / 1000.0f);
-            // #endif
+#ifdef _WIN32
+            Sleep(5);
+#else
+            sleep(5 / 1000.0f);
+#endif
         }
         R_ActivateShaderProgram(0, NULL);
         R_BlitRect(TexturePack_.loadingTexture, NULL, Render.target, NULL);
 
-        MetaEngine::Drawing::drawText("Loading...", {255, 255, 255, 255}, Screen.windowWidth / 2, Screen.windowHeight / 2 - 32);
+        // MetaEngine::Drawing::drawText("Loading...", {255, 255, 255, 255}, Screen.windowWidth / 2, Screen.windowHeight / 2 - 32);
+        std::string test_text = "Loading...";
+        fontcache.ME_fontcache_push(test_text, {0.05, 0.05});
 
     } else {
         // render entities with LERP

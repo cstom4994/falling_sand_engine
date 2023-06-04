@@ -14,6 +14,8 @@
 #include "engine/core/platform.h"
 // #include "engine/ui/surface.h"
 
+struct MEsurface_context;
+
 // Structures describing profiling data
 typedef struct profiler_scope_stats {
     u64 m_inclusiveTime;
@@ -240,17 +242,17 @@ enum GraphrenderStyle {
     GRAPH_RENDER_PERCENT,
 };
 
-struct PerfGraph {
+struct profiler_graph {
     int style;
     char name[32];
     float values[GRAPH_HISTORY_COUNT];
     int head;
 };
-typedef struct PerfGraph PerfGraph;
+typedef struct profiler_graph profiler_graph;
 
-void ME_profiler_graph_init(PerfGraph *fps, int style, const char *name);
-void ME_profiler_graph_update(PerfGraph *fps, float frameTime);
-// void ME_profiler_graph_render(MEsurface_context *surface, float x, float y, PerfGraph *fps);
-float ME_profiler_graph_avg(PerfGraph *fps);
+void ME_profiler_graph_init(profiler_graph *fps, int style, const char *name);
+void ME_profiler_graph_update(profiler_graph *fps, float frameTime);
+void ME_profiler_graph_render(MEsurface_context *surface, float x, float y, profiler_graph *fps);
+float ME_profiler_graph_avg(profiler_graph *fps);
 
 #endif

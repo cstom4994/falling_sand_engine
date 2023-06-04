@@ -41,6 +41,8 @@
 #include "game_shaders.hpp"
 #include "world.hpp"
 
+struct MEsurface_context;
+
 enum EnumGameState { MAIN_MENU, LOADING, INGAME };
 
 struct ME_assets_handle_t {
@@ -59,6 +61,9 @@ public:
 
     DebugDraw *debugDraw;
     ME_fontcache fontcache;
+
+    MEsurface_context *surface;
+    int fontNormal;
 
     i32 ent_prevLoadZoneX = 0;
     i32 ent_prevLoadZoneY = 0;
@@ -84,6 +89,9 @@ public:
 
     f32 accLoadX = 0;
     f32 accLoadY = 0;
+
+    // profiler
+    profiler_graph fps, cpuGraph;
 
     i64 fadeInStart = 0;
     i64 fadeInLength = 0;

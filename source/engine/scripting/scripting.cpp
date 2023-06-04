@@ -17,7 +17,6 @@
 #include "engine/core/io/filesystem.h"
 #include "engine/core/memory.h"
 #include "engine/core/utils/utility.hpp"
-#include "engine/engine_funcwrap.hpp"
 #include "engine/game.hpp"
 #include "engine/game_datastruct.hpp"
 #include "engine/game_resources.hpp"
@@ -26,12 +25,17 @@
 #include "engine/scripting/ffi/ffi.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/lua_wrapper_ext.hpp"
+#include "engine/scripting/wrap/wrap_engine.hpp"
 #include "engine/ui/imgui_impl.hpp"
 
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 
 extern void LoadImGuiBindings(lua_State *l);
+
+// in warp_surface.cpp
+extern int luaopen_surface(lua_State *L);
+extern int luaopen_surface_color(lua_State *L);
 
 IMPLENGINE();
 
@@ -224,6 +228,9 @@ static void InitLua(LuaCore *lc) {
     metadot_bind_cstructcore(lc->L);
     metadot_bind_cstructtest(lc->L);
 
+    ME_preload_auto(lc->L, luaopen_surface, "_ME_surface");
+    ME_preload_auto(lc->L, luaopen_surface_color, "_ME_surface_color");
+
     LoadImGuiBindings(lc->L);
 
     // ME_preload_auto(lc->L, luaopen_lpeg, "lpeg");
@@ -293,14 +300,6 @@ void script_runfile(const char *filePath) {
     }
 }
 
-static void InitMeo() {}
-
-static void EndMeo() {}
-
-static void UpdateMeo(){
-
-}
-
 #if 0
 {
 
@@ -322,7 +321,6 @@ void Scripting::Init() {
 }
 
 void Scripting::End() {
-
     EndLua(Lua);
     delete Lua;
 }

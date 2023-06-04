@@ -29,11 +29,6 @@ ME_memory_alloc_frame_t* ME_memory_alloc_frame_create(void* memory_chunk, size_t
 void* ME_memory_alloc_frame_alloc(ME_memory_alloc_frame_t* frame, size_t size);
 void ME_memory_alloc_frame_free(ME_memory_alloc_frame_t* frame);
 
-typedef struct ME_memory_alloc_heap_t ME_memory_alloc_heap_t;
-ME_memory_alloc_heap_t* ME_memory_alloc_heap_create(void* memory_chunk, size_t size);
-void* ME_memory_alloc_heap_alloc(ME_memory_alloc_heap_t* frame, size_t size);
-void ME_memory_alloc_heap_free(ME_memory_alloc_heap_t* frame);
-
 // define these to your own user definition as necessary
 #ifndef ME_MALLOC
 #define ME_MALLOC(size) ME_memory_alloc_leak_check_alloc((size), (char*)__FILE__, __LINE__)

@@ -13,11 +13,11 @@
 #include "engine/core/mathlib.hpp"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/ecs/ecs.hpp"
-#include "game_basic.hpp"
 #include "engine/meta/static_relfection.hpp"
 #include "engine/physics/box2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
+#include "game_basic.hpp"
 
 struct Chunk;
 struct Populator;

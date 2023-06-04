@@ -163,7 +163,7 @@ typedef struct FONSttFontImpl FONSttFontImpl;
 // static void fons__tmpfree(void* ptr, void* up);
 // #define STBTT_malloc(x,u)    fons__tmpalloc(x,u)
 // #define STBTT_free(x,u)      fons__tmpfree(x,u)
-#include "external/external/stb_truetype.h"
+#include "libs/external/stb_truetype.h"
 
 struct FONSttFontImpl {
     stbtt_fontinfo font;
@@ -1297,8 +1297,8 @@ static void fons__blur(FONScontext* stash, unsigned char* dst, int w, int h, int
     fons__blurCols(dst, w, h, dstStride, alpha);
     fons__blurRows(dst, w, h, dstStride, alpha);
     fons__blurCols(dst, w, h, dstStride, alpha);
-    //	fons__blurrows(dst, w, h, dstStride, alpha);
-    //	fons__blurcols(dst, w, h, dstStride, alpha);
+    //  fons__blurrows(dst, w, h, dstStride, alpha);
+    //  fons__blurcols(dst, w, h, dstStride, alpha);
 }
 
 static FONSglyph* fons__getGlyph(FONScontext* stash, FONSfont* font, unsigned int codepoint, short isize, short iblur, int bitmapOption) {
@@ -1412,7 +1412,7 @@ static FONSglyph* fons__getGlyph(FONScontext* stash, FONSfont* font, unsigned in
     }
 
     // Debug code to color the glyph background
-    /*	unsigned char* fdst = &stash->texData[glyph->x0 + glyph->y0 * stash->params.width];
+    /*  unsigned char* fdst = &stash->texData[glyph->x0 + glyph->y0 * stash->params.width];
         for (y = 0; y < gh; y++) {
             for (x = 0; x < gw; x++) {
                 int a = (int)fdst[x+y*stash->params.width] + 20;

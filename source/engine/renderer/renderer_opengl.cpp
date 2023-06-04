@@ -951,6 +951,8 @@ R_Target *Init(R_Renderer *renderer, R_RendererID renderer_request, Uint16 w, Ui
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
 
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);  // SurfaceUI _REQUIRES_ a stencil buffer
+
     renderer->requested_id = renderer_request;
 
     window = NULL;

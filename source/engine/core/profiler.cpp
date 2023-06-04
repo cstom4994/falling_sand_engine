@@ -14,6 +14,7 @@
 #include "engine/core/platform.h"
 #include "engine/core/utils/utility.hpp"
 #include "engine/renderer/gpu.hpp"
+#include "engine/ui/surface.h"
 #include "libs/lz4/lz4.h"
 
 u64 profiler_get_clock_frequency();
@@ -650,19 +651,19 @@ void profiler_context::get_frame_data(profiler_frame *_data) {
 
 }  // namespace ME::profiler
 
-void ME_profiler_graph_init(PerfGraph *fps, int style, const char *name) {
-    memset(fps, 0, sizeof(PerfGraph));
+void ME_profiler_graph_init(profiler_graph *fps, int style, const char *name) {
+    memset(fps, 0, sizeof(profiler_graph));
     fps->style = style;
     strncpy(fps->name, name, sizeof(fps->name));
     fps->name[sizeof(fps->name) - 1] = '\0';
 }
 
-void ME_profiler_graph_update(PerfGraph *fps, float frameTime) {
+void ME_profiler_graph_update(profiler_graph *fps, float frameTime) {
     fps->head = (fps->head + 1) % GRAPH_HISTORY_COUNT;
     fps->values[fps->head] = frameTime;
 }
 
-float ME_profiler_graph_avg(PerfGraph *fps) {
+float ME_profiler_graph_avg(profiler_graph *fps) {
     int i;
     float avg = 0;
     for (i = 0; i < GRAPH_HISTORY_COUNT; i++) {
@@ -671,87 +672,87 @@ float ME_profiler_graph_avg(PerfGraph *fps) {
     return avg / (float)GRAPH_HISTORY_COUNT;
 }
 
-// void ME_profiler_graph_render(MEsurface_context *surface, float x, float y, PerfGraph *fps) {
-//     int i;
-//     float avg, w, h;
-//     char str[64];
-//
-//     avg = ME_profiler_graph_avg(fps);
-//
-//     w = 200;
-//     h = 35;
-//
-//     ME_surface_BeginPath(surface);
-//     ME_surface_Rect(surface, x, y, w, h);
-//     ME_surface_FillColor(surface, ME_surface_RGBA(0, 0, 0, 128));
-//     ME_surface_Fill(surface);
-//
-//     ME_surface_BeginPath(surface);
-//     ME_surface_MoveTo(surface, x, y + h);
-//     if (fps->style == GRAPH_RENDER_FPS) {
-//         for (i = 0; i < GRAPH_HISTORY_COUNT; i++) {
-//             float v = 1.0f / (0.00001f + fps->values[(fps->head + i) % GRAPH_HISTORY_COUNT]);
-//             float vx, vy;
-//             if (v > 250.0f) v = 250.0f;
-//             vx = x + ((float)i / (GRAPH_HISTORY_COUNT - 1)) * w;
-//             vy = y + h - ((v / 250.0f) * h);
-//             ME_surface_LineTo(surface, vx, vy);
-//         }
-//     } else if (fps->style == GRAPH_RENDER_PERCENT) {
-//         for (i = 0; i < GRAPH_HISTORY_COUNT; i++) {
-//             float v = fps->values[(fps->head + i) % GRAPH_HISTORY_COUNT] * 1.0f;
-//             float vx, vy;
-//             if (v > 100.0f) v = 100.0f;
-//             vx = x + ((float)i / (GRAPH_HISTORY_COUNT - 1)) * w;
-//             vy = y + h - ((v / 100.0f) * h);
-//             ME_surface_LineTo(surface, vx, vy);
-//         }
-//     } else {
-//         for (i = 0; i < GRAPH_HISTORY_COUNT; i++) {
-//             float v = fps->values[(fps->head + i) % GRAPH_HISTORY_COUNT] * 1000.0f;
-//             float vx, vy;
-//             if (v > 20.0f) v = 20.0f;
-//             vx = x + ((float)i / (GRAPH_HISTORY_COUNT - 1)) * w;
-//             vy = y + h - ((v / 20.0f) * h);
-//             ME_surface_LineTo(surface, vx, vy);
-//         }
-//     }
-//     ME_surface_LineTo(surface, x + w, y + h);
-//     ME_surface_FillColor(surface, ME_surface_RGBA(255, 192, 0, 128));
-//     ME_surface_Fill(surface);
-//
-//     ME_surface_FontFace(surface, "fusion-pixel");
-//
-//     if (fps->name[0] != '\0') {
-//         ME_surface_FontSize(surface, 12.0f);
-//         ME_surface_TextAlign(surface, ME_SURFACE_ALIGN_LEFT | ME_SURFACE_ALIGN_TOP);
-//         ME_surface_FillColor(surface, ME_surface_RGBA(240, 240, 240, 192));
-//         ME_surface_Text(surface, x + 3, y + 3, fps->name, NULL);
-//     }
-//
-//     if (fps->style == GRAPH_RENDER_FPS) {
-//         ME_surface_FontSize(surface, 15.0f);
-//         ME_surface_TextAlign(surface, ME_SURFACE_ALIGN_RIGHT | ME_SURFACE_ALIGN_TOP);
-//         ME_surface_FillColor(surface, ME_surface_RGBA(240, 240, 240, 255));
-//         sprintf(str, "%.2f FPS", 1.0f / avg);
-//         ME_surface_Text(surface, x + w - 3, y + 3, str, NULL);
-//
-//         ME_surface_FontSize(surface, 13.0f);
-//         ME_surface_TextAlign(surface, ME_SURFACE_ALIGN_RIGHT | ME_SURFACE_ALIGN_BASELINE);
-//         ME_surface_FillColor(surface, ME_surface_RGBA(240, 240, 240, 160));
-//         sprintf(str, "%.2f ms", avg * 1000.0f);
-//         ME_surface_Text(surface, x + w - 3, y + h - 3, str, NULL);
-//     } else if (fps->style == GRAPH_RENDER_PERCENT) {
-//         ME_surface_FontSize(surface, 15.0f);
-//         ME_surface_TextAlign(surface, ME_SURFACE_ALIGN_RIGHT | ME_SURFACE_ALIGN_TOP);
-//         ME_surface_FillColor(surface, ME_surface_RGBA(240, 240, 240, 255));
-//         sprintf(str, "%.1f %%", avg * 1.0f);
-//         ME_surface_Text(surface, x + w - 3, y + 3, str, NULL);
-//     } else {
-//         ME_surface_FontSize(surface, 15.0f);
-//         ME_surface_TextAlign(surface, ME_SURFACE_ALIGN_RIGHT | ME_SURFACE_ALIGN_TOP);
-//         ME_surface_FillColor(surface, ME_surface_RGBA(240, 240, 240, 255));
-//         sprintf(str, "%.2f ms", avg * 1000.0f);
-//         ME_surface_Text(surface, x + w - 3, y + 3, str, NULL);
-//     }
-// }
+void ME_profiler_graph_render(MEsurface_context *surface, float x, float y, profiler_graph *fps) {
+    int i;
+    float avg, w, h;
+    char str[64];
+
+    avg = ME_profiler_graph_avg(fps);
+
+    w = 200;
+    h = 35;
+
+    ME_surface_BeginPath(surface);
+    ME_surface_Rect(surface, x, y, w, h);
+    ME_surface_FillColor(surface, ME_surface_RGBA(0, 0, 0, 128));
+    ME_surface_Fill(surface);
+
+    ME_surface_BeginPath(surface);
+    ME_surface_MoveTo(surface, x, y + h);
+    if (fps->style == GRAPH_RENDER_FPS) {
+        for (i = 0; i < GRAPH_HISTORY_COUNT; i++) {
+            float v = 1.0f / (0.00001f + fps->values[(fps->head + i) % GRAPH_HISTORY_COUNT]);
+            float vx, vy;
+            if (v > 250.0f) v = 250.0f;
+            vx = x + ((float)i / (GRAPH_HISTORY_COUNT - 1)) * w;
+            vy = y + h - ((v / 250.0f) * h);
+            ME_surface_LineTo(surface, vx, vy);
+        }
+    } else if (fps->style == GRAPH_RENDER_PERCENT) {
+        for (i = 0; i < GRAPH_HISTORY_COUNT; i++) {
+            float v = fps->values[(fps->head + i) % GRAPH_HISTORY_COUNT] * 1.0f;
+            float vx, vy;
+            if (v > 100.0f) v = 100.0f;
+            vx = x + ((float)i / (GRAPH_HISTORY_COUNT - 1)) * w;
+            vy = y + h - ((v / 100.0f) * h);
+            ME_surface_LineTo(surface, vx, vy);
+        }
+    } else {
+        for (i = 0; i < GRAPH_HISTORY_COUNT; i++) {
+            float v = fps->values[(fps->head + i) % GRAPH_HISTORY_COUNT] * 1000.0f;
+            float vx, vy;
+            if (v > 20.0f) v = 20.0f;
+            vx = x + ((float)i / (GRAPH_HISTORY_COUNT - 1)) * w;
+            vy = y + h - ((v / 20.0f) * h);
+            ME_surface_LineTo(surface, vx, vy);
+        }
+    }
+    ME_surface_LineTo(surface, x + w, y + h);
+    ME_surface_FillColor(surface, ME_surface_RGBA(255, 192, 0, 128));
+    ME_surface_Fill(surface);
+
+    ME_surface_FontFace(surface, "fusion-pixel");
+
+    if (fps->name[0] != '\0') {
+        ME_surface_FontSize(surface, 12.0f);
+        ME_surface_TextAlign(surface, ME_SURFACE_ALIGN_LEFT | ME_SURFACE_ALIGN_TOP);
+        ME_surface_FillColor(surface, ME_surface_RGBA(240, 240, 240, 192));
+        ME_surface_Text(surface, x + 3, y + 3, fps->name, NULL);
+    }
+
+    if (fps->style == GRAPH_RENDER_FPS) {
+        ME_surface_FontSize(surface, 15.0f);
+        ME_surface_TextAlign(surface, ME_SURFACE_ALIGN_RIGHT | ME_SURFACE_ALIGN_TOP);
+        ME_surface_FillColor(surface, ME_surface_RGBA(240, 240, 240, 255));
+        sprintf(str, "%.2f FPS", 1.0f / avg);
+        ME_surface_Text(surface, x + w - 3, y + 3, str, NULL);
+
+        ME_surface_FontSize(surface, 13.0f);
+        ME_surface_TextAlign(surface, ME_SURFACE_ALIGN_RIGHT | ME_SURFACE_ALIGN_BASELINE);
+        ME_surface_FillColor(surface, ME_surface_RGBA(240, 240, 240, 160));
+        sprintf(str, "%.2f ms", avg * 1000.0f);
+        ME_surface_Text(surface, x + w - 3, y + h - 3, str, NULL);
+    } else if (fps->style == GRAPH_RENDER_PERCENT) {
+        ME_surface_FontSize(surface, 15.0f);
+        ME_surface_TextAlign(surface, ME_SURFACE_ALIGN_RIGHT | ME_SURFACE_ALIGN_TOP);
+        ME_surface_FillColor(surface, ME_surface_RGBA(240, 240, 240, 255));
+        sprintf(str, "%.1f %%", avg * 1.0f);
+        ME_surface_Text(surface, x + w - 3, y + 3, str, NULL);
+    } else {
+        ME_surface_FontSize(surface, 15.0f);
+        ME_surface_TextAlign(surface, ME_SURFACE_ALIGN_RIGHT | ME_SURFACE_ALIGN_TOP);
+        ME_surface_FillColor(surface, ME_surface_RGBA(240, 240, 240, 255));
+        sprintf(str, "%.2f ms", avg * 1000.0f);
+        ME_surface_Text(surface, x + w - 3, y + 3, str, NULL);
+    }
+}

@@ -5,9 +5,67 @@
 #include "engine/game_shaders.hpp"
 #include "engine/renderer/shaders.hpp"
 #include "engine/ui/imgui_layer.hpp"
+#include "engine/ui/surface.h"
+#include "engine/ui/surface_gl.h"
 #include "libs/imgui/imgui.h"
 
 engine_render Render;
+
+// Create a R_Image from a SurfaceUI Framebuffer
+R_Image *generateFBO(MEsurface_context *_vg, const float _w, const float _h, void (*draw)(MEsurface_context *, const float, const float, const float, const float)) {
+    // GPU_FlushBlitBuffer(); // call GPU_FlushBlitBuffer if you're doing this in the middle of SDL_gpu blitting
+    MEsurface_GLframebuffer *fb = ME_surface_gl_CreateFramebuffer(
+            _vg, _w, _h, ME_SURFACE_IMAGE_NODELETE);  // IMPORTANT: NVG_IMAGE_NODELETE allows us to run ME_surface_gl_DeleteFramebuffer without freeing the GPU_Image data
+    ME_surface_gl_BindFramebuffer(fb);
+    glViewport(0, 0, _w, _h);
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    ME_surface_BeginFrame(_vg, _w, _h, 1.0f);
+    draw(_vg, 0, 0, _w, _h);  // call the drawing function that was passed as parameter
+    ME_surface_EndFrame(_vg);
+    /* ME_surface_gl_BindFramebuffer(0); // official documentation says to unbind, but I haven't had issues not doing it */
+    R_ResetRendererState();  // not calling GPU_ResetRendererState can cause problems with SDL_gpu depending on your order of operations
+    // IMPORTANT: don't run ME_surface_gl_DeleteFramebuffer, GPU_CreateImageUsingTexture takes the handle
+    R_Image *return_image = R_CreateImageUsingTexture(fb->texture, false);  // should take_ownership be true?
+    ME_surface_gl_DeleteFramebuffer(fb);
+    return return_image;
+}
+
+void surface_test_1(MEsurface_context *_vg, const float _x, const float _y, const float _w, const float _h) {
+    const float square_r = 5.0f;
+    ME_surface_BeginPath(_vg);
+    ME_surface_RoundedRect(_vg, _x, _y, _w, _h, square_r);
+    MEsurface_paint bg_paint = ME_surface_LinearGradient(_vg, _x, _y, _x + _w, _y + _h, ME_surface_RGBA(255, 255, 255, 255), ME_surface_RGBA(255, 255, 255, 155));
+    ME_surface_FillPaint(_vg, bg_paint);
+    ME_surface_Fill(_vg);
+}
+
+void surface_test_2(MEsurface_context *_vg, const float _x, const float _y, const float _w, const float _h) {
+    float x = _x;
+    float y = _y;
+    ME_surface_BeginPath(_vg);
+    ME_surface_MoveTo(_vg, x, y);
+    for (unsigned i = 1; i < 50000; i++) {
+        ME_surface_BezierTo(_vg, x - 10.0f, y + 10.0f, x + 25, y + 25, x, y);
+        x += 10.0f;
+        y += 5.0f;
+        if (x > _w) x = 0.0f;
+        if (y > _h) y = 0.0f;
+    }
+    MEsurface_paint stroke_paint = ME_surface_LinearGradient(_vg, _x, _y, _w, _h, ME_surface_RGBA(255, 255, 255, 20), ME_surface_RGBA(0, 255, 255, 10));
+    ME_surface_StrokePaint(_vg, stroke_paint);
+    ME_surface_Stroke(_vg);
+}
+
+void surface_test_3(MEsurface_context *_vg, const float _x, const float _y, const float _arc_radius) {
+    const float pie_radius = 100.0f;
+    ME_surface_BeginPath(_vg);
+    ME_surface_MoveTo(_vg, _x, _y);
+    ME_surface_Arc(_vg, _x, _y, pie_radius, 0.0f, ME_surface_DegToRad(_arc_radius), ME_SURFACE_CW);
+    ME_surface_LineTo(_vg, _x, _y);
+    ME_surface_FillColor(_vg, ME_surface_RGBA(0xFF, 0xFF, 0xFF, 0xFF));
+    ME_surface_Fill(_vg);
+}
 
 MEvec2 MetaEngine::Drawing::rotate_point(float cx, float cy, float angle, MEvec2 p) {
     float s = sin(angle);

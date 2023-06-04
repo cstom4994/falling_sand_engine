@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "engine/engine_funcwrap.hpp"
+#include "wrap_engine.hpp"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -22,11 +22,11 @@
 #include "engine/core/platform.h"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/engine.h"
+#include "engine/game.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/lua_wrapper_base.hpp"
 #include "engine/scripting/scripting.hpp"
-#include "game.hpp"
 #include "libs/lz4/lz4.h"
 #include "libs/lz4/lz4frame.h"
 #include "libs/lz4/lz4hc.h"

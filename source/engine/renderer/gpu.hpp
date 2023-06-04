@@ -20,11 +20,18 @@
 #define R_GET_PIXEL(surface, x, y) *((u32 *)((u8 *)surface->pixels + ((y)*surface->pitch) + ((x) * sizeof(u32))))
 
 struct ShaderBase;
+struct MEsurface_context;
 
 typedef struct engine_render {
     R_Target *realTarget;
     R_Target *target;
 } engine_render;
+
+// Create a R_Image from a SurfaceUI Framebuffer
+R_Image *generateFBO(MEsurface_context *_vg, const float _w, const float _h, void (*draw)(MEsurface_context *, const float, const float, const float, const float));
+void surface_test_1(MEsurface_context *_vg, const float _x, const float _y, const float _w, const float _h);
+void surface_test_2(MEsurface_context *_vg, const float _x, const float _y, const float _w, const float _h);
+void surface_test_3(MEsurface_context *_vg, const float _x, const float _y, const float _arc_radius);
 
 ME_PRIVATE(char const *) gl_error_string(GLenum const err) noexcept {
     switch (err) {
