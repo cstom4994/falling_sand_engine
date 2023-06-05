@@ -3,11 +3,19 @@
 #define ME_CONSOLE_H
 
 #include "engine/core/utils/utility.hpp"
+#include "engine/cvar.hpp"
 #include "engine/ui/imgui_helper.hpp"
 
 namespace ME {
 
+enum MEconsole_result { OK, ERR, EXIT };
+
 class MEconsole {
+
+public:
+    void Init();
+    void End();
+
 public:
     void display_full(bool *bInteractingWithTextbox) noexcept;
     void display(bool *bInteractingWithTextbox) noexcept;
@@ -17,10 +25,14 @@ public:
 
     void set_log_colour(ImVec4 colour, log_type type) noexcept;
 
+    void PrintCommandInfo(cvar::BaseCommand *);
+    std::string execute(std::string Command, std::queue<std::string> args, MEconsole_result &);
+    bool eval(std::string &cmd);
+
 private:
     friend class logger_internal;
 
-    static void show_help_message(const std::string &) noexcept;
+    cvar::ConVar convar;
 
     ImVec4 success = {0.0f, 1.0f, 0.0f, 1.0f};
     ImVec4 warning = {1.0f, 1.0f, 0.0f, 1.0f};

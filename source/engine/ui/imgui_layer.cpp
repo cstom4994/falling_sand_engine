@@ -746,6 +746,8 @@ void ImGuiLayer::Init() {
 
     m_pack_editor.Init();
 
+    console.Init();
+
     editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
 
 #if 0

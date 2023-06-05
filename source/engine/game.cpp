@@ -1226,8 +1226,12 @@ void Game::updateFrameEarly() {
 
     // handle controls
     if (ControlSystem::DEBUG_UI->get()) {
-        gameUI.visible_debugdraw ^= true;
         GameIsolate_.globaldef.ui_tweak ^= true;
+        gameUI.visible_debugdraw = GameIsolate_.globaldef.ui_tweak;
+    }
+
+    if (ControlSystem::CONSOLE_UI->get()) {
+        GameIsolate_.globaldef.draw_console ^= true;
     }
 
     if (GameIsolate_.globaldef.draw_frame_graph) {

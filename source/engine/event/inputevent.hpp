@@ -50,6 +50,7 @@ public:
     static KeyControl *STATS_DISPLAY;
     static KeyControl *STATS_DISPLAY_DETAILED;
     static KeyControl *DEBUG_UI;
+    static KeyControl *CONSOLE_UI;
     static KeyControl *DEBUG_REFRESH;
     static KeyControl *DEBUG_UPDATE_WORLD_MESH;
     static KeyControl *DEBUG_TICK;

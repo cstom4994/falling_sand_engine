@@ -1,3 +1,4 @@
+// Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
 #include "cvar.hpp"
 
@@ -99,6 +100,12 @@ short ME::cvar::Cast<short>(std::string s) {
 }
 
 template <>
+bool ME::cvar::Cast<bool>(std::string s) {
+    int v = std::stoi(s);
+    return (bool)v;
+}
+
+template <>
 const char* ME::cvar::Cast<const char*>(std::string s) {
     return s.c_str();
 }
@@ -109,3 +116,39 @@ CVAR_CAST_DEF(float, std::stof);
 CVAR_CAST_DEF(double, std::stod);
 CVAR_CAST_DEF(long double, std::stold);
 CVAR_CAST_DEF(std::string, std::string);
+
+ME::cvar::BaseCommand::BaseCommand(std::string name) : name(name) {}
+ME::cvar::BaseCommand::~BaseCommand() {}
+
+void ME::cvar::BaseCommand::AddParameter(const ME::cvar::CommandParameter& p) { params.push_back(p); }
+std::string ME::cvar::BaseCommand::GetName() const { return name; }
+ME::cvar::BaseCommand::CommandArgs::size_type ME::cvar::BaseCommand::size() const { return params.size(); }
+
+ME::cvar::BaseCommand::iterator ME::cvar::BaseCommand::begin() { return params.begin(); }
+ME::cvar::BaseCommand::iterator ME::cvar::BaseCommand::end() { return params.end(); }
+
+ME::cvar::CommandParameter::CommandParameter(std::string type, std::string name) : type(type), name(name) {}
+
+std::string ME::cvar::CommandParameter::GetName() const { return name; }
+std::string ME::cvar::CommandParameter::GetType() const { return type; }
+
+ME::cvar::ConVar::~ConVar() {
+    for (auto& p : convars) delete p.second;
+}
+
+void ME::cvar::ConVar::RemoveCommand(std::string name) {
+    auto it = convars.find(name);
+    delete it->second;
+    if (it == convars.end()) convars.erase(it);
+}
+
+std::string ME::cvar::ConVar::Call(std::string name, std::queue<std::string> args) {
+    auto it = convars.find(name);
+    if (it == convars.end()) throw std::exception(name.c_str());
+    return (*it).second->Call(args);
+}
+
+ME::cvar::ConVar::const_iterator ME::cvar::ConVar::begin() const { return convars.begin(); }
+ME::cvar::ConVar::const_iterator ME::cvar::ConVar::end() const { return convars.end(); }
+// ME::cvar::BaseCommand::const_iterator ME::cvar::BaseCommand::cbegin() const { return params.cbegin(); }
+// ME::cvar::BaseCommand::const_iterator ME::cvar::BaseCommand::cend() const { return params.cend(); }

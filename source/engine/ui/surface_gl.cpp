@@ -10,7 +10,7 @@
 
 enum ME_SURFACE_GLuniformLoc { ME_SURFACE_GL_LOC_VIEWSIZE, ME_SURFACE_GL_LOC_TEX, ME_SURFACE_GL_LOC_FRAG, ME_SURFACE_GL_MAX_LOCS };
 
-enum ME_SURFACE_GLshaderType { NSVG_SHADER_FILLGRAD, NSVG_SHADER_FILLIMG, NSVG_SHADER_SIMPLE, NSVG_SHADER_IMG };
+enum ME_SURFACE_GLshaderType { ME_SURFACE_SVG_SHADER_FILLGRAD, ME_SURFACE_SVG_SHADER_FILLIMG, ME_SURFACE_SVG_SHADER_SIMPLE, ME_SURFACE_SVG_SHADER_IMG };
 
 enum ME_SURFACE_GLuniformBindings {
     ME_SURFACE_GL_FRAG_BINDING = 0,
@@ -125,23 +125,23 @@ struct ME_SURFACE_GLcontext {
 };
 typedef struct ME_SURFACE_GLcontext ME_SURFACE_GLcontext;
 
-static int ME_surface_gl____maxi(int a, int b) { return a > b ? a : b; }
+static int ME_surface_gl_maxi(int a, int b) { return a > b ? a : b; }
 
-static void ME_surface_gl____bindTexture(ME_SURFACE_GLcontext* gl, GLuint tex) {
+static void ME_surface_gl_bindTexture(ME_SURFACE_GLcontext* gl, GLuint tex) {
     if (gl->boundTexture != tex) {
         gl->boundTexture = tex;
         glBindTexture(GL_TEXTURE_2D, tex);
     }
 }
 
-static void ME_surface_gl____stencilMask(ME_SURFACE_GLcontext* gl, GLuint mask) {
+static void ME_surface_gl_stencilMask(ME_SURFACE_GLcontext* gl, GLuint mask) {
     if (gl->stencilMask != mask) {
         gl->stencilMask = mask;
         glStencilMask(mask);
     }
 }
 
-static void ME_surface_gl____stencilFunc(ME_SURFACE_GLcontext* gl, GLenum func, GLint ref, GLuint mask) {
+static void ME_surface_gl_stencilFunc(ME_SURFACE_GLcontext* gl, GLenum func, GLint ref, GLuint mask) {
     if ((gl->stencilFunc != func) || (gl->stencilFuncRef != ref) || (gl->stencilFuncMask != mask)) {
 
         gl->stencilFunc = func;
@@ -151,7 +151,7 @@ static void ME_surface_gl____stencilFunc(ME_SURFACE_GLcontext* gl, GLenum func, 
     }
 }
 
-static void ME_surface_gl____blendFuncSeparate(ME_SURFACE_GLcontext* gl, const ME_SURFACE_GLblend* blend) {
+static void ME_surface_gl_blendFuncSeparate(ME_SURFACE_GLcontext* gl, const ME_SURFACE_GLblend* blend) {
     if ((gl->blendFunc.srcRGB != blend->srcRGB) || (gl->blendFunc.dstRGB != blend->dstRGB) || (gl->blendFunc.srcAlpha != blend->srcAlpha) || (gl->blendFunc.dstAlpha != blend->dstAlpha)) {
 
         gl->blendFunc = *blend;
@@ -159,7 +159,7 @@ static void ME_surface_gl____blendFuncSeparate(ME_SURFACE_GLcontext* gl, const M
     }
 }
 
-static ME_SURFACE_GLtexture* ME_surface_gl____allocTexture(ME_SURFACE_GLcontext* gl) {
+static ME_SURFACE_GLtexture* ME_surface_gl_allocTexture(ME_SURFACE_GLcontext* gl) {
     ME_SURFACE_GLtexture* tex = NULL;
     int i;
 
@@ -172,7 +172,7 @@ static ME_SURFACE_GLtexture* ME_surface_gl____allocTexture(ME_SURFACE_GLcontext*
     if (tex == NULL) {
         if (gl->ntextures + 1 > gl->ctextures) {
             ME_SURFACE_GLtexture* textures;
-            int ctextures = ME_surface_gl____maxi(gl->ntextures + 1, 4) + gl->ctextures / 2;  // 1.5x Overallocate
+            int ctextures = ME_surface_gl_maxi(gl->ntextures + 1, 4) + gl->ctextures / 2;  // 1.5x Overallocate
             textures = (ME_SURFACE_GLtexture*)realloc(gl->textures, sizeof(ME_SURFACE_GLtexture) * ctextures);
             if (textures == NULL) return NULL;
             gl->textures = textures;
@@ -187,14 +187,14 @@ static ME_SURFACE_GLtexture* ME_surface_gl____allocTexture(ME_SURFACE_GLcontext*
     return tex;
 }
 
-static ME_SURFACE_GLtexture* ME_surface_gl____findTexture(ME_SURFACE_GLcontext* gl, int id) {
+static ME_SURFACE_GLtexture* ME_surface_gl_findTexture(ME_SURFACE_GLcontext* gl, int id) {
     int i;
     for (i = 0; i < gl->ntextures; i++)
         if (gl->textures[i].id == id) return &gl->textures[i];
     return NULL;
 }
 
-static int ME_surface_gl____deleteTexture(ME_SURFACE_GLcontext* gl, int id) {
+static int ME_surface_gl_deleteTexture(ME_SURFACE_GLcontext* gl, int id) {
     int i;
     for (i = 0; i < gl->ntextures; i++) {
         if (gl->textures[i].id == id) {
@@ -206,7 +206,7 @@ static int ME_surface_gl____deleteTexture(ME_SURFACE_GLcontext* gl, int id) {
     return 0;
 }
 
-static void ME_surface_gl____dumpShaderError(GLuint shader, const char* name, const char* type) {
+static void ME_surface_gl_dumpShaderError(GLuint shader, const char* name, const char* type) {
     GLchar str[512 + 1];
     GLsizei len = 0;
     glGetShaderInfoLog(shader, 512, &len, str);
@@ -215,7 +215,7 @@ static void ME_surface_gl____dumpShaderError(GLuint shader, const char* name, co
     printf("Shader %s/%s error:\n%s\n", name, type, str);
 }
 
-static void ME_surface_gl____dumpProgramError(GLuint prog, const char* name) {
+static void ME_surface_gl_dumpProgramError(GLuint prog, const char* name) {
     GLchar str[512 + 1];
     GLsizei len = 0;
     glGetProgramInfoLog(prog, 512, &len, str);
@@ -224,7 +224,7 @@ static void ME_surface_gl____dumpProgramError(GLuint prog, const char* name) {
     printf("Program %s error:\n%s\n", name, str);
 }
 
-static void ME_surface_gl____checkError(ME_SURFACE_GLcontext* gl, const char* str) {
+static void ME_surface_gl_checkError(ME_SURFACE_GLcontext* gl, const char* str) {
     GLenum err;
     if ((gl->flags & ME_SURFACE_DEBUG) == 0) return;
     err = glGetError();
@@ -234,7 +234,7 @@ static void ME_surface_gl____checkError(ME_SURFACE_GLcontext* gl, const char* st
     }
 }
 
-static int ME_surface_gl____createShader(ME_SURFACE_GLshader* shader, const char* name, const char* header, const char* opts, const char* vshader, const char* fshader) {
+static int ME_surface_gl_createShader(ME_SURFACE_GLshader* shader, const char* name, const char* header, const char* opts, const char* vshader, const char* fshader) {
     GLint status;
     GLuint prog, vert, frag;
     const char* str[3];
@@ -254,14 +254,14 @@ static int ME_surface_gl____createShader(ME_SURFACE_GLshader* shader, const char
     glCompileShader(vert);
     glGetShaderiv(vert, GL_COMPILE_STATUS, &status);
     if (status != GL_TRUE) {
-        ME_surface_gl____dumpShaderError(vert, name, "vert");
+        ME_surface_gl_dumpShaderError(vert, name, "vert");
         return 0;
     }
 
     glCompileShader(frag);
     glGetShaderiv(frag, GL_COMPILE_STATUS, &status);
     if (status != GL_TRUE) {
-        ME_surface_gl____dumpShaderError(frag, name, "frag");
+        ME_surface_gl_dumpShaderError(frag, name, "frag");
         return 0;
     }
 
@@ -274,7 +274,7 @@ static int ME_surface_gl____createShader(ME_SURFACE_GLshader* shader, const char
     glLinkProgram(prog);
     glGetProgramiv(prog, GL_LINK_STATUS, &status);
     if (status != GL_TRUE) {
-        ME_surface_gl____dumpProgramError(prog, name);
+        ME_surface_gl_dumpProgramError(prog, name);
         return 0;
     }
 
@@ -285,21 +285,21 @@ static int ME_surface_gl____createShader(ME_SURFACE_GLshader* shader, const char
     return 1;
 }
 
-static void ME_surface_gl____deleteShader(ME_SURFACE_GLshader* shader) {
+static void ME_surface_gl_deleteShader(ME_SURFACE_GLshader* shader) {
     if (shader->prog != 0) glDeleteProgram(shader->prog);
     if (shader->vert != 0) glDeleteShader(shader->vert);
     if (shader->frag != 0) glDeleteShader(shader->frag);
 }
 
-static void ME_surface_gl____getUniforms(ME_SURFACE_GLshader* shader) {
+static void ME_surface_gl_getUniforms(ME_SURFACE_GLshader* shader) {
     shader->loc[ME_SURFACE_GL_LOC_VIEWSIZE] = glGetUniformLocation(shader->prog, "viewSize");
     shader->loc[ME_SURFACE_GL_LOC_TEX] = glGetUniformLocation(shader->prog, "tex");
     shader->loc[ME_SURFACE_GL_LOC_FRAG] = glGetUniformBlockIndex(shader->prog, "frag");
 }
 
-static int ME_surface_gl____renderCreateTexture(void* uptr, int type, int w, int h, int imageFlags, const unsigned char* data);
+static int ME_surface_gl_renderCreateTexture(void* uptr, int type, int w, int h, int imageFlags, const unsigned char* data);
 
-static int ME_surface_gl____renderCreate(void* uptr) {
+static int ME_surface_gl_renderCreate(void* uptr) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)uptr;
     int align = 4;
 
@@ -454,16 +454,16 @@ static int ME_surface_gl____renderCreate(void* uptr) {
             "#endif\n"
             "}\n";
 
-    ME_surface_gl____checkError(gl, "init");
+    ME_surface_gl_checkError(gl, "init");
 
     if (gl->flags & ME_SURFACE_ANTIALIAS) {
-        if (ME_surface_gl____createShader(&gl->shader, "shader", shaderHeader, "#define EDGE_AA 1\n", fillVertShader, fillFragShader) == 0) return 0;
+        if (ME_surface_gl_createShader(&gl->shader, "shader", shaderHeader, "#define EDGE_AA 1\n", fillVertShader, fillFragShader) == 0) return 0;
     } else {
-        if (ME_surface_gl____createShader(&gl->shader, "shader", shaderHeader, NULL, fillVertShader, fillFragShader) == 0) return 0;
+        if (ME_surface_gl_createShader(&gl->shader, "shader", shaderHeader, NULL, fillVertShader, fillFragShader) == 0) return 0;
     }
 
-    ME_surface_gl____checkError(gl, "uniform locations");
-    ME_surface_gl____getUniforms(&gl->shader);
+    ME_surface_gl_checkError(gl, "uniform locations");
+    ME_surface_gl_getUniforms(&gl->shader);
 
     // Create dynamic vertex array
     glGenVertexArrays(1, &gl->vertArr);
@@ -478,18 +478,18 @@ static int ME_surface_gl____renderCreate(void* uptr) {
 
     // Some platforms does not allow to have samples to unset textures.
     // Create empty one which is bound when there's no texture specified.
-    gl->dummyTex = ME_surface_gl____renderCreateTexture(gl, ME_SURFACE_TEXTURE_ALPHA, 1, 1, 0, NULL);
+    gl->dummyTex = ME_surface_gl_renderCreateTexture(gl, ME_SURFACE_TEXTURE_ALPHA, 1, 1, 0, NULL);
 
-    ME_surface_gl____checkError(gl, "create done");
+    ME_surface_gl_checkError(gl, "create done");
 
     glFinish();
 
     return 1;
 }
 
-static int ME_surface_gl____renderCreateTexture(void* uptr, int type, int w, int h, int imageFlags, const unsigned char* data) {
+static int ME_surface_gl_renderCreateTexture(void* uptr, int type, int w, int h, int imageFlags, const unsigned char* data) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)uptr;
-    ME_SURFACE_GLtexture* tex = ME_surface_gl____allocTexture(gl);
+    ME_SURFACE_GLtexture* tex = ME_surface_gl_allocTexture(gl);
 
     if (tex == NULL) return 0;
 
@@ -498,7 +498,7 @@ static int ME_surface_gl____renderCreateTexture(void* uptr, int type, int w, int
     tex->height = h;
     tex->type = type;
     tex->flags = imageFlags;
-    ME_surface_gl____bindTexture(gl, tex->tex);
+    ME_surface_gl_bindTexture(gl, tex->tex);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, tex->width);
@@ -550,23 +550,23 @@ static int ME_surface_gl____renderCreateTexture(void* uptr, int type, int w, int
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 
-    ME_surface_gl____checkError(gl, "create tex");
-    ME_surface_gl____bindTexture(gl, 0);
+    ME_surface_gl_checkError(gl, "create tex");
+    ME_surface_gl_bindTexture(gl, 0);
 
     return tex->id;
 }
 
-static int ME_surface_gl____renderDeleteTexture(void* uptr, int image) {
+static int ME_surface_gl_renderDeleteTexture(void* uptr, int image) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)uptr;
-    return ME_surface_gl____deleteTexture(gl, image);
+    return ME_surface_gl_deleteTexture(gl, image);
 }
 
-static int ME_surface_gl____renderUpdateTexture(void* uptr, int image, int x, int y, int w, int h, const unsigned char* data) {
+static int ME_surface_gl_renderUpdateTexture(void* uptr, int image, int x, int y, int w, int h, const unsigned char* data) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)uptr;
-    ME_SURFACE_GLtexture* tex = ME_surface_gl____findTexture(gl, image);
+    ME_SURFACE_GLtexture* tex = ME_surface_gl_findTexture(gl, image);
 
     if (tex == NULL) return 0;
-    ME_surface_gl____bindTexture(gl, tex->tex);
+    ME_surface_gl_bindTexture(gl, tex->tex);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, tex->width);
@@ -583,21 +583,21 @@ static int ME_surface_gl____renderUpdateTexture(void* uptr, int image, int x, in
     glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
     glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
 
-    ME_surface_gl____bindTexture(gl, 0);
+    ME_surface_gl_bindTexture(gl, 0);
 
     return 1;
 }
 
-static int ME_surface_gl____renderGetTextureSize(void* uptr, int image, int* w, int* h) {
+static int ME_surface_gl_renderGetTextureSize(void* uptr, int image, int* w, int* h) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)uptr;
-    ME_SURFACE_GLtexture* tex = ME_surface_gl____findTexture(gl, image);
+    ME_SURFACE_GLtexture* tex = ME_surface_gl_findTexture(gl, image);
     if (tex == NULL) return 0;
     *w = tex->width;
     *h = tex->height;
     return 1;
 }
 
-static void ME_surface_gl____xformToMat3x4(float* m3, float* t) {
+static void ME_surface_gl_xformToMat3x4(float* m3, float* t) {
     m3[0] = t[0];
     m3[1] = t[1];
     m3[2] = 0.0f;
@@ -612,21 +612,21 @@ static void ME_surface_gl____xformToMat3x4(float* m3, float* t) {
     m3[11] = 0.0f;
 }
 
-static MEsurface_color ME_surface_gl____premulColor(MEsurface_color c) {
+static MEsurface_color ME_surface_gl_premulColor(MEsurface_color c) {
     c.r *= c.a;
     c.g *= c.a;
     c.b *= c.a;
     return c;
 }
 
-static int ME_surface_gl____convertPaint(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLfragUniforms* frag, MEsurface_paint* paint, MEsurface_scissor* scissor, float width, float fringe, float strokeThr) {
+static int ME_surface_gl_convertPaint(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLfragUniforms* frag, MEsurface_paint* paint, MEsurface_scissor* scissor, float width, float fringe, float strokeThr) {
     ME_SURFACE_GLtexture* tex = NULL;
     float invxform[6];
 
     memset(frag, 0, sizeof(*frag));
 
-    frag->innerCol = ME_surface_gl____premulColor(paint->innerColor);
-    frag->outerCol = ME_surface_gl____premulColor(paint->outerColor);
+    frag->innerCol = ME_surface_gl_premulColor(paint->innerColor);
+    frag->outerCol = ME_surface_gl_premulColor(paint->outerColor);
 
     if (scissor->extent[0] < -0.5f || scissor->extent[1] < -0.5f) {
         memset(frag->scissorMat, 0, sizeof(frag->scissorMat));
@@ -636,7 +636,7 @@ static int ME_surface_gl____convertPaint(ME_SURFACE_GLcontext* gl, ME_SURFACE_GL
         frag->scissorScale[1] = 1.0f;
     } else {
         ME_surface_TransformInverse(invxform, scissor->xform);
-        ME_surface_gl____xformToMat3x4(frag->scissorMat, invxform);
+        ME_surface_gl_xformToMat3x4(frag->scissorMat, invxform);
         frag->scissorExt[0] = scissor->extent[0];
         frag->scissorExt[1] = scissor->extent[1];
         frag->scissorScale[0] = sqrtf(scissor->xform[0] * scissor->xform[0] + scissor->xform[2] * scissor->xform[2]) / fringe;
@@ -648,7 +648,7 @@ static int ME_surface_gl____convertPaint(ME_SURFACE_GLcontext* gl, ME_SURFACE_GL
     frag->strokeThr = strokeThr;
 
     if (paint->image != 0) {
-        tex = ME_surface_gl____findTexture(gl, paint->image);
+        tex = ME_surface_gl_findTexture(gl, paint->image);
         if (tex == NULL) return 0;
         if ((tex->flags & ME_SURFACE_IMAGE_FLIPY) != 0) {
             float m1[6], m2[6];
@@ -662,7 +662,7 @@ static int ME_surface_gl____convertPaint(ME_SURFACE_GLcontext* gl, ME_SURFACE_GL
         } else {
             ME_surface_TransformInverse(invxform, paint->xform);
         }
-        frag->type = NSVG_SHADER_FILLIMG;
+        frag->type = ME_SURFACE_SVG_SHADER_FILLIMG;
 
         if (tex->type == ME_SURFACE_TEXTURE_RGBA)
             frag->texType = (tex->flags & ME_SURFACE_IMAGE_PREMULTIPLIED) ? 0 : 1;
@@ -670,53 +670,53 @@ static int ME_surface_gl____convertPaint(ME_SURFACE_GLcontext* gl, ME_SURFACE_GL
             frag->texType = 2;
         //      printf("frag->texType = %d\n", frag->texType);
     } else {
-        frag->type = NSVG_SHADER_FILLGRAD;
+        frag->type = ME_SURFACE_SVG_SHADER_FILLGRAD;
         frag->radius = paint->radius;
         frag->feather = paint->feather;
         ME_surface_TransformInverse(invxform, paint->xform);
     }
 
-    ME_surface_gl____xformToMat3x4(frag->paintMat, invxform);
+    ME_surface_gl_xformToMat3x4(frag->paintMat, invxform);
 
     return 1;
 }
 
 static ME_SURFACE_GLfragUniforms* ME_surface___fragUniformPtr(ME_SURFACE_GLcontext* gl, int i);
 
-static void ME_surface_gl____setUniforms(ME_SURFACE_GLcontext* gl, int uniformOffset, int image) {
+static void ME_surface_gl_setUniforms(ME_SURFACE_GLcontext* gl, int uniformOffset, int image) {
     ME_SURFACE_GLtexture* tex = NULL;
     glBindBufferRange(GL_UNIFORM_BUFFER, ME_SURFACE_GL_FRAG_BINDING, gl->fragBuf, uniformOffset, sizeof(ME_SURFACE_GLfragUniforms));
 
     if (image != 0) {
-        tex = ME_surface_gl____findTexture(gl, image);
+        tex = ME_surface_gl_findTexture(gl, image);
     }
     // If no image is set, use empty texture
     if (tex == NULL) {
-        tex = ME_surface_gl____findTexture(gl, gl->dummyTex);
+        tex = ME_surface_gl_findTexture(gl, gl->dummyTex);
     }
-    ME_surface_gl____bindTexture(gl, tex != NULL ? tex->tex : 0);
-    ME_surface_gl____checkError(gl, "tex paint tex");
+    ME_surface_gl_bindTexture(gl, tex != NULL ? tex->tex : 0);
+    ME_surface_gl_checkError(gl, "tex paint tex");
 }
 
-static void ME_surface_gl____renderViewport(void* uptr, float width, float height, float devicePixelRatio) {
+static void ME_surface_gl_renderViewport(void* uptr, float width, float height, float devicePixelRatio) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)uptr;
     gl->view[0] = width;
     gl->view[1] = height;
 }
 
-static void ME_surface_gl____fill(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLcall* call) {
+static void ME_surface_gl_fill(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLcall* call) {
     ME_SURFACE_GLpath* paths = &gl->paths[call->pathOffset];
     int i, npaths = call->pathCount;
 
     // Draw shapes
     glEnable(GL_STENCIL_TEST);
-    ME_surface_gl____stencilMask(gl, 0xff);
-    ME_surface_gl____stencilFunc(gl, GL_ALWAYS, 0, 0xff);
+    ME_surface_gl_stencilMask(gl, 0xff);
+    ME_surface_gl_stencilFunc(gl, GL_ALWAYS, 0, 0xff);
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
     // set bindpoint for solid loc
-    ME_surface_gl____setUniforms(gl, call->uniformOffset, 0);
-    ME_surface_gl____checkError(gl, "fill simple");
+    ME_surface_gl_setUniforms(gl, call->uniformOffset, 0);
+    ME_surface_gl_checkError(gl, "fill simple");
 
     glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
     glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
@@ -727,30 +727,30 @@ static void ME_surface_gl____fill(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLcall* c
     // Draw anti-aliased pixels
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-    ME_surface_gl____setUniforms(gl, call->uniformOffset + gl->fragSize, call->image);
-    ME_surface_gl____checkError(gl, "fill fill");
+    ME_surface_gl_setUniforms(gl, call->uniformOffset + gl->fragSize, call->image);
+    ME_surface_gl_checkError(gl, "fill fill");
 
     if (gl->flags & ME_SURFACE_ANTIALIAS) {
-        ME_surface_gl____stencilFunc(gl, GL_EQUAL, 0x00, 0xff);
+        ME_surface_gl_stencilFunc(gl, GL_EQUAL, 0x00, 0xff);
         glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
         // Draw fringes
         for (i = 0; i < npaths; i++) glDrawArrays(GL_TRIANGLE_STRIP, paths[i].strokeOffset, paths[i].strokeCount);
     }
 
     // Draw fill
-    ME_surface_gl____stencilFunc(gl, GL_NOTEQUAL, 0x0, 0xff);
+    ME_surface_gl_stencilFunc(gl, GL_NOTEQUAL, 0x0, 0xff);
     glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
     glDrawArrays(GL_TRIANGLE_STRIP, call->triangleOffset, call->triangleCount);
 
     glDisable(GL_STENCIL_TEST);
 }
 
-static void ME_surface_gl____convexFill(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLcall* call) {
+static void ME_surface_gl_convexFill(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLcall* call) {
     ME_SURFACE_GLpath* paths = &gl->paths[call->pathOffset];
     int i, npaths = call->pathCount;
 
-    ME_surface_gl____setUniforms(gl, call->uniformOffset, call->image);
-    ME_surface_gl____checkError(gl, "convex fill");
+    ME_surface_gl_setUniforms(gl, call->uniformOffset, call->image);
+    ME_surface_gl_checkError(gl, "convex fill");
 
     for (i = 0; i < npaths; i++) {
         glDrawArrays(GL_TRIANGLE_FAN, paths[i].fillOffset, paths[i].fillCount);
@@ -761,56 +761,56 @@ static void ME_surface_gl____convexFill(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLc
     }
 }
 
-static void ME_surface_gl____stroke(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLcall* call) {
+static void ME_surface_gl_stroke(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLcall* call) {
     ME_SURFACE_GLpath* paths = &gl->paths[call->pathOffset];
     int npaths = call->pathCount, i;
 
     if (gl->flags & ME_SURFACE_STENCIL_STROKES) {
 
         glEnable(GL_STENCIL_TEST);
-        ME_surface_gl____stencilMask(gl, 0xff);
+        ME_surface_gl_stencilMask(gl, 0xff);
 
         // Fill the stroke base without overlap
-        ME_surface_gl____stencilFunc(gl, GL_EQUAL, 0x0, 0xff);
+        ME_surface_gl_stencilFunc(gl, GL_EQUAL, 0x0, 0xff);
         glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
-        ME_surface_gl____setUniforms(gl, call->uniformOffset + gl->fragSize, call->image);
-        ME_surface_gl____checkError(gl, "stroke fill 0");
+        ME_surface_gl_setUniforms(gl, call->uniformOffset + gl->fragSize, call->image);
+        ME_surface_gl_checkError(gl, "stroke fill 0");
         for (i = 0; i < npaths; i++) glDrawArrays(GL_TRIANGLE_STRIP, paths[i].strokeOffset, paths[i].strokeCount);
 
         // Draw anti-aliased pixels.
-        ME_surface_gl____setUniforms(gl, call->uniformOffset, call->image);
-        ME_surface_gl____stencilFunc(gl, GL_EQUAL, 0x00, 0xff);
+        ME_surface_gl_setUniforms(gl, call->uniformOffset, call->image);
+        ME_surface_gl_stencilFunc(gl, GL_EQUAL, 0x00, 0xff);
         glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
         for (i = 0; i < npaths; i++) glDrawArrays(GL_TRIANGLE_STRIP, paths[i].strokeOffset, paths[i].strokeCount);
 
         // Clear stencil buffer.
         glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-        ME_surface_gl____stencilFunc(gl, GL_ALWAYS, 0x0, 0xff);
+        ME_surface_gl_stencilFunc(gl, GL_ALWAYS, 0x0, 0xff);
         glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
-        ME_surface_gl____checkError(gl, "stroke fill 1");
+        ME_surface_gl_checkError(gl, "stroke fill 1");
         for (i = 0; i < npaths; i++) glDrawArrays(GL_TRIANGLE_STRIP, paths[i].strokeOffset, paths[i].strokeCount);
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
         glDisable(GL_STENCIL_TEST);
 
-        //      ME_surface_gl____convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset + gl->fragSize), paint, scissor, strokeWidth, fringe, 1.0f - 0.5f/255.0f);
+        //      ME_surface_gl_convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset + gl->fragSize), paint, scissor, strokeWidth, fringe, 1.0f - 0.5f/255.0f);
 
     } else {
-        ME_surface_gl____setUniforms(gl, call->uniformOffset, call->image);
-        ME_surface_gl____checkError(gl, "stroke fill");
+        ME_surface_gl_setUniforms(gl, call->uniformOffset, call->image);
+        ME_surface_gl_checkError(gl, "stroke fill");
         // Draw Strokes
         for (i = 0; i < npaths; i++) glDrawArrays(GL_TRIANGLE_STRIP, paths[i].strokeOffset, paths[i].strokeCount);
     }
 }
 
-static void ME_surface_gl____triangles(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLcall* call) {
-    ME_surface_gl____setUniforms(gl, call->uniformOffset, call->image);
-    ME_surface_gl____checkError(gl, "triangles fill");
+static void ME_surface_gl_triangles(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLcall* call) {
+    ME_surface_gl_setUniforms(gl, call->uniformOffset, call->image);
+    ME_surface_gl_checkError(gl, "triangles fill");
 
     glDrawArrays(GL_TRIANGLES, call->triangleOffset, call->triangleCount);
 }
 
-static void ME_surface_gl____renderCancel(void* uptr) {
+static void ME_surface_gl_renderCancel(void* uptr) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)uptr;
     gl->nverts = 0;
     gl->npaths = 0;
@@ -833,7 +833,7 @@ static GLenum ME_surface_gl___convertBlendFuncFactor(int factor) {
     return GL_INVALID_ENUM;
 }
 
-static ME_SURFACE_GLblend ME_surface_gl____blendCompositeOperation(MEsurface_compositeOperationState op) {
+static ME_SURFACE_GLblend ME_surface_gl_blendCompositeOperation(MEsurface_compositeOperationState op) {
     ME_SURFACE_GLblend blend;
     blend.srcRGB = ME_surface_gl___convertBlendFuncFactor(op.srcRGB);
     blend.dstRGB = ME_surface_gl___convertBlendFuncFactor(op.dstRGB);
@@ -848,7 +848,7 @@ static ME_SURFACE_GLblend ME_surface_gl____blendCompositeOperation(MEsurface_com
     return blend;
 }
 
-static void ME_surface_gl____renderFlush(void* uptr) {
+static void ME_surface_gl_renderFlush(void* uptr) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)uptr;
     int i;
 
@@ -901,15 +901,15 @@ static void ME_surface_gl____renderFlush(void* uptr) {
 
         for (i = 0; i < gl->ncalls; i++) {
             ME_SURFACE_GLcall* call = &gl->calls[i];
-            ME_surface_gl____blendFuncSeparate(gl, &call->blendFunc);
+            ME_surface_gl_blendFuncSeparate(gl, &call->blendFunc);
             if (call->type == ME_SURFACE_GL_FILL)
-                ME_surface_gl____fill(gl, call);
+                ME_surface_gl_fill(gl, call);
             else if (call->type == ME_SURFACE_GL_CONVEXFILL)
-                ME_surface_gl____convexFill(gl, call);
+                ME_surface_gl_convexFill(gl, call);
             else if (call->type == ME_SURFACE_GL_STROKE)
-                ME_surface_gl____stroke(gl, call);
+                ME_surface_gl_stroke(gl, call);
             else if (call->type == ME_SURFACE_GL_TRIANGLES)
-                ME_surface_gl____triangles(gl, call);
+                ME_surface_gl_triangles(gl, call);
         }
 
         glDisableVertexAttribArray(0);
@@ -920,7 +920,7 @@ static void ME_surface_gl____renderFlush(void* uptr) {
         glDisable(GL_CULL_FACE);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glUseProgram(0);
-        ME_surface_gl____bindTexture(gl, 0);
+        ME_surface_gl_bindTexture(gl, 0);
     }
 
     // Reset calls
@@ -930,7 +930,7 @@ static void ME_surface_gl____renderFlush(void* uptr) {
     gl->nuniforms = 0;
 }
 
-static int ME_surface_gl____maxVertCount(const MEsurface_path* paths, int npaths) {
+static int ME_surface_gl_maxVertCount(const MEsurface_path* paths, int npaths) {
     int i, count = 0;
     for (i = 0; i < npaths; i++) {
         count += paths[i].nfill;
@@ -939,11 +939,11 @@ static int ME_surface_gl____maxVertCount(const MEsurface_path* paths, int npaths
     return count;
 }
 
-static ME_SURFACE_GLcall* ME_surface_gl____allocCall(ME_SURFACE_GLcontext* gl) {
+static ME_SURFACE_GLcall* ME_surface_gl_allocCall(ME_SURFACE_GLcontext* gl) {
     ME_SURFACE_GLcall* ret = NULL;
     if (gl->ncalls + 1 > gl->ccalls) {
         ME_SURFACE_GLcall* calls;
-        int ccalls = ME_surface_gl____maxi(gl->ncalls + 1, 128) + gl->ccalls / 2;  // 1.5x Overallocate
+        int ccalls = ME_surface_gl_maxi(gl->ncalls + 1, 128) + gl->ccalls / 2;  // 1.5x Overallocate
         calls = (ME_SURFACE_GLcall*)realloc(gl->calls, sizeof(ME_SURFACE_GLcall) * ccalls);
         if (calls == NULL) return NULL;
         gl->calls = calls;
@@ -954,11 +954,11 @@ static ME_SURFACE_GLcall* ME_surface_gl____allocCall(ME_SURFACE_GLcontext* gl) {
     return ret;
 }
 
-static int ME_surface_gl____allocPaths(ME_SURFACE_GLcontext* gl, int n) {
+static int ME_surface_gl_allocPaths(ME_SURFACE_GLcontext* gl, int n) {
     int ret = 0;
     if (gl->npaths + n > gl->cpaths) {
         ME_SURFACE_GLpath* paths;
-        int cpaths = ME_surface_gl____maxi(gl->npaths + n, 128) + gl->cpaths / 2;  // 1.5x Overallocate
+        int cpaths = ME_surface_gl_maxi(gl->npaths + n, 128) + gl->cpaths / 2;  // 1.5x Overallocate
         paths = (ME_SURFACE_GLpath*)realloc(gl->paths, sizeof(ME_SURFACE_GLpath) * cpaths);
         if (paths == NULL) return -1;
         gl->paths = paths;
@@ -969,11 +969,11 @@ static int ME_surface_gl____allocPaths(ME_SURFACE_GLcontext* gl, int n) {
     return ret;
 }
 
-static int ME_surface_gl____allocVerts(ME_SURFACE_GLcontext* gl, int n) {
+static int ME_surface_gl_allocVerts(ME_SURFACE_GLcontext* gl, int n) {
     int ret = 0;
     if (gl->nverts + n > gl->cverts) {
         MEsurface_vertex* verts;
-        int cverts = ME_surface_gl____maxi(gl->nverts + n, 4096) + gl->cverts / 2;  // 1.5x Overallocate
+        int cverts = ME_surface_gl_maxi(gl->nverts + n, 4096) + gl->cverts / 2;  // 1.5x Overallocate
         verts = (MEsurface_vertex*)realloc(gl->verts, sizeof(MEsurface_vertex) * cverts);
         if (verts == NULL) return -1;
         gl->verts = verts;
@@ -984,11 +984,11 @@ static int ME_surface_gl____allocVerts(ME_SURFACE_GLcontext* gl, int n) {
     return ret;
 }
 
-static int ME_surface_gl____allocFragUniforms(ME_SURFACE_GLcontext* gl, int n) {
+static int ME_surface_gl_allocFragUniforms(ME_SURFACE_GLcontext* gl, int n) {
     int ret = 0, structSize = gl->fragSize;
     if (gl->nuniforms + n > gl->cuniforms) {
         unsigned char* uniforms;
-        int cuniforms = ME_surface_gl____maxi(gl->nuniforms + n, 128) + gl->cuniforms / 2;  // 1.5x Overallocate
+        int cuniforms = ME_surface_gl_maxi(gl->nuniforms + n, 128) + gl->cuniforms / 2;  // 1.5x Overallocate
         uniforms = (unsigned char*)realloc(gl->uniforms, structSize * cuniforms);
         if (uniforms == NULL) return -1;
         gl->uniforms = uniforms;
@@ -1001,17 +1001,17 @@ static int ME_surface_gl____allocFragUniforms(ME_SURFACE_GLcontext* gl, int n) {
 
 static ME_SURFACE_GLfragUniforms* ME_surface___fragUniformPtr(ME_SURFACE_GLcontext* gl, int i) { return (ME_SURFACE_GLfragUniforms*)&gl->uniforms[i]; }
 
-static void ME_surface_gl____vset(MEsurface_vertex* vtx, float x, float y, float u, float v) {
+static void ME_surface_gl_vset(MEsurface_vertex* vtx, float x, float y, float u, float v) {
     vtx->x = x;
     vtx->y = y;
     vtx->u = u;
     vtx->v = v;
 }
 
-static void ME_surface_gl____renderFill(void* uptr, MEsurface_paint* paint, MEsurface_compositeOperationState compositeOperation, MEsurface_scissor* scissor, float fringe, const float* bounds,
-                                        const MEsurface_path* paths, int npaths) {
+static void ME_surface_gl_renderFill(void* uptr, MEsurface_paint* paint, MEsurface_compositeOperationState compositeOperation, MEsurface_scissor* scissor, float fringe, const float* bounds,
+                                     const MEsurface_path* paths, int npaths) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)uptr;
-    ME_SURFACE_GLcall* call = ME_surface_gl____allocCall(gl);
+    ME_SURFACE_GLcall* call = ME_surface_gl_allocCall(gl);
     MEsurface_vertex* quad;
     ME_SURFACE_GLfragUniforms* frag;
     int i, maxverts, offset;
@@ -1020,11 +1020,11 @@ static void ME_surface_gl____renderFill(void* uptr, MEsurface_paint* paint, MEsu
 
     call->type = ME_SURFACE_GL_FILL;
     call->triangleCount = 4;
-    call->pathOffset = ME_surface_gl____allocPaths(gl, npaths);
+    call->pathOffset = ME_surface_gl_allocPaths(gl, npaths);
     if (call->pathOffset == -1) goto error;
     call->pathCount = npaths;
     call->image = paint->image;
-    call->blendFunc = ME_surface_gl____blendCompositeOperation(compositeOperation);
+    call->blendFunc = ME_surface_gl_blendCompositeOperation(compositeOperation);
 
     if (npaths == 1 && paths[0].convex) {
         call->type = ME_SURFACE_GL_CONVEXFILL;
@@ -1032,8 +1032,8 @@ static void ME_surface_gl____renderFill(void* uptr, MEsurface_paint* paint, MEsu
     }
 
     // Allocate vertices for all the paths.
-    maxverts = ME_surface_gl____maxVertCount(paths, npaths) + call->triangleCount;
-    offset = ME_surface_gl____allocVerts(gl, maxverts);
+    maxverts = ME_surface_gl_maxVertCount(paths, npaths) + call->triangleCount;
+    offset = ME_surface_gl_allocVerts(gl, maxverts);
     if (offset == -1) goto error;
 
     for (i = 0; i < npaths; i++) {
@@ -1059,25 +1059,25 @@ static void ME_surface_gl____renderFill(void* uptr, MEsurface_paint* paint, MEsu
         // Quad
         call->triangleOffset = offset;
         quad = &gl->verts[call->triangleOffset];
-        ME_surface_gl____vset(&quad[0], bounds[2], bounds[3], 0.5f, 1.0f);
-        ME_surface_gl____vset(&quad[1], bounds[2], bounds[1], 0.5f, 1.0f);
-        ME_surface_gl____vset(&quad[2], bounds[0], bounds[3], 0.5f, 1.0f);
-        ME_surface_gl____vset(&quad[3], bounds[0], bounds[1], 0.5f, 1.0f);
+        ME_surface_gl_vset(&quad[0], bounds[2], bounds[3], 0.5f, 1.0f);
+        ME_surface_gl_vset(&quad[1], bounds[2], bounds[1], 0.5f, 1.0f);
+        ME_surface_gl_vset(&quad[2], bounds[0], bounds[3], 0.5f, 1.0f);
+        ME_surface_gl_vset(&quad[3], bounds[0], bounds[1], 0.5f, 1.0f);
 
-        call->uniformOffset = ME_surface_gl____allocFragUniforms(gl, 2);
+        call->uniformOffset = ME_surface_gl_allocFragUniforms(gl, 2);
         if (call->uniformOffset == -1) goto error;
         // Simple shader for stencil
         frag = ME_surface___fragUniformPtr(gl, call->uniformOffset);
         memset(frag, 0, sizeof(*frag));
         frag->strokeThr = -1.0f;
-        frag->type = NSVG_SHADER_SIMPLE;
+        frag->type = ME_SURFACE_SVG_SHADER_SIMPLE;
         // Fill shader
-        ME_surface_gl____convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset + gl->fragSize), paint, scissor, fringe, fringe, -1.0f);
+        ME_surface_gl_convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset + gl->fragSize), paint, scissor, fringe, fringe, -1.0f);
     } else {
-        call->uniformOffset = ME_surface_gl____allocFragUniforms(gl, 1);
+        call->uniformOffset = ME_surface_gl_allocFragUniforms(gl, 1);
         if (call->uniformOffset == -1) goto error;
         // Fill shader
-        ME_surface_gl____convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset), paint, scissor, fringe, fringe, -1.0f);
+        ME_surface_gl_convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset), paint, scissor, fringe, fringe, -1.0f);
     }
 
     return;
@@ -1088,24 +1088,24 @@ error:
     if (gl->ncalls > 0) gl->ncalls--;
 }
 
-static void ME_surface_gl____renderStroke(void* uptr, MEsurface_paint* paint, MEsurface_compositeOperationState compositeOperation, MEsurface_scissor* scissor, float fringe, float strokeWidth,
-                                          const MEsurface_path* paths, int npaths) {
+static void ME_surface_gl_renderStroke(void* uptr, MEsurface_paint* paint, MEsurface_compositeOperationState compositeOperation, MEsurface_scissor* scissor, float fringe, float strokeWidth,
+                                       const MEsurface_path* paths, int npaths) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)uptr;
-    ME_SURFACE_GLcall* call = ME_surface_gl____allocCall(gl);
+    ME_SURFACE_GLcall* call = ME_surface_gl_allocCall(gl);
     int i, maxverts, offset;
 
     if (call == NULL) return;
 
     call->type = ME_SURFACE_GL_STROKE;
-    call->pathOffset = ME_surface_gl____allocPaths(gl, npaths);
+    call->pathOffset = ME_surface_gl_allocPaths(gl, npaths);
     if (call->pathOffset == -1) goto error;
     call->pathCount = npaths;
     call->image = paint->image;
-    call->blendFunc = ME_surface_gl____blendCompositeOperation(compositeOperation);
+    call->blendFunc = ME_surface_gl_blendCompositeOperation(compositeOperation);
 
     // Allocate vertices for all the paths.
-    maxverts = ME_surface_gl____maxVertCount(paths, npaths);
-    offset = ME_surface_gl____allocVerts(gl, maxverts);
+    maxverts = ME_surface_gl_maxVertCount(paths, npaths);
+    offset = ME_surface_gl_allocVerts(gl, maxverts);
     if (offset == -1) goto error;
 
     for (i = 0; i < npaths; i++) {
@@ -1122,17 +1122,17 @@ static void ME_surface_gl____renderStroke(void* uptr, MEsurface_paint* paint, ME
 
     if (gl->flags & ME_SURFACE_STENCIL_STROKES) {
         // Fill shader
-        call->uniformOffset = ME_surface_gl____allocFragUniforms(gl, 2);
+        call->uniformOffset = ME_surface_gl_allocFragUniforms(gl, 2);
         if (call->uniformOffset == -1) goto error;
 
-        ME_surface_gl____convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset), paint, scissor, strokeWidth, fringe, -1.0f);
-        ME_surface_gl____convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset + gl->fragSize), paint, scissor, strokeWidth, fringe, 1.0f - 0.5f / 255.0f);
+        ME_surface_gl_convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset), paint, scissor, strokeWidth, fringe, -1.0f);
+        ME_surface_gl_convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset + gl->fragSize), paint, scissor, strokeWidth, fringe, 1.0f - 0.5f / 255.0f);
 
     } else {
         // Fill shader
-        call->uniformOffset = ME_surface_gl____allocFragUniforms(gl, 1);
+        call->uniformOffset = ME_surface_gl_allocFragUniforms(gl, 1);
         if (call->uniformOffset == -1) goto error;
-        ME_surface_gl____convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset), paint, scissor, strokeWidth, fringe, -1.0f);
+        ME_surface_gl_convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset), paint, scissor, strokeWidth, fringe, -1.0f);
     }
 
     return;
@@ -1143,31 +1143,31 @@ error:
     if (gl->ncalls > 0) gl->ncalls--;
 }
 
-static void ME_surface_gl____renderTriangles(void* uptr, MEsurface_paint* paint, MEsurface_compositeOperationState compositeOperation, MEsurface_scissor* scissor, const MEsurface_vertex* verts,
-                                             int nverts, float fringe) {
+static void ME_surface_gl_renderTriangles(void* uptr, MEsurface_paint* paint, MEsurface_compositeOperationState compositeOperation, MEsurface_scissor* scissor, const MEsurface_vertex* verts,
+                                          int nverts, float fringe) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)uptr;
-    ME_SURFACE_GLcall* call = ME_surface_gl____allocCall(gl);
+    ME_SURFACE_GLcall* call = ME_surface_gl_allocCall(gl);
     ME_SURFACE_GLfragUniforms* frag;
 
     if (call == NULL) return;
 
     call->type = ME_SURFACE_GL_TRIANGLES;
     call->image = paint->image;
-    call->blendFunc = ME_surface_gl____blendCompositeOperation(compositeOperation);
+    call->blendFunc = ME_surface_gl_blendCompositeOperation(compositeOperation);
 
     // Allocate vertices for all the paths.
-    call->triangleOffset = ME_surface_gl____allocVerts(gl, nverts);
+    call->triangleOffset = ME_surface_gl_allocVerts(gl, nverts);
     if (call->triangleOffset == -1) goto error;
     call->triangleCount = nverts;
 
     memcpy(&gl->verts[call->triangleOffset], verts, sizeof(MEsurface_vertex) * nverts);
 
     // Fill shader
-    call->uniformOffset = ME_surface_gl____allocFragUniforms(gl, 1);
+    call->uniformOffset = ME_surface_gl_allocFragUniforms(gl, 1);
     if (call->uniformOffset == -1) goto error;
     frag = ME_surface___fragUniformPtr(gl, call->uniformOffset);
-    ME_surface_gl____convertPaint(gl, frag, paint, scissor, 1.0f, fringe, -1.0f);
-    frag->type = NSVG_SHADER_IMG;
+    ME_surface_gl_convertPaint(gl, frag, paint, scissor, 1.0f, fringe, -1.0f);
+    frag->type = ME_SURFACE_SVG_SHADER_IMG;
 
     return;
 
@@ -1177,12 +1177,12 @@ error:
     if (gl->ncalls > 0) gl->ncalls--;
 }
 
-static void ME_surface_gl____renderDelete(void* uptr) {
+static void ME_surface_gl_renderDelete(void* uptr) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)uptr;
     int i;
     if (gl == NULL) return;
 
-    ME_surface_gl____deleteShader(&gl->shader);
+    ME_surface_gl_deleteShader(&gl->shader);
 
     if (gl->fragBuf != 0) glDeleteBuffers(1, &gl->fragBuf);
 
@@ -1213,18 +1213,18 @@ MEsurface_context* ME_surface_CreateGL3(int flags) {
     memset(gl, 0, sizeof(ME_SURFACE_GLcontext));
 
     memset(&params, 0, sizeof(params));
-    params.renderCreate = ME_surface_gl____renderCreate;
-    params.renderCreateTexture = ME_surface_gl____renderCreateTexture;
-    params.renderDeleteTexture = ME_surface_gl____renderDeleteTexture;
-    params.renderUpdateTexture = ME_surface_gl____renderUpdateTexture;
-    params.renderGetTextureSize = ME_surface_gl____renderGetTextureSize;
-    params.renderViewport = ME_surface_gl____renderViewport;
-    params.renderCancel = ME_surface_gl____renderCancel;
-    params.renderFlush = ME_surface_gl____renderFlush;
-    params.renderFill = ME_surface_gl____renderFill;
-    params.renderStroke = ME_surface_gl____renderStroke;
-    params.renderTriangles = ME_surface_gl____renderTriangles;
-    params.renderDelete = ME_surface_gl____renderDelete;
+    params.renderCreate = ME_surface_gl_renderCreate;
+    params.renderCreateTexture = ME_surface_gl_renderCreateTexture;
+    params.renderDeleteTexture = ME_surface_gl_renderDeleteTexture;
+    params.renderUpdateTexture = ME_surface_gl_renderUpdateTexture;
+    params.renderGetTextureSize = ME_surface_gl_renderGetTextureSize;
+    params.renderViewport = ME_surface_gl_renderViewport;
+    params.renderCancel = ME_surface_gl_renderCancel;
+    params.renderFlush = ME_surface_gl_renderFlush;
+    params.renderFill = ME_surface_gl_renderFill;
+    params.renderStroke = ME_surface_gl_renderStroke;
+    params.renderTriangles = ME_surface_gl_renderTriangles;
+    params.renderDelete = ME_surface_gl_renderDelete;
     params.userPtr = gl;
     params.edgeAntiAlias = flags & ME_SURFACE_ANTIALIAS ? 1 : 0;
 
@@ -1247,7 +1247,7 @@ void ME_surface_DeleteGL3(MEsurface_context* ctx) { ME_surface_DeleteInternal(ct
 
 int ME_surface_CreateImageFromHandleGL3(MEsurface_context* ctx, GLuint textureId, int w, int h, int imageFlags) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)ME_surface_InternalParams(ctx)->userPtr;
-    ME_SURFACE_GLtexture* tex = ME_surface_gl____allocTexture(gl);
+    ME_SURFACE_GLtexture* tex = ME_surface_gl_allocTexture(gl);
 
     if (tex == NULL) return 0;
 
@@ -1262,7 +1262,7 @@ int ME_surface_CreateImageFromHandleGL3(MEsurface_context* ctx, GLuint textureId
 
 GLuint ME_surface_ImageHandleGL3(MEsurface_context* ctx, int image) {
     ME_SURFACE_GLcontext* gl = (ME_SURFACE_GLcontext*)ME_surface_InternalParams(ctx)->userPtr;
-    ME_SURFACE_GLtexture* tex = ME_surface_gl____findTexture(gl, image);
+    ME_SURFACE_GLtexture* tex = ME_surface_gl_findTexture(gl, image);
     return tex->tex;
 }
 

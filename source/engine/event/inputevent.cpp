@@ -18,6 +18,7 @@ bool ControlSystem::initted = false;
 KeyControl *ControlSystem::STATS_DISPLAY = nullptr;
 KeyControl *ControlSystem::STATS_DISPLAY_DETAILED = nullptr;
 KeyControl *ControlSystem::DEBUG_UI = nullptr;
+KeyControl *ControlSystem::CONSOLE_UI = nullptr;
 KeyControl *ControlSystem::DEBUG_REFRESH = nullptr;
 KeyControl *ControlSystem::DEBUG_UPDATE_WORLD_MESH = nullptr;
 KeyControl *ControlSystem::DEBUG_TICK = nullptr;
@@ -75,6 +76,7 @@ void ControlSystem::InitKey() {
     STATS_DISPLAY = Add(ME::create_ref<KeyControl>(SDLK_o, RISING));
     STATS_DISPLAY_DETAILED = Add(ME::create_ref<KeyControl>(SDLK_LSHIFT, MOMENTARY));
     DEBUG_UI = Add(ME::create_ref<KeyControl>(SDLK_TAB, RISING));
+    CONSOLE_UI = Add(ME::create_ref<KeyControl>(SDLK_BACKQUOTE, RISING));
     DEBUG_REFRESH = Add(ME::create_ref<KeyControl>(SDLK_KP_0, RISING));
     DEBUG_UPDATE_WORLD_MESH = Add(ME::create_ref<KeyControl>(SDLK_KP_1, RISING));
     DEBUG_TICK = Add(ME::create_ref<KeyControl>(SDLK_KP_2, RISING));
