@@ -163,7 +163,7 @@ void UntexturedShader::Update(float mvp[], GLfloat gldata[]) {
     glEnableVertexAttribArray(color_loc);
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, 8 * 21, gldata, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(gldata), gldata, GL_STREAM_DRAW);
 
     glVertexAttribPointer(vertex_loc,
                           3,                  // size

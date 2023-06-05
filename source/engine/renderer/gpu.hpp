@@ -33,6 +33,12 @@ void surface_test_1(MEsurface_context *_vg, const float _x, const float _y, cons
 void surface_test_2(MEsurface_context *_vg, const float _x, const float _y, const float _w, const float _h);
 void surface_test_3(MEsurface_context *_vg, const float _x, const float _y, const float _arc_radius);
 
+void begin_3d(R_Target *screen);
+void end_3d(R_Target *screen);
+void draw_spinning_triangle(R_Target *screen);
+void draw_3d_stuff(R_Target *screen);
+void draw_more_3d_stuff(R_Target *screen);
+
 ME_PRIVATE(char const *) gl_error_string(GLenum const err) noexcept {
     switch (err) {
         // opengl 2 errors (8)
@@ -72,8 +78,12 @@ ME_PRIVATE(char const *) gl_error_string(GLenum const err) noexcept {
 
 ME_PRIVATE(void) ME_check_gl_error(const char *file, const int line) {
     GLenum err;
+    static GLenum last_err = -1;
     while ((err = glGetError()) != GL_NO_ERROR) {
-        METADOT_ERROR(std::format("[Render] {0}({1}) {2}", file, line, gl_error_string(err)).c_str());
+        if (last_err != err) {
+            last_err = err;
+            METADOT_ERROR(std::format("[Render] {0}({1}) {2}", file, line, gl_error_string(err)).c_str());
+        }
     }
 }
 
@@ -272,7 +282,7 @@ void inspect_vertex_array(const char *label, GLuint vao);
 
 #if 1
 
-class DebugDraw {
+class ME_debugdraw {
 
 private:
     u32 m_drawFlags;
@@ -291,8 +301,8 @@ public:
     float yOfs = 0;
     float scale = 1;
 
-    DebugDraw(R_Target *target);
-    ~DebugDraw();
+    ME_debugdraw(R_Target *target);
+    ~ME_debugdraw();
 
     void Create();
     void Destroy();

@@ -311,3 +311,5 @@ int ve_fontcache_LRU_peek(ve_fontcache_LRU& LRU, uint64_t key);
 uint64_t ve_fontcache_LRU_put(ve_fontcache_LRU& LRU, uint64_t key, int val);
 void ve_fontcache_LRU_refresh(ve_fontcache_LRU& LRU, uint64_t key);
 uint64_t ve_fontcache_LRU_get_next_evicted(ve_fontcache_LRU& LRU);
+
+bool ve_fontcache_cache_glyph(ve_fontcache* cache, ve_font_id font, ve_glyph glyph_index, float scaleX = 1.0f, float scaleY = 1.0f, float translateX = 0.0f, float translateY = 0.0f);

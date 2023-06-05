@@ -480,23 +480,23 @@ Trie InitTrie() {
     return t;
 }
 
-void ME_FREETrieInternal(Trie *trie) {
+void FreeTrieInternal(Trie *trie) {
     if (!trie) return;
     if (trie->branch['\0']) {
         ME_FREE(trie->branch['\0']);
         trie->branch['\0'] = NULL;
     }
     for (int i = 0; i < TRIE_ALPHABET_SIZE; i++) {
-        ME_FREETrieInternal((Trie *)trie->branch[i]);
+        FreeTrieInternal((Trie *)trie->branch[i]);
         trie->branch[i] = NULL;
     }
     ME_FREE(trie);
 }
 
-void ME_FREETrie(Trie *trie) {
+void FreeTrie(Trie *trie) {
     if (!trie) return;
     for (int i = 0; i < TRIE_ALPHABET_SIZE; i++) {
-        ME_FREETrieInternal((Trie *)trie->branch[i]);
+        FreeTrieInternal((Trie *)trie->branch[i]);
         trie->branch[i] = NULL;
     }
 

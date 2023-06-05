@@ -117,6 +117,8 @@ void metadot_gl_get_max_texture_size(int *w, int *h) {
 
 int metadot_initwindow() {
 
+    // metadot_platform_init_dpi();
+
     // init sdl
     METADOT_INFO("Initializing SDL...");
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
@@ -206,8 +208,8 @@ int metadot_initwindow() {
     METADOT_INFO("Max texture size: %ix%i", tex_w, tex_h);
 #endif
 
-    //glEnable(GL_DEBUG_OUTPUT);
-    //glDebugMessageCallback(ME::DebugOutputGL::GLerrorCallback, nullptr);
+    // glEnable(GL_DEBUG_OUTPUT);
+    // glDebugMessageCallback(ME::DebugOutputGL::GLerrorCallback, nullptr);
 
     global.audio.InitAudio();
 

@@ -713,6 +713,13 @@ struct MEstring {
     std::string m_String;
 };
 
+template <typename T>
+ME_INLINE std::string to_string(const T &val) {
+    std::stringstream ss;
+    ss << val;
+    return ss.str();
+}
+
 long long ME_gettime();
 double ME_gettime_d();
 time_t ME_gettime_mkgmtime(struct tm *unixdate);

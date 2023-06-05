@@ -21,9 +21,17 @@ public:
     const char *vertex_shader_file;
     const char *fragment_shader_file;
 
+    std::string_view shader_name;
+
     u32 Init();
     void Unload();
     void Activate();
 };
+
+#define ShaderBaseDecl()                                                    \
+    u32 Init() {                                                            \
+        this->shader_name = MetaEngine::type_name<decltype(this)>().View(); \
+        return __super::Init();                                             \
+    }
 
 #endif

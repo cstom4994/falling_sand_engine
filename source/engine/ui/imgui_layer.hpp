@@ -208,7 +208,7 @@ private:
     ME::MEconsole console;
 
     // pack editor
-    pack_editor m_pack_editor;
+    PackEditor m_pack_editor;
 
 private:
     static void (*RendererShutdownFunction)();

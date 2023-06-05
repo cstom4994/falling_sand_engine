@@ -1,3 +1,4 @@
+// Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
 #ifndef ME_PACK_EDITOR_H
 #define ME_PACK_EDITOR_H
@@ -7,7 +8,7 @@
 #include "engine/ui/file_browser.h"
 #include "engine/ui/imgui_helper.hpp"
 
-class pack_editor {
+class PackEditor {
 private:
     // pack editor
     ME_pack_reader pack_reader;
@@ -23,9 +24,9 @@ private:
     ImGui::FileBrowser file_dialog;
 
 public:
-    void init();
-    void end();
-    void draw();
+    void Init();
+    void End();
+    void Draw();
 };
 
 #endif

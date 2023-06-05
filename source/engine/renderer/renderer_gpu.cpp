@@ -142,7 +142,7 @@ void gpu_free_renderer_register(void);
 
 /*! A mapping of windowID to a R_Target to facilitate R_GetWindowTarget(). */
 typedef struct R_WindowMapping {
-    Uint32 windowID;
+    u32 windowID;
     R_Target *target;
 } R_WindowMapping;
 
@@ -161,7 +161,7 @@ static R_WindowMapping *gpu_window_mappings = NULL;
 static int gpu_window_mappings_size = 0;
 static int gpu_num_window_mappings = 0;
 
-static Uint32 gpu_init_windowID = 0;
+static u32 gpu_init_windowID = 0;
 
 static R_InitFlagEnum gpu_preinit_flags = R_DEFAULT_INIT_FLAGS;
 static R_InitFlagEnum gpu_required_features = 0;
@@ -195,15 +195,15 @@ bool R_GetCoordinateMode(void) {
 
 R_Renderer *R_GetCurrentRenderer(void) { return gpu_current_renderer; }
 
-Uint32 R_GetCurrentShaderProgram(void) {
+u32 R_GetCurrentShaderProgram(void) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return 0;
 
     return gpu_current_renderer->current_context_target->context->current_shader_program;
 }
 
-void R_SetInitWindow(Uint32 windowID) { gpu_init_windowID = windowID; }
+void R_SetInitWindow(u32 windowID) { gpu_init_windowID = windowID; }
 
-Uint32 R_GetInitWindow(void) { return gpu_init_windowID; }
+u32 R_GetInitWindow(void) { return gpu_init_windowID; }
 
 void R_SetPreInitFlags(R_InitFlagEnum R_flags) { gpu_preinit_flags = R_flags; }
 
@@ -240,7 +240,7 @@ static void gpu_init_window_mappings(void) {
 }
 
 void R_AddWindowMapping(R_Target *target) {
-    Uint32 windowID;
+    u32 windowID;
     int i;
 
     if (gpu_window_mappings == NULL) gpu_init_window_mappings();
@@ -280,7 +280,7 @@ void R_AddWindowMapping(R_Target *target) {
     gpu_num_window_mappings++;
 }
 
-void R_RemoveWindowMapping(Uint32 windowID) {
+void R_RemoveWindowMapping(u32 windowID) {
     int i;
 
     if (gpu_window_mappings == NULL) gpu_init_window_mappings();
@@ -306,7 +306,7 @@ void R_RemoveWindowMapping(Uint32 windowID) {
 }
 
 void R_RemoveWindowMappingByTarget(R_Target *target) {
-    Uint32 windowID;
+    u32 windowID;
     int i;
 
     if (gpu_window_mappings == NULL) gpu_init_window_mappings();
@@ -333,7 +333,7 @@ void R_RemoveWindowMappingByTarget(R_Target *target) {
     }
 }
 
-R_Target *R_GetWindowTarget(Uint32 windowID) {
+R_Target *R_GetWindowTarget(u32 windowID) {
     int i;
 
     if (gpu_window_mappings == NULL) gpu_init_window_mappings();
@@ -417,7 +417,7 @@ bool R_IsFeatureEnabled(R_FeatureEnum feature) {
     return ((gpu_current_renderer->enabled_features & feature) == feature);
 }
 
-R_Target *R_CreateTargetFromWindow(Uint32 windowID) {
+R_Target *R_CreateTargetFromWindow(u32 windowID) {
     if (gpu_current_renderer == NULL) return NULL;
 
     return CreateTargetFromWindow(gpu_current_renderer, windowID, NULL);
@@ -431,7 +431,7 @@ R_Target *R_CreateAliasTarget(R_Target *target) {
     return CreateAliasTarget(gpu_current_renderer, target);
 }
 
-void R_MakeCurrent(R_Target *target, Uint32 windowID) {
+void R_MakeCurrent(R_Target *target, u32 windowID) {
     if (gpu_current_renderer == NULL) return;
 
     MakeCurrent(gpu_current_renderer, target, windowID);
@@ -817,7 +817,7 @@ bool R_ReplaceImage(R_Image *image, void *surface, const ME_rect *surface_rect) 
 
 static SDL_Surface *gpu_copy_raw_surface_data(unsigned char *data, int width, int height, int channels) {
     int i;
-    Uint32 Rmask, Gmask, Bmask, Amask = 0;
+    u32 Rmask, Gmask, Bmask, Amask = 0;
     SDL_Surface *result;
 
     if (data == NULL) {
@@ -1531,33 +1531,33 @@ void R_Flip(R_Target *target) {
 
 // Shader API
 
-Uint32 R_CompileShader(R_ShaderEnum shader_type, const char *shader_source) {
+u32 R_CompileShader(R_ShaderEnum shader_type, const char *shader_source) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return 0;
 
     return CompileShader(gpu_current_renderer, shader_type, shader_source);
 }
 
-bool R_LinkShaderProgram(Uint32 program_object) {
+bool R_LinkShaderProgram(u32 program_object) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return false;
 
     return LinkShaderProgram(gpu_current_renderer, program_object);
 }
 
-Uint32 R_CreateShaderProgram(void) {
+u32 R_CreateShaderProgram(void) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return 0;
 
     return CreateShaderProgram(gpu_current_renderer);
 }
 
-Uint32 R_LinkShaders(Uint32 shader_object1, Uint32 shader_object2) {
-    Uint32 shaders[2];
+u32 R_LinkShaders(u32 shader_object1, u32 shader_object2) {
+    u32 shaders[2];
     shaders[0] = shader_object1;
     shaders[1] = shader_object2;
     return R_LinkManyShaders(shaders, 2);
 }
 
-Uint32 R_LinkManyShaders(Uint32 *shader_objects, int count) {
-    Uint32 p;
+u32 R_LinkManyShaders(u32 *shader_objects, int count) {
+    u32 p;
     int i;
 
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return 0;
@@ -1574,31 +1574,31 @@ Uint32 R_LinkManyShaders(Uint32 *shader_objects, int count) {
     return 0;
 }
 
-void R_FreeShader(Uint32 shader_object) {
+void R_FreeShader(u32 shader_object) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
     FreeShader(gpu_current_renderer, shader_object);
 }
 
-void R_FreeShaderProgram(Uint32 program_object) {
+void R_FreeShaderProgram(u32 program_object) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
     FreeShaderProgram(gpu_current_renderer, program_object);
 }
 
-void R_AttachShader(Uint32 program_object, Uint32 shader_object) {
+void R_AttachShader(u32 program_object, u32 shader_object) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
     AttachShader(gpu_current_renderer, program_object, shader_object);
 }
 
-void R_DetachShader(Uint32 program_object, Uint32 shader_object) {
+void R_DetachShader(u32 program_object, u32 shader_object) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
     DetachShader(gpu_current_renderer, program_object, shader_object);
 }
 
-bool R_IsDefaultShaderProgram(Uint32 program_object) {
+bool R_IsDefaultShaderProgram(u32 program_object) {
     R_Context *context;
 
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return false;
@@ -1607,7 +1607,7 @@ bool R_IsDefaultShaderProgram(Uint32 program_object) {
     return (program_object == context->default_textured_shader_program || program_object == context->default_untextured_shader_program);
 }
 
-void R_ActivateShaderProgram(Uint32 program_object, R_ShaderBlock *block) {
+void R_ActivateShaderProgram(u32 program_object, R_ShaderBlock *block) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
     ActivateShaderProgram(gpu_current_renderer, program_object, block);
@@ -1625,7 +1625,7 @@ const char *R_GetShaderMessage(void) {
     return GetShaderMessage(gpu_current_renderer);
 }
 
-int R_GetAttributeLocation(Uint32 program_object, const char *attrib_name) {
+int R_GetAttributeLocation(u32 program_object, const char *attrib_name) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return 0;
 
     return GetAttributeLocation(gpu_current_renderer, program_object, attrib_name);
@@ -1650,13 +1650,13 @@ R_Attribute R_MakeAttribute(int location, void *values, R_AttributeFormat format
     return a;
 }
 
-int R_GetUniformLocation(Uint32 program_object, const char *uniform_name) {
+int R_GetUniformLocation(u32 program_object, const char *uniform_name) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return 0;
 
     return GetUniformLocation(gpu_current_renderer, program_object, uniform_name);
 }
 
-R_ShaderBlock R_LoadShaderBlock(Uint32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name) {
+R_ShaderBlock R_LoadShaderBlock(u32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) {
         R_ShaderBlock b;
         b.position_loc = -1;
@@ -1694,7 +1694,7 @@ void R_SetShaderImage(R_Image *image, int location, int image_unit) {
     SetShaderImage(gpu_current_renderer, image, location, image_unit);
 }
 
-void R_GetUniformiv(Uint32 program_object, int location, int *values) {
+void R_GetUniformiv(u32 program_object, int location, int *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
     GetUniformiv(gpu_current_renderer, program_object, location, values);
@@ -1712,7 +1712,7 @@ void R_SetUniformiv(int location, int num_elements_per_value, int num_values, in
     SetUniformiv(gpu_current_renderer, location, num_elements_per_value, num_values, values);
 }
 
-void R_GetUniformuiv(Uint32 program_object, int location, unsigned int *values) {
+void R_GetUniformuiv(u32 program_object, int location, unsigned int *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
     GetUniformuiv(gpu_current_renderer, program_object, location, values);
@@ -1730,7 +1730,7 @@ void R_SetUniformuiv(int location, int num_elements_per_value, int num_values, u
     SetUniformuiv(gpu_current_renderer, location, num_elements_per_value, num_values, values);
 }
 
-void R_GetUniformfv(Uint32 program_object, int location, float *values) {
+void R_GetUniformfv(u32 program_object, int location, float *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
     GetUniformfv(gpu_current_renderer, program_object, location, values);
@@ -1749,7 +1749,7 @@ void R_SetUniformfv(int location, int num_elements_per_value, int num_values, fl
 }
 
 // Same as R_GetUniformfv()
-void R_GetUniformMatrixfv(Uint32 program_object, int location, float *values) {
+void R_GetUniformMatrixfv(u32 program_object, int location, float *values) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
     GetUniformfv(gpu_current_renderer, program_object, location, values);

@@ -208,6 +208,13 @@ void metadot_set_windowtitle(const char* title);
 char* metadot_clipboard_get();
 void metadot_clipboard_set(const char* string);
 
+ME_INLINE void metadot_platform_init_dpi() {
+#ifdef _WIN32
+#include <Windows.h>
+    SetProcessDPIAware();
+#endif
+}
+
 #pragma region strings
 
 #ifndef _WIN32

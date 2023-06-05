@@ -1,18 +1,19 @@
+// Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
 #include "pack_editor.h"
 
-void pack_editor::init() {
+void PackEditor::Init() {
     file_dialog.SetTitle("选择包");
     file_dialog.SetTypeFilters({".pack"});
 }
 
-void pack_editor::end() {
+void PackEditor::End() {
     if (pack_reader_is_loaded) {
         ME_destroy_pack_reader(pack_reader);
     }
 }
 
-void pack_editor::draw() {
+void PackEditor::Draw() {
     if (ImGui::Begin("包编辑器")) {
 
         if (ImGui::Button("打开包") && !pack_reader_is_loaded) file_dialog.Open();

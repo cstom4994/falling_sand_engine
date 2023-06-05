@@ -228,7 +228,7 @@ void ve_fontcache_blit_quad(ve_fontcache_drawlist& drawlist, float x0 = 0.0f, fl
     }
 }
 
-bool ve_fontcache_cache_glyph(ve_fontcache* cache, ve_font_id font, ve_glyph glyph_index, float scaleX = 1.0f, float scaleY = 1.0f, float translateX = 0.0f, float translateY = 0.0f) {
+bool ve_fontcache_cache_glyph(ve_fontcache* cache, ve_font_id font, ve_glyph glyph_index, float scaleX, float scaleY, float translateX, float translateY) {
     STBTT_assert(cache);
     STBTT_assert(font >= 0 && font < cache->entry.size());
     ve_fontcache_entry& entry = cache->entry[font];

@@ -716,10 +716,10 @@ int ME_fontcache::ME_fontcache_init() {
     {
         auto start = std::chrono::high_resolution_clock::now();
         for (int i = 0; i < numGlyphs; i++) {
-            // ve_fontcache_cache_glyph( &cache, id, 0x3091 );
-            // ve_fontcache_cache_glyph( &cache, id, 'o' );
+            // ve_fontcache_cache_glyph(&cache, id, 0x3091);
+            // ve_fontcache_cache_glyph(&cache, id, 'o');
         }
-        // ve_fontcache_flush_drawlist( &cache );
+        ve_fontcache_flush_drawlist(&cache);
         auto finish = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double, std::milli> elapsed = finish - start;
         METADOT_BUG(std::format("[UI] fontcache_cache_glyph() benchmark: total {0:.6f} ms for {1} glyphs, per-glyph {2} ms", elapsed.count(), numGlyphs, elapsed.count() / numGlyphs).c_str());

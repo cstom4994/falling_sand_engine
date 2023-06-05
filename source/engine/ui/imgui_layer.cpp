@@ -744,7 +744,7 @@ void ImGuiLayer::Init() {
     ME_ASSERT_E(imguiIMMCommunication.subclassify(Core.window));
 #endif
 
-    m_pack_editor.init();
+    m_pack_editor.Init();
 
     editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
 
@@ -857,7 +857,7 @@ void ImGuiLayer::Init() {
 }
 
 void ImGuiLayer::End() {
-    m_pack_editor.end();
+    m_pack_editor.End();
 
     RendererShutdownFunction();
     PlatformShutdownFunction();
@@ -956,7 +956,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
     bool interactingWithTextbox;
     if (global.game->GameIsolate_.globaldef.draw_console) console.display_full(&interactingWithTextbox);
 
-    if (global.game->GameIsolate_.globaldef.draw_pack_editor) m_pack_editor.draw();
+    if (global.game->GameIsolate_.globaldef.draw_pack_editor) m_pack_editor.Draw();
 
     auto cpos = editor.GetCursorPosition();
     if (global.game->GameIsolate_.globaldef.ui_tweak) {

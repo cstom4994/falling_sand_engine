@@ -125,7 +125,7 @@ void b2OpenDump(const char *fileName);
 void b2Dump(const char *string, ...);
 void b2CloseDump();
 
-struct DebugDraw;
+struct ME_debugdraw;
 
 #pragma endregion COMMON
 
@@ -368,7 +368,7 @@ public:
     virtual void ShiftOrigin(const PVec2 &newOrigin) { B2_NOT_USED(newOrigin); }
 
     /// Debug draw this joint
-    virtual void Draw(DebugDraw *draw) const;
+    virtual void Draw(ME_debugdraw *draw) const;
 
 protected:
     friend class b2World;
@@ -2016,7 +2016,7 @@ public:
     void Dump() override;
 
     ///
-    void Draw(DebugDraw *draw) const override;
+    void Draw(ME_debugdraw *draw) const override;
 
 protected:
     friend class b2Joint;
@@ -2598,7 +2598,7 @@ public:
     void Dump() override;
 
     ///
-    void Draw(DebugDraw *draw) const override;
+    void Draw(ME_debugdraw *draw) const override;
 
 protected:
     friend class b2Joint;
@@ -2903,7 +2903,7 @@ public:
     void Dump() override;
 
     ///
-    void Draw(DebugDraw *draw) const override;
+    void Draw(ME_debugdraw *draw) const override;
 
 protected:
     friend class b2Joint;
@@ -3195,7 +3195,7 @@ public:
     void Dump() override;
 
     ///
-    void Draw(DebugDraw *draw) const override;
+    void Draw(ME_debugdraw *draw) const override;
 
 protected:
     friend class b2Joint;
@@ -4251,9 +4251,9 @@ public:
     void SetContactListener(b2ContactListener *listener);
 
     /// Register a routine for debug drawing. The debug draw functions are called
-    /// inside with b2World::DebugDraw method. The debug draw object is owned
+    /// inside with b2World::ME_debugdraw method. The debug draw object is owned
     /// by you and must remain in scope.
-    void SetDebugDraw(DebugDraw *debugDraw);
+    void SetDebugDraw(ME_debugdraw *debugDraw);
 
     /// Create a rigid body given a definition. No reference to the definition
     /// is retained.
@@ -4292,7 +4292,7 @@ public:
     void ClearForces();
 
     /// Call this to draw shapes and other debug draw data. This is intentionally non-const.
-    void DebugDraw();
+    void ME_debugdraw();
 
     /// Query the world for all fixtures that potentially overlap the
     /// provided AABB.
@@ -4422,7 +4422,7 @@ private:
     bool m_allowSleep;
 
     b2DestructionListener *m_destructionListener;
-    class DebugDraw *m_debugDraw;
+    class ME_debugdraw *m_debugDraw;
 
     // This is used to compute the time step ratio to
     // support a variable time step.
@@ -4932,7 +4932,7 @@ public:
     void Reset(const PVec2 &position);
 
     ///
-    void Draw(DebugDraw *draw) const;
+    void Draw(ME_debugdraw *draw) const;
 
 private:
     void SolveStretch_PBD();

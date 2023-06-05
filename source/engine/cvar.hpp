@@ -3,6 +3,8 @@
 #define ME_CVAR_HPP
 
 #include "engine/core/core.hpp"
+#include "engine/core/cpp/type.hpp"
+#include "engine/game_utils/jsonwarp.h"
 #include "engine/meta/reflection.hpp"
 
 struct GlobalDEF {
@@ -57,5 +59,40 @@ METADOT_STRUCT(GlobalDEF, draw_frame_graph, draw_background, draw_background_gri
 void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs);
 void LoadGlobalDEF(std::string globaldef_src);
 void SaveGlobalDEF(std::string globaldef_src);
+
+namespace ME::cvar {
+
+template <typename T>
+T Cast(std::string) {
+    throw no_cast_available(0, "");
+}
+
+#define CVAR_CAST_DEF(_type, _func)              \
+    template <>                                  \
+    _type ME::cvar::Cast<_type>(std::string s) { \
+        return _func(s);                         \
+    }
+
+#define CVAR_CAST_DECL(_type) \
+    template <>               \
+    _type Cast<_type>(std::string s)
+
+CVAR_CAST_DECL(char);
+CVAR_CAST_DECL(short);
+CVAR_CAST_DECL(int);
+CVAR_CAST_DECL(long);
+CVAR_CAST_DECL(float);
+CVAR_CAST_DECL(double);
+CVAR_CAST_DECL(long double);
+CVAR_CAST_DECL(std::string);
+CVAR_CAST_DECL(const char *);
+
+template <typename T>
+std::string NameOFType() {
+    std::string_view name_of_type = MetaEngine::type_name<T>().View();
+    std::string name_of_type_str = std::string(name_of_type.data(), name_of_type.size());
+    return name_of_type_str;
+}
+}  // namespace ME::cvar
 
 #endif

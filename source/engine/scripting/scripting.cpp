@@ -31,8 +31,6 @@
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 
-extern void LoadImGuiBindings(lua_State *l);
-
 // in warp_surface.cpp
 extern int luaopen_surface(lua_State *L);
 extern int luaopen_surface_color(lua_State *L);
@@ -230,10 +228,6 @@ static void InitLua(LuaCore *lc) {
 
     ME_preload_auto(lc->L, luaopen_surface, "_ME_surface");
     ME_preload_auto(lc->L, luaopen_surface_color, "_ME_surface_color");
-
-    LoadImGuiBindings(lc->L);
-
-    // ME_preload_auto(lc->L, luaopen_lpeg, "lpeg");
 
     ME_preload_auto(lc->L, ffi_module_open, "ffi");
     ME_preload_auto(lc->L, luaopen_lbind, "lbind");

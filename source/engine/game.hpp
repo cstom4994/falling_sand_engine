@@ -59,7 +59,7 @@ public:
     EnumGameState state = LOADING;
     EnumGameState stateAfterLoad = MAIN_MENU;
 
-    DebugDraw *debugDraw;
+    ME_debugdraw *debugDraw;
     ME_fontcache fontcache;
 
     MEsurface_context *surface;

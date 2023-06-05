@@ -36,6 +36,7 @@
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/scripting.hpp"
+#include "engine/scripting/wrap/wrap_imgui.hpp"
 #include "engine/ui/surface.h"
 #include "engine/ui/surface_gl.h"
 #include "game_basic.hpp"
@@ -76,10 +77,6 @@ Game::~Game() {
 
     // Stop memory setting and GC
     ME_mem_end();
-
-#if defined(ME_LEAK_TEST)
-    ME_get_leaks_info();
-#endif
 }
 
 int Game::init(int argc, char *argv[]) {
@@ -142,7 +139,7 @@ int Game::init(int argc, char *argv[]) {
     // register & set up materials
     METADOT_INFO("Setting up materials...");
     movingTiles = new u16[global.GameData_.materials_count];
-    debugDraw = new DebugDraw(Render.target);
+    debugDraw = new ME_debugdraw(Render.target);
 
     global.audio.LoadEvent("event:/World/Explode", "explode.ogg");
     global.audio.LoadEvent("event:/Music/Title", "title.ogg");
@@ -207,6 +204,8 @@ void Game::createTexture() {
 
     METADOT_LOG_SCOPE_FUNCTION(INFO);
     METADOT_INFO("Creating world textures...");
+
+    auto start = std::chrono::high_resolution_clock::now();
 
     if (TexturePack_.loadingTexture) {
         R_FreeImage(TexturePack_.loadingTexture);
@@ -396,7 +395,10 @@ void Game::createTexture() {
 
     init_pixels();
 
-    METADOT_INFO("Creating world textures done");
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = finish - start;
+
+    METADOT_INFO(std::format("Creating world textures done in {0:.4f} ms", elapsed.count()).c_str());
 }
 
 int Game::run(int argc, char *argv[]) {
@@ -406,7 +408,7 @@ int Game::run(int argc, char *argv[]) {
     ME_rect fbo_simple_rect = {65.0f, 10.0f, 50.0f, 50.0f};  // Blitting Destination
     R_Image *fbo_simple = generateFBO(surface, fbo_simple_rect.w, fbo_simple_rect.h, surface_test_1);
 
-    ME_rect fbo_complex_rect = {0.0f, 0.0f, Screen.windowWidth, Screen.windowHeight};  // Blitting Destination
+    ME_rect fbo_complex_rect = {0.0f, 0.0f, (float)Screen.windowWidth, (float)Screen.windowHeight};  // Blitting Destination
     R_Image *fbo_complex = generateFBO(surface, fbo_complex_rect.w, fbo_complex_rect.h, surface_test_2);
 
     // start loading chunks
@@ -978,9 +980,20 @@ int Game::run(int argc, char *argv[]) {
         arc_radius += 1.0f;
 
         // R_BlitRectX(fbo_complex, NULL, Render.target, &fbo_complex_rect, 0.0f, 0.0f, 0.0f,
-        //             R_FLIP_VERTICAL);  // IMPORTANT: GPU_BlitRectX is required to use GPU_FLIP_VERTICAL which is required for MEsurface_GLframebuffer data (why???)
+        //             R_FLIP_VERTICAL);  // IMPORTANT: R_BlitRectX is required to use R_FLIP_VERTICAL which is required for MEsurface_GLframebuffer data (why???)
         // R_BlitRectX(fbo_simple, NULL, Render.target, &fbo_simple_rect, 0.0f, 0.0f, 0.0f,
-        //             R_FLIP_VERTICAL);  // IMPORTANT: GPU_BlitRectX is required to use GPU_FLIP_VERTICAL which is required for MEsurface_GLframebuffer data (why???)
+        //             R_FLIP_VERTICAL);  // IMPORTANT: R_BlitRectX is required to use R_FLIP_VERTICAL which is required for MEsurface_GLframebuffer data (why???)
+
+        // R_FlushBlitBuffer();
+        // draw_3d_stuff(Render.target);
+        // Render.target = Render.realTarget;
+        // R_ResetRendererState();
+
+        // for (i = 0; i < numSprites; i++) {
+        //     R_Blit(image, NULL, screen, x[i], y[i]);
+        // }
+
+        // draw_more_3d_stuff(Render.target);
 
         R_FlushBlitBuffer();  // IMPORTANT: run R_FlushBlitBuffer before BeginFrame
         ME_surface_BeginFrame(surface, Screen.windowWidth, Screen.windowHeight, px_ratio);
@@ -1084,6 +1097,32 @@ int Game::run(int argc, char *argv[]) {
         }
 
         tickProfiler();
+
+        INVOKE_ONCE(lua_bind::l_G = Scripting::get_singleton_ptr()->Lua->L; lua_bind::imgui_init_lua(););
+        // INVOKE_ONCE(Scripting::get_singleton_ptr()->Lua->s_lua.dostring(R"(
+        //  -- Main window
+        //  local Window = ImGui.new("Window", "example title")
+        //  -- Inner elements
+        //  local Label = ImGui.new("Label", Window)
+        //  local TabSelector = ImGui.new("TabSelector", Window)
+        //  local Tab1 = TabSelector:AddTab("Tab1")
+        //  local Tab2 = TabSelector:AddTab("Tab2")
+        //  local Button = ImGui.new("Button", Tab1)
+        //  local Slider = ImGui.new("Slider", Tab1, true) -- (boolean: 3) aligns it side-by-side !
+        //  local ColorPicker = ImGui.new("ColorPicker", Tab2)
+        //  Label.Text = "这个窗口由Lua脚本控制"
+        //  Slider.Text = "Slider Example"
+        //  Button.Text = "Button Example"
+        //  ColorPicker.Text = "Color Picker Example"
+        //  Slider.Min = -10
+        //  Slider.Max = 10
+        //  Button.Callback = function()
+        //    ImGui.new("Label", Tab1).Text = "Hello world"
+        //  end
+        //      )"););
+        for (auto &w : lua_bind::windows) {
+            w.render();
+        }
 
         GameIsolate_.ui->UIRendererDrawImGui();
 
@@ -2562,9 +2601,6 @@ void Game::tickProfiler() {
     {
         ME_profiler_scope_auto("Profiler");
 
-        float gpuTimes[3];
-        int i, n;
-
         if (global.game->GameIsolate_.globaldef.draw_profiler) {
             static profiler_frame frame_data;
             ME_profiler_get_frame(&frame_data);
@@ -3226,12 +3262,12 @@ void Game::renderOverlays() {
         debugDraw->xOfs = global.GameData_.ofsX + global.GameData_.camX;
         debugDraw->yOfs = global.GameData_.ofsY + global.GameData_.camY;
         debugDraw->SetFlags(0);
-        if (GameIsolate_.globaldef.draw_b2d_shape) debugDraw->AppendFlags(DebugDraw::e_shapeBit);
-        if (GameIsolate_.globaldef.draw_b2d_joint) debugDraw->AppendFlags(DebugDraw::e_jointBit);
-        if (GameIsolate_.globaldef.draw_b2d_aabb) debugDraw->AppendFlags(DebugDraw::e_aabbBit);
-        if (GameIsolate_.globaldef.draw_b2d_pair) debugDraw->AppendFlags(DebugDraw::e_pairBit);
-        if (GameIsolate_.globaldef.draw_b2d_centerMass) debugDraw->AppendFlags(DebugDraw::e_centerOfMassBit);
-        GameIsolate_.world->b2world->DebugDraw();
+        if (GameIsolate_.globaldef.draw_b2d_shape) debugDraw->AppendFlags(ME_debugdraw::e_shapeBit);
+        if (GameIsolate_.globaldef.draw_b2d_joint) debugDraw->AppendFlags(ME_debugdraw::e_jointBit);
+        if (GameIsolate_.globaldef.draw_b2d_aabb) debugDraw->AppendFlags(ME_debugdraw::e_aabbBit);
+        if (GameIsolate_.globaldef.draw_b2d_pair) debugDraw->AppendFlags(ME_debugdraw::e_pairBit);
+        if (GameIsolate_.globaldef.draw_b2d_centerMass) debugDraw->AppendFlags(ME_debugdraw::e_centerOfMassBit);
+        GameIsolate_.world->b2world->ME_debugdraw();
     }
 
     // Drawing::drawText("fps",
@@ -3530,8 +3566,15 @@ void Game::ResolutionChanged(int newWidth, int newHeight) {
     global.game->accLoadY -= (newHeight - prevHeight) / 2.0f / Screen.gameScale;
 
     METADOT_INFO("Ticking chunk...");
+
+    auto start = std::chrono::high_resolution_clock::now();
+
     global.game->tickChunkLoading();
-    METADOT_INFO("Ticking chunk done");
+
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> elapsed = finish - start;
+
+    METADOT_INFO(std::format("Ticking chunk done in {0:.4f} ms", elapsed.count()).c_str());
 
     for (int x = 0; x < global.game->GameIsolate_.world->width; x++) {
         for (int y = 0; y < global.game->GameIsolate_.world->height; y++) {

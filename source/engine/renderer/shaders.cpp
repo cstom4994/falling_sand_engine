@@ -3,6 +3,7 @@
 #include "shaders.hpp"
 
 #include "engine/core/core.hpp"
+#include "engine/core/cpp/name.hpp"
 #include "engine/core/utils/utility.hpp"
 
 u32 ME_Shaders_LoadShader(R_ShaderEnum thisype, const char *filename) {
@@ -56,6 +57,11 @@ void ME_Shaders_FreeShader(u32 p) { R_FreeShaderProgram(p); }
 u32 ShaderBase::Init() {
     this->shader = 0;
     this->block = ME_Shaders_LoadShaderProgram(&this->shader, this->vertex_shader_file, this->fragment_shader_file);
+    if (this->shader_name.empty()) {
+        METADOT_WARN("Shader program load with cbase");
+    } else {
+        METADOT_BUG(std::format("Load shader program {0}", this->shader_name).c_str());
+    }
     return this->shader;
 }
 

@@ -2,6 +2,7 @@
 #include "gpu.hpp"
 
 #include "engine/core/global.hpp"
+#include "engine/game.hpp"
 #include "engine/game_shaders.hpp"
 #include "engine/renderer/shaders.hpp"
 #include "engine/ui/imgui_layer.hpp"
@@ -65,6 +66,98 @@ void surface_test_3(MEsurface_context *_vg, const float _x, const float _y, cons
     ME_surface_LineTo(_vg, _x, _y);
     ME_surface_FillColor(_vg, ME_surface_RGBA(0xFF, 0xFF, 0xFF, 0xFF));
     ME_surface_Fill(_vg);
+}
+
+void begin_3d(R_Target *screen) {
+    R_FlushBlitBuffer();
+
+    R_MatrixMode(screen, R_MODEL);
+    R_PushMatrix();
+    R_LoadIdentity();
+    R_MatrixMode(screen, R_VIEW);
+    R_PushMatrix();
+    R_LoadIdentity();
+    R_MatrixMode(screen, R_PROJECTION);
+    R_PushMatrix();
+    R_LoadIdentity();
+}
+
+void end_3d(R_Target *screen) {
+    R_ResetRendererState();
+
+    R_MatrixMode(screen, R_MODEL);
+    R_PopMatrix();
+    R_MatrixMode(screen, R_VIEW);
+    R_PopMatrix();
+    R_MatrixMode(screen, R_PROJECTION);
+    R_PopMatrix();
+}
+
+void draw_spinning_triangle(R_Target *screen) {
+    GLfloat gldata[21];
+    float mvp[16];
+    float t = SDL_GetTicks() / 1000.0f;
+
+    R_Rotate(100 * t, 0, 0.707, 0.707);
+    R_Rotate(20 * t, 0.707, 0.707, 0);
+
+    gldata[0] = 0;
+    gldata[1] = 0.2f;
+    gldata[2] = 0;
+
+    gldata[3] = 1.0f;
+    gldata[4] = 0.0f;
+    gldata[5] = 0.0f;
+    gldata[6] = 1.0f;
+
+    gldata[7] = -0.2f;
+    gldata[8] = -0.2f;
+    gldata[9] = 0;
+
+    gldata[10] = 0.0f;
+    gldata[11] = 1.0f;
+    gldata[12] = 0.0f;
+    gldata[13] = 1.0f;
+
+    gldata[14] = 0.2f;
+    gldata[15] = -0.2f;
+    gldata[16] = 0;
+    gldata[17] = 0.0f;
+    gldata[18] = 0.0f;
+    gldata[19] = 1.0f;
+    gldata[20] = 1.0f;
+
+    global.game->GameIsolate_.shaderworker->untexturedShader->Activate();
+    global.game->GameIsolate_.shaderworker->untexturedShader->Update(mvp, gldata);
+}
+
+void draw_3d_stuff(R_Target *screen) {
+
+    // R_Clear(Render.target);
+
+    // ME_GL_STATE_BACKUP();
+
+    begin_3d(screen);
+
+    draw_spinning_triangle(screen);
+
+    end_3d(screen);
+
+    ME_CHECK_GL_ERROR();
+
+    // ME_GL_STATE_RESTORE();
+}
+
+void draw_more_3d_stuff(R_Target *screen) {
+    float t;
+    begin_3d(screen);
+
+    t = SDL_GetTicks() / 1000.0f;
+    R_Rotate(t * 60, 0, 0, 1);
+    R_Translate(0.4f, 0.4f, 0);
+    draw_spinning_triangle(screen);
+
+    end_3d(screen);
 }
 
 MEvec2 MetaEngine::Drawing::rotate_point(float cx, float cy, float angle, MEvec2 p) {
@@ -629,24 +722,24 @@ void ME::inspect_vertex_array(const char *label, GLuint vao) {
     ImGui::PopID();
 }
 
-DebugDraw::DebugDraw(R_Target *target) {
+ME_debugdraw::ME_debugdraw(R_Target *target) {
     this->target = target;
     m_drawFlags = 0;
 }
 
-DebugDraw::~DebugDraw() {}
+ME_debugdraw::~ME_debugdraw() {}
 
-void DebugDraw::Create() {}
+void ME_debugdraw::Create() {}
 
-void DebugDraw::Destroy() {}
+void ME_debugdraw::Destroy() {}
 
-PVec2 DebugDraw::transform(const PVec2 &pt) {
+PVec2 ME_debugdraw::transform(const PVec2 &pt) {
     float x = ((pt.x) * scale + xOfs);
     float y = ((pt.y) * scale + yOfs);
     return PVec2(x, y);
 }
 
-void DebugDraw::DrawPolygon(const PVec2 *vertices, i32 vertexCount, const ME_Color &color) {
+void ME_debugdraw::DrawPolygon(const PVec2 *vertices, i32 vertexCount, const ME_Color &color) {
     PVec2 *verts = new PVec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) {
@@ -659,7 +752,7 @@ void DebugDraw::DrawPolygon(const PVec2 *vertices, i32 vertexCount, const ME_Col
     delete[] verts;
 }
 
-void DebugDraw::DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, const ME_Color &color) {
+void ME_debugdraw::DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, const ME_Color &color) {
     PVec2 *verts = new PVec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) {
@@ -675,23 +768,23 @@ void DebugDraw::DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, const M
     delete[] verts;
 }
 
-void DebugDraw::DrawCircle(const PVec2 &center, float radius, const ME_Color &color) {
+void ME_debugdraw::DrawCircle(const PVec2 &center, float radius, const ME_Color &color) {
     PVec2 tr = transform(center);
     R_Circle(target, tr.x, tr.y, radius * scale, color);
 }
 
-void DebugDraw::DrawSolidCircle(const PVec2 &center, float radius, const PVec2 &axis, const ME_Color &color) {
+void ME_debugdraw::DrawSolidCircle(const PVec2 &center, float radius, const PVec2 &axis, const ME_Color &color) {
     PVec2 tr = transform(center);
     R_CircleFilled(target, tr.x, tr.y, radius * scale, color);
 }
 
-void DebugDraw::DrawSegment(const PVec2 &p1, const PVec2 &p2, const ME_Color &color) {
+void ME_debugdraw::DrawSegment(const PVec2 &p1, const PVec2 &p2, const ME_Color &color) {
     PVec2 tr1 = transform(p1);
     PVec2 tr2 = transform(p2);
     R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, color);
 }
 
-void DebugDraw::DrawTransform(const PTransform &xf) {
+void ME_debugdraw::DrawTransform(const PTransform &xf) {
     const float k_axisScale = 8.0f;
     PVec2 p1 = xf.p, p2;
     PVec2 tr1 = transform(p1), tr2;
@@ -705,16 +798,16 @@ void DebugDraw::DrawTransform(const PTransform &xf) {
     R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, {0x00, 0xff, 0x00, 0xcc});
 }
 
-void DebugDraw::DrawPoint(const PVec2 &p, float size, const ME_Color &color) {
+void ME_debugdraw::DrawPoint(const PVec2 &p, float size, const ME_Color &color) {
     PVec2 tr = transform(p);
     R_CircleFilled(target, tr.x, tr.y, 2, color);
 }
 
-void DebugDraw::DrawString(int x, int y, const char *string, ...) {}
+void ME_debugdraw::DrawString(int x, int y, const char *string, ...) {}
 
-void DebugDraw::DrawString(const PVec2 &p, const char *string, ...) {}
+void ME_debugdraw::DrawString(const PVec2 &p, const char *string, ...) {}
 
-void DebugDraw::DrawAABB(b2AABB *aabb, const ME_Color &color) {
+void ME_debugdraw::DrawAABB(b2AABB *aabb, const ME_Color &color) {
     PVec2 tr1 = transform(aabb->lowerBound);
     PVec2 tr2 = transform(aabb->upperBound);
     R_Line(target, tr1.x, tr1.y, tr2.x, tr1.y, color);

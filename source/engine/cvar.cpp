@@ -4,7 +4,7 @@
 #include "engine/scripting/scripting.hpp"
 #include "game_ui.hpp"
 
-void InitGlobalDEF(GlobalDEF *_struct, bool openDebugUIs) {
+void InitGlobalDEF(GlobalDEF* _struct, bool openDebugUIs) {
 
     auto GlobalDEF = Scripting::get_singleton_ptr()->Lua->s_lua["global_def"];
 
@@ -76,3 +76,36 @@ void SaveGlobalDEF(std::string globaldef_src) {
     // std::ofstream o(globaldef_src);
     // o << settings_data;
 }
+
+template <>
+char ME::cvar::Cast<char>(std::string s) {
+    if (s.size() > 0)
+        return s[0];
+    else
+        throw std::out_of_range("argument was empty");
+}
+
+template <typename T, typename Test>
+void check_args_limit(T v) {
+    if (v > std::numeric_limits<Test>::max()) throw std::out_of_range("above numeric limit");
+    if (v < std::numeric_limits<Test>::min()) throw std::out_of_range("below numeric limit");
+};
+
+template <>
+short ME::cvar::Cast<short>(std::string s) {
+    int v = std::stoi(s);
+    check_args_limit<int, short>(v);
+    return (short)v;
+}
+
+template <>
+const char* ME::cvar::Cast<const char*>(std::string s) {
+    return s.c_str();
+}
+
+CVAR_CAST_DEF(int, std::stoi);
+CVAR_CAST_DEF(long, std::stol);
+CVAR_CAST_DEF(float, std::stof);
+CVAR_CAST_DEF(double, std::stod);
+CVAR_CAST_DEF(long double, std::stold);
+CVAR_CAST_DEF(std::string, std::string);

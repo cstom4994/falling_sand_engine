@@ -38,7 +38,7 @@ public:
     std::string MainMenuUI__worldFolderLabel = "";
     int MainMenuUI__selIndex = 0;
 
-    // DebugDraw
+    // ME_debugdraw
     int DebugDrawUI__selIndex = -1;
     std::vector<R_Image *> DebugDrawUI__images = {};
     std::vector<R_Image *> DebugDrawUI__tools_images = {};

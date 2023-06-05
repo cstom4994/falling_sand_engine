@@ -437,4 +437,19 @@ constexpr bool MetaEngine::member_pointer_equal(V1 Obj1::*p1, V2 Obj2::*p2) noex
 
 #pragma endregion Template
 
+template <typename F>
+struct function_traits : public function_traits<decltype(&F::operator())> {};
+
+template <typename ClassType, typename ReturnType, typename... Args>
+struct function_traits<ReturnType (ClassType::*)(Args...) const> {
+    using return_type = ReturnType;
+    using pointer = ReturnType (*)(Args...);
+    using std_function = std::function<ReturnType(Args...)>;
+};
+
+template <typename F>
+typename function_traits<F>::std_function to_function(F& lambda) {
+    return typename function_traits<F>::std_function(lambda);
+}
+
 #endif

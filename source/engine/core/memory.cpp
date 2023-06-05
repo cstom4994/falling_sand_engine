@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include "engine/core/memory_tracer.hpp"
-// #include "utility/utils/utility.hpp"
+#include "engine/core/utils/utility.hpp"
 
 allocation_metrics g_allocation_metrics = {.total_allocated = 0, .total_free = 0};
 
@@ -260,15 +260,15 @@ int ME_memory_check_leaks() {
     int leaks = 0;
 
     while (next != head) {
-        // ME_WARN(std::format("[Mem] LEAKED {0} bytes from file \"{1}\" at line {2} from address {3}.", next->size, next->file, next->line, (void*)(next + 1)).c_str());
+        METADOT_WARN(std::format("[Mem] LEAKED {0} bytes from file \"{1}\" at line {2} from address {3}.", next->size, next->file, next->line, (void*)(next + 1)).c_str());
         next = next->next;
         leaks = 1;
     }
 
     if (leaks) {
-        // ME_INFO("[Mem] Memory leaks detected (see above).");
+        METADOT_INFO("[Mem] Memory leaks detected (see above).");
     } else {
-        // ME_INFO("[Mem] No memory leaks detected.");
+        METADOT_BUG("[Mem] No memory leaks detected.");
     }
     return leaks;
 }

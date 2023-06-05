@@ -2618,16 +2618,25 @@ Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
 
     ch->pleaseDelete = false;
 
+    auto generate_chunk_func = [this](Chunk *chunk) {
+        generateChunk(chunk);
+        chunk->generationPhase = 0;
+        chunk->hasTileCache = true;
+        populateChunk(chunk, 0, false);
+        if (!noSaveLoad) ChunkWrite(chunk, chunk->tiles, chunk->layer2, chunk->background);
+    };
+
     if (ch->hasTileCache) {
         // prop = ch->tiles;
     } else if (ChunkHasFile(ch) && !noSaveLoad) {
-        ChunkRead(ch);
+        try {
+            ChunkRead(ch);
+        } catch (...) {
+            METADOT_BUG(std::format("Failed to read chunk {0} {1} so regenerate it", ch->x, ch->y).c_str());
+            generate_chunk_func(ch);
+        }
     } else {
-        generateChunk(ch);
-        ch->generationPhase = 0;
-        ch->hasTileCache = true;
-        populateChunk(ch, 0, false);
-        if (!noSaveLoad) ChunkWrite(ch, ch->tiles, ch->layer2, ch->background);
+        generate_chunk_func(ch);
     }
 
     // if (populate) {

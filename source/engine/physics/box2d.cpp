@@ -558,7 +558,7 @@ void b2World::SetContactFilter(b2ContactFilter *filter) { m_contactManager.m_con
 
 void b2World::SetContactListener(b2ContactListener *listener) { m_contactManager.m_contactListener = listener; }
 
-void b2World::SetDebugDraw(class DebugDraw *debugDraw) { m_debugDraw = debugDraw; }
+void b2World::SetDebugDraw(class ME_debugdraw *debugDraw) { m_debugDraw = debugDraw; }
 
 b2Body *b2World::CreateBody(const b2BodyDef *def) {
     ME_ASSERT_E(IsLocked() == false);
@@ -1414,14 +1414,14 @@ void b2World::DrawShape(b2Fixture *fixture, const PTransform &xf, const ME_Color
     }
 }
 
-void b2World::DebugDraw() {
+void b2World::ME_debugdraw() {
     if (m_debugDraw == nullptr) {
         return;
     }
 
     u32 flags = m_debugDraw->GetFlags();
 
-    if (flags & DebugDraw::e_shapeBit) {
+    if (flags & ME_debugdraw::e_shapeBit) {
         for (b2Body *b = m_bodyList; b; b = b->GetNext()) {
             const PTransform &xf = b->GetTransform();
             for (b2Fixture *f = b->GetFixtureList(); f; f = f->GetNext()) {
@@ -1443,13 +1443,13 @@ void b2World::DebugDraw() {
         }
     }
 
-    if (flags & DebugDraw::e_jointBit) {
+    if (flags & ME_debugdraw::e_jointBit) {
         for (b2Joint *j = m_jointList; j; j = j->GetNext()) {
             j->Draw(m_debugDraw);
         }
     }
 
-    if (flags & DebugDraw::e_pairBit) {
+    if (flags & ME_debugdraw::e_pairBit) {
         ME_Color color(0.3f, 0.9f, 0.9f);
         for (b2Contact *c = m_contactManager.m_contactList; c; c = c->GetNext()) {
             b2Fixture *fixtureA = c->GetFixtureA();
@@ -1463,7 +1463,7 @@ void b2World::DebugDraw() {
         }
     }
 
-    if (flags & DebugDraw::e_aabbBit) {
+    if (flags & ME_debugdraw::e_aabbBit) {
         ME_Color color(0.9f, 0.3f, 0.9f);
         b2BroadPhase *bp = &m_contactManager.m_broadPhase;
 
@@ -1488,7 +1488,7 @@ void b2World::DebugDraw() {
         }
     }
 
-    if (flags & DebugDraw::e_centerOfMassBit) {
+    if (flags & ME_debugdraw::e_centerOfMassBit) {
         for (b2Body *b = m_bodyList; b; b = b->GetNext()) {
             PTransform xf = b->GetTransform();
             xf.p = b->GetWorldCenter();
@@ -2116,7 +2116,7 @@ void b2WheelJoint::Dump() {
 }
 
 ///
-void b2WheelJoint::Draw(DebugDraw *draw) const {
+void b2WheelJoint::Draw(ME_debugdraw *draw) const {
     const PTransform &xfA = m_bodyA->GetTransform();
     const PTransform &xfB = m_bodyB->GetTransform();
     PVec2 pA = b2Mul(xfA, m_localAnchorA);
@@ -2806,7 +2806,7 @@ void b2RevoluteJoint::Dump() {
 }
 
 ///
-void b2RevoluteJoint::Draw(DebugDraw *draw) const {
+void b2RevoluteJoint::Draw(ME_debugdraw *draw) const {
     const PTransform &xfA = m_bodyA->GetTransform();
     const PTransform &xfB = m_bodyB->GetTransform();
     PVec2 pA = b2Mul(xfA, m_localAnchorA);
@@ -3633,7 +3633,7 @@ void b2PrismaticJoint::Dump() {
     b2Dump("  joints[%d] = m_world->CreateJoint(&jd);\n", m_index);
 }
 
-void b2PrismaticJoint::Draw(DebugDraw *draw) const {
+void b2PrismaticJoint::Draw(ME_debugdraw *draw) const {
     const PTransform &xfA = m_bodyA->GetTransform();
     const PTransform &xfB = m_bodyB->GetTransform();
     PVec2 pA = b2Mul(xfA, m_localAnchorA);
@@ -4242,7 +4242,7 @@ b2Joint::b2Joint(const b2JointDef *def) {
 
 bool b2Joint::IsEnabled() const { return m_bodyA->IsEnabled() && m_bodyB->IsEnabled(); }
 
-void b2Joint::Draw(DebugDraw *draw) const {
+void b2Joint::Draw(ME_debugdraw *draw) const {
     const PTransform &xf1 = m_bodyA->GetTransform();
     const PTransform &xf2 = m_bodyB->GetTransform();
     PVec2 x1 = xf1.p;
@@ -5907,7 +5907,7 @@ void b2DistanceJoint::Dump() {
     b2Dump("  joints[%d] = m_world->CreateJoint(&jd);\n", m_index);
 }
 
-void b2DistanceJoint::Draw(DebugDraw *draw) const {
+void b2DistanceJoint::Draw(ME_debugdraw *draw) const {
     const PTransform &xfA = m_bodyA->GetTransform();
     const PTransform &xfB = m_bodyB->GetTransform();
     PVec2 pA = b2Mul(xfA, m_localAnchorA);
@@ -7851,7 +7851,7 @@ void b2Rope::SolveBend_PBD_Triangle() {
     }
 }
 
-void b2Rope::Draw(DebugDraw *draw) const {
+void b2Rope::Draw(ME_debugdraw *draw) const {
     ME_Color c(0.4f, 0.5f, 0.7f);
     ME_Color pg(0.1f, 0.8f, 0.1f);
     ME_Color pd(0.7f, 0.2f, 0.4f);
