@@ -50,13 +50,13 @@ flags {"NoRuntimeChecks"}
 filter "platforms:Win64"
 system "Windows"
 architecture "x86_64"
-libdirs {"dependencies/SDL2/lib/x64", "dependencies/libffi/lib"}
+libdirs {"dependencies/SDL2/lib/x64", "dependencies/libffi/lib", "dependencies/mono/lib"}
 
 objdir "vsbuild/obj/%{cfg.platform}_%{cfg.buildcfg}"
 
 includedirs {"source"}
 
-includedirs {"dependencies/SDL2/include", "dependencies/libffi/include"}
+includedirs {"dependencies/SDL2/include", "dependencies/libffi/include", "dependencies/mono/include"}
 
 ----------------------------------------------------------------------------
 -- projects
@@ -83,5 +83,22 @@ do
 
     files {"source/engine/**.cpp", "source/engine/**.c", "source/engine/**.h", "source/engine/**.hpp"}
 
-    links {"MetaDotLibs", "SDL2", "ffi", win32_libs}
+    links {"MetaDotLibs", "SDL2", "ffi", "coreclr.import", win32_libs}
+end
+
+project "ManagedCore"
+do
+    kind "SharedLib"
+    language "C#"
+    targetdir "output"
+    debugdir "output/../"
+
+    clr "Unsafe"
+
+    dotnetframework "4.8"
+
+    files {"source/managed/**.cs"}
+
+    warnings "off"
+
 end

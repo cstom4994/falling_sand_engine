@@ -3,6 +3,8 @@
 #ifndef ME_SCRIPTING_HPP
 #define ME_SCRIPTING_HPP
 
+#include <mono/metadata/object-forward.h>
+
 #include <functional>
 #include <map>
 #include <string>
@@ -71,12 +73,27 @@ struct LuaCore {
     } Data_;
 };
 
+class MonoLayer {
+private:
+    MonoObject *callEntryMethod(const char *methodName, void *obj = nullptr, void **params = nullptr, MonoObject **ex = nullptr);
+
+public:
+    bool hotSwapEnable = true;
+    void onAttach();
+    void onDetach();
+    void onUpdate();
+
+    void reloadAssembly();
+    bool isMonoLoaded();
+};
+
 void print_error(lua_State *state, int result = 0);
 void script_runfile(const char *filePath);
 
 class Scripting : public ME::singleton<Scripting> {
 public:
     LuaCore *Lua;
+    MonoLayer Mono;
 
     Scripting() { METADOT_BUG("Scripting CSingleton Init"); };
     ~Scripting() { METADOT_BUG("Scripting CSingleton End"); };
