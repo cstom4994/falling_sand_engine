@@ -17,9 +17,8 @@ namespace MetaDotManagedCore
 
         private AppDomain currentDomain;
         private ProxyAssLoaderMarschal loader;
-        private int ASS_CHECK_INTERVAL = 60;
-        public override void SetAssemblyOutsideMode(bool b) => AssemblyLocator.ENABLE_OUTSIDE_SEARCH = b;
-        public override void SetAssemblyLookupInterval(int i) => ASS_CHECK_INTERVAL = i;
+        private int SCRIPT_CHECK_INTERVAL = 60;
+        public override void SetAssemblyLookupInterval(int i) => SCRIPT_CHECK_INTERVAL = i;
         public override void ReloadAssembly()
         {
             try
@@ -34,11 +33,11 @@ namespace MetaDotManagedCore
         }
         public void LoadDomain()
         {
-            var setup = new AppDomainSetup();
-            setup.ApplicationBase = AssemblyLocator.ROOT_PATH;
-            Log.METADOT_INFO("new appdomain in " + setup.ApplicationBase);
+            /*var setup = new AppDomainSetup();*/
+            /*setup.ApplicationBase = AssemblyLocator.ROOT_PATH;
+            Log.METADOT_INFO("new appdomain in " + setup.ApplicationBase);*/
 
-            currentDomain = AppDomain.CreateDomain(AssemblyLocator.DOMAIN_NAME, null, setup);
+/*            currentDomain = AppDomain.CreateDomain(AssemblyLocator.DOMAIN_NAME, null, setup);
             Log.METADOT_INFO("New Domain created: " + currentDomain.ToString());
 
             currentDomain.AssemblyResolve += HandleAssemblyResolve;
@@ -47,7 +46,7 @@ namespace MetaDotManagedCore
 
             Log.METADOT_TRACE("Host domain: " + AppDomain.CurrentDomain.FriendlyName);
             Log.METADOT_TRACE("child domain: " + currentDomain.FriendlyName);
-            Log.METADOT_TRACE("Application base is: " + currentDomain.SetupInformation.ApplicationBase);
+            Log.METADOT_TRACE("Application base is: " + currentDomain.SetupInformation.ApplicationBase);*/
 
             loader.LoadLayers();
             loader.AttachLayers();
@@ -79,7 +78,7 @@ namespace MetaDotManagedCore
         private void divideCall(Action f)
         {
             searchModificationDivider++;
-            if ((searchModificationDivider %= ASS_CHECK_INTERVAL) == 0 && ASS_CHECK_INTERVAL != 0)
+            if ((searchModificationDivider %= SCRIPT_CHECK_INTERVAL) == 0 && SCRIPT_CHECK_INTERVAL != 0)
                 f();
         }
 
@@ -91,10 +90,10 @@ namespace MetaDotManagedCore
         public override void OnAttach()
         {
             AssemblyLocator.InitPaths();
-            counterToCheckAssLoad = ASS_CHECK_INTERVAL * 2;
+            counterToCheckAssLoad = SCRIPT_CHECK_INTERVAL * 2;
             Log.METADOT_TRACE("C# scripting attached: HotSwap");
 
-            if (ASS_CHECK_INTERVAL == 0)//will be resolved in OnUpdate()
+            if (SCRIPT_CHECK_INTERVAL == 0)//will be resolved in OnUpdate()
                 LoadDomain();
         }
         public override void OnDetach()

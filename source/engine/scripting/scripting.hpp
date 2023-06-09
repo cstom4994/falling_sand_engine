@@ -65,11 +65,11 @@ void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
 // }
 
 struct LuaCore {
-    LuaWrapper::State s_lua;
+    ME::LuaWrapper::State s_lua;
     lua_State *L;
 
     struct {
-        LuaWrapper::LuaTable Biome;
+        ME::LuaWrapper::LuaTable Biome;
     } Data_;
 };
 

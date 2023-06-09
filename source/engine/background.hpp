@@ -11,10 +11,10 @@
 
 #include "engine/core/core.hpp"
 #include "engine/core/sdl_wrapper.h"
-#include "game_datastruct.hpp"
-#include "game_resources.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
+#include "game_datastruct.hpp"
+#include "game_resources.hpp"
 
 struct BackgroundLayer {
     std::vector<C_Surface *> surface;
@@ -49,7 +49,7 @@ public:
     void Create() override;
     void Destory() override;
     void Reload() override;
-    void RegisterLua(LuaWrapper::State &s_lua) override;
+    void RegisterLua(ME::LuaWrapper::State &s_lua) override;
 };
 
 #endif

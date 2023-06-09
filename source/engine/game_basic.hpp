@@ -48,7 +48,7 @@ public:
     virtual void Reload() = 0;
 
     // Register Lua always been called before Create()
-    virtual void RegisterLua(LuaWrapper::State &s_lua) = 0;
+    virtual void RegisterLua(ME::LuaWrapper::State &s_lua) = 0;
 };
 
 ME_GUI_DEFINE_BEGIN(template <>, IGameSystem)
@@ -64,7 +64,7 @@ public:
     void Create() override;
     void Destory() override;
     void Reload() override;
-    void RegisterLua(LuaWrapper::State &s_lua) override;
+    void RegisterLua(ME::LuaWrapper::State &s_lua) override;
 };
 
 Biome *BiomeGet(std::string name);

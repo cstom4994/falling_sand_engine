@@ -33,7 +33,7 @@
 #include "game_resources.hpp"
 #include "npc.hpp"
 #include "reflectionflat.hpp"
-#include "world_generator.cpp"
+#include "world_generator.h"
 
 ME::thread_pool WorldSystem::tickPool(16);
 ME::thread_pool WorldSystem::tickVisitedPool(16);
@@ -200,16 +200,16 @@ RigidBody *World::makeRigidBody(b2BodyType type, f32 x, f32 y, f32 angle, b2Poly
             }
         }
 
-        /*for (int x = 0; x < rb->surface->w; x++) {
-            for (int y = 0; y < rb->surface->h; y++) {
-                MaterialInstance mat = rb->tiles[x + y * rb->surface->w];
-                if (mat.mat->id == Materials::GENERIC_AIR.id) {
-                    R_GET_PIXEL(rb->surface, x, y) = 0x00000000;
-                } else {
-                    R_GET_PIXEL(rb->surface, x, y) = (mat.mat->alpha << 24) + mat.color;
-                }
-            }
-        }*/
+        // for (int x = 0; x < rb->surface->w; x++) {
+        //     for (int y = 0; y < rb->surface->h; y++) {
+        //         MaterialInstance mat = rb->tiles[x + y * rb->surface->w];
+        //         if (mat.mat->id == MaterialsList::GENERIC_AIR.id) {
+        //             R_GET_PIXEL(rb->surface, x, y) = 0x00000000;
+        //         } else {
+        //             R_GET_PIXEL(rb->surface, x, y) = (mat.mat->alpha << 24) + mat.color;
+        //         }
+        //     }
+        // }
 
         rb->texture = R_CopyImageFromSurface(rb->surface);
         R_SetImageFilter(rb->texture, R_FILTER_NEAREST);

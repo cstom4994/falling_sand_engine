@@ -22,7 +22,9 @@
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "libs/imgui/imgui.h"
-#include "world_generator.cpp"
+#include "world_generator.h"
+
+using namespace ME;
 
 IMPLENGINE();
 
@@ -52,7 +54,7 @@ void OptionsUI__Draw(Game *game) {
     int tab = 0;
 
     if (ImGui::Button("返回")) {
-        LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->Lua->s_lua["game_datastruct"]["ui"];
+        ME::LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->Lua->s_lua["game_datastruct"]["ui"];
         s["state"] = 0;
     }
     if (ImGui::Button("保存")) {
@@ -296,7 +298,7 @@ void MainMenuUI__Draw(Game *game) {
         return;
     }
 
-    LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->Lua->s_lua["game_datastruct"]["ui"];
+    ME::LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->Lua->s_lua["game_datastruct"]["ui"];
 
     if (s["state"] == 0) {
         MainMenuUI__DrawMainMenu(game);

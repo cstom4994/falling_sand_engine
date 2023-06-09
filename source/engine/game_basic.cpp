@@ -8,17 +8,20 @@
 #include "engine/core/core.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
+#include "engine/scripting/lua_wrapper.hpp"
+#include "engine/scripting/scripting.hpp"
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "game_ui.hpp"
 #include "reflectionflat.hpp"
-#include "engine/scripting/lua_wrapper.hpp"
-#include "engine/scripting/scripting.hpp"
+
+using namespace ME;
 
 #pragma region GameScriptingBind_1
 
 static void create_biome(std::string name, int id) {
+    METADOT_BUG("[LUA] create_biome ", name, " = ", id);
     Biome *b = new Biome(name, id);
     global.GameData_.biome_container.push_back(b);
 }
@@ -73,7 +76,7 @@ void GameplayScriptSystem::Destory() {
 
 void GameplayScriptSystem::Reload() {}
 
-void GameplayScriptSystem::RegisterLua(LuaWrapper::State &s_lua) {
+void GameplayScriptSystem::RegisterLua(ME::LuaWrapper::State &s_lua) {
     s_lua["controls_init"] = LuaWrapper::function(controls_init);
     s_lua["materials_init"] = LuaWrapper::function(InitMaterials);
     s_lua["materials_register"] = LuaWrapper::function(RegisterMaterial);

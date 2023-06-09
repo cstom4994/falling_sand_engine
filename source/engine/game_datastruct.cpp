@@ -6,7 +6,7 @@
 #include <string_view>
 
 #include "chunk.hpp"
-#include "engine/core/core.hpp"
+#include "cvar.hpp"
 #include "engine/core/core.hpp"
 #include "engine/core/cpp/utils.hpp"
 #include "engine/core/debug.hpp"
@@ -14,13 +14,12 @@
 #include "engine/core/io/filesystem.h"
 #include "engine/core/macros.hpp"
 #include "engine/core/utils/utility.hpp"
-#include "cvar.hpp"
-#include "game.hpp"
-#include "game_resources.hpp"
 #include "engine/game_utils/cells.h"
 #include "engine/physics/box2d.h"
-#include "reflectionflat.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
+#include "game.hpp"
+#include "game_resources.hpp"
+#include "reflectionflat.hpp"
 #include "world.hpp"
 
 std::vector<Biome *> GameData::biome_container;
@@ -1166,8 +1165,8 @@ void Player::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
     if (heldItem != NULL) {
         int scaleEnt = global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1;
 
-        ME_rect *ir = new ME_rect{(f32)(int)(ofsX + we->x + we->hw / 2.0 - heldItem->surface->w), (f32)(int)(ofsY + we->y + we->hh / 2.0 - heldItem->surface->h / 2),
-                                            (f32)heldItem->surface->w, (f32)heldItem->surface->h};
+        ME_rect *ir = new ME_rect{(f32)(int)(ofsX + we->x + we->hw / 2.0 - heldItem->surface->w), (f32)(int)(ofsY + we->y + we->hh / 2.0 - heldItem->surface->h / 2), (f32)heldItem->surface->w,
+                                  (f32)heldItem->surface->h};
         f32 fx = (f32)(int)(-ir->x + ofsX + we->x + we->hw / 2.0);
         f32 fy = (f32)(int)(-ir->y + ofsY + we->y + we->hh / 2.0);
         fx -= heldItem->pivotX;

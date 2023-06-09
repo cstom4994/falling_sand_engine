@@ -386,12 +386,12 @@ ME_GUI_DEFINE_END
 
 using ItemLuaPtr = ME::ref<Item>;
 
-struct ItemBinding : public LuaWrapper::PodBind::Binding<ItemBinding, Item> {
+struct ItemBinding : public ME::LuaWrapper::PodBind::Binding<ItemBinding, Item> {
     static constexpr const char *class_name = "Item";
     static luaL_Reg *members() { static luaL_Reg members[] = {{"setFlag", setFlag}, {"getFlag", getFlag}, {nullptr, nullptr}}; }
     // Lua constructor
     static int create(lua_State *L) {
-        LuaWrapper::PodBind::CheckArgCount(L, 2);
+        ME::LuaWrapper::PodBind::CheckArgCount(L, 2);
         const char *name = luaL_checkstring(L, 1);
         int age = luaL_checkinteger(L, 2);
         ItemLuaPtr sp = ME::create_ref<Item>();
@@ -400,13 +400,13 @@ struct ItemBinding : public LuaWrapper::PodBind::Binding<ItemBinding, Item> {
     }
     // Bind functions
     static int setFlag(lua_State *L) {
-        LuaWrapper::PodBind::CheckArgCount(L, 2);
+        ME::LuaWrapper::PodBind::CheckArgCount(L, 2);
         ItemLuaPtr t = fromStack(L, 1);
         t->setFlag((ItemFlags)lua_tointeger(L, 2));
         return 0;
     }
     static int getFlag(lua_State *L) {
-        LuaWrapper::PodBind::CheckArgCount(L, 2);
+        ME::LuaWrapper::PodBind::CheckArgCount(L, 2);
         ItemLuaPtr t = fromStack(L, 1);
         lua_pushboolean(L, t->getFlag((ItemFlags)lua_tointeger(L, 2)));
         return 1;
@@ -439,7 +439,11 @@ public:
     int y;
 
     PlacedStructure(Structure base, int x, int y);
-    // PlacedStructure(const PlacedStructure &p2) { this->base = Structure(base); this->x = x; this->y = y; }
+    PlacedStructure(const PlacedStructure &p2) {
+        this->base = Structure(base);
+        this->x = x;
+        this->y = y;
+    }
 };
 
 class Biome {
@@ -595,7 +599,7 @@ ME_GUI_DEFINE_END
 
 using RigidBodyPtr = ME::ref<RigidBody>;
 
-struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, RigidBody> {
+struct RigidBodyBinding : public ME::LuaWrapper::PodBind::Binding<RigidBodyBinding, RigidBody> {
     static constexpr const char *class_name = "RigidBody";
 
     static luaL_Reg *members() {
@@ -603,15 +607,15 @@ struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, 
         return members;
     }
 
-    static LuaWrapper::PodBind::bind_properties *properties() {
-        static LuaWrapper::PodBind::bind_properties properties[] = {{"name", get_name, set_name}, {nullptr, nullptr, nullptr}};
+    static ME::LuaWrapper::PodBind::bind_properties *properties() {
+        static ME::LuaWrapper::PodBind::bind_properties properties[] = {{"name", get_name, set_name}, {nullptr, nullptr, nullptr}};
         return properties;
     }
 
     // Lua constructor
     static int create(lua_State *L) {
         std::cout << "Create called\n";
-        LuaWrapper::PodBind::CheckArgCount(L, 2);
+        ME::LuaWrapper::PodBind::CheckArgCount(L, 2);
         b2Body *body = (b2Body *)lua_touserdata(L, 1);
         const char *name = luaL_checkstring(L, 2);
         RigidBodyPtr sp = ME::create_ref<RigidBody>(body, name);
@@ -642,7 +646,7 @@ struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, 
     // 1 - class metatable
     // 2 - key
     static int get_name(lua_State *L) {
-        LuaWrapper::PodBind::CheckArgCount(L, 2);
+        ME::LuaWrapper::PodBind::CheckArgCount(L, 2);
         RigidBodyPtr a = fromStack(L, 1);
         lua_pushstring(L, a->name.c_str());
         return 1;
@@ -652,7 +656,7 @@ struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, 
     // 2 - key
     // 3 - value
     static int set_name(lua_State *L) {
-        LuaWrapper::PodBind::CheckArgCount(L, 3);
+        ME::LuaWrapper::PodBind::CheckArgCount(L, 3);
         RigidBodyPtr a = fromStack(L, 1);
         a->name = lua_tostring(L, 3);
         return 0;

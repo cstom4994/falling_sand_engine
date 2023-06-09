@@ -13,10 +13,10 @@
 #include "engine/core/cpp/name.hpp"
 #include "engine/core/cpp/type.hpp"
 #include "engine/core/macros.hpp"
+#include "engine/meta/reflection.hpp"
 #include "libs/lua/lua.hpp"
 #include "lua_wrapper_base.hpp"
 #include "lua_wrapper_pp.hpp"
-#include "engine/meta/reflection.hpp"
 
 #ifndef n4502
 #define n4502
@@ -955,7 +955,7 @@ void RegisterGlobal(lua_State *L, const char *name, T &&what) {
 
 #define ME_LUAWRAPPER_UNUSED(V) (void)(V)
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 #if defined(_MSC_VER) && _MSC_VER <= 1500
 typedef unsigned char uint8_t;
 typedef int int32_t;
@@ -967,13 +967,13 @@ typedef lua_Integer luaInt;
 #else
 typedef int32_t luaInt;
 #endif
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
 #if defined(ME_LUAWRAPPER_USE_CXX_ABI_DEMANGLE)
 #include <cxxabi.h>
 #endif
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 /// @addtogroup optional
 ///  @{
 
@@ -1210,9 +1210,9 @@ bool operator>=(const optional<T> &lhs, const optional<T> &rhs) {
 /// @}
 
 /// @}
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 namespace traits {
 using std::enable_if;
 using std::false_type;
@@ -1356,9 +1356,9 @@ struct is_usertype<T, typename lua_type_traits<T>::Registerable> : traits::true_
 /// UserdataMetatable.
 template <typename T>
 struct is_registerable : is_usertype<T> {};
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 // for lua version compatibility
 namespace compat {
 #if LUA_VERSION_NUM >= 503
@@ -1464,9 +1464,9 @@ void lua_createtable(lua_State *L, int narr, int nrec) { lua_newtable(L); }
 }  // namespace compat
 
 using namespace compat;
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 class LuaException : public std::exception {
     int status_;
     std::string what_;
@@ -1534,9 +1534,9 @@ void typeMismatchError(lua_State *state, const std::string &message);
 void memoryError(lua_State *state, const char *message);
 bool checkErrorAndThrow(int status, lua_State *state);
 }  // namespace except
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 namespace util {
 struct null_type {};
 
@@ -1643,9 +1643,9 @@ typename FunctionResultType<typename traits::decay<F>::type>::type invoke(F &&f,
     return detail::invoke_helper(std::forward<F>(f), std::forward<Args>(args)...);
 }
 }  // namespace util
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 namespace util {
 /// @brief save stack count and restore on destructor
 class ScopedSavedStack {
@@ -1850,9 +1850,9 @@ inline std::string pretty_name(const std::type_info &t) {
 #endif
 }
 }  // namespace util
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 namespace types {
 template <typename T>
 struct typetag {};
@@ -2547,9 +2547,9 @@ struct ConvertibleRegisterHelper {
     }
 };
 }  // namespace util
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 namespace detail {
 template <std::size_t... indexes>
 struct index_tuple {};
@@ -2575,9 +2575,9 @@ struct lua_type_traits<std::tuple<Args...>> {
         return detail::push_tuple(l, index, std::forward<std::tuple<Args...>>(v));
     }
 };
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 
 // default implements
 template <typename T, typename Enable>
@@ -3377,9 +3377,9 @@ inline ME_LUAWRAPPER_ENABLE_IF_NOT_LUAREF(bool) operator!=(const T &lhs, const L
 #undef ME_LUAWRAPPER_ENABLE_IF_NOT_LUAREF
 //@}
 }  // namespace detail
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 inline const char *get_error_message(lua_State *state) {
     if (lua_type(state, -1) == LUA_TSTRING) {
         const char *message = lua_tostring(state, -1);
@@ -3544,9 +3544,9 @@ inline bool checkErrorAndThrow(int status, lua_State *state) {
     return true;
 }
 }  // namespace except
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 /// @brief StackTop tag type
 struct StackTop {};
 
@@ -3813,9 +3813,9 @@ private:
     RefHolder ref_;
 };
 }  // namespace Ref
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 class LuaTable;
 class LuaFunction;
 
@@ -3994,9 +3994,9 @@ public:
     }
 };
 }  // namespace detail
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 class LuaRef;
 class LuaStackRef;
 class LuaTable;
@@ -4370,9 +4370,9 @@ public:
     }
 };
 }  // namespace detail
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 class LuaRef;
 class LuaTable;
 template <typename KEY>
@@ -4461,9 +4461,9 @@ public:
     FunctionResults operator()(Args &&...args);
 };
 }  // namespace detail
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 namespace util {
 template <class Result>
 inline Result get_result_impl(lua_State *l, int startindex, types::typetag<Result>) {
@@ -4890,9 +4890,9 @@ public:
     /// @brief get lua thread
     operator lua_State *() { return getthread(); }
 };
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 namespace nativefunction {
 template <std::size_t... indexes>
 struct index_tuple {};
@@ -5060,9 +5060,9 @@ struct ConstructorFunction<ClassType,
 };
 }  // namespace nativefunction
 using nativefunction::ConstructorFunction;
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 namespace fntuple {
 
 #if !defined(ME_LUAWRAPPER_FUNCTION_MAX_OVERLOADS)
@@ -5074,9 +5074,9 @@ using std::tuple_element;
 using std::tuple_size;
 #endif
 }  // namespace fntuple
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 struct FunctionImpl {
     virtual int invoke(lua_State *state) = 0;
     virtual std::string argTypesName() const = 0;
@@ -5683,79 +5683,79 @@ struct OverloadFunctionImpl<F, void> : LuaWrapper::FunctionImpl {
     virtual bool checkArgTypes(lua_State *state) const { return LuaWrapper::nativefunction::checkArgTypes(state, c_function_type(0), maxArgCount() - minArgCount()); }
     virtual bool strictCheckArgTypes(lua_State *state) const { return LuaWrapper::nativefunction::strictCheckArgTypes(state, c_function_type(0), maxArgCount() - minArgCount()); }
 };
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
 #define ME_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REP(N) getArgument<N - 1, F>(state)
 #define ME_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REPEAT(N) ME_LUAWRAPPER_PP_REPEAT_ARG(N, ME_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REP)
 #define ME_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_INVOKE(N, FNAME, MINARG, MAXARG)                                                 \
-    if (argcount == ME_LUAWRAPPER_PP_ADD(MINARG, ME_LUAWRAPPER_PP_DEC(N))) {                                                              \
+    if (argcount == ME_LUAWRAPPER_PP_ADD(MINARG, ME_LUAWRAPPER_PP_DEC(N))) {                                                      \
         return FNAME(ME_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_GET_REPEAT(ME_LUAWRAPPER_PP_ADD(MINARG, ME_LUAWRAPPER_PP_DEC(N)))); \
     }
 
 #define ME_LUAWRAPPER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, FNAME, MINARG, MAXARG, CREATE_FN)                                                                                     \
-                                                                                                                                                                                               \
-    struct GENERATE_NAME {                                                                                                                                                                     \
-        template <typename F>                                                                                                                                                                  \
-        struct Function : LuaWrapper::OverloadFunctionImpl<F> {                                                                                                                                \
-            typedef typename LuaWrapper::OverloadFunctionImpl<F>::result_type result_type;                                                                                                     \
-            virtual result_type invoke_type(lua_State *state) {                                                                                                                                \
-                using namespace LuaWrapper::nativefunction;                                                                                                                                    \
-                int argcount = lua_gettop(state);                                                                                                                                              \
+                                                                                                                                                                                       \
+    struct GENERATE_NAME {                                                                                                                                                             \
+        template <typename F>                                                                                                                                                          \
+        struct Function : LuaWrapper::OverloadFunctionImpl<F> {                                                                                                                        \
+            typedef typename LuaWrapper::OverloadFunctionImpl<F>::result_type result_type;                                                                                             \
+            virtual result_type invoke_type(lua_State *state) {                                                                                                                        \
+                using namespace ME::LuaWrapper::nativefunction;                                                                                                                        \
+                int argcount = lua_gettop(state);                                                                                                                                      \
                 ME_LUAWRAPPER_PP_REPEAT_DEF_VA_ARG(ME_LUAWRAPPER_PP_INC(ME_LUAWRAPPER_PP_SUB(MAXARG, MINARG)), ME_LUAWRAPPER_INTERNAL_OVERLOAD_FUNCTION_INVOKE, FNAME, MINARG, MAXARG) \
-                throw LuaWrapper::LuaTypeMismatch("argument count mismatch");                                                                                                                  \
-            }                                                                                                                                                                                  \
-            virtual int minArgCount() const { return MINARG; }                                                                                                                                 \
-            virtual int maxArgCount() const { return MAXARG; }                                                                                                                                 \
-        };                                                                                                                                                                                     \
-        template <typename F>                                                                                                                                                                  \
-        LuaWrapper::PolymorphicInvoker::holder_type create(F) {                                                                                                                                \
-            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                      \
-            return LuaWrapper::PolymorphicInvoker::holder_type(ptr);                                                                                                                           \
-        }                                                                                                                                                                                      \
-        template <typename F>                                                                                                                                                                  \
-        LuaWrapper::PolymorphicInvoker::holder_type create() {                                                                                                                                 \
-            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                      \
-            return LuaWrapper::PolymorphicInvoker::holder_type(ptr);                                                                                                                           \
-        }                                                                                                                                                                                      \
-        LuaWrapper::PolymorphicInvoker operator()() { return CREATE_FN; }                                                                                                                      \
-                                                                                                                                                                                               \
+                throw LuaWrapper::LuaTypeMismatch("argument count mismatch");                                                                                                          \
+            }                                                                                                                                                                          \
+            virtual int minArgCount() const { return MINARG; }                                                                                                                         \
+            virtual int maxArgCount() const { return MAXARG; }                                                                                                                         \
+        };                                                                                                                                                                             \
+        template <typename F>                                                                                                                                                          \
+        LuaWrapper::PolymorphicInvoker::holder_type create(F) {                                                                                                                        \
+            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                              \
+            return LuaWrapper::PolymorphicInvoker::holder_type(ptr);                                                                                                                   \
+        }                                                                                                                                                                              \
+        template <typename F>                                                                                                                                                          \
+        LuaWrapper::PolymorphicInvoker::holder_type create() {                                                                                                                         \
+            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                              \
+            return LuaWrapper::PolymorphicInvoker::holder_type(ptr);                                                                                                                   \
+        }                                                                                                                                                                              \
+        LuaWrapper::PolymorphicInvoker operator()() { return CREATE_FN; }                                                                                                              \
+                                                                                                                                                                                       \
     } GENERATE_NAME;
 
 #define ME_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REP(N) getArgument<N, F>(state)
 #define ME_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REPEAT(N) ME_LUAWRAPPER_PP_REPEAT_ARG(N, ME_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REP)
 #define ME_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_INVOKE(N, FNAME, MINARG, MAXARG)                                                                            \
-    if (argcount == 1 + ME_LUAWRAPPER_PP_ADD(MINARG, ME_LUAWRAPPER_PP_DEC(N))) {                                                                                            \
+    if (argcount == 1 + ME_LUAWRAPPER_PP_ADD(MINARG, ME_LUAWRAPPER_PP_DEC(N))) {                                                                                    \
         return (getArgument<0, F>(state)).FNAME(ME_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_GET_REPEAT(ME_LUAWRAPPER_PP_ADD(MINARG, ME_LUAWRAPPER_PP_DEC(N)))); \
     }
 
 #define ME_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, CLASS, FNAME, MINARG, MAXARG, CREATE_FN)                                                                              \
-                                                                                                                                                                                                      \
-    struct GENERATE_NAME {                                                                                                                                                                            \
-        template <typename F>                                                                                                                                                                         \
-        struct Function : LuaWrapper::OverloadFunctionImpl<F> {                                                                                                                                       \
-            typedef typename LuaWrapper::OverloadFunctionImpl<F>::result_type result_type;                                                                                                            \
-            virtual result_type invoke_type(lua_State *state) {                                                                                                                                       \
-                using namespace LuaWrapper::nativefunction;                                                                                                                                           \
-                int argcount = lua_gettop(state);                                                                                                                                                     \
+                                                                                                                                                                                              \
+    struct GENERATE_NAME {                                                                                                                                                                    \
+        template <typename F>                                                                                                                                                                 \
+        struct Function : LuaWrapper::OverloadFunctionImpl<F> {                                                                                                                               \
+            typedef typename LuaWrapper::OverloadFunctionImpl<F>::result_type result_type;                                                                                                    \
+            virtual result_type invoke_type(lua_State *state) {                                                                                                                               \
+                using namespace ME::LuaWrapper::nativefunction;                                                                                                                               \
+                int argcount = lua_gettop(state);                                                                                                                                             \
                 ME_LUAWRAPPER_PP_REPEAT_DEF_VA_ARG(ME_LUAWRAPPER_PP_INC(ME_LUAWRAPPER_PP_SUB(MAXARG, MINARG)), ME_LUAWRAPPER_INTERNAL_OVERLOAD_MEMBER_FUNCTION_INVOKE, FNAME, MINARG, MAXARG) \
-                throw LuaWrapper::LuaTypeMismatch("argument count mismatch");                                                                                                                         \
-            }                                                                                                                                                                                         \
-            virtual int minArgCount() const { return MINARG + 1; }                                                                                                                                    \
-            virtual int maxArgCount() const { return MAXARG + 1; }                                                                                                                                    \
-        };                                                                                                                                                                                            \
-        template <typename F>                                                                                                                                                                         \
-        LuaWrapper::PolymorphicMemberInvoker::holder_type create(F f) {                                                                                                                               \
+                throw LuaWrapper::LuaTypeMismatch("argument count mismatch");                                                                                                                 \
+            }                                                                                                                                                                                 \
+            virtual int minArgCount() const { return MINARG + 1; }                                                                                                                            \
+            virtual int maxArgCount() const { return MAXARG + 1; }                                                                                                                            \
+        };                                                                                                                                                                                    \
+        template <typename F>                                                                                                                                                                 \
+        LuaWrapper::PolymorphicMemberInvoker::holder_type create(F f) {                                                                                                                       \
             ME_LUAWRAPPER_UNUSED(f);                                                                                                                                                          \
-            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                             \
-            return LuaWrapper::PolymorphicMemberInvoker::holder_type(ptr);                                                                                                                            \
-        }                                                                                                                                                                                             \
-        template <typename F>                                                                                                                                                                         \
-        LuaWrapper::PolymorphicMemberInvoker::holder_type create() {                                                                                                                                  \
-            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                             \
-            return LuaWrapper::PolymorphicMemberInvoker::holder_type(ptr);                                                                                                                            \
-        }                                                                                                                                                                                             \
-        LuaWrapper::PolymorphicMemberInvoker operator()() { return CREATE_FN; }                                                                                                                       \
-                                                                                                                                                                                                      \
+            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                     \
+            return LuaWrapper::PolymorphicMemberInvoker::holder_type(ptr);                                                                                                                    \
+        }                                                                                                                                                                                     \
+        template <typename F>                                                                                                                                                                 \
+        LuaWrapper::PolymorphicMemberInvoker::holder_type create() {                                                                                                                          \
+            LuaWrapper::OverloadFunctionImpl<F> *ptr = new Function<F>();                                                                                                                     \
+            return LuaWrapper::PolymorphicMemberInvoker::holder_type(ptr);                                                                                                                    \
+        }                                                                                                                                                                                     \
+        LuaWrapper::PolymorphicMemberInvoker operator()() { return CREATE_FN; }                                                                                                               \
+                                                                                                                                                                                              \
     } GENERATE_NAME;
 
 /// @brief Generate wrapper function object for count based overloads with
@@ -5797,7 +5797,7 @@ struct OverloadFunctionImpl<F, void> : LuaWrapper::FunctionImpl {
 #define ME_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS_WITH_SIGNATURE(GENERATE_NAME, CLASS, FNAME, MINARG, MAXARG, SIGNATURE) \
     ME_LUAWRAPPER_MEMBER_FUNCTION_OVERLOADS_INTERNAL(GENERATE_NAME, CLASS, FNAME, MINARG, MAXARG, create<SIGNATURE>())
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 /// @brief any data holder class for push to lua
 class AnyDataPusher {
 public:
@@ -5866,9 +5866,9 @@ template <>
 struct lua_type_traits<AnyDataPusher> {
     static int push(lua_State *l, const AnyDataPusher &data) { return data.pushToLua(l); }
 };
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 /// @brief function result value proxy class.
 /// don't direct use.
 class FunctionResults : public Ref::StackRef, public detail::LuaVariantImpl<FunctionResults> {
@@ -6119,11 +6119,11 @@ private:
 };
 
 typedef MemberFunctionBinder mem_fun_binder;  // for backward conpatible
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
 #define ME_LUAWRAPPER_PROPERTY_PREFIX "_prop_"
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 
 #define ME_LUAWRAPPER_PP_STRUCT_TDEF_REP(N) ME_LUAWRAPPER_PP_CAT(class A, N) = void
 #define ME_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(N) ME_LUAWRAPPER_PP_REPEAT_ARG(N, ME_LUAWRAPPER_PP_STRUCT_TDEF_REP)
@@ -6132,9 +6132,9 @@ template <ME_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT(ME_LUAWRAPPER_CLASS_MAX_BA
 struct MultipleBase {};
 #undef ME_LUAWRAPPER_PP_STRUCT_TDEF_REP
 #undef ME_LUAWRAPPER_PP_STRUCT_TEMPLATE_DEF_REPEAT
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 struct LuaCodeChunk {
     LuaCodeChunk(const std::string &src, const std::string &name = "") : code_(src), chunk_name_(name) {}
     LuaCodeChunk(const char *src, const char *name = "") : code_(src), chunk_name_(name ? name : "") {}
@@ -6700,9 +6700,9 @@ struct lua_type_traits<UserdataMetatable<T, Base>> {
         return 1;
     }
 };
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 class State;
 
 /**
@@ -7243,9 +7243,9 @@ struct lua_type_traits<TableData> {
         return 1;
     }
 };
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 /// @addtogroup State
 /// @{
 
@@ -7700,9 +7700,9 @@ public:
 };
 
 /// @}
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 
 template <typename RefTuple, typename GetTuple>
 struct ref_tuple {
@@ -7720,10 +7720,10 @@ ref_tuple<std::tuple<Args &...>, std::tuple<Args...>> tie(Args &...va) {
     typedef std::tuple<Args...> GetTuple;
     return ref_tuple<RefTuple, GetTuple>(RefTuple(va...));
 }
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
 /// @brief start define binding
-#define ME_LUAWRAPPER_BINDINGS(MODULE_NAME)                                                                                                                                \
+#define ME_LUAWRAPPER_BINDINGS(MODULE_NAME)                                                                                                                                        \
                                                                                                                                                                                    \
     void ME_LUAWRAPPER_PP_CAT(LuaWrapper_bind_internal_, MODULE_NAME)();                                                                                                           \
                                                                                                                                                                                    \
@@ -7731,7 +7731,7 @@ ref_tuple<std::tuple<Args &...>, std::tuple<Args...>> tie(Args &...va) {
                                                                                                                                                                                    \
     void ME_LUAWRAPPER_PP_CAT(LuaWrapper_bind_internal_, MODULE_NAME)()
 
-namespace LuaWrapper {
+namespace ME::LuaWrapper {
 namespace detail {
 struct scope_stack {
     LuaTable current_scope() { return !stack.empty() ? stack.back() : LuaTable(); }
@@ -8900,6 +8900,6 @@ inline LuaRef LuaRefBase::cast() {
 
 #pragma endregion PodBind
 
-}  // namespace LuaWrapper
+}  // namespace ME::LuaWrapper
 
 #endif

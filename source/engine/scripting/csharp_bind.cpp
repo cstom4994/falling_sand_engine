@@ -1,7 +1,7 @@
 
 #include "csharp_bind.hpp"
 
-namespace CSharpWrapper {
+namespace ME::CSharpWrapper {
 
 std::ostream& operator<<(std::ostream& out, const object& obj) {
     out << obj.to_string();

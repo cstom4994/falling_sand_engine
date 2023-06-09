@@ -191,6 +191,9 @@ void UntexturedShader::Update(float mvp[], GLfloat gldata[]) {
 
 void ShaderWorkerSystem::Create() {
 
+    ME::Timer timer;
+    timer.start();
+
     this->crtShader = new CrtShader;
     this->waterShader = new WaterShader;
     this->waterFlowPassShader = new WaterFlowPassShader;
@@ -242,7 +245,9 @@ void ShaderWorkerSystem::Create() {
     this->blurShader->Init();
     this->untexturedShader->Init();
 
-    METADOT_BUG("ShaderWorker loaded");
+    timer.stop();
+
+    METADOT_INFO(std::format("ShaderWorker loading done in {0:.4f} ms", timer.get()).c_str());
 }
 
 #define SAFEUNLOADSHADER(x) \
@@ -271,4 +276,4 @@ void ShaderWorkerSystem::Reload() {
 
 #undef SAFEUNLOADSHADER
 
-void ShaderWorkerSystem::RegisterLua(LuaWrapper::State &s_lua) {}
+void ShaderWorkerSystem::RegisterLua(ME::LuaWrapper::State &s_lua) {}

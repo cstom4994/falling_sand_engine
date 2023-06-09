@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-namespace MetaEngine {
+namespace ME {
 namespace Scripting {
 
 void hello_from_cpp() { std::cout << "C++: Hello!" << std::endl; }
@@ -35,4 +35,4 @@ void CSharpBasicApi::OnUpdate() {}
 
 }  // namespace Scripting
 
-}  // namespace MetaEngine
+}  // namespace ME

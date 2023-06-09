@@ -4,23 +4,23 @@
 #include "engine/core/core.hpp"
 
 #if defined(ME_CS_DISABLE_EXCEPTIONS)
-namespace CSharpWrapper {
+namespace ME::CSharpWrapper {
 inline void throw_exception(const char* message) {
     (void)message;
     std::abort();
 }
-}  // namespace CSharpWrapper
+}  // namespace ME::CSharpWrapper
 #else
 #include <exception>
 
-namespace CSharpWrapper {
+namespace ME::CSharpWrapper {
 class mono_exception : public std::exception {
 public:
     mono_exception(const char* message) : std::exception(message) {}
 };
 
 inline void throw_exception(const char* message) { throw mono_exception(message); }
-}  // namespace CSharpWrapper
+}  // namespace ME::CSharpWrapper
 #endif
 
 #include <cassert>
@@ -53,7 +53,7 @@ inline void throw_exception(const char* message) { throw mono_exception(message)
 #include <typeinfo>
 #include <vector>
 
-namespace CSharpWrapper {
+namespace ME::CSharpWrapper {
 class method;
 
 template <typename... Args>
@@ -1515,4 +1515,4 @@ public:
         return *this;
     }
 };
-}  // namespace CSharpWrapper
+}  // namespace ME::CSharpWrapper

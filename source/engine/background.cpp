@@ -41,9 +41,9 @@ void BackgroundObject::Init() {
     }
 }
 
-void NewBackgroundObject(std::string name, u32 solid, LuaWrapper::LuaRef table) {
+void NewBackgroundObject(std::string name, u32 solid, ME::LuaWrapper::LuaRef table) {
     auto &L = Scripting::get_singleton_ptr()->Lua->s_lua;
-    std::vector<LuaWrapper::LuaRef> b = table;
+    std::vector<ME::LuaWrapper::LuaRef> b = table;
     std::vector<ME::ref<BackgroundLayer>> Layers;
 
     for (auto &c : b) {
@@ -82,4 +82,4 @@ void BackgroundSystem::Destory() {
     }
 }
 void BackgroundSystem::Reload() {}
-void BackgroundSystem::RegisterLua(LuaWrapper::State &s_lua) { s_lua["NewBackgroundObject"] = LuaWrapper::function(NewBackgroundObject); }
+void BackgroundSystem::RegisterLua(ME::LuaWrapper::State &s_lua) { s_lua["NewBackgroundObject"] = ME::LuaWrapper::function(NewBackgroundObject); }

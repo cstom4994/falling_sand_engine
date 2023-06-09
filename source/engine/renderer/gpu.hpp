@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "engine/core/core.hpp"
+#include "engine/core/sdl_wrapper.h"
 #include "engine/core/utils/utility.hpp"
 #include "engine/physics/box2d.h"
 #include "engine/renderer/renderer_gpu.h"
@@ -326,5 +327,6 @@ public:
     void DrawAABB(b2AABB *aabb, const ME_Color &color);
 };
 #endif
+
 
 #endif

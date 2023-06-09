@@ -2,7 +2,7 @@
 
 #include "csharp_bind.hpp"
 
-namespace MetaEngine {
+namespace ME {
 namespace Scripting {
 class CSharpBasicApi {
 
@@ -19,4 +19,4 @@ private:
     CSharpWrapper::mono* mono;
 };
 }  // namespace Scripting
-}  // namespace MetaEngine
+}  // namespace ME

@@ -47,7 +47,7 @@
 #include "libs/glad/glad.h"
 #include "libs/imgui/imgui.h"
 #include "reflectionflat.hpp"
-#include "world_generator.cpp"
+#include "world_generator.h"
 
 Global global;
 
@@ -150,10 +150,17 @@ int Game::init(int argc, char *argv[]) {
 
     // Initialize the world
     METADOT_INFO("Initializing world...");
+
+    ME::Timer timer;
+    timer.start();
+
     GameIsolate_.world = ME::create_scope<World>();
     GameIsolate_.world->noSaveLoad = true;
     GameIsolate_.world->init(METADOT_RESLOC("saves/mainMenu"), (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
                              (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, Render.target, &global.audio);
+
+    timer.stop();
+    METADOT_INFO(std::format("Initializing world done in {0:.4f} ms", timer.get()).c_str());
 
     // set up main menu ui
 
@@ -205,7 +212,8 @@ void Game::createTexture() {
     METADOT_LOG_SCOPE_FUNCTION(INFO);
     METADOT_INFO("Creating world textures...");
 
-    auto start = std::chrono::high_resolution_clock::now();
+    ME::Timer timer;
+    timer.start();
 
     if (TexturePack_.loadingTexture) {
         R_FreeImage(TexturePack_.loadingTexture);
@@ -395,10 +403,9 @@ void Game::createTexture() {
 
     init_pixels();
 
-    auto finish = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> elapsed = finish - start;
+    timer.stop();
 
-    METADOT_INFO(std::format("Creating world textures done in {0:.4f} ms", elapsed.count()).c_str());
+    METADOT_INFO(std::format("Creating world textures done in {0:.4f} ms", timer.get()).c_str());
 }
 
 int Game::run(int argc, char *argv[]) {
@@ -3571,14 +3578,14 @@ void Game::ResolutionChanged(int newWidth, int newHeight) {
 
     METADOT_INFO("Ticking chunk...");
 
-    auto start = std::chrono::high_resolution_clock::now();
+    ME::Timer timer;
+    timer.start();
 
     global.game->tickChunkLoading();
 
-    auto finish = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> elapsed = finish - start;
+    timer.stop();
 
-    METADOT_INFO(std::format("Ticking chunk done in {0:.4f} ms", elapsed.count()).c_str());
+    METADOT_INFO(std::format("Ticking chunk done in {0:.4f} ms", timer.get()).c_str());
 
     for (int x = 0; x < global.game->GameIsolate_.world->width; x++) {
         for (int y = 0; y < global.game->GameIsolate_.world->height; y++) {

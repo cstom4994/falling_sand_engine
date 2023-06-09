@@ -235,12 +235,12 @@ static void InitLua(LuaCore *lc) {
     ME_preload_auto(lc->L, ffi_module_open, "ffi");
     ME_preload_auto(lc->L, luaopen_lbind, "lbind");
 
-#define REGISTER_LUAFUNC(_f) lc->s_lua[#_f] = LuaWrapper::function(_f)
+#define REGISTER_LUAFUNC(_f) lc->s_lua[#_f] = ME::LuaWrapper::function(_f)
 
-    lc->s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
-    lc->s_lua["GetSurfaceFromTexture"] = LuaWrapper::function([](Texture *tex) { return tex->surface; });
-    lc->s_lua["GetWindowH"] = LuaWrapper::function([]() { return Screen.windowHeight; });
-    lc->s_lua["GetWindowW"] = LuaWrapper::function([]() { return Screen.windowWidth; });
+    lc->s_lua["METADOT_RESLOC"] = ME::LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
+    lc->s_lua["GetSurfaceFromTexture"] = ME::LuaWrapper::function([](Texture *tex) { return tex->surface; });
+    lc->s_lua["GetWindowH"] = ME::LuaWrapper::function([]() { return Screen.windowHeight; });
+    lc->s_lua["GetWindowW"] = ME::LuaWrapper::function([]() { return Screen.windowWidth; });
 
     REGISTER_LUAFUNC(SDL_FreeSurface);
     REGISTER_LUAFUNC(R_SetImageFilter);
@@ -297,38 +297,6 @@ void script_runfile(const char *filePath) {
     }
 }
 
-#ifdef ND_DEBUG
-#define ASS_NAME "ManagedCore.dll"
-#else
-#define ASS_NAME "D:\\Projects\\Sandbox\\Dev\\output\\ManagedCore.dll"
-#endif
-// #pragma comment(lib, "C:/Program Files/Mono/lib/mono-2.0-sgen.lib")
-/*  types for args in internal calls
- *
-static MonoClass*
-find_system_class(const char* name)
-{
-    if (!strcmp(name, "void"))
-        return mono_defaults.void_class;
-    else if (!strcmp(name, "char")) return mono_defaults.char_class;
-    else if (!strcmp(name, "bool")) return mono_defaults.boolean_class;
-    else if (!strcmp(name, "byte")) return mono_defaults.byte_class;
-    else if (!strcmp(name, "sbyte")) return mono_defaults.sbyte_class;
-    else if (!strcmp(name, "uint16")) return mono_defaults.uint16_class;
-    else if (!strcmp(name, "int16")) return mono_defaults.int16_class;
-    else if (!strcmp(name, "uint")) return mono_defaults.uint32_class;
-    else if (!strcmp(name, "int")) return mono_defaults.int32_class;
-    else if (!strcmp(name, "ulong")) return mono_defaults.uint64_class;
-    else if (!strcmp(name, "long")) return mono_defaults.int64_class;
-    else if (!strcmp(name, "uintptr")) return mono_defaults.uint_class;
-    else if (!strcmp(name, "intptr")) return mono_defaults.int_class;
-    else if (!strcmp(name, "single")) return mono_defaults.single_class;
-    else if (!strcmp(name, "double")) return mono_defaults.double_class;
-    else if (!strcmp(name, "string")) return mono_defaults.string_class;
-    else if (!strcmp(name, "object")) return mono_defaults.object_class;
-    else
-        return NULL;
-}*/
 static void l_info(MonoString *s) {
     auto c = mono_string_to_utf8(s);
     METADOT_INFO("[CSharp] ", c);
@@ -362,7 +330,6 @@ static mono_bool metadot_copy_file(MonoString *from, MonoString *to) {
     } catch (std::exception &e) {
         METADOT_ERROR("Cannot copy {} to {}\n{}", f, t, e.what());
     }
-    // METADOT_TRACE("Copying file from {} to {} and {}",f,t,suk);
     mono_free(f);
     mono_free(t);
 
@@ -434,7 +401,7 @@ void MonoLayer::onAttach() {
     // mono_set_dirs((monoDir / "output" / "net").string().c_str(), (monoDir / "etc").string().c_str());
     mono_set_dirs("D:\\Projects\\Sandbox\\Dev\\output\\net", "");
     //  Init a domain
-    domain = mono_jit_init("MonoScripter");
+    domain = mono_jit_init("MetaDotManaged");
     if (!domain) {
         METADOT_ERROR("mono_jit_init failed");
         return;
@@ -443,7 +410,7 @@ void MonoLayer::onAttach() {
     initInternalCalls();
 
     // Open a assembly in the domain
-    std::string assPath = ASS_NAME;
+    std::string assPath = "D:\\Projects\\Sandbox\\Dev\\output\\ManagedCore.dll";
     // App::get().getSettings().loadSet("ManagedDLL_FileName",assPath,std::string("Managedd.dll"));
     // assPath = FUtil::getAbsolutePath(assPath.c_str());
     assembly = mono_domain_assembly_open(domain, assPath.c_str());

@@ -105,7 +105,7 @@ public:
     void Create() override;
     void Destory() override;
     void Reload() override;
-    void RegisterLua(LuaWrapper::State &s_lua) override;
+    void RegisterLua(ME::LuaWrapper::State &s_lua) override;
 };
 
 #endif

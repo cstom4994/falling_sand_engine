@@ -37,6 +37,16 @@ defines {"_NDEBUG", "NDEBUG"}
 optimize "On"
 flags {"NoRuntimeChecks"}
 
+MONO_STATIC = 0
+
+local mono_libs = {}
+if (MONO_STATIC == 0) then
+mono_libs = {"coreclr.import"}
+else
+mono_libs = {"monosgen-2.0", "mono-component-debugger-static", "mono-component-diagnostics_tracing-static",
+             "mono-component-hot_reload-static"}
+end
+
 -- if is_arch("arm.*") then
 --        add_defines("__METADOT_ARCH_ARM")
 -- elseif is_arch("x86_64", "i386") then
@@ -83,7 +93,7 @@ do
 
     files {"source/engine/**.cpp", "source/engine/**.c", "source/engine/**.h", "source/engine/**.hpp"}
 
-    links {"MetaDotLibs", "SDL2", "ffi", "coreclr.import", win32_libs}
+    links {"MetaDotLibs", "SDL2", "ffi", mono_libs, win32_libs}
 end
 
 project "ManagedCore"
@@ -97,8 +107,25 @@ do
 
     dotnetframework "4.8"
 
-    files {"source/managed/**.cs"}
+    files {"source/managed/core/**.cs"}
 
     warnings "off"
+end
 
+project "Managed"
+do
+    kind "SharedLib"
+    language "C#"
+    targetdir "output"
+    debugdir "output/../"
+
+    clr "Unsafe"
+
+    links {"ManagedCore"}
+
+    dotnetframework "4.8"
+
+    files {"source/managed/runtime/**.cs"}
+
+    warnings "off"
 end

@@ -265,7 +265,7 @@ void UISystem::UIRendererUpdate() {
 
     uidata->imgui->Update();
     auto &l = Scripting::get_singleton_ptr()->Lua->s_lua;
-    LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
+    ME::LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
     OnGameGUIUpdate();
 
     if (global.game->state == LOADING) return;
@@ -440,4 +440,4 @@ void UISystem::Destory() { UIRendererFree(); }
 
 void UISystem::Reload() {}
 
-void UISystem::RegisterLua(LuaWrapper::State &s_lua) {}
+void UISystem::RegisterLua(ME::LuaWrapper::State &s_lua) {}
