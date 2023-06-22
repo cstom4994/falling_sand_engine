@@ -18,9 +18,14 @@
 
 using namespace ME;
 
+std::mutex g_data_getter_mutex;
+
 #pragma region GameScriptingBind_1
 
 static void create_biome(std::string name, int id) {
+
+    std::lock_guard<std::mutex> lock_here(g_data_getter_mutex);
+
     METADOT_BUG("[LUA] create_biome ", name, " = ", id);
     Biome *b = new Biome(name, id);
     global.GameData_.biome_container.push_back(b);
@@ -45,6 +50,9 @@ static void load_lua(std::string luafile) {}
 #pragma endregion GameScriptingBind_1
 
 Biome *BiomeGet(std::string name) {
+
+    std::lock_guard<std::mutex> lock_here(g_data_getter_mutex);
+
     for (auto t : global.GameData_.biome_container)
         if (t->name == name) return t;
     return nullptr;

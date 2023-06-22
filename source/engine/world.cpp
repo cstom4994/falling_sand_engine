@@ -39,9 +39,12 @@ ME::thread_pool WorldSystem::tickPool(16);
 ME::thread_pool WorldSystem::tickVisitedPool(16);
 ME::thread_pool WorldSystem::updateRigidBodyHitboxPool(16);
 
-void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *audioEngine) { init(worldPath, w, h, target, audioEngine, new MaterialTestGenerator()); }
+std::mutex g_mutex_loadchunk;
+std::mutex g_mutex_updatechunkmesh;
 
-void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *audioEngine, WorldGenerator *generator) {
+void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, AudioEngine *audioEngine) { init(worldPath, w, h, target, audioEngine, new MaterialTestGenerator()); }
+
+void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, AudioEngine *audioEngine, WorldGenerator *generator) {
 
     this->worldName = worldPath;
 
@@ -680,6 +683,8 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
 
 void World::updateChunkMesh(Chunk *chunk) {
 
+    std::lock_guard<std::mutex> locker(g_mutex_updatechunkmesh);
+
     /*
     if (chunk->rb != nullptr) b2world->DestroyBody(chunk->rb->body);
     */
@@ -896,8 +901,10 @@ found : {};
 
     if (chunk->rb) {
         delete[] chunk->rb->tiles;
-        R_FreeImage(chunk->rb->texture);
-        SDL_FreeSurface(chunk->rb->surface);
+        if (chunk->rb->texture) {
+            R_FreeImage(chunk->rb->texture);
+            SDL_FreeSurface(chunk->rb->surface);
+        }
         delete chunk->rb;
     }
     chunk->rb = makeRigidBodyMulti(b2_staticBody, chunk->x * CHUNK_W + loadZone.x, chunk->y * CHUNK_H + loadZone.y, 0, chunk->polys, 1, 0.3, texture->surface);
@@ -919,15 +926,15 @@ void World::updateWorldMesh() {
         }
     }
 
-    int prevMinChX = (int)floor((lastMeshZone.x - lastMeshLoadZone.x) / CHUNK_W);
-    int prevMinChY = (int)floor((lastMeshZone.y - lastMeshLoadZone.y) / CHUNK_H);
-    int prevMaxChX = (int)ceil((lastMeshZone.x + lastMeshZone.w - lastMeshLoadZone.x) / CHUNK_W);
-    int prevMaxChY = (int)ceil((lastMeshZone.y + lastMeshZone.h + lastMeshLoadZone.y) / CHUNK_H);
+    int prevMinChX = (int)std::floor((lastMeshZone.x - lastMeshLoadZone.x) / CHUNK_W);
+    int prevMinChY = (int)std::floor((lastMeshZone.y - lastMeshLoadZone.y) / CHUNK_H);
+    int prevMaxChX = (int)std::ceil((lastMeshZone.x + lastMeshZone.w - lastMeshLoadZone.x) / CHUNK_W);
+    int prevMaxChY = (int)std::ceil((lastMeshZone.y + lastMeshZone.h + lastMeshLoadZone.y) / CHUNK_H);
 
-    int minChX = (int)floor((meshZone.x - loadZone.x) / CHUNK_W);
-    int minChY = (int)floor((meshZone.y - loadZone.y) / CHUNK_H);
-    int maxChX = (int)ceil((meshZone.x + meshZone.w - loadZone.x) / CHUNK_W);
-    int maxChY = (int)ceil((meshZone.y + meshZone.h - loadZone.y) / CHUNK_H);
+    int minChX = (int)std::floor((meshZone.x - loadZone.x) / CHUNK_W);
+    int minChY = (int)std::floor((meshZone.y - loadZone.y) / CHUNK_H);
+    int maxChX = (int)std::ceil((meshZone.x + meshZone.w - loadZone.x) / CHUNK_W);
+    int maxChY = (int)std::ceil((meshZone.y + meshZone.h - loadZone.y) / CHUNK_H);
 
     for (int i = 0; i < worldRigidBodies.size(); i++) {
         b2world->DestroyBody(worldRigidBodies[i]->body);
@@ -2346,7 +2353,6 @@ void World::frame() {
 void World::tickChunkGeneration() {
 
     int n = 0;
-    long long start;
     int cenX = (-loadZone.x + loadZone.w / 2) / CHUNK_W;
     int cenY = (-loadZone.y + loadZone.h / 2) / CHUNK_H;
 
@@ -2358,6 +2364,7 @@ void World::tickChunkGeneration() {
             if (p2.first == INT_MIN) continue;  // Should be change when using phmap::flat_hash_map
             Chunk *m = p2.second;
 
+            // Check should we unload chunk
             if (abs(m->x - cenX) >= CHUNK_UNLOAD_DIST || abs(m->y - cenY) >= CHUNK_UNLOAD_DIST) {
                 unloadChunk(m);
                 continue;
@@ -2616,13 +2623,15 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
 
 Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
 
+    std::lock_guard<std::mutex> locker(g_mutex_loadchunk);
+
     ch->pleaseDelete = false;
 
     auto generate_chunk_func = [this](Chunk *chunk) {
-        generateChunk(chunk);
+        this->generateChunk(chunk);
         chunk->generationPhase = 0;
         chunk->hasTileCache = true;
-        populateChunk(chunk, 0, false);
+        this->populateChunk(chunk, 0, false);
         if (!noSaveLoad) ChunkWrite(chunk, chunk->tiles, chunk->layer2, chunk->background);
     };
 
@@ -2636,6 +2645,7 @@ Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
             generate_chunk_func(ch);
         }
     } else {
+        METADOT_BUG(std::format("generate_chunk_func {0} {1}", ch->x, ch->y).c_str());
         generate_chunk_func(ch);
     }
 

@@ -79,30 +79,24 @@ constexpr uint8_t logTypeOffset = 6;
 // escape colours
 constexpr const char *logColours[] = {"\x1b[32m", "\x1b[33m", "\x1b[31m", "\x1b[37m", "\x1b[34m", "\x1b[0m", "Success", "Warning", "Error", "Message", "Debug", "Null"};
 
-// struct command_type {
-//     std::string cmd;                                // the name of the command;
-//     std::string cmdHint;                            // shown in the help message
-//     std::function<void(const std::string &)> func;  // executes the command instructions
-// };
-
-class logger_internal {
+class LoggerInternal {
 public:
-    logger_internal() noexcept;
-    ~logger_internal() noexcept;
+    LoggerInternal() noexcept;
+    ~LoggerInternal() noexcept;
 
 private:
-    friend class logger;
+    friend class Logger;
     friend class MEconsole;
 
     static void writeline(std::string &msg);
 
     template <bool bFile, typename... args>
-    void agnostic(const char *message, log_type type, args &&...argv) noexcept {
+    void log(const char *message, log_type type, args &&...argv) noexcept {
         std::string output;
         bool bError = false;
         if (type == ME_LOG_TYPE_ERROR && using_errors) bError = true;
 
-        output = "[" + get_current_time() + "] " + logColours[type + logTypeOffset] + ": " + message;
+        output = std::string(logColours[type + logTypeOffset]) + ": " + message;
         std::stringstream ss;
         (ss << ... << argv);
         output += ss.str();
@@ -135,36 +129,25 @@ private:
     void shutdown_file_stream() noexcept;
 };
 
-inline logger_internal loggerInternal;
+inline LoggerInternal loggerInternal;
 
-class logger {
+class Logger {
 public:
-    // If set to true calling log with the ME_LOG_TYPE_ERROR will terminate the application
     static void set_crash_on_error(bool bError) noexcept;
 
-    // Sets the current file to which we should log to if logging to files is enabled
     static void set_current_log_file(const char *file) noexcept;
 
-    // Sets the current log operation, useful for enabling/disabling logging to different streams
     static void set_log_operation(log_operations op) noexcept;
 
-    /**
-     * @brief Logs a message and a templated variadic list of arguments to a stream depending on the current log
-     * operation
-     * @tparam args - A templated variadic arguments list
-     * @param message - The initial message to be printed
-     * @param type - The log type
-     * @param argv - The templated variadic list that will be unrolled into the given stream
-     */
     template <typename... args>
     static void log(log_type type, const char *message, args &&...argv) noexcept {
         if (loggerInternal.operation_type == ME_LOG_OPERATION_FILE_AND_TERMINAL) {
-            loggerInternal.agnostic<false>(message, type, argv...);
-            loggerInternal.agnostic<true>(message, type, argv...);
+            loggerInternal.log<false>(message, type, argv...);
+            loggerInternal.log<true>(message, type, argv...);
         } else if (loggerInternal.operation_type == ME_LOG_OPERATION_TERMINAL)
-            loggerInternal.agnostic<false>(message, type, argv...);
+            loggerInternal.log<false>(message, type, argv...);
         else
-            loggerInternal.agnostic<true>(message, type, argv...);
+            loggerInternal.log<true>(message, type, argv...);
     }
 };
 
@@ -174,20 +157,10 @@ ME_INLINE auto ME_time_to_string(std::time_t now = std::time(nullptr)) -> std::s
     return std::strftime(buffer, sizeof(buffer), "%Y-%m-%d_%H-%M-%S", tp) ? buffer : "1970-01-01_00:00:00";
 }
 
-/**
- * @brief A small Timer class to track how much time a task takes
- */
 class Timer {
 public:
-    // Starts recording time
     void start() noexcept;
-
-    // Stops recording time. Doesn't "stop" the recording but rather just saves the time it took. This allows you to
-    // call this function multiple times and use the "get" function to get the duration, which allows you to do if
-    // checks on how long something took. To reset the clock just call start again
     void stop() noexcept;
-
-    // Returns the duration time between starting the timer and the last
     [[nodiscard]] double get() const noexcept;
     ~Timer() noexcept;
 
@@ -276,14 +249,14 @@ static_assert(sizeof(int) == sizeof(MoveOnly<int>));
 // LOGGING FUNCTIONS
 
 #if defined(ME_DEBUG)
-#define METADOT_BUG(...) ME::logger::log(ME::ME_LOG_TYPE_NOTE, __VA_ARGS__);
+#define METADOT_BUG(...) ME::Logger::log(ME::ME_LOG_TYPE_NOTE, std::format("[Native] {0}:{1} ", __func__, __LINE__).c_str(), __VA_ARGS__)
 #else
 #define METADOT_BUG(...)
 #endif
-#define METADOT_TRACE(...) ME::logger::log(ME::ME_LOG_TYPE_NOTE, __VA_ARGS__);
-#define METADOT_INFO(...) ME::logger::log(ME::ME_LOG_TYPE_MESSAGE, __VA_ARGS__);
-#define METADOT_WARN(...) ME::logger::log(ME::ME_LOG_TYPE_WARNING, __VA_ARGS__);
-#define METADOT_ERROR(...) ME::logger::log(ME::ME_LOG_TYPE_ERROR, __VA_ARGS__);
+#define METADOT_TRACE(...) ME::Logger::log(ME::ME_LOG_TYPE_NOTE, __VA_ARGS__)
+#define METADOT_INFO(...) ME::Logger::log(ME::ME_LOG_TYPE_MESSAGE, __VA_ARGS__)
+#define METADOT_WARN(...) ME::Logger::log(ME::ME_LOG_TYPE_WARNING, __VA_ARGS__)
+#define METADOT_ERROR(...) ME::Logger::log(ME::ME_LOG_TYPE_ERROR, __VA_ARGS__)
 
 #define METADOT_LOG_SCOPE_FUNCTION(...)
 #define METADOT_LOG_SCOPE_F(...)

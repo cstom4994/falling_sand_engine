@@ -140,7 +140,7 @@ ME_INLINE void sound_set_sample_index(Sound sound, int sample_index) { metadot_s
 
 }  // namespace MetaEngine
 
-class Audio {
+class AudioEngine {
 private:
     std::map<std::string, MetaEngine::Audio *> audio_list = {};
     std::map<std::string, MetaEngine::Sound> sound_list = {};

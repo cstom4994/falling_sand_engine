@@ -30,7 +30,7 @@ public:
     bool eval(std::string &cmd);
 
 private:
-    friend class logger_internal;
+    friend class LoggerInternal;
 
     cvar::ConVar convar;
 

@@ -448,7 +448,7 @@ public:
 
 class Biome {
 public:
-    int id;
+    int id = -1;
     std::string name;
     explicit Biome(std::string name, int id) : name(std::move(name)), id(std::move(id)){};
 };
@@ -466,6 +466,9 @@ ME_GUI_DEFINE_BEGIN(template <>, Biome)
 ImGui::Text("Name: %s", var.name.c_str());
 ImGui::Text("ID: %d", var.id);
 ME_GUI_DEFINE_END
+
+Biome *BiomeGet(std::string name);
+ME_INLINE int BiomeGetID(std::string name) { return BiomeGet(name)->id; }
 
 struct WorldGenerator {
     virtual void generateChunk(World *world, Chunk *ch) = 0;

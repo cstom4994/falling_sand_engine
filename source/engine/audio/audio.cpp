@@ -2,51 +2,51 @@
 
 #include "audio.h"
 
-#include "engine/core/memory.h"
 #include "engine/core/core.hpp"
 #include "engine/core/io/filesystem.h"
+#include "engine/core/memory.h"
 #include "sound.h"
 
-void Audio::LoadSound(const std::string &strSoundName, bool b3d, bool bLooping, bool bStream) {}
+void AudioEngine::LoadSound(const std::string &strSoundName, bool b3d, bool bLooping, bool bStream) {}
 
-void Audio::UnLoadSound(const std::string &strSoundName) {}
+void AudioEngine::UnLoadSound(const std::string &strSoundName) {}
 
-int Audio::PlaySounds(const std::string &strSoundName, const MEvec3 &vPosition, float fVolumedB) { return 1; }
+int AudioEngine::PlaySounds(const std::string &strSoundName, const MEvec3 &vPosition, float fVolumedB) { return 1; }
 
-void Audio::SetChannel3dPosition(int nChannelId, const MEvec3 &vPosition) {}
+void AudioEngine::SetChannel3dPosition(int nChannelId, const MEvec3 &vPosition) {}
 
-void Audio::SetChannelVolume(int nChannelId, float fVolumedB) {}
+void AudioEngine::SetChannelVolume(int nChannelId, float fVolumedB) {}
 
-void Audio::LoadEvent(const std::string &strEventName, const std::string &filepath) {
+void AudioEngine::LoadEvent(const std::string &strEventName, const std::string &filepath) {
     ME_Audio *audio = MetaEngine::audio_load_ogg(std::format("data/assets/audio/{0}", filepath).c_str());
     audio_list.insert(std::make_pair(strEventName, audio));
 }
 
-void Audio::PlayEvent(const std::string &strEventName) {
+void AudioEngine::PlayEvent(const std::string &strEventName) {
     if (audio_list.contains(strEventName)) {
         auto audio = audio_list[strEventName];
         sound_list.insert(std::make_pair(strEventName, MetaEngine::sound_play(audio)));
     }
 }
 
-void Audio::StopEvent(const std::string &strEventName, bool bImmediate) {
+void AudioEngine::StopEvent(const std::string &strEventName, bool bImmediate) {
     if (sound_list.contains(strEventName)) {
         MetaEngine::Sound audio = sound_list[strEventName];
         MetaEngine::sound_set_is_paused(audio, true);
     }
 }
 
-bool Audio::IsEventPlaying(const std::string &strEventName) const { return false; }
+bool AudioEngine::IsEventPlaying(const std::string &strEventName) const { return false; }
 
-void Audio::GetEventParameter(const std::string &strEventName, const std::string &strParameterName, float *parameter) {}
+void AudioEngine::GetEventParameter(const std::string &strEventName, const std::string &strParameterName, float *parameter) {}
 
-void Audio::SetEventParameter(const std::string &strEventName, const std::string &strParameterName, float fValue) {}
+void AudioEngine::SetEventParameter(const std::string &strEventName, const std::string &strParameterName, float fValue) {}
 
-void Audio::SetGlobalParameter(const std::string &strParameterName, float fValue) {}
+void AudioEngine::SetGlobalParameter(const std::string &strParameterName, float fValue) {}
 
-void Audio::GetGlobalParameter(const std::string &strParameterName, float *parameter) {}
+void AudioEngine::GetGlobalParameter(const std::string &strParameterName, float *parameter) {}
 
-void Audio::InitAudio() {
+void AudioEngine::InitAudio() {
     int more_on_emscripten = 1;
     cs_error_t err = cs_init(NULL, 44100, 1024 * more_on_emscripten, NULL);
     if (err == ME_SOUND_ERROR_NONE) {
@@ -57,7 +57,7 @@ void Audio::InitAudio() {
     }
 }
 
-void Audio::EndAudio() {
+void AudioEngine::EndAudio() {
     for (auto &[name, s] : sound_list) {
         MetaEngine::sound_set_is_paused(s, true);
     }

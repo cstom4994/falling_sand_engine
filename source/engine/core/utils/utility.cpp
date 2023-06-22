@@ -26,22 +26,22 @@ ME::Timer::~Timer() noexcept { stop(); }
 
 double ME::Timer::get() const noexcept { return duration; }
 
-void ME::logger::set_crash_on_error(bool bError) noexcept { loggerInternal.using_errors = bError; }
+void ME::Logger::set_crash_on_error(bool bError) noexcept { loggerInternal.using_errors = bError; }
 
-void ME::logger::set_current_log_file(const char *file) noexcept {
+void ME::Logger::set_current_log_file(const char *file) noexcept {
     loggerInternal.shutdown_file_stream();
     loggerInternal.fileout = std::ofstream(file);
 }
 
-void ME::logger::set_log_operation(log_operations op) noexcept { loggerInternal.operation_type = op; }
+void ME::Logger::set_log_operation(log_operations op) noexcept { loggerInternal.operation_type = op; }
 
-void ME::logger_internal::writeline(std::string &msg) {
+void ME::LoggerInternal::writeline(std::string &msg) {
     // char msgbuf[512];
     // sprintf(msgbuf, "%s", msg.c_str());
     OutputDebugStringA(msg.c_str());
 }
 
-std::string ME::logger_internal::get_current_time() noexcept {
+std::string ME::LoggerInternal::get_current_time() noexcept {
     auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
     std::string realTime = std::ctime(&now);
@@ -50,11 +50,11 @@ std::string ME::logger_internal::get_current_time() noexcept {
     return realTime;
 }
 
-void ME::logger_internal::shutdown_file_stream() noexcept { fileout.close(); }
+void ME::LoggerInternal::shutdown_file_stream() noexcept { fileout.close(); }
 
-ME::logger_internal::logger_internal() noexcept {}
+ME::LoggerInternal::LoggerInternal() noexcept {}
 
-ME::logger_internal::~logger_internal() noexcept { shutdown_file_stream(); }
+ME::LoggerInternal::~LoggerInternal() noexcept { shutdown_file_stream(); }
 
 // --------------- Generic list Functions ---------------
 

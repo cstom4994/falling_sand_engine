@@ -265,7 +265,7 @@ void InitMaterials() {
     REGISTER(MaterialsList::ScriptableMaterials[1003]);
 
     // Just test
-    // ME::meta::static_refl::TypeInfo<Material>::fields.ForEach([](const auto &field) { METADOT_DBG(field.name); });
+    // ME::meta::static_refl::TypeInfo<Material>::fields.ForEach([](const auto &field) { METADOT_BUG("", field.name); });
 }
 
 void RegisterMaterial(int s_id, std::string name, std::string index_name, int physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor, u32 color) {

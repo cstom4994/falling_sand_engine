@@ -26,7 +26,7 @@ class UIData;
 struct Global {
     Game *game = nullptr;
     GameData GameData_;
-    Audio audio;
+    AudioEngine audio;
     I18N I18N;
 };
 

@@ -97,7 +97,7 @@ public:
     bool *hasPopulator = nullptr;
     int highestPopulator = 0;
     FastNoise noise;
-    Audio *audioEngine = nullptr;
+    AudioEngine *audioEngine = nullptr;
 
     MaterialInstance *tiles = nullptr;
     f32 *flowX = nullptr;
@@ -132,8 +132,8 @@ public:
     b2World *b2world = nullptr;
     RigidBody *staticBody = nullptr;
 
-    void init(std::string worldPath, u16 w, u16 h, R_Target *renderer, Audio *audioEngine, WorldGenerator *generator);
-    void init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *audioEngine);
+    void init(std::string worldPath, u16 w, u16 h, R_Target *renderer, AudioEngine *audioEngine, WorldGenerator *generator);
+    void init(std::string worldPath, u16 w, u16 h, R_Target *target, AudioEngine *audioEngine);
     MaterialInstance getTile(int x, int y);
     void setTile(int x, int y, MaterialInstance type);
     MaterialInstance getTileLayer2(int x, int y);

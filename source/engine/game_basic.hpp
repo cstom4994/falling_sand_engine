@@ -67,8 +67,6 @@ public:
     void RegisterLua(ME::LuaWrapper::State &s_lua) override;
 };
 
-Biome *BiomeGet(std::string name);
-
 ME_GUI_DEFINE_BEGIN(template <typename T>, Property<T>)
 ImGui::Auto(var.get_value());
 ME_GUI_DEFINE_END
