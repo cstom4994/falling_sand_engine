@@ -695,13 +695,13 @@ void ImGuiLayer::Init() {
     io.IniFilename = "imgui.ini";
 
     ImFontConfig config;
-    config.OversampleH = 1;
-    config.OversampleV = 1;
+    config.OversampleH = 3;
+    config.OversampleV = 3;
     config.PixelSnapH = 1;
 
     f32 scale = 1.0f;
 
-    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fusion-pixel.ttf"), 12.0f, &config, io.Fonts->GetGlyphRangesChineseFull());
+    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fusion-pixel-10px-monospaced.ttf"), 10.0f * scale, &config, io.Fonts->GetGlyphRangesChineseFull());
 
     {
         // Font Awesome
@@ -711,7 +711,7 @@ void ImGuiLayer::Init() {
         config.OversampleH = 2;
         config.OversampleV = 2;
         icons_config.PixelSnapH = true;
-        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fa-solid-900.ttf"), 13.0f, &icons_config, icons_ranges);
+        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fa-solid-900.ttf"), 13.0f * scale, &icons_config, icons_ranges);
     }
     {
         // Font Awesome
@@ -721,7 +721,7 @@ void ImGuiLayer::Init() {
         config.OversampleH = 2;
         config.OversampleV = 2;
         icons_config.PixelSnapH = true;
-        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fa-regular-400.ttf"), 13.0f, &icons_config, icons_ranges);
+        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fa-regular-400.ttf"), 13.0f * scale, &icons_config, icons_ranges);
     }
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
@@ -956,6 +956,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
     }
 
     bool interactingWithTextbox;
+    // console.draw_internal_display();
     if (global.game->GameIsolate_.globaldef.draw_console) console.display_full(&interactingWithTextbox);
 
     if (global.game->GameIsolate_.globaldef.draw_pack_editor) m_pack_editor.Draw();

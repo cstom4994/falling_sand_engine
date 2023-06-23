@@ -5,9 +5,9 @@
 #include <list>
 #include <vector>
 
-#include "runtime/globals.h"
-#include "runtime/ui/imgui_helper.hpp"
-#include "runtime/utility/mathlib.hpp"
+#include "engine/core/global.hpp"
+#include "engine/ui/imgui_helper.hpp"
+#include "mathlib.hpp"
 
 template <typename T, typename R = GLfloat>
 auto ME_value_ptr(T &&v) -> decltype((R *)&v.m[0][0]) {

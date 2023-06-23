@@ -271,6 +271,39 @@ void ME::MEconsole::display(bool *bInteractingWithTextbox) noexcept {
     if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) ImGui::SetScrollHereY(1.0f);
 }
 
+void ME::MEconsole::draw_internal_display() noexcept {
+
+    int x = 10, y = 0;
+
+    ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
+
+    auto fn_text = [&](ImColor col, std::string &text) { draw_list->AddText(ImVec2(x, y), col, text.c_str()); };
+
+    for (auto &a : loggerInternal.message_log) {
+        ImVec4 colour;
+        switch (a.second) {
+            case ME_LOG_TYPE_WARNING:
+                colour = warning;
+                break;
+            case ME_LOG_TYPE_ERROR:
+                colour = error;
+                break;
+            case ME_LOG_TYPE_NOTE:
+                colour = note;
+                break;
+            case ME_LOG_TYPE_SUCCESS:
+                colour = success;
+                break;
+            case ME_LOG_TYPE_MESSAGE:
+                colour = message;
+                break;
+        }
+
+        fn_text(colour, a.first);
+        y = y + 10;
+    }
+}
+
 void ME::MEconsole::add_to_message_log(const std::string &msg, log_type type) noexcept { loggerInternal.message_log.emplace_back(msg, type); }
 
 void ME::MEconsole::Init() {

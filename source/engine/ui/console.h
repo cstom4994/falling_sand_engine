@@ -20,6 +20,8 @@ public:
     void display_full(bool *bInteractingWithTextbox) noexcept;
     void display(bool *bInteractingWithTextbox) noexcept;
 
+    void draw_internal_display() noexcept;
+
     static void add_to_message_log(const std::string &msg, log_type type) noexcept;
     // static void add_command(const command_type &cmd) noexcept;
 

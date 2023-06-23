@@ -35,6 +35,7 @@
 #include "engine/meta/reflection.hpp"
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
+#include "engine/renderer/shaders.hpp"
 #include "engine/scripting/scripting.hpp"
 #include "engine/scripting/wrap/wrap_imgui.hpp"
 #include "engine/ui/surface.h"
@@ -52,6 +53,23 @@
 Global global;
 
 IMPLENGINE();
+
+// Prints any ME message to the console
+void (*g_engine_message_callback)(MEmessageType, MEmessageSeverity, const char *);
+
+void ME_message_callback(MEmessageType type, MEmessageSeverity severity, const char *message) {
+    switch (severity) {
+        case ME_MESSAGE_NOTE:
+            METADOT_INFO(std::format("[Global] {0}, {1}", ME::meta::static_refl::TypeInfo<MEmessageType>::fields.NameOfValue(type), message).c_str());
+            break;
+        case ME_MESSAGE_ERROR:
+            METADOT_ERROR(std::format("[Global] {0}, {1}", ME::meta::static_refl::TypeInfo<MEmessageType>::fields.NameOfValue(type), message).c_str());
+            break;
+        case ME_MESSAGE_FATAL:
+            METADOT_WARN(std::format("[Global] {0}, {1}", ME::meta::static_refl::TypeInfo<MEmessageType>::fields.NameOfValue(type), message).c_str());
+            break;
+    }
+}
 
 Game::Game(int argc, char *argv[]) {
     // Initialize promise handle
@@ -94,6 +112,8 @@ int Game::init(int argc, char *argv[]) {
     DrawSplash();
 
     setEventCallback(ME_BIND_EVENT_FN(onEvent));
+
+    g_engine_message_callback = ME_message_callback;
 
     // Initialize Gameplay script system before scripting system initialization
     METADOT_INFO("Loading gameplay script...");

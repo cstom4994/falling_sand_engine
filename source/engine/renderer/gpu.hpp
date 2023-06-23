@@ -15,6 +15,7 @@
 #include "engine/core/utils/utility.hpp"
 #include "engine/physics/box2d.h"
 #include "engine/renderer/renderer_gpu.h"
+#include "engine/renderer/shaders.hpp"
 #include "libs/glad/glad.h"
 #include "libs/imgui/imgui.h"
 
@@ -27,6 +28,22 @@ typedef struct engine_render {
     R_Target *realTarget;
     R_Target *target;
 } engine_render;
+
+typedef struct Camera {
+    MEvec3 camFront = {0.0f, 0.0f, 1.0f};
+    MEvec3 camUp = {0.0f, 1.0f, 0.0f};
+
+    MEmat4 view;
+    MEmat4 projection;
+    MEmat4 cameraMatrix = MEmat4(0.0f);
+
+    MEvec2 view_size;
+
+    MEvec3 camPos;     // data from vol
+    MEvec3 camOrient;  // data from vol
+} Camera;
+
+void ME_cam_push_matrix(Camera &cam, GLprogram shader, const char *uniform);
 
 // Create a R_Image from a SurfaceUI Framebuffer
 R_Image *generateFBO(MEsurface_context *_vg, const float _w, const float _h, void (*draw)(MEsurface_context *, const float, const float, const float, const float));
@@ -327,6 +344,5 @@ public:
     void DrawAABB(b2AABB *aabb, const ME_Color &color);
 };
 #endif
-
 
 #endif

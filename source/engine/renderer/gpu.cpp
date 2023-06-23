@@ -2,6 +2,7 @@
 #include "gpu.hpp"
 
 #include "engine/core/global.hpp"
+#include "engine/core/mathlib_ext.hpp"
 #include "engine/game.hpp"
 #include "engine/game_shaders.hpp"
 #include "engine/renderer/shaders.hpp"
@@ -11,6 +12,11 @@
 #include "libs/imgui/imgui.h"
 
 engine_render Render;
+
+void ME_cam_push_matrix(Camera &cam, GLprogram shader, const char *uniform) {
+    GLint camera_unif = glGetUniformLocation(shader, uniform);
+    glUniformMatrix4fv(camera_unif, 1, GL_FALSE, ME_value_ptr(cam.cameraMatrix));
+}
 
 // Create a R_Image from a SurfaceUI Framebuffer
 R_Image *generateFBO(MEsurface_context *_vg, const float _w, const float _h, void (*draw)(MEsurface_context *, const float, const float, const float, const float)) {
