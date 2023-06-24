@@ -201,7 +201,7 @@ void UISystem::UIRendererDraw() {
             R_RectangleRound(Render.target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, 2.0f, e.second->color);
             R_RectangleFilled(Render.target, p_x + e.second->x, p_y + e.second->y, c, p_y + e.second->y + e.second->h, e.second->color);
 
-            if (e.second->cclass.progressbar.bar_type == 1) MetaEngine::Drawing::drawText(e.second->text, e.second->cclass.progressbar.bar_text_color, p_x + e.second->x, p_y + e.second->y);
+            if (e.second->cclass.progressbar.bar_type == 1) ME_draw_text(e.second->text, e.second->cclass.progressbar.bar_text_color, p_x + e.second->x, p_y + e.second->y);
         }
         if (e.second->type == ElementType::texturedRectangle || e.second->type == ElementType::buttonElement) {
             if (Img) {
@@ -222,13 +222,13 @@ void UISystem::UIRendererDraw() {
         }
         if (e.second->type == ElementType::buttonElement) {
             if (e.second->state == 1) {
-                MetaEngine::Drawing::drawText(e.second->text, e.second->cclass.button.hot_color, p_x + e.second->x, p_y + e.second->y);
+                ME_draw_text(e.second->text, e.second->cclass.button.hot_color, p_x + e.second->x, p_y + e.second->y);
             } else {
-                MetaEngine::Drawing::drawText(e.second->text, e.second->color, p_x + e.second->x, p_y + e.second->y);
+                ME_draw_text(e.second->text, e.second->color, p_x + e.second->x, p_y + e.second->y);
             }
         }
         if (e.second->type == ElementType::textElement || e.second->type == ElementType::inputBoxElement) {
-            MetaEngine::Drawing::drawText(e.second->text, e.second->color, p_x + e.second->x, p_y + e.second->y);
+            ME_draw_text(e.second->text, e.second->color, p_x + e.second->x, p_y + e.second->y);
         }
         if (e.second->type == ElementType::inputBoxElement) {
             R_Rectangle(Render.target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, e.second->color);
@@ -254,7 +254,10 @@ void UISystem::UIRendererDraw() {
     // METADOT_SCOPE_END(UIRendererDraw);
 }
 
-void UISystem::UIRendererDrawImGui() { uidata->imgui->Draw(); }
+void UISystem::UIRendererDrawImGui() {
+    ME_profiler_scope_auto("DrawImGui");
+    uidata->imgui->Draw();
+}
 
 f32 BoxDistence(ME_rect box, MEvec2 A) {
     if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;

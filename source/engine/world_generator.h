@@ -7,6 +7,12 @@
 #include "game.hpp"
 #include "game_datastruct.hpp"
 
+class ScriptingWorldGenerator : public WorldGenerator {
+
+    void generateChunk(World *world, Chunk *ch) override;
+    std::vector<Populator *> getPopulators() override;
+};
+
 class MaterialTestGenerator : public WorldGenerator {
     void generateChunk(World *world, Chunk *ch) override;
     std::vector<Populator *> getPopulators() override;

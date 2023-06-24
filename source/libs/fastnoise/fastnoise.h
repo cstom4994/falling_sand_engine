@@ -1,6 +1,4 @@
-
-
-// FastNoise
+// FastNoise.h
 //
 // MIT License
 //

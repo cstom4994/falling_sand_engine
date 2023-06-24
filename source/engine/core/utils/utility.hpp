@@ -79,6 +79,12 @@ constexpr uint8_t logTypeOffset = 6;
 // escape colours
 constexpr const char *logColours[] = {"\x1b[32m", "\x1b[33m", "\x1b[31m", "\x1b[37m", "\x1b[34m", "\x1b[0m", "Success", "Warning", "Error", "Message", "Debug", "Null"};
 
+struct log_msg {
+    std::string msg;
+    log_type type;
+    i64 time;
+};
+
 class LoggerInternal {
 public:
     LoggerInternal() noexcept;
@@ -109,7 +115,7 @@ private:
 
         writeline(output);
 
-        message_log.emplace_back(std::make_pair(output, type));
+        message_log.emplace_back(log_msg{output, type, ME_gettime()});
 
         if (bError) {
 #ifdef NO_INSTANT_CRASH
@@ -121,7 +127,7 @@ private:
 
     std::ofstream fileout;
     bool using_errors = false;
-    std::vector<std::pair<std::string, log_type>> message_log;
+    std::vector<log_msg> message_log;
 
     log_operations operation_type = ME_LOG_OPERATION_TERMINAL;
 

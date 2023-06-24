@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "engine/core/cpp/pfr.hpp"
+#include "engine/renderer/renderer_gpu.h"
 
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -690,6 +691,14 @@ ME_INLINE ImVec4 ME_rgba2imvec(int r, int g, int b, int a = 255) {
     float newb = b / 255.f;
     float newa = a / 255.f;
     return ImVec4(newr, newg, newb, newa);
+}
+
+ME_INLINE ME_Color ME_imvec2rgba(ImVec4 iv) {
+    u8 newr = iv.x * 255;
+    u8 newg = iv.y * 255;
+    u8 newb = iv.z * 255;
+    u8 newa = iv.w * 255;
+    return ME_Color(newr, newg, newb, newa);
 }
 
 namespace ImGui {

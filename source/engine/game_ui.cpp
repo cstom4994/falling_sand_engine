@@ -532,7 +532,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
                  timeinfo->tm_min, timeinfo->tm_sec);
 
         if (ImGui::Selectable(std::format("{0}\n{1}", meta.worldName, filenameAndTimestamp).c_str())) {
-            METADOT_INFO("Selected world: %s", worldName.c_str());
+            METADOT_INFO("Selected world: ", worldName.c_str());
 
             gameUI.visible_mainmenu = false;
             LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->Lua->s_lua["game_datastruct"]["ui"];

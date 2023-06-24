@@ -166,7 +166,7 @@ void draw_more_3d_stuff(R_Target *screen) {
     end_3d(screen);
 }
 
-MEvec2 MetaEngine::Drawing::rotate_point(float cx, float cy, float angle, MEvec2 p) {
+MEvec2 ME_draw_rotate_point(float cx, float cy, float angle, MEvec2 p) {
     float s = sin(angle);
     float c = cos(angle);
 
@@ -182,17 +182,17 @@ MEvec2 MetaEngine::Drawing::rotate_point(float cx, float cy, float angle, MEvec2
     return MEvec2(xnew + cx, ynew + cy);
 }
 
-void MetaEngine::Drawing::drawPolygon(R_Target *target, ME_Color col, MEvec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy) {
+void ME_draw_polygon(R_Target *target, ME_Color col, MEvec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy) {
     if (count < 2) return;
-    MEvec2 last = rotate_point(cx, cy, angle, verts[count - 1]);
+    MEvec2 last = ME_draw_rotate_point(cx, cy, angle, verts[count - 1]);
     for (int i = 0; i < count; i++) {
-        MEvec2 rot = rotate_point(cx, cy, angle, verts[i]);
+        MEvec2 rot = ME_draw_rotate_point(cx, cy, angle, verts[i]);
         R_Line(target, x + last.x * scale, y + last.y * scale, x + rot.x * scale, y + rot.y * scale, col);
         last = rot;
     }
 }
 
-u32 MetaEngine::Drawing::darkenColor(u32 color, float brightness) {
+u32 ME_draw_darken_color(u32 color, float brightness) {
     int a = (color >> 24) & 0xFF;
     int r = (int)(((color >> 16) & 0xFF) * brightness);
     int g = (int)(((color >> 8) & 0xFF) * brightness);
@@ -201,15 +201,32 @@ u32 MetaEngine::Drawing::darkenColor(u32 color, float brightness) {
     return (a << 24) | (r << 16) | (g << 8) | b;
 }
 
-void MetaEngine::Drawing::drawText(std::string text, ME_Color col, int x, int y) {
+void ME_draw_text(std::string text, ME_Color col, int x, int y, bool outline, ME_Color outline_col) {
     ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
-    draw_list->AddText(ImVec2(x, y), ImColor(col.r, col.g, col.b, col.a), text.c_str());
+
+    if (outline) {
+
+        auto outline_col_im = ImColor(outline_col.r, outline_col.g, outline_col.b, col.a);
+
+        draw_list->AddText(ImVec2(x + 0, y - 1), outline_col_im, text.c_str());  // up
+        draw_list->AddText(ImVec2(x + 0, y + 1), outline_col_im, text.c_str());  // down
+        draw_list->AddText(ImVec2(x + 1, y + 0), outline_col_im, text.c_str());  // right
+        draw_list->AddText(ImVec2(x - 1, y + 0), outline_col_im, text.c_str());  // left
+
+        draw_list->AddText(ImVec2(x + 1, y + 1), outline_col_im, text.c_str());  // down-right
+        draw_list->AddText(ImVec2(x - 1, y + 1), outline_col_im, text.c_str());  // down-left
+
+        draw_list->AddText(ImVec2(x + 1, y - 1), outline_col_im, text.c_str());  // up-right
+        draw_list->AddText(ImVec2(x - 1, y - 1), outline_col_im, text.c_str());  // up-left
+    }
+
+    draw_list->AddText(ImVec2(x, y), ImColor(col.r, col.g, col.b, col.a), text.c_str());  // base
 }
 
-void MetaEngine::Drawing::drawTextWithPlate(R_Target *target, std::string text, ME_Color col, int x, int y, ME_Color backcolor) {
+void ME_draw_text_plate(R_Target *target, std::string text, ME_Color col, int x, int y, ME_Color backcolor) {
     auto text_size = ImGui::CalcTextSize(text.c_str());
     R_RectangleFilled(target, x - 4, y - 4, x + text_size.x + 4, y + text_size.y + 4, backcolor);
-    drawText(text, col, x, y);
+    ME_draw_text(text, col, x, y);
 }
 
 #define R_TO_STRING_GENERATOR(x) \

@@ -544,12 +544,14 @@ struct TreePopulator : public Populator {
 class Item;
 
 class RigidBody {
+private:
+    C_Surface *surface = nullptr;
+    R_Image *texture = nullptr;
+
 public:
     std::string name;
 
     b2Body *body = nullptr;
-    C_Surface *surface = nullptr;
-    R_Image *texture = nullptr;
 
     int matWidth = 0;
     int matHeight = 0;
@@ -570,8 +572,15 @@ public:
 
     Item *item = nullptr;
 
+public:
     RigidBody(b2Body *body, std::string name = "unknown");
     ~RigidBody();
+
+    bool set_surface(C_Surface *sur);
+    C_Surface *get_surface();
+
+    bool set_texture(R_Image *tex);
+    R_Image *get_texture();
 };
 
 template <>

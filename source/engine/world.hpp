@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Noise.h"
 #include "chunk.hpp"
 #include "engine/audio/audio.h"
 #include "engine/core/const.h"
@@ -19,6 +18,7 @@
 #include "engine/renderer/renderer_gpu.h"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
+#include "libs/fastnoise/fastnoise.h"
 #include "libs/parallel_hashmap/phmap.h"
 
 class Populator;

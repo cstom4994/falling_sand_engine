@@ -14,10 +14,6 @@ void MaterialTestGenerator::generateChunk(World *world, Chunk *ch) {
     u32 *background = new u32[CHUNK_W * CHUNK_H];
     Material *mat;
 
-    // std::cout << "MaterialTestGenerator generate " << ch->x << " " << ch->y << std::endl;
-
-    // METADOT_BUG(std::format("MaterialTestGenerator generateChunk {0} {1}", ch->x, ch->y).c_str());
-
     while (true) {
         mat = global.GameData_.materials_container[rand() % global.GameData_.materials_container.size()];
         if (mat->id >= 31 && (mat->physicsType == PhysicsType::SAND || mat->physicsType == PhysicsType::SOUP)) break;
@@ -323,3 +319,9 @@ std::vector<Populator *> DefaultGenerator::getPopulators() {
 }
 
 #pragma endregion
+
+void ScriptingWorldGenerator::generateChunk(World *world, Chunk *ch) {
+    
+}
+
+std::vector<Populator *> ScriptingWorldGenerator::getPopulators() { return {}; }

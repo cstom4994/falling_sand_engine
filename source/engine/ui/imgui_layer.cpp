@@ -43,9 +43,6 @@
 
 IMPLENGINE();
 
-#define LANG(_c) global.I18N.Get(_c).c_str()
-#define ICON_LANG(_i, _c) std::string(std::string(_i) + " " + global.I18N.Get(_c)).c_str()
-
 void profiler_draw_frame_bavigation(frame_info *_infos, uint32_t _numInfos) {
     ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(1510.0f, 140.0f), ImGuiCond_FirstUseEver);
@@ -701,7 +698,7 @@ void ImGuiLayer::Init() {
 
     f32 scale = 1.0f;
 
-    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fusion-pixel-10px-monospaced.ttf"), 10.0f * scale, &config, io.Fonts->GetGlyphRangesChineseFull());
+    io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fusion-pixel-12px-monospaced.ttf"), 12.0f * scale, &config, io.Fonts->GetGlyphRangesChineseFull());
 
     {
         // Font Awesome
@@ -911,13 +908,6 @@ void ImGuiLayer::Update() {
     imguiIMMCommunication();
 #endif
 
-    // ImGui::Begin("Progress Indicators");
-    // const ImU32 col = ImGui::GetColorU32(ImGuiCol_ButtonHovered);
-    // const ImU32 bg = ImGui::GetColorU32(ImGuiCol_Button);
-    // ImGui::Spinner("##spinner", 15, 6, col);
-    // ImGui::BufferingBar("##buffer_bar", 0.7f, ImVec2(400, 6), bg, col);
-    // ImGui::End();
-
     MarkdownData md1;
     md1.data = R"markdown(
 
@@ -956,7 +946,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
     }
 
     bool interactingWithTextbox;
-    // console.draw_internal_display();
+    console.draw_internal_display();
     if (global.game->GameIsolate_.globaldef.draw_console) console.display_full(&interactingWithTextbox);
 
     if (global.game->GameIsolate_.globaldef.draw_pack_editor) m_pack_editor.Draw();
@@ -987,56 +977,8 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         ImGui::End();
 
         ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
-        if (ImGui::Begin(LANG("ui_tweaks"), NULL, ImGuiWindowFlags_MenuBar)) {
+        if (ImGui::Begin(LANG("ui_tweaks"))) {
             ImGui::BeginTabBar("ui_tweaks_tabbar");
-
-            if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_TERMINAL, "ui_console"))) {
-                // console_imgui->Draw();
-                ImGui::EndTabItem();
-            }
-
-            if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_INFO, "ui_info"))) {
-                ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-                R_Renderer *renderer = R_GetCurrentRenderer();
-                R_RendererID id = renderer->id;
-
-                ImGui::Text("Using renderer: %s", glGetString(GL_RENDERER));
-                ImGui::Text("OpenGL version supported: %s", glGetString(GL_VERSION));
-                ImGui::Text("Engine renderer: %s (%d.%d)\n", id.name, id.major_version, id.minor_version);
-                ImGui::Text("Shader versions supported: %d to %d\n", renderer->min_shader_version, renderer->max_shader_version);
-                ImGui::Text("Platform: %s\n", metadot_metadata().platform.c_str());
-                ImGui::Text("Compiler: %s %s (with cpp %s)\n", metadot_metadata().compiler.c_str(), metadot_metadata().compiler_version.c_str(), metadot_metadata().cpp.c_str());
-
-                ImGui::Separator();
-
-                //                MarkdownData TickInfoPanel;
-                //                TickInfoPanel.data = R"(
-                // Info &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Data &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Comments &nbsp;
-                //:-----------|:------------|:--------
-                // TickCount | {0} | Nothing
-                // DeltaTime | {1} | Nothing
-                // TPS | {2} | Nothing
-                // Mspt | {3} | Nothing
-                // Delta | {4} | Nothing
-                // STDTime | {5} | Nothing
-                // CSTDTime | {6} | Nothing)";
-                //
-                //                 time_t rawtime;
-                //                 rawtime = time(NULL);
-                //                 struct tm *timeinfo = localtime(&rawtime);
-                //
-                //                 TickInfoPanel.data = std::format(TickInfoPanel.data, Time.tickCount, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTickTime, ME_gettime(), rawtime);
-                //
-                //                 ImGui::Auto(TickInfoPanel);
-
-                // ImGui::Text("\nnow: %d-%02d-%02d %02d:%02d:%02d", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-                //  ImGui::Text("_curID %d", MaterialInstance::_curID);
-
-                ImGui::Dummy(ImVec2(0.0f, 20.0f));
-
-                ImGui::EndTabItem();
-            }
 
             if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_SPIDER, "ui_test"))) {
                 ImGui::BeginTabBar(CC("测试#haha"));
@@ -1184,7 +1126,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem(CC("自动序列测试"))) {
-                    // ShowAutoTestWindow();
+                    ShowAutoTestWindow();
                     ImGui::EndTabItem();
                 }
                 ImGui::EndTabBar();
@@ -1443,7 +1385,45 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         ImGui::End();
 
         ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
-        if (ImGui::Begin(LANG("ui_cvars"))) {
+        if (ImGui::Begin(ICON_LANG(ICON_FA_INFO, "ui_info"))) {
+
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+            R_Renderer *renderer = R_GetCurrentRenderer();
+            R_RendererID id = renderer->id;
+
+            ImGui::Text("Using renderer: %s", glGetString(GL_RENDERER));
+            ImGui::Text("OpenGL version supported: %s", glGetString(GL_VERSION));
+            ImGui::Text("Engine renderer: %s (%d.%d)\n", id.name, id.major_version, id.minor_version);
+            ImGui::Text("Shader versions supported: %d to %d\n", renderer->min_shader_version, renderer->max_shader_version);
+            ImGui::Text("Platform: %s\n", metadot_metadata().platform.c_str());
+            ImGui::Text("Compiler: %s %s (with cpp %s)\n", metadot_metadata().compiler.c_str(), metadot_metadata().compiler_version.c_str(), metadot_metadata().cpp.c_str());
+
+            //                MarkdownData TickInfoPanel;
+            //                TickInfoPanel.data = R"(
+            // Info &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Data &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Comments &nbsp;
+            //:-----------|:------------|:--------
+            // TickCount | {0} | Nothing
+            // DeltaTime | {1} | Nothing
+            // TPS | {2} | Nothing
+            // Mspt | {3} | Nothing
+            // Delta | {4} | Nothing
+            // STDTime | {5} | Nothing
+            // CSTDTime | {6} | Nothing)";
+            //
+            //                 time_t rawtime;
+            //                 rawtime = time(NULL);
+            //                 struct tm *timeinfo = localtime(&rawtime);
+            //
+            //                 TickInfoPanel.data = std::format(TickInfoPanel.data, Time.tickCount, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTickTime, ME_gettime(), rawtime);
+            //
+            //                 ImGui::Auto(TickInfoPanel);
+
+            // ImGui::Text("\nnow: %d-%02d-%02d %02d:%02d:%02d", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
+            //  ImGui::Text("_curID %d", MaterialInstance::_curID);
+
+            ImGui::Dummy(ImVec2(0.0f, 20.0f));
+            ImGui::Separator();
 
             if (ImGui::BeginTable("ui_cvars_table", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
                 ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, 0);

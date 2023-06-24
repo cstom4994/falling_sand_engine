@@ -18,7 +18,7 @@ void AudioEngine::SetChannel3dPosition(int nChannelId, const MEvec3 &vPosition) 
 void AudioEngine::SetChannelVolume(int nChannelId, float fVolumedB) {}
 
 void AudioEngine::LoadEvent(const std::string &strEventName, const std::string &filepath) {
-    ME_Audio *audio = MetaEngine::audio_load_ogg(std::format("data/assets/audio/{0}", filepath).c_str());
+    ME_Audio *audio = MetaEngine::audio_load_ogg(METADOT_RESLOC(std::format("data/assets/audio/{0}", filepath).c_str()));
     audio_list.insert(std::make_pair(strEventName, audio));
 }
 

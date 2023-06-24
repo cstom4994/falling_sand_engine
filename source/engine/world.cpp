@@ -184,14 +184,14 @@ RigidBody *World::makeRigidBody(b2BodyType type, f32 x, f32 y, f32 angle, b2Poly
     body->CreateFixture(&fixtureDef);
 
     RigidBody *rb = new RigidBody(body);
-    rb->surface = texture;
+    rb->set_surface(texture);
     if (texture != NULL) {
-        rb->matWidth = rb->surface->w;
-        rb->matHeight = rb->surface->h;
+        rb->matWidth = rb->get_surface()->w;
+        rb->matHeight = rb->get_surface()->h;
         rb->tiles = new MaterialInstance[rb->matWidth * rb->matHeight];
         for (int xx = 0; xx < rb->matWidth; xx++) {
             for (int yy = 0; yy < rb->matHeight; yy++) {
-                u32 pixel = R_GET_PIXEL(rb->surface, xx, yy);
+                u32 pixel = R_GET_PIXEL(rb->get_surface(), xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
                     MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &MaterialsList::FIRE : &MaterialsList::OBSIDIAN, xx + (int)x, yy + (int)y);
                     inst.color = pixel;
@@ -214,8 +214,8 @@ RigidBody *World::makeRigidBody(b2BodyType type, f32 x, f32 y, f32 angle, b2Poly
         //     }
         // }
 
-        rb->texture = R_CopyImageFromSurface(rb->surface);
-        R_SetImageFilter(rb->texture, R_FILTER_NEAREST);
+        rb->set_texture(R_CopyImageFromSurface(rb->get_surface()));
+        R_SetImageFilter(rb->get_texture(), R_FILTER_NEAREST);
     }
     // rigidBodies.push_back(rb);
     return rb;
@@ -239,14 +239,14 @@ RigidBody *World::makeRigidBodyMulti(b2BodyType type, f32 x, f32 y, f32 angle, s
     }
 
     RigidBody *rb = new RigidBody(body);
-    rb->surface = texture;
+    rb->set_surface(texture);
     if (texture != NULL) {
-        rb->matWidth = rb->surface->w;
-        rb->matHeight = rb->surface->h;
+        rb->matWidth = rb->get_surface()->w;
+        rb->matHeight = rb->get_surface()->h;
         rb->tiles = new MaterialInstance[rb->matWidth * rb->matHeight];
         for (int xx = 0; xx < rb->matWidth; xx++) {
             for (int yy = 0; yy < rb->matHeight; yy++) {
-                u32 pixel = R_GET_PIXEL(rb->surface, xx, yy);
+                u32 pixel = R_GET_PIXEL(rb->get_surface(), xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
                     MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &MaterialsList::FIRE : &MaterialsList::OBSIDIAN, xx + (int)x, yy + (int)y);
                     inst.color = pixel;
@@ -269,8 +269,8 @@ RigidBody *World::makeRigidBodyMulti(b2BodyType type, f32 x, f32 y, f32 angle, s
             }
         }*/
 
-        rb->texture = R_CopyImageFromSurface(rb->surface);
-        R_SetImageFilter(rb->texture, R_FILTER_NEAREST);
+        rb->set_texture(R_CopyImageFromSurface(rb->get_surface()));
+        R_SetImageFilter(rb->get_texture(), R_FILTER_NEAREST);
     }
     // rigidBodies.push_back(rb);
     return rb;
@@ -278,7 +278,7 @@ RigidBody *World::makeRigidBodyMulti(b2BodyType type, f32 x, f32 y, f32 angle, s
 
 void World::updateRigidBodyHitbox(RigidBody *rb) {
 
-    C_Surface *texture = rb->surface;
+    C_Surface *texture = rb->get_surface();
 
     // if (static_cast<bool>(texture))
     //     return;
@@ -319,14 +319,14 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         SDL_BlitSurface(texture, &src, sf, NULL);
         SDL_FreeSurface(texture);
 
-        if (static_cast<bool>(rb->surface)) {
-            if (rb->surface->w <= 1 || rb->surface->h <= 1) {
+        if (static_cast<bool>(rb->get_surface())) {
+            if (rb->get_surface()->w <= 1 || rb->get_surface()->h <= 1) {
                 b2world->DestroyBody(rb->body);
                 rigidBodies.erase(std::remove(rigidBodies.begin(), rigidBodies.end(), rb), rigidBodies.end());
                 return;
             }
-            rb->surface = sf;
-            texture = rb->surface;
+            rb->set_surface(sf);
+            texture = rb->get_surface();
         } else {
             ME_ASSERT_E(0);
         }
@@ -351,7 +351,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     // If it is a single pixel rigid body, it will be deconstructed.
     if (maxX == 1 || maxY == 1) return;
 
-    if (!static_cast<bool>(texture) && !static_cast<bool>(rb->surface) &&
+    if (!static_cast<bool>(texture) && !static_cast<bool>(rb->get_surface()) &&
         // !static_cast<bool>(xnew) &&
         // !static_cast<bool>(ynew) &&
         1)
@@ -676,8 +676,8 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     rigidBodies.erase(std::remove(rigidBodies.begin(), rigidBodies.end(), rb), rigidBodies.end());
 
     delete[] rb->tiles;
-    R_FreeImage(rb->texture);
-    SDL_FreeSurface(rb->surface);
+    R_FreeImage(rb->get_texture());
+    SDL_FreeSurface(rb->get_surface());
     delete rb;
 }
 
@@ -901,9 +901,9 @@ found : {};
 
     if (chunk->rb) {
         delete[] chunk->rb->tiles;
-        if (chunk->rb->texture) {
-            R_FreeImage(chunk->rb->texture);
-            SDL_FreeSurface(chunk->rb->surface);
+        if (chunk->rb->get_texture()) {
+            R_FreeImage(chunk->rb->get_texture());
+            SDL_FreeSurface(chunk->rb->get_surface());
         }
         delete chunk->rb;
     }
@@ -2154,7 +2154,7 @@ void World::tickObjectsMesh() {
     std::vector<RigidBody *> *rbs = &rigidBodies;
     for (int i = 0; i < rbs->size(); i++) {
         RigidBody *cur = (*rbs)[i];
-        if (!static_cast<bool>(cur->surface)) {
+        if (!static_cast<bool>(cur->get_surface())) {
             rigidBodies.erase(std::remove(rigidBodies.begin(), rigidBodies.end(), cur), rigidBodies.end());
             continue;
         };
@@ -2761,8 +2761,11 @@ Biome *World::getBiomeAt(Chunk *ch, int x, int y) {
 }
 
 Biome *World::getBiomeAt(int x, int y) {
-    Biome *ret = BiomeGet("DEFAULT");
-    return ret;
+
+    Biome *ret = nullptr;
+
+    // ret = BiomeGet("DEFAULT");
+    // return ret;
 
     if (abs(CHUNK_H * 3 - y) < CHUNK_H * 10) {
         f32 v = noise.GetCellular(x / 20.0, 0, 8592) / 2 + 0.5;
@@ -2794,6 +2797,8 @@ Biome *World::getBiomeAt(int x, int y) {
             ret = v2 >= 0.5 ? BiomeGet("TEST_4_2") : BiomeGet("TEST_4");
         }
     }
+
+    if (ret == nullptr) ret = BiomeGet("DEFAULT");
 
     return ret;
 }

@@ -52,7 +52,7 @@ int TextEditor::AppendBuffer(std::string &aBuffer, char chr, int aIndex) {
     } else {
         //auto num = mTabSize - aIndex % mTabSize;
         //for (int j = num; j > 0; --j)
-        //	aBuffer.push_back(' ');
+        //  aBuffer.push_back(' ');
         //return aIndex + num;
         return aIndex;
     }
@@ -189,8 +189,8 @@ TextEditor::Coordinates TextEditor::ScreenPosToCoordinates(const ImVec2 &aPositi
     int lineNo = std::max(0, (int) floor(local.y / mCharAdvance.y));
 
     /*
-		Compute columnCoord according to text size
-	*/
+        Compute columnCoord according to text size
+    */
     int columnCoord = 0;
     float columnWidth = 0.0f;
     std::string cumulatedString = "";
@@ -464,8 +464,8 @@ void TextEditor::HandleMouseInputs() {
                                (mLastClick != -1.0f && (t - mLastClick) < io.MouseDoubleClickTime);
 
             /*
-				Left mouse button triple click
-			*/
+                Left mouse button triple click
+            */
 
             if (tripleClick) {
                 if (!ctrl) {
@@ -479,8 +479,8 @@ void TextEditor::HandleMouseInputs() {
             }
 
             /*
-				Left mouse button double click
-			*/
+                Left mouse button double click
+            */
 
             else if (doubleClick) {
                 if (!ctrl) {
@@ -497,8 +497,8 @@ void TextEditor::HandleMouseInputs() {
             }
 
             /*
-				Left mouse button click
-			*/
+                Left mouse button click
+            */
             else if (click) {
                 mState.mCursorPosition = mInteractiveStart = mInteractiveEnd =
                         SanitizeCoordinates(ScreenPosToCoordinates(ImGui::GetMousePos()));
@@ -834,7 +834,7 @@ void TextEditor::EnterCharacter(Char aChar, bool aShift) {
 
             if (start > end) std::swap(start, end);
             start.mColumn = 0;
-            //			end.mColumn = end.mLine < mLines.size() ? mLines[end.mLine].size() : 0;
+            //          end.mColumn = end.mLine < mLines.size() ? mLines[end.mLine].size() : 0;
             if (end.mColumn == 0 && end.mLine > 0) {
                 --end.mLine;
                 end.mColumn = (int) mLines[end.mLine].size();
@@ -1623,7 +1623,7 @@ void TextEditor::ColorizeInternal() {
                 auto &g = line[currentCoord.mColumn];
                 auto c = g.mChar;
 
-                if (c != mLanguageDefinition.mPreprocChar && !isspace(c)) firstChar = false;
+                if (c != mLanguageDefinition.mPreprocChar && !std::isspace(c)) firstChar = false;
 
                 if (currentCoord.mColumn == line.size() - 1 && line[line.size() - 1].mChar == '\\')
                     concatenate = true;

@@ -1,4 +1,4 @@
-﻿// Copyright(c) 2022-2023, KaoruXun All rights reserved.
+// Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
 #include "game.hpp"
 
@@ -145,7 +145,7 @@ int Game::init(int argc, char *argv[]) {
     // Test aseprite
     GameIsolate_.texturepack->testAse = LoadAsepriteTexture("data/assets/textures/Sprite-0003.ase");
 
-    ME_pack_result pack_result = ME_create_file_pack_reader("data/resources.pack", 0, 0, &GameIsolate_.pack_reader);
+    ME_pack_result pack_result = ME_create_file_pack_reader(METADOT_RESLOC("data/resources.pack"), 0, 0, &GameIsolate_.pack_reader);
 
     if (pack_result != SUCCESS_PACK_RESULT) {
         METADOT_ERROR("%d", pack_result);
@@ -185,6 +185,8 @@ int Game::init(int argc, char *argv[]) {
     // set up main menu ui
 
     METADOT_INFO("Setting up main menu...");
+
+    // 确定窗口显示模式
     std::string displayMode = "windowed";
 
     if (displayMode == "windowed") {
@@ -215,7 +217,7 @@ int Game::init(int argc, char *argv[]) {
 
     surface = ME_surface_CreateGL3(ME_SURFACE_ANTIALIAS | ME_SURFACE_STENCIL_STROKES | ME_SURFACE_DEBUG);
 
-    fontNormal = ME_surface_CreateFont(surface, "fusion-pixel", "data/assets/fonts/fusion-pixel.ttf");
+    fontNormal = ME_surface_CreateFont(surface, "fusion-pixel", METADOT_RESLOC("data/assets/fonts/fusion-pixel-12px-monospaced.ttf"));
     if (fontNormal == -1) {
         METADOT_ERROR("Could not add font fusion-pixel.");
     }
@@ -589,7 +591,7 @@ int Game::run(int argc, char *argv[]) {
 
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
-                        if (!static_cast<bool>(cur->surface)) continue;
+                        if (!static_cast<bool>(cur->get_surface())) continue;
                         if (cur->body->IsEnabled()) {
                             f32 s = sin(-cur->body->GetAngle());
                             f32 c = cos(-cur->body->GetAngle());
@@ -605,10 +607,10 @@ int Game::run(int argc, char *argv[]) {
                                     int ntx = (int)(tx * c - ty * s);
                                     int nty = (int)(tx * s + ty * c);
 
-                                    if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                        u32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
+                                    if (ntx >= 0 && nty >= 0 && ntx < cur->get_surface()->w && nty < cur->get_surface()->h) {
+                                        u32 pixel = R_GET_PIXEL(cur->get_surface(), ntx, nty);
                                         if (((pixel >> 24) & 0xff) != 0x00) {
-                                            R_GET_PIXEL(cur->surface, ntx, nty) = 0x00000000;
+                                            R_GET_PIXEL(cur->get_surface(), ntx, nty) = 0x00000000;
                                             upd = true;
                                         }
                                     }
@@ -616,9 +618,9 @@ int Game::run(int argc, char *argv[]) {
                             }
 
                             if (upd) {
-                                R_FreeImage(cur->texture);
-                                cur->texture = R_CopyImageFromSurface(cur->surface);
-                                R_SetImageFilter(cur->texture, R_FILTER_NEAREST);
+                                R_FreeImage(cur->get_texture());
+                                cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
+                                R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
                                 // GameIsolate_.world->updateRigidBodyHitbox(cur);
                                 cur->needsUpdate = true;
                             }
@@ -696,8 +698,8 @@ int Game::run(int argc, char *argv[]) {
                                                 int ntx = (int)(tx * c - ty * s);
                                                 int nty = (int)(tx * s + ty * c);
 
-                                                if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                                    u32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
+                                                if (ntx >= 0 && nty >= 0 && ntx < cur->get_surface()->w && nty < cur->get_surface()->h) {
+                                                    u32 pixel = R_GET_PIXEL(cur->get_surface(), ntx, nty);
                                                     if (((pixel >> 24) & 0xff) != 0x00) {
                                                         connect = true;
                                                     }
@@ -836,8 +838,7 @@ int Game::run(int argc, char *argv[]) {
                                                 return false;
                                             }
                                             hitSolidYet = true;
-                                            GameIsolate_.world->tiles[index] =
-                                                    MaterialInstance(&MaterialsList::GENERIC_SAND, MetaEngine::Drawing::darkenColor(GameIsolate_.world->tiles[index].color, 0.5f));
+                                            GameIsolate_.world->tiles[index] = MaterialInstance(&MaterialsList::GENERIC_SAND, ME_draw_darken_color(GameIsolate_.world->tiles[index].color, 0.5f));
                                             GameIsolate_.world->dirty[index] = true;
                                             endInd = index;
                                             nTilesChanged++;
@@ -887,7 +888,7 @@ int Game::run(int argc, char *argv[]) {
                         RigidBody *cur = (*rbs)[i];
 
                         bool connect = false;
-                        if (!static_cast<bool>(cur->surface)) continue;
+                        if (!static_cast<bool>(cur->get_surface())) continue;
                         if (cur->body->IsEnabled()) {
                             f32 s = sin(-cur->body->GetAngle());
                             f32 c = cos(-cur->body->GetAngle());
@@ -903,8 +904,8 @@ int Game::run(int argc, char *argv[]) {
                                     int ntx = (int)(tx * c - ty * s);
                                     int nty = (int)(tx * s + ty * c);
 
-                                    if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                        if (((R_GET_PIXEL(cur->surface, ntx, nty) >> 24) & 0xff) != 0x00) {
+                                    if (ntx >= 0 && nty >= 0 && ntx < cur->get_surface()->w && nty < cur->get_surface()->h) {
+                                        if (((R_GET_PIXEL(cur->get_surface(), ntx, nty) >> 24) & 0xff) != 0x00) {
                                             connect = true;
                                         }
                                     }
@@ -984,13 +985,17 @@ int Game::run(int argc, char *argv[]) {
         Render.target = Render.realTarget;
         R_Clear(Render.target);
 
-        ME_profiler_scope_auto("RenderEarly");
-        renderEarly();
-        Render.target = Render.realTarget;
+        {
+            ME_profiler_scope_auto("RenderEarly");
+            renderEarly();
+            Render.target = Render.realTarget;
+        }
 
-        ME_profiler_scope_auto("RenderLate");
-        renderLate();
-        Render.target = Render.realTarget;
+        {
+            ME_profiler_scope_auto("RenderLate");
+            renderLate();
+            Render.target = Render.realTarget;
+        }
 
         Scripting::get_singleton_ptr()->UpdateRender();
 
@@ -1054,7 +1059,7 @@ int Game::run(int argc, char *argv[]) {
 
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
-                        if (cur->body->IsEnabled() && static_cast<bool>(cur->surface)) {
+                        if (cur->body->IsEnabled() && static_cast<bool>(cur->get_surface())) {
                             f32 s = sin(-cur->body->GetAngle());
                             f32 c = cos(-cur->body->GetAngle());
                             bool upd = false;
@@ -1065,7 +1070,7 @@ int Game::run(int argc, char *argv[]) {
                             int ntx = (int)(tx * c - ty * s);
                             int nty = (int)(tx * s + ty * c);
 
-                            if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
+                            if (ntx >= 0 && nty >= 0 && ntx < cur->get_surface()->w && nty < cur->get_surface()->h) {
                                 tile = cur->tiles[ntx + nty * cur->matWidth];
                             }
                         }
@@ -1329,9 +1334,9 @@ void Game::updateFrameEarly() {
                 }
 
                 if (upd) {
-                    R_FreeImage(cur->texture);
-                    cur->texture = R_CopyImageFromSurface(cur->surface);
-                    R_SetImageFilter(cur->texture, R_FILTER_NEAREST);
+                    R_FreeImage(cur->get_texture());
+                    cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
+                    R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
                     // GameIsolate_.world->updateRigidBodyHitbox(cur);
                     cur->needsUpdate = true;
                 }
@@ -1427,7 +1432,7 @@ void Game::updateFrameEarly() {
             i3->setFlag(ItemFlags::ItemFlags_Vacuum);
             // i3->vacuumCells = {};
             i3->surface = LoadTexture("data/assets/objects/testVacuum.png")->surface;
-            i3->texture = R_CopyImageFromSurface(i3->surface);
+            i3->texture = R_CopyImageFromSurface(i3->texture);
             i3->name = "初始物品";
             R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
             i3->pivotX = 6;
@@ -1573,14 +1578,14 @@ void Game::updateFrameEarly() {
                         int ntx = (int)(tx * c - ty * s);
                         int nty = (int)(tx * s + ty * c);
 
-                        if (cur->surface != nullptr) {
-                            if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                if (((R_GET_PIXEL(cur->surface, ntx, nty) >> 24) & 0xff) != 0x00) {
+                        if (cur->get_surface() != nullptr) {
+                            if (ntx >= 0 && nty >= 0 && ntx < cur->get_surface()->w && nty < cur->get_surface()->h) {
+                                if (((R_GET_PIXEL(cur->get_surface(), ntx, nty) >> 24) & 0xff) != 0x00) {
                                     connect = true;
                                 }
                             }
                         } else {
-                            // METADOT_ERROR("cur->surface = nullptr");
+                            // METADOT_ERROR("cur->get_surface() = nullptr");
                             continue;
                         }
                     }
@@ -1677,7 +1682,7 @@ void Game::tick() {
         for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
             RigidBody *cur = GameIsolate_.world->rigidBodies[i];
             if (cur == nullptr) continue;
-            if (cur->surface == nullptr) continue;
+            if (cur->get_surface() == nullptr) continue;
             if (!cur->body->IsEnabled()) continue;
 
             f32 x = cur->body->GetPosition().x;
@@ -1689,18 +1694,18 @@ void Game::tick() {
             R_Target *tgtLQ = cur->back ? TexturePack_.textureObjectsBack->target : TexturePack_.textureObjectsLQ->target;
             int scaleObjTex = GameIsolate_.globaldef.hd_objects ? GameIsolate_.globaldef.hd_objects_size : 1;
 
-            ME_rect r = {x * scaleObjTex, y * scaleObjTex, (f32)cur->surface->w * scaleObjTex, (f32)cur->surface->h * scaleObjTex};
+            ME_rect r = {x * scaleObjTex, y * scaleObjTex, (f32)cur->get_surface()->w * scaleObjTex, (f32)cur->get_surface()->h * scaleObjTex};
 
             if (cur->texNeedsUpdate) {
-                if (cur->texture != nullptr) {
-                    R_FreeImage(cur->texture);
+                if (cur->get_texture() != nullptr) {
+                    R_FreeImage(cur->get_texture());
                 }
-                cur->texture = R_CopyImageFromSurface(cur->surface);
-                R_SetImageFilter(cur->texture, R_FILTER_NEAREST);
+                cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
+                R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
                 cur->texNeedsUpdate = false;
             }
 
-            R_BlitRectX(cur->texture, NULL, tgt, &r, cur->body->GetAngle() * 180 / (f32)M_PI, 0, 0, R_FLIP_NONE);
+            R_BlitRectX(cur->get_texture(), NULL, tgt, &r, cur->body->GetAngle() * 180 / (f32)M_PI, 0, 0, R_FLIP_NONE);
 
             // draw outline
 
@@ -1713,7 +1718,7 @@ void Game::tick() {
                     for (int j = 0; j < l.GetNumPoints(); j++) {
                         vec[j] = {(f32)l.GetPoint(j).x / Screen.gameScale, (f32)l.GetPoint(j).y / Screen.gameScale};
                     }
-                    MetaEngine::Drawing::drawPolygon(tgtLQ, col, vec, (int)x, (int)y, Screen.gameScale, l.GetNumPoints(), cur->body->GetAngle(), 0, 0);
+                    ME_draw_polygon(tgtLQ, col, vec, (int)x, (int)y, Screen.gameScale, l.GetNumPoints(), cur->body->GetAngle(), 0, 0);
                     delete[] vec;
                 }
                 R_SetShapeBlendMode(R_BLEND_NORMAL);  // SDL_BLENDMODE_NONE
@@ -1856,7 +1861,7 @@ void Game::tick() {
         for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
             RigidBody *cur = GameIsolate_.world->rigidBodies[i];
             if (cur == nullptr) continue;
-            if (cur->surface == nullptr) continue;
+            if (cur->get_surface() == nullptr) continue;
             if (!cur->body->IsEnabled()) continue;
 
             f32 x = cur->body->GetPosition().x;
@@ -1924,20 +1929,20 @@ void Game::tick() {
                 }
             }
 
-            for (int tx = 0; tx < cur->surface->w; tx++) {
-                for (int ty = 0; ty < cur->surface->h; ty++) {
-                    MaterialInstance mat = cur->tiles[tx + ty * cur->surface->w];
+            for (int tx = 0; tx < cur->get_surface()->w; tx++) {
+                for (int ty = 0; ty < cur->get_surface()->h; ty++) {
+                    MaterialInstance mat = cur->tiles[tx + ty * cur->get_surface()->w];
                     if (mat.mat->id == MaterialsList::GENERIC_AIR.id) {
-                        R_GET_PIXEL(cur->surface, tx, ty) = 0x00000000;
+                        R_GET_PIXEL(cur->get_surface(), tx, ty) = 0x00000000;
                     } else {
-                        R_GET_PIXEL(cur->surface, tx, ty) = (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
+                        R_GET_PIXEL(cur->get_surface(), tx, ty) = (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
                     }
                 }
             }
 
-            R_FreeImage(cur->texture);
-            cur->texture = R_CopyImageFromSurface(cur->surface);
-            R_SetImageFilter(cur->texture, R_FILTER_NEAREST);
+            R_FreeImage(cur->get_texture());
+            cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
+            R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
 
             cur->needsUpdate = true;
         }
@@ -2558,7 +2563,7 @@ void Game::tickPlayer() {
 
                         for (size_t i = 0; i < rbs->size(); i++) {
                             RigidBody *cur = (*rbs)[i];
-                            if (!static_cast<bool>(cur->surface)) continue;
+                            if (!static_cast<bool>(cur->get_surface())) continue;
                             if (cur->body->IsEnabled()) {
                                 f32 s = sin(-cur->body->GetAngle());
                                 f32 c = cos(-cur->body->GetAngle());
@@ -2574,10 +2579,10 @@ void Game::tickPlayer() {
                                         int ntx = (int)(tx * c - ty * s);
                                         int nty = (int)(tx * s + ty * c);
 
-                                        if (ntx >= 0 && nty >= 0 && ntx < cur->surface->w && nty < cur->surface->h) {
-                                            u32 pixel = R_GET_PIXEL(cur->surface, ntx, nty);
+                                        if (ntx >= 0 && nty >= 0 && ntx < cur->get_surface()->w && nty < cur->get_surface()->h) {
+                                            u32 pixel = R_GET_PIXEL(cur->get_surface(), ntx, nty);
                                             if (((pixel >> 24) & 0xff) != 0x00) {
-                                                R_GET_PIXEL(cur->surface, ntx, nty) = 0x00000000;
+                                                R_GET_PIXEL(cur->get_surface(), ntx, nty) = 0x00000000;
                                                 upd = true;
 
                                                 makeCell(MaterialInstance(&MaterialsList::GENERIC_SOLID, pixel), (x + xx), (y + yy));
@@ -2587,9 +2592,9 @@ void Game::tickPlayer() {
                                 }
 
                                 if (upd) {
-                                    R_FreeImage(cur->texture);
-                                    cur->texture = R_CopyImageFromSurface(cur->surface);
-                                    R_SetImageFilter(cur->texture, R_FILTER_NEAREST);
+                                    R_FreeImage(cur->get_texture());
+                                    cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
+                                    R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
                                     // GameIsolate_.world->updateRigidBodyHitbox(cur);
                                     cur->needsUpdate = true;
                                 }
@@ -2865,8 +2870,8 @@ void Game::renderLate() {
             ME_Color col = {static_cast<u8>((bg->solid >> 16) & 0xff), static_cast<u8>((bg->solid >> 8) & 0xff), static_cast<u8>((bg->solid >> 0) & 0xff), 0xff};
             R_ClearColor(Render.target, col);
 
-            ME_rect *dst = new ME_rect;
-            ME_rect *src = new ME_rect;
+            ME_rect dst;
+            ME_rect src;
 
             f32 arX = (f32)Screen.windowWidth / (bg->layers[0]->surface[0]->w);
             f32 arY = (f32)Screen.windowHeight / (bg->layers[0]->surface[0]->h);
@@ -2876,11 +2881,11 @@ void Game::renderLate() {
             R_SetShapeBlendMode(R_BLEND_NORMAL);
 
             for (size_t i = 0; i < bg->layers.size(); i++) {
-                BackgroundLayer *cur = bg->layers[i].get();
+                BackgroundLayer *bglayer = bg->layers[i].get();
 
-                C_Surface *texture = cur->surface[(size_t)Screen.gameScale - 1];
+                C_Surface *texture = bglayer->surface[(size_t)Screen.gameScale - 1];
 
-                R_Image *tex = cur->texture[(size_t)Screen.gameScale - 1];
+                R_Image *tex = bglayer->texture[(size_t)Screen.gameScale - 1];
                 R_SetBlendMode(tex, R_BLEND_NORMAL);
 
                 int tw = texture->w;
@@ -2889,55 +2894,55 @@ void Game::renderLate() {
                 int iter = (int)ceil((f32)Screen.windowWidth / (tw)) + 1;
                 for (int n = 0; n < iter; n++) {
 
-                    src->x = 0;
-                    src->y = 0;
-                    src->w = tw;
-                    src->h = th;
+                    src.x = 0;
+                    src.y = 0;
+                    src.w = tw;
+                    src.h = th;
 
-                    dst->x = (((global.GameData_.ofsX + global.GameData_.camX) + GameIsolate_.world->loadZone.x * Screen.gameScale) + n * tw / cur->parralaxX) * cur->parralaxX +
-                             GameIsolate_.world->width / 2.0f * Screen.gameScale - tw / 2.0f;
-                    dst->y = ((global.GameData_.ofsY + global.GameData_.camY) + GameIsolate_.world->loadZone.y * Screen.gameScale) * cur->parralaxY +
-                             GameIsolate_.world->height / 2.0f * Screen.gameScale - th / 2.0f - Screen.windowHeight / 3.0f * (Screen.gameScale - 1);
-                    dst->w = (f32)tw;
-                    dst->h = (f32)th;
+                    dst.x = (((global.GameData_.ofsX + global.GameData_.camX) + GameIsolate_.world->loadZone.x * Screen.gameScale) + n * tw / bglayer->parralaxX) * bglayer->parralaxX +
+                            GameIsolate_.world->width / 2.0f * Screen.gameScale - tw / 2.0f;
+                    dst.y = ((global.GameData_.ofsY + global.GameData_.camY) + GameIsolate_.world->loadZone.y * Screen.gameScale) * bglayer->parralaxY +
+                            GameIsolate_.world->height / 2.0f * Screen.gameScale - th / 2.0f - Screen.windowHeight / 3.0f * (Screen.gameScale - 1);
+                    dst.w = (f32)tw;
+                    dst.h = (f32)th;
 
-                    dst->x += (f32)(Screen.gameScale * fmod(cur->moveX * time, tw));
-
-                    // TODO: optimize
-                    while (dst->x >= Screen.windowWidth - 10) dst->x -= (iter * tw);
-                    while (dst->x + dst->w < 0) dst->x += (iter * tw - 1);
+                    dst.x += (f32)(Screen.gameScale * fmod(bglayer->moveX * time, tw));
 
                     // TODO: optimize
-                    if (dst->x < 0) {
-                        dst->w += dst->x;
-                        src->x -= (int)dst->x;
-                        src->w += (int)dst->x;
-                        dst->x = 0;
+                    while (dst.x >= Screen.windowWidth - 10) dst.x -= (iter * tw);
+                    while (dst.x + dst.w < 0) dst.x += (iter * tw - 1);
+
+                    // TODO: optimize
+                    if (dst.x < 0) {
+                        dst.w += dst.x;
+                        src.x -= (int)dst.x;
+                        src.w += (int)dst.x;
+                        dst.x = 0;
                     }
 
-                    if (dst->y < 0) {
-                        dst->h += dst->y;
-                        src->y -= (int)dst->y;
-                        src->h += (int)dst->y;
-                        dst->y = 0;
+                    if (dst.y < 0) {
+                        dst.h += dst.y;
+                        src.y -= (int)dst.y;
+                        src.h += (int)dst.y;
+                        dst.y = 0;
                     }
 
-                    if (dst->x + dst->w >= Screen.windowWidth) {
-                        src->w -= (int)((dst->x + dst->w) - Screen.windowWidth);
-                        dst->w += Screen.windowWidth - (dst->x + dst->w);
+                    if (dst.x + dst.w >= Screen.windowWidth) {
+                        src.w -= (int)((dst.x + dst.w) - Screen.windowWidth);
+                        dst.w += Screen.windowWidth - (dst.x + dst.w);
                     }
 
-                    if (dst->y + dst->h >= Screen.windowHeight) {
-                        src->h -= (int)((dst->y + dst->h) - Screen.windowHeight);
-                        dst->h += Screen.windowHeight - (dst->y + dst->h);
+                    if (dst.y + dst.h >= Screen.windowHeight) {
+                        src.h -= (int)((dst.y + dst.h) - Screen.windowHeight);
+                        dst.h += Screen.windowHeight - (dst.y + dst.h);
                     }
 
-                    R_BlitRect(tex, src, Render.target, dst);
+                    R_BlitRect(tex, &src, Render.target, &dst);
                 }
-            }
 
-            delete dst;
-            delete src;
+                ME_rect rct{0, 0, 150, 150};
+                RenderTextureRect(GameIsolate_.texturepack->testAse, Render.target, 200, 200, &rct);
+            }
         }
 
         ME_rect r1 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * Screen.gameScale),
@@ -3109,7 +3114,7 @@ void Game::renderOverlays() {
 
     char fpsText[50];
     snprintf(fpsText, sizeof(fpsText), "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, Time.feelsLikeFps);
-    MetaEngine::Drawing::drawText(fpsText, {255, 255, 255, 255}, Screen.windowWidth - ImGui::CalcTextSize(fpsText).x, 0);
+    ME_draw_text(fpsText, {255, 255, 255, 255}, Screen.windowWidth - ImGui::CalcTextSize(fpsText).x, 0);
 
     ME_rect r1 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * Screen.gameScale),
                          (f32)(GameIsolate_.world->height * Screen.gameScale)};
@@ -3128,7 +3133,7 @@ void Game::renderOverlays() {
                               (f32)(GameIsolate_.world->meshZone.h * Screen.gameScale)};
 
         R_Rectangle2(Render.target, r2m, {0x00, 0xff, 0xff, 0xff});
-        MetaEngine::Drawing::drawTextWithPlate(Render.target, CC("刚体物理更新区域"), {255, 255, 255, 255}, r2m.x + 4, r2m.y + 4);
+        ME_draw_text_plate(Render.target, CC("刚体物理更新区域"), {255, 255, 255, 255}, r2m.x + 4, r2m.y + 4);
         R_Rectangle2(Render.target, r2, {0xff, 0x00, 0x00, 0xff});
     }
 
@@ -3463,7 +3468,7 @@ ReadyToMerge ({16})
                              (int)GameIsolate_.world->Reg().entity_count(), rbCt, (int)GameIsolate_.world->rigidBodies.size(), (int)GameIsolate_.world->worldRigidBodies.size(), rbTriACt, rbTriCt,
                              rbTriWCt, chCt, (int)GameIsolate_.world->readyToReadyToMerge.size(), (int)GameIsolate_.world->readyToMerge.size());
 
-        MetaEngine::Drawing::drawText(a, {255, 255, 255, 255}, 10, 0);
+        ME_draw_text(a, {255, 255, 255, 255}, 10, 0, true);
 
         // for (size_t i = 0; i < GameIsolate_.world->readyToReadyToMerge.size(); i++) {
         //     char buff[10];

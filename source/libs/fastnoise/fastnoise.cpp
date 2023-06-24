@@ -1,6 +1,4 @@
-
-
-// FastNoise
+// FastNoise.cpp
 //
 // MIT License
 //
@@ -28,7 +26,7 @@
 // off every 'zix'.)
 //
 
-#include "Noise.h"
+#include "FastNoise.h"
 
 #include <assert.h>
 #include <math.h>

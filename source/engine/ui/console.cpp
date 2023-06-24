@@ -231,7 +231,7 @@ void ME::MEconsole::set_log_colour(ImVec4 colour, log_type type) noexcept {
 void ME::MEconsole::display(bool *bInteractingWithTextbox) noexcept {
     for (auto &a : loggerInternal.message_log) {
         ImVec4 colour;
-        switch (a.second) {
+        switch (a.type) {
             case ME_LOG_TYPE_WARNING:
                 colour = warning;
                 break;
@@ -249,7 +249,7 @@ void ME::MEconsole::display(bool *bInteractingWithTextbox) noexcept {
                 break;
         }
 
-        ImGui::TextColored(colour, "%s", a.first.c_str());
+        ImGui::TextColored(colour, "%s", a.msg.c_str());
     }
 
     static std::string command;
@@ -273,15 +273,37 @@ void ME::MEconsole::display(bool *bInteractingWithTextbox) noexcept {
 
 void ME::MEconsole::draw_internal_display() noexcept {
 
-    int x = 10, y = 0;
+    i64 now = ME_gettime();
+
+    log_msg log_list[10] = {};
+    int n = 9;
+
+    std::vector<log_msg>::reverse_iterator backwardIterator;
+    for (backwardIterator = loggerInternal.message_log.rbegin(); backwardIterator != loggerInternal.message_log.rend(); backwardIterator++) {
+        if (n < 0) break;
+
+        i64 dtime = now - backwardIterator->time;
+
+        if (dtime > 4000) {
+            n--;
+            break;  // 直接跳出循环就可以，在此之后的日志只可能比这更老的
+        }
+        log_list[n] = *backwardIterator;
+        n--;
+    }
+
+    int x = 10, y = 10;
 
     ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
 
-    auto fn_text = [&](ImColor col, std::string &text) { draw_list->AddText(ImVec2(x, y), col, text.c_str()); };
+    for (auto &a : log_list) {
 
-    for (auto &a : loggerInternal.message_log) {
+        if (a.msg.empty()) continue;
+
+        i64 dtime = now - a.time;
+
         ImVec4 colour;
-        switch (a.second) {
+        switch (a.type) {
             case ME_LOG_TYPE_WARNING:
                 colour = warning;
                 break;
@@ -299,12 +321,16 @@ void ME::MEconsole::draw_internal_display() noexcept {
                 break;
         }
 
-        fn_text(colour, a.first);
-        y = y + 10;
+        if (dtime >= 3500) {
+            colour.w = std::abs((4000 - dtime) / 500.0f);
+        }
+
+        ME_draw_text(a.msg, ME_imvec2rgba(colour), x, y, true);
+        y = y + 12;
     }
 }
 
-void ME::MEconsole::add_to_message_log(const std::string &msg, log_type type) noexcept { loggerInternal.message_log.emplace_back(msg, type); }
+void ME::MEconsole::add_to_message_log(const std::string &msg, log_type type) noexcept { loggerInternal.message_log.emplace_back(log_msg{msg, type}); }
 
 void ME::MEconsole::Init() {
     convar.Command("help", [this]() {
@@ -390,7 +416,7 @@ bool ME::MEconsole::eval(std::string &cmd) {
 }
 
 void ME::MEconsole::display_full(bool *bInteractingWithTextbox) noexcept {
-    ImGui::Begin("Developer Console");
+    ImGui::Begin(ICON_LANG(ICON_FA_TERMINAL, "ui_console"));
     display(bInteractingWithTextbox);
     ImGui::End();
 }

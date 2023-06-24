@@ -41,10 +41,10 @@ MONO_STATIC = 0
 
 local mono_libs = {}
 if (MONO_STATIC == 0) then
-mono_libs = {"coreclr.import"}
+    mono_libs = {"coreclr.import"}
 else
-mono_libs = {"monosgen-2.0", "mono-component-debugger-static", "mono-component-diagnostics_tracing-static",
-             "mono-component-hot_reload-static"}
+    mono_libs = {"monosgen-2.0", "mono-component-debugger-static", "mono-component-diagnostics_tracing-static",
+                 "mono-component-hot_reload-static"}
 end
 
 -- if is_arch("arm.*") then
@@ -77,8 +77,9 @@ do
     kind "StaticLib"
     language "C++"
 
-    files {"source/libs/*.cpp", "source/libs/*.c", "source/libs/ImGui/**.cpp", "source/libs/ImGui/**.c",
-           "source/libs/glad/**.c", "source/libs/lz4/**.c", "source/libs/lua/**.c", "source/libs/external/*.c"}
+    files {"source/libs/*.cpp", "source/libs/fastnoise/*.cpp", "source/libs/*.c", "source/libs/ImGui/**.cpp",
+           "source/libs/ImGui/**.c", "source/libs/glad/**.c", "source/libs/lz4/**.c", "source/libs/lua/**.c",
+           "source/libs/external/*.c"}
 
     files {"source/libs/**.h", "source/libs/**.hpp"}
 

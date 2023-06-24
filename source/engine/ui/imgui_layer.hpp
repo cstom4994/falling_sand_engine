@@ -23,6 +23,10 @@
 #include "engine/ui/imgui_impl.hpp"
 #include "engine/ui/pack_editor.h"
 #include "libs/imgui/text_editor.h"
+#include "libs/imgui/font_awesome.h"
+
+#define LANG(_c) global.I18N.Get(_c).c_str()
+#define ICON_LANG(_i, _c) std::string(std::string(_i) + " " + global.I18N.Get(_c)).c_str()
 
 #define ME_DESIRED_FRAME_RATE 30.0f
 #define ME_MINIMUM_FRAME_RATE 20.0f

@@ -49,9 +49,9 @@ int gpu_strcasecmp(const char *s1, const char *s2);
 
 #define GET_ALPHA(sdl_color) ((sdl_color).a)
 
-static_inline SDL_Window *get_window(Uint32 windowID) { return SDL_GetWindowFromID(windowID); }
+static_inline SDL_Window *get_window(u32 windowID) { return SDL_GetWindowFromID(windowID); }
 
-static_inline Uint32 get_window_id(SDL_Window *window) { return SDL_GetWindowID(window); }
+static_inline u32 get_window_id(SDL_Window *window) { return SDL_GetWindowID(window); }
 
 static_inline void get_window_dimensions(SDL_Window *window, int *w, int *h) { SDL_GetWindowSize(window, w, h); }
 
@@ -97,7 +97,7 @@ static void FreeFormat(SDL_PixelFormat *format);
 
 static char shader_message[256];
 
-static_inline void fast_upload_texture(const void *pixels, ME_rect update_rect, Uint32 format, int alignment, int row_length) {
+static_inline void fast_upload_texture(const void *pixels, ME_rect update_rect, u32 format, int alignment, int row_length) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
 #if defined(R_USE_OPENGL) || R_GLES_MAJOR_VERSION > 2
     glPixelStorei(GL_UNPACK_ROW_LENGTH, row_length);
@@ -111,7 +111,7 @@ static_inline void fast_upload_texture(const void *pixels, ME_rect update_rect, 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
 
-void row_upload_texture(const unsigned char *pixels, ME_rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
+void row_upload_texture(const unsigned char *pixels, ME_rect update_rect, u32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
     unsigned int i;
     unsigned int h = (unsigned int)update_rect.h;
     (void)bytes_per_pixel;
@@ -126,7 +126,7 @@ void row_upload_texture(const unsigned char *pixels, ME_rect update_rect, Uint32
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
 
-void copy_upload_texture(const unsigned char *pixels, ME_rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
+void copy_upload_texture(const unsigned char *pixels, ME_rect update_rect, u32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
     unsigned int i;
     unsigned int h = (unsigned int)update_rect.h;
     unsigned int w = ((unsigned int)update_rect.w) * bytes_per_pixel;
@@ -149,9 +149,9 @@ void copy_upload_texture(const unsigned char *pixels, ME_rect update_rect, Uint3
     }
 }
 
-void (*slow_upload_texture)(const unsigned char *pixels, ME_rect update_rect, Uint32 format, int alignment, unsigned int pitch, int bytes_per_pixel) = NULL;
+void (*slow_upload_texture)(const unsigned char *pixels, ME_rect update_rect, u32 format, int alignment, unsigned int pitch, int bytes_per_pixel) = NULL;
 
-static_inline void upload_texture(const void *pixels, ME_rect update_rect, Uint32 format, int alignment, int row_length, unsigned int pitch, int bytes_per_pixel) {
+static_inline void upload_texture(const void *pixels, ME_rect update_rect, u32 format, int alignment, int row_length, unsigned int pitch, int bytes_per_pixel) {
     (void)pitch;
 #if defined(R_USE_OPENGL) || R_GLES_MAJOR_VERSION > 2
     (void)bytes_per_pixel;
@@ -165,7 +165,7 @@ static_inline void upload_texture(const void *pixels, ME_rect update_rect, Uint3
 #endif
 }
 
-static_inline void upload_new_texture(void *pixels, ME_rect update_rect, Uint32 format, int alignment, int row_length, int bytes_per_pixel) {
+static_inline void upload_new_texture(void *pixels, ME_rect update_rect, u32 format, int alignment, int row_length, int bytes_per_pixel) {
 #if defined(R_USE_OPENGL) || R_GLES_MAJOR_VERSION > 2
     (void)bytes_per_pixel;
     glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
@@ -697,7 +697,7 @@ void changeBlendMode(R_Renderer *renderer, R_BlendMode mode) {
 }
 
 // If 0 is returned, there is no valid shader.
-Uint32 get_proper_program_id(R_Renderer *renderer, Uint32 program_object) {
+u32 get_proper_program_id(R_Renderer *renderer, u32 program_object) {
     R_Context *context = renderer->current_context_target->context;
     if (context->default_textured_shader_program == 0)  // No shaders loaded!
         return 0;
@@ -750,7 +750,7 @@ void disableTexturing(R_Renderer *renderer) {
 }
 
 #define MIX_COLOR_COMPONENT_NORMALIZED_RESULT(a, b) ((a) / 255.0f * (b) / 255.0f)
-#define MIX_COLOR_COMPONENT(a, b) ((Uint8)(((a) / 255.0f * (b) / 255.0f) * 255))
+#define MIX_COLOR_COMPONENT(a, b) ((u8)(((a) / 255.0f * (b) / 255.0f) * 255))
 
 SDL_Color get_complete_mod_color(R_Renderer *renderer, R_Target *target, R_Image *image) {
     (void)renderer;
@@ -897,7 +897,7 @@ void applyTransforms(R_Target *target) {
 }
 #endif
 
-R_Target *Init(R_Renderer *renderer, R_RendererID renderer_request, Uint16 w, Uint16 h, R_WindowFlagEnum SDL_flags) {
+R_Target *Init(R_Renderer *renderer, R_RendererID renderer_request, u16 w, u16 h, R_WindowFlagEnum SDL_flags) {
     R_InitFlagEnum R_flags;
     SDL_Window *window;
 
@@ -1097,16 +1097,14 @@ void update_stored_dimensions(R_Target *target) {
     }
 }
 
-R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R_Target *target) {
+R_Target *CreateTargetFromWindow(R_Renderer *renderer, u32 windowID, R_Target *target) {
     bool created = false;  // Make a new one or repurpose an existing target?
     R_CONTEXT_DATA *cdata;
     SDL_Window *window;
 
     int framebuffer_handle;
     SDL_Color white = {255, 255, 255, 255};
-#ifdef R_USE_OPENGL
-    GLenum err;
-#endif
+
     R_FeatureEnum required_features = R_GetRequiredFeatures();
 
     if (target == NULL) {
@@ -1189,10 +1187,10 @@ R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R_Target
 
     target->renderer = renderer;
     target->context_target = target;  // This target is a context target
-    target->w = (Uint16)target->context->drawable_w;
-    target->h = (Uint16)target->context->drawable_h;
-    target->base_w = (Uint16)target->context->drawable_w;
-    target->base_h = (Uint16)target->context->drawable_h;
+    target->w = (u16)target->context->drawable_w;
+    target->h = (u16)target->context->drawable_h;
+    target->base_w = (u16)target->context->drawable_w;
+    target->base_h = (u16)target->context->drawable_h;
 
     target->use_clip_rect = false;
     target->clip_rect.x = 0;
@@ -1328,7 +1326,7 @@ R_Target *CreateTargetFromWindow(R_Renderer *renderer, Uint32 windowID, R_Target
     // Load default shaders
 
     if (IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) {
-        Uint32 v, f, p;
+        u32 v, f, p;
         const char *textured_vertex_shader_source = R_DEFAULT_TEXTURED_VERTEX_SHADER_SOURCE;
         const char *textured_fragment_shader_source = R_DEFAULT_TEXTURED_FRAGMENT_SHADER_SOURCE;
         const char *untextured_vertex_shader_source = R_DEFAULT_UNTEXTURED_VERTEX_SHADER_SOURCE;
@@ -1469,7 +1467,7 @@ R_Target *CreateAliasTarget(R_Renderer *renderer, R_Target *target) {
     return result;
 }
 
-void MakeCurrent(R_Renderer *renderer, R_Target *target, Uint32 windowID) {
+void MakeCurrent(R_Renderer *renderer, R_Target *target, u32 windowID) {
     SDL_Window *window;
 
     if (target == NULL || target->context == NULL) return;
@@ -1496,8 +1494,8 @@ void MakeCurrent(R_Renderer *renderer, R_Target *target, Uint32 windowID) {
             if (window != NULL) {
                 get_window_dimensions(window, &target->context->window_w, &target->context->window_h);
                 get_drawable_dimensions(window, &target->context->drawable_w, &target->context->drawable_h);
-                target->base_w = (Uint16)target->context->drawable_w;
-                target->base_h = (Uint16)target->context->drawable_h;
+                target->base_w = (u16)target->context->drawable_w;
+                target->base_h = (u16)target->context->drawable_h;
             }
 
             // Reset the camera for this window
@@ -1603,7 +1601,7 @@ bool AddDepthBuffer(R_Renderer *renderer, R_Target *target) {
 #endif
 }
 
-bool SetWindowResolution(R_Renderer *renderer, Uint16 w, Uint16 h) {
+bool SetWindowResolution(R_Renderer *renderer, u16 w, u16 h) {
     R_Target *target = renderer->current_context_target;
 
     bool isCurrent = isCurrentTarget(renderer, target);
@@ -1639,8 +1637,8 @@ bool SetWindowResolution(R_Renderer *renderer, Uint16 w, Uint16 h) {
     update_stored_dimensions(target);
 
     // Update base dimensions
-    target->base_w = (Uint16)target->context->drawable_w;
-    target->base_h = (Uint16)target->context->drawable_h;
+    target->base_w = (u16)target->context->drawable_w;
+    target->base_h = (u16)target->context->drawable_h;
 
     // Resets virtual resolution
     target->w = target->base_w;
@@ -1660,7 +1658,7 @@ bool SetWindowResolution(R_Renderer *renderer, Uint16 w, Uint16 h) {
     return 1;
 }
 
-void SetVirtualResolution(R_Renderer *renderer, R_Target *target, Uint16 w, Uint16 h) {
+void SetVirtualResolution(R_Renderer *renderer, R_Target *target, u16 w, u16 h) {
     bool isCurrent;
 
     if (target == NULL) return;
@@ -1704,11 +1702,11 @@ bool SetFullscreen(R_Renderer *renderer, bool enable_fullscreen, bool use_deskto
     R_Target *target = renderer->current_context_target;
 
     SDL_Window *window = SDL_GetWindowFromID(target->context->windowID);
-    Uint32 old_flags = SDL_GetWindowFlags(window);
+    u32 old_flags = SDL_GetWindowFlags(window);
     bool was_fullscreen = (old_flags & SDL_WINDOW_FULLSCREEN);
     bool is_fullscreen = was_fullscreen;
 
-    Uint32 flags = 0;
+    u32 flags = 0;
 
     if (enable_fullscreen) {
         if (use_desktop_resolution)
@@ -1742,8 +1740,8 @@ bool SetFullscreen(R_Renderer *renderer, bool enable_fullscreen, bool use_deskto
         // If virtual res is not set, we need to update the target dims and reset stuff that no longer is right
         if (!target->using_virtual_resolution) {
             // Update dims
-            target->w = (Uint16)target->context->drawable_w;
-            target->h = (Uint16)target->context->drawable_h;
+            target->w = (u16)target->context->drawable_w;
+            target->h = (u16)target->context->drawable_h;
         }
 
         // Reset viewport
@@ -1757,8 +1755,8 @@ bool SetFullscreen(R_Renderer *renderer, bool enable_fullscreen, bool use_deskto
         if (isCurrentTarget(renderer, target)) applyTargetCamera(target);
     }
 
-    target->base_w = (Uint16)target->context->drawable_w;
-    target->base_h = (Uint16)target->context->drawable_h;
+    target->base_w = (u16)target->context->drawable_w;
+    target->base_h = (u16)target->context->drawable_h;
 
     return is_fullscreen;
 }
@@ -1810,7 +1808,7 @@ GLuint CreateUninitializedTexture(R_Renderer *renderer) {
     return handle;
 }
 
-R_Image *CreateUninitializedImage(R_Renderer *renderer, Uint16 w, Uint16 h, R_FormatEnum format) {
+R_Image *CreateUninitializedImage(R_Renderer *renderer, u16 w, u16 h, R_FormatEnum format) {
     GLuint handle, num_layers, bytes_per_pixel;
     GLenum gl_format;
     R_Image *result;
@@ -1940,7 +1938,7 @@ R_Image *CreateUninitializedImage(R_Renderer *renderer, Uint16 w, Uint16 h, R_Fo
     return result;
 }
 
-R_Image *CreateImage(R_Renderer *renderer, Uint16 w, Uint16 h, R_FormatEnum format) {
+R_Image *CreateImage(R_Renderer *renderer, u16 w, u16 h, R_FormatEnum format) {
     R_Image *result;
     GLenum internal_format;
     static unsigned char *zero_buffer = NULL;
@@ -1965,8 +1963,8 @@ R_Image *CreateImage(R_Renderer *renderer, Uint16 w, Uint16 h, R_FormatEnum form
     w = result->w;
     h = result->h;
     if (!(renderer->enabled_features & R_FEATURE_NON_POWER_OF_TWO)) {
-        if (!isPowerOfTwo(w)) w = (Uint16)getNearestPowerOf2(w);
-        if (!isPowerOfTwo(h)) h = (Uint16)getNearestPowerOf2(h);
+        if (!isPowerOfTwo(w)) w = (u16)getNearestPowerOf2(w);
+        if (!isPowerOfTwo(h)) h = (u16)getNearestPowerOf2(h);
     }
 
     // Initialize texture using a blank buffer
@@ -2169,13 +2167,13 @@ R_Image *CreateImageUsingTexture(R_Renderer *renderer, R_TextureHandle handle, b
     result->is_alias = false;
 
     result->using_virtual_resolution = false;
-    result->w = (Uint16)w;
-    result->h = (Uint16)h;
+    result->w = (u16)w;
+    result->h = (u16)h;
 
-    result->base_w = (Uint16)w;
-    result->base_h = (Uint16)h;
-    result->texture_w = (Uint16)w;
-    result->texture_h = (Uint16)h;
+    result->base_w = (u16)w;
+    result->base_h = (u16)h;
+    result->texture_w = (u16)w;
+    result->texture_h = (u16)h;
 
     return result;
 #endif
@@ -2333,7 +2331,7 @@ void *CopySurfaceFromTarget(R_Renderer *renderer, R_Target *target) {
         int i;
         int source_pitch = target->base_w * format->BytesPerPixel;
         for (i = 0; i < target->base_h; ++i) {
-            memcpy((Uint8 *)result->pixels + i * result->pitch, data + source_pitch * i, source_pitch);
+            memcpy((u8 *)result->pixels + i * result->pitch, data + source_pitch * i, source_pitch);
         }
     }
 
@@ -2388,7 +2386,7 @@ void *CopySurfaceFromImage(R_Renderer *renderer, R_Image *image) {
         int i;
         int source_pitch = image->texture_w * format->BytesPerPixel;  // Use the actual texture width to pull from the data
         for (i = 0; i < h; ++i) {
-            memcpy((Uint8 *)result->pixels + i * result->pitch, data + source_pitch * i, result->pitch);
+            memcpy((u8 *)result->pixels + i * result->pitch, data + source_pitch * i, result->pitch);
         }
     }
 
@@ -2517,8 +2515,8 @@ int compareFormats(R_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, 
 // Adapted from SDL_AllocFormat()
 SDL_PixelFormat *AllocFormat(GLenum glFormat) {
     // Yes, I need to do the whole thing myself... :(
-    Uint8 channels;
-    Uint32 Rmask, Gmask, Bmask, Amask = 0, mask;
+    u8 channels;
+    u32 Rmask, Gmask, Bmask, Amask = 0, mask;
     SDL_PixelFormat *result;
 
     switch (glFormat) {
@@ -2669,7 +2667,7 @@ R_Image *gpu_copy_image_pixels_only(R_Renderer *renderer, R_Image *image) {
                     bool use_blending = image->use_blending;
                     R_FilterEnum filter_mode = image->filter_mode;
                     bool use_virtual = image->using_virtual_resolution;
-                    Uint16 w = 0, h = 0;
+                    u16 w = 0, h = 0;
                     R_UnsetColor(image);
                     R_SetBlending(image, 0);
                     R_SetImageFilter(image, R_FILTER_NEAREST);
@@ -2727,8 +2725,8 @@ R_Image *gpu_copy_image_pixels_only(R_Renderer *renderer, R_Image *image) {
                 upload_new_texture(texture_data, R_MakeRect(0, 0, (float)w, (float)h), internal_format, 1, w, result->bytes_per_pixel);
 
                 // Tell SDL_gpu what we got.
-                result->texture_w = (Uint16)w;
-                result->texture_h = (Uint16)h;
+                result->texture_w = (u16)w;
+                result->texture_h = (u16)h;
 
                 free(texture_data);
             }
@@ -2771,7 +2769,7 @@ void UpdateImage(R_Renderer *renderer, R_Image *image, const ME_rect *image_rect
     ME_rect updateRect;
     ME_rect sourceRect;
     int alignment;
-    Uint8 *pixels;
+    u8 *pixels;
 
     if (image == NULL || surface == NULL) return;
 
@@ -2842,7 +2840,7 @@ void UpdateImage(R_Renderer *renderer, R_Image *image, const ME_rect *image_rect
     if (sourceRect.w < updateRect.w) updateRect.w = sourceRect.w;
     if (sourceRect.h < updateRect.h) updateRect.h = sourceRect.h;
 
-    pixels = (Uint8 *)newSurface->pixels;
+    pixels = (u8 *)newSurface->pixels;
     // Shift the pixels pointer to the proper source position
     pixels += (int)(newSurface->pitch * sourceRect.y + (newSurface->format->BytesPerPixel) * sourceRect.x);
 
@@ -2904,7 +2902,7 @@ bool ReplaceImage(R_Renderer *renderer, R_Image *image, void *surface, const ME_
     ME_rect sourceRect;
     SDL_Surface *newSurface;
     GLenum internal_format;
-    Uint8 *pixels;
+    u8 *pixels;
     int w, h;
     int alignment;
 
@@ -2981,18 +2979,18 @@ bool ReplaceImage(R_Renderer *renderer, R_Image *image, void *surface, const ME_
     h = (int)sourceRect.h;
 
     if (!image->using_virtual_resolution) {
-        image->w = (Uint16)w;
-        image->h = (Uint16)h;
+        image->w = (u16)w;
+        image->h = (u16)h;
     }
-    image->base_w = (Uint16)w;
-    image->base_h = (Uint16)h;
+    image->base_w = (u16)w;
+    image->base_h = (u16)h;
 
     if (!(renderer->enabled_features & R_FEATURE_NON_POWER_OF_TWO)) {
         if (!isPowerOfTwo(w)) w = getNearestPowerOf2(w);
         if (!isPowerOfTwo(h)) h = getNearestPowerOf2(h);
     }
-    image->texture_w = (Uint16)w;
-    image->texture_h = (Uint16)h;
+    image->texture_w = (u16)w;
+    image->texture_h = (u16)h;
 
     image->has_mipmaps = false;
 
@@ -3000,7 +2998,7 @@ bool ReplaceImage(R_Renderer *renderer, R_Image *image, void *surface, const ME_
     alignment = 8;
     while (newSurface->pitch % alignment) alignment >>= 1;
 
-    pixels = (Uint8 *)newSurface->pixels;
+    pixels = (u8 *)newSurface->pixels;
     // Shift the pixels pointer to the proper source position
     pixels += (int)(newSurface->pitch * sourceRect.y + (newSurface->format->BytesPerPixel) * sourceRect.x);
 
@@ -3047,26 +3045,26 @@ bool ReplaceImage(R_Renderer *renderer, R_Image *image, void *surface, const ME_
     return true;
 }
 
-static_inline Uint32 getPixel(SDL_Surface *Surface, int x, int y) {
-    Uint8 *bits;
-    Uint32 bpp;
+static_inline u32 getPixel(SDL_Surface *Surface, int x, int y) {
+    u8 *bits;
+    u32 bpp;
 
     if (x < 0 || x >= Surface->w) return 0;  // Best I could do for errors
 
     bpp = Surface->format->BytesPerPixel;
-    bits = ((Uint8 *)Surface->pixels) + y * Surface->pitch + x * bpp;
+    bits = ((u8 *)Surface->pixels) + y * Surface->pitch + x * bpp;
 
     switch (bpp) {
         case 1:
-            return *((Uint8 *)Surface->pixels + y * Surface->pitch + x);
+            return *((u8 *)Surface->pixels + y * Surface->pitch + x);
             break;
         case 2:
-            return *((Uint16 *)Surface->pixels + y * Surface->pitch / 2 + x);
+            return *((u16 *)Surface->pixels + y * Surface->pitch / 2 + x);
             break;
         case 3:
             // Endian-correct, but slower
             {
-                Uint8 r, g, b;
+                u8 r, g, b;
                 r = *((bits) + Surface->format->Rshift / 8);
                 g = *((bits) + Surface->format->Gshift / 8);
                 b = *((bits) + Surface->format->Bshift / 8);
@@ -3074,7 +3072,7 @@ static_inline Uint32 getPixel(SDL_Surface *Surface, int x, int y) {
             }
             break;
         case 4:
-            return *((Uint32 *)Surface->pixels + y * Surface->pitch / 4 + x);
+            return *((u32 *)Surface->pixels + y * Surface->pitch / 4 + x);
             break;
     }
 
@@ -3109,7 +3107,7 @@ R_Image *CopyImageFromSurface(R_Renderer *renderer, void *surface, const ME_rect
         format = R_FORMAT_RGBA;
     }
 
-    image = CreateImage(renderer, (Uint16)sw, (Uint16)sh, format);
+    image = CreateImage(renderer, (u16)sw, (u16)sh, format);
     if (image == NULL) return NULL;
 
     UpdateImage(renderer, image, NULL, surface, surface_rect);
@@ -3426,7 +3424,7 @@ void FreeTarget(R_Renderer *renderer, R_Target *target) {
     SET_RELATIVE_INDEXED_VERTEX(-2);
 
 void Blit(R_Renderer *renderer, R_Image *image, ME_rect *src_rect, R_Target *target, float x, float y) {
-    Uint32 tex_w, tex_h;
+    u32 tex_w, tex_h;
     float w;
     float h;
     float x1, y1, x2, y2;
@@ -3624,7 +3622,7 @@ void BlitTransform(R_Renderer *renderer, R_Image *image, ME_rect *src_rect, R_Ta
 }
 
 void BlitTransformX(R_Renderer *renderer, R_Image *image, ME_rect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY) {
-    Uint32 tex_w, tex_h;
+    u32 tex_w, tex_h;
     float x1, y1, x2, y2;
     float dx1, dy1, dx2, dy2, dx3, dy3, dx4, dy4;
     float w, h;
@@ -4170,7 +4168,7 @@ void PrimitiveBatchV(R_Renderer *renderer, R_Image *image, R_Target *target, R_P
                     index = indices[i] * R_BLIT_BUFFER_FLOATS_PER_VERTEX;
                 if (use_colors) {
                     if (use_byte_colors) {
-                        Uint8 *color_pointer = (Uint8 *)((char *)values + offset_colors);
+                        u8 *color_pointer = (u8 *)((char *)values + offset_colors);
                         glColor4ub(color_pointer[index], color_pointer[index + 1], color_pointer[index + 2], (use_a ? color_pointer[index + 3] : 255));
                     } else {
                         float *color_pointer = (float *)((char *)values + offset_colors);
@@ -4277,7 +4275,7 @@ void GenerateMipmaps(R_Renderer *renderer, R_Image *image) {
 #endif
 }
 
-ME_rect SetClip(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y, Uint16 w, Uint16 h) {
+ME_rect SetClip(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y, u16 w, u16 h) {
     ME_rect r;
     if (target == NULL) {
         r.x = r.y = r.w = r.h = 0;
@@ -4498,7 +4496,7 @@ R_TextureHandle GetTextureHandle(R_Renderer *renderer, R_Image *image) {
     return ((R_IMAGE_DATA *)image->data)->handle;
 }
 
-void ClearRGBA(R_Renderer *renderer, R_Target *target, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+void ClearRGBA(R_Renderer *renderer, R_Target *target, u8 r, u8 g, u8 b, u8 a) {
     if (target == NULL) return;
     if (renderer != target->renderer) return;
 
@@ -4773,8 +4771,8 @@ void Flip(R_Renderer *renderer, R_Target *target) {
 // On some platforms (e.g. Android), it might not be possible to just create a rwops and get the expected #included files.
 // To do it, I might want to add an optional argument that specifies a base directory to prepend to #include file names.
 
-Uint32 GetShaderSourceSize(const char *filename);
-Uint32 GetShaderSource(const char *filename, char *result);
+u32 GetShaderSourceSize(const char *filename);
+u32 GetShaderSource(const char *filename, char *result);
 
 void read_until_end_of_comment(SDL_RWops *rwops, char multiline) {
     char buffer;
@@ -4790,8 +4788,8 @@ void read_until_end_of_comment(SDL_RWops *rwops, char multiline) {
     }
 }
 
-Uint32 GetShaderSourceSize_RW(SDL_RWops *shader_source) {
-    Uint32 size;
+u32 GetShaderSourceSize_RW(SDL_RWops *shader_source) {
+    u32 size;
     char last_char;
     char buffer[512];
     long len;
@@ -4852,8 +4850,8 @@ Uint32 GetShaderSourceSize_RW(SDL_RWops *shader_source) {
     return size;
 }
 
-Uint32 GetShaderSource_RW(SDL_RWops *shader_source, char *result) {
-    Uint32 size;
+u32 GetShaderSource_RW(SDL_RWops *shader_source, char *result) {
+    u32 size;
     char last_char;
     char buffer[512];
     long len;
@@ -4927,9 +4925,9 @@ Uint32 GetShaderSource_RW(SDL_RWops *shader_source, char *result) {
     return size;
 }
 
-Uint32 GetShaderSource(const char *filename, char *result) {
+u32 GetShaderSource(const char *filename, char *result) {
     SDL_RWops *rwops;
-    Uint32 size;
+    u32 size;
 
     if (filename == NULL) return 0;
     rwops = SDL_RWFromFile(filename, "r");
@@ -4940,9 +4938,9 @@ Uint32 GetShaderSource(const char *filename, char *result) {
     return size;
 }
 
-Uint32 GetShaderSourceSize(const char *filename) {
+u32 GetShaderSourceSize(const char *filename) {
     SDL_RWops *rwops;
-    Uint32 result;
+    u32 result;
 
     if (filename == NULL) return 0;
     rwops = SDL_RWFromFile(filename, "r");
@@ -4953,7 +4951,7 @@ Uint32 GetShaderSourceSize(const char *filename) {
     return result;
 }
 
-Uint32 compile_shader_source(R_ShaderEnum shader_type, const char *shader_source) {
+u32 compile_shader_source(R_ShaderEnum shader_type, const char *shader_source) {
     // Create the proper new shader object
     GLuint shader_object = 0;
     (void)shader_type;
@@ -5005,15 +5003,15 @@ Uint32 compile_shader_source(R_ShaderEnum shader_type, const char *shader_source
     return shader_object;
 }
 
-Uint32 CompileShaderInternal(R_Renderer *renderer, R_ShaderEnum shader_type, const char *shader_source) { return compile_shader_source(shader_type, shader_source); }
+u32 CompileShaderInternal(R_Renderer *renderer, R_ShaderEnum shader_type, const char *shader_source) { return compile_shader_source(shader_type, shader_source); }
 
-Uint32 CompileShader(R_Renderer *renderer, R_ShaderEnum shader_type, const char *shader_source) {
-    Uint32 size = (Uint32)strlen(shader_source);
+u32 CompileShader(R_Renderer *renderer, R_ShaderEnum shader_type, const char *shader_source) {
+    u32 size = (u32)strlen(shader_source);
     if (size == 0) return 0;
     return CompileShaderInternal(renderer, shader_type, shader_source);
 }
 
-Uint32 CreateShaderProgram(R_Renderer *renderer) {
+u32 CreateShaderProgram(R_Renderer *renderer) {
 #ifndef R_DISABLE_SHADERS
     GLuint p;
 
@@ -5028,7 +5026,7 @@ Uint32 CreateShaderProgram(R_Renderer *renderer) {
 #endif
 }
 
-bool LinkShaderProgram(R_Renderer *renderer, Uint32 program_object) {
+bool LinkShaderProgram(R_Renderer *renderer, u32 program_object) {
 #ifndef R_DISABLE_SHADERS
     int linked;
 
@@ -5059,7 +5057,7 @@ bool LinkShaderProgram(R_Renderer *renderer, Uint32 program_object) {
 #endif
 }
 
-void FreeShader(R_Renderer *renderer, Uint32 shader_object) {
+void FreeShader(R_Renderer *renderer, u32 shader_object) {
     (void)renderer;
     (void)shader_object;
 #ifndef R_DISABLE_SHADERS
@@ -5067,7 +5065,7 @@ void FreeShader(R_Renderer *renderer, Uint32 shader_object) {
 #endif
 }
 
-void FreeShaderProgram(R_Renderer *renderer, Uint32 program_object) {
+void FreeShaderProgram(R_Renderer *renderer, u32 program_object) {
     (void)renderer;
     (void)program_object;
 #ifndef R_DISABLE_SHADERS
@@ -5075,7 +5073,7 @@ void FreeShaderProgram(R_Renderer *renderer, Uint32 program_object) {
 #endif
 }
 
-void AttachShader(R_Renderer *renderer, Uint32 program_object, Uint32 shader_object) {
+void AttachShader(R_Renderer *renderer, u32 program_object, u32 shader_object) {
     (void)renderer;
     (void)program_object;
     (void)shader_object;
@@ -5084,7 +5082,7 @@ void AttachShader(R_Renderer *renderer, Uint32 program_object, Uint32 shader_obj
 #endif
 }
 
-void DetachShader(R_Renderer *renderer, Uint32 program_object, Uint32 shader_object) {
+void DetachShader(R_Renderer *renderer, u32 program_object, u32 shader_object) {
     (void)renderer;
     (void)program_object;
     (void)shader_object;
@@ -5093,7 +5091,7 @@ void DetachShader(R_Renderer *renderer, Uint32 program_object, Uint32 shader_obj
 #endif
 }
 
-void ActivateShaderProgram(R_Renderer *renderer, Uint32 program_object, R_ShaderBlock *block) {
+void ActivateShaderProgram(R_Renderer *renderer, u32 program_object, R_ShaderBlock *block) {
     R_Target *target = renderer->current_context_target;
     (void)block;
 #ifndef R_DISABLE_SHADERS
@@ -5142,7 +5140,7 @@ const char *GetShaderMessage(R_Renderer *renderer) {
     return shader_message;
 }
 
-int GetAttributeLocation(R_Renderer *renderer, Uint32 program_object, const char *attrib_name) {
+int GetAttributeLocation(R_Renderer *renderer, u32 program_object, const char *attrib_name) {
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return -1;
     program_object = get_proper_program_id(renderer, program_object);
@@ -5156,7 +5154,7 @@ int GetAttributeLocation(R_Renderer *renderer, Uint32 program_object, const char
 #endif
 }
 
-int GetUniformLocation(R_Renderer *renderer, Uint32 program_object, const char *uniform_name) {
+int GetUniformLocation(R_Renderer *renderer, u32 program_object, const char *uniform_name) {
 #ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return -1;
     program_object = get_proper_program_id(renderer, program_object);
@@ -5170,7 +5168,7 @@ int GetUniformLocation(R_Renderer *renderer, Uint32 program_object, const char *
 #endif
 }
 
-R_ShaderBlock LoadShaderBlock(R_Renderer *renderer, Uint32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name) {
+R_ShaderBlock LoadShaderBlock(R_Renderer *renderer, u32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name) {
     R_ShaderBlock b;
     program_object = get_proper_program_id(renderer, program_object);
     if (program_object == 0 || !IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) {
@@ -5207,7 +5205,7 @@ R_ShaderBlock LoadShaderBlock(R_Renderer *renderer, Uint32 program_object, const
 void SetShaderImage(R_Renderer *renderer, R_Image *image, int location, int image_unit) {
 // TODO: OpenGL 1 needs to check for ARB_multitexture to use glActiveTexture().
 #ifndef R_DISABLE_SHADERS
-    Uint32 new_texture;
+    u32 new_texture;
 
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
 
@@ -5232,7 +5230,7 @@ void SetShaderImage(R_Renderer *renderer, R_Image *image, int location, int imag
     (void)image_unit;
 }
 
-void GetUniformiv(R_Renderer *renderer, Uint32 program_object, int location, int *values) {
+void GetUniformiv(R_Renderer *renderer, u32 program_object, int location, int *values) {
     (void)renderer;
     (void)program_object;
     (void)location;
@@ -5286,7 +5284,7 @@ void SetUniformiv(R_Renderer *renderer, int location, int num_elements_per_value
 #endif
 }
 
-void GetUniformuiv(R_Renderer *renderer, Uint32 program_object, int location, unsigned int *values) {
+void GetUniformuiv(R_Renderer *renderer, u32 program_object, int location, unsigned int *values) {
     (void)renderer;
     (void)program_object;
     (void)location;
@@ -5366,7 +5364,7 @@ void SetUniformuiv(R_Renderer *renderer, int location, int num_elements_per_valu
 #endif
 }
 
-void GetUniformfv(R_Renderer *renderer, Uint32 program_object, int location, float *values) {
+void GetUniformfv(R_Renderer *renderer, u32 program_object, int location, float *values) {
     (void)renderer;
     (void)program_object;
     (void)location;

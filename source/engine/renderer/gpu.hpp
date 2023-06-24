@@ -179,16 +179,11 @@ ME_PRIVATE(void) ME_check_gl_error(const char *file, const int line) {
     glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);    \
     glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3])
 
-namespace MetaEngine {
-class Drawing {
-public:
-    static MEvec2 rotate_point(float cx, float cy, float angle, MEvec2 p);
-    static void drawPolygon(R_Target *renderer, ME_Color col, MEvec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
-    static u32 darkenColor(u32 col, float brightness);
-    static void drawText(std::string text, ME_Color col, int x, int y);
-    static void drawTextWithPlate(R_Target *target, std::string text, ME_Color col, int x, int y, ME_Color backcolor = {77, 77, 77, 140});
-};
-}  // namespace MetaEngine
+MEvec2 ME_draw_rotate_point(float cx, float cy, float angle, MEvec2 p);
+void ME_draw_polygon(R_Target *renderer, ME_Color col, MEvec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
+u32 ME_draw_darken_color(u32 col, float brightness);
+void ME_draw_text(std::string text, ME_Color col, int x, int y, bool outline = false, ME_Color outline_col = {0, 0, 0, 180});
+void ME_draw_text_plate(R_Target *target, std::string text, ME_Color col, int x, int y, ME_Color backcolor = {77, 77, 77, 140});
 
 namespace ME {
 

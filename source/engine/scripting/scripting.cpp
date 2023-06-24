@@ -105,7 +105,7 @@ static int metadot_run_lua_file_script(lua_State *L) {
     std::string string = lua_tostring(L, 1);
     auto &LuaCore = Scripting::get_singleton_ptr()->Lua->s_lua;
     ME_ASSERT_E(&LuaCore);
-    if (ME_str_starts_with(string, "Script:")) ME_str_replace_with(string, "Script:", METADOT_RESLOC("data/scripts/"));
+    if (ME_str_starts_with(string, "Script:")) ME_str_replace_with(string, "Script:", "data/scripts/");
     script_runfile(string.c_str());
     return 0;
 }

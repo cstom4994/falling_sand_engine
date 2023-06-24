@@ -586,8 +586,8 @@ Item *Item::makeItem(ItemFlags flags, RigidBody *rb, std::string n) {
         i->flags = flags;
     }
 
-    i->surface = rb->surface;
-    i->texture = rb->texture;
+    i->surface = rb->get_surface();
+    i->texture = rb->get_texture();
     i->name = n;
 
     return i;
@@ -1159,6 +1159,26 @@ RigidBody::RigidBody(b2Body *body, std::string name) {
 
 RigidBody::~RigidBody() {
     // if (item) delete item;
+}
+
+bool RigidBody::set_surface(C_Surface *sur) {
+    this->surface = sur;
+    return true;
+}
+
+C_Surface *RigidBody::get_surface() {
+    ME_ASSERT_E(this->surface);
+    return this->surface;
+}
+
+bool RigidBody::set_texture(R_Image *tex) {
+    this->texture = tex;
+    return true;
+}
+
+R_Image *RigidBody::get_texture() {
+    ME_ASSERT_E(this->texture);
+    return this->texture;
 }
 
 void Player::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
