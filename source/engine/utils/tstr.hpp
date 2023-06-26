@@ -18,7 +18,7 @@
 #include <string_view>
 #include <utility>
 
-namespace MetaEngine {
+namespace ME::cpp {
 template <typename Char, std::size_t N>
 struct fixed_cstring {
     using value_type = Char;
@@ -50,11 +50,11 @@ struct fixed_cstring {
 
 template <typename Char, std::size_t N>
 fixed_cstring(const Char (&)[N]) -> fixed_cstring<Char, N - 1>;
-}  // namespace MetaEngine
+}  // namespace ME::cpp
 
 #ifdef METADOT_TSTR_NTTPC
 
-namespace MetaEngine {
+namespace ME::cpp {
 template <fixed_cstring str>
 struct TStr {
     using Char = typename decltype(str)::value_type;
@@ -73,21 +73,21 @@ template <char... chars>
 using TStrC_of = TStr<fixed_cstring<char, sizeof...(chars)>{std::in_place, chars...}>;
 template <auto c>
 using TStr_of_a = TStr<fixed_cstring<decltype(c), 1>(c)>;
-}  // namespace MetaEngine
+}  // namespace ME::cpp
 
 #define TSTR(s)                                                                                                    \
     ([] {                                                                                                          \
         constexpr std::basic_string_view str{s};                                                                   \
-        return MetaEngine::TStr<MetaEngine::fixed_cstring<typename decltype(str)::value_type, str.size()>{str}>{}; \
+        return ME::cpp::TStr<ME::cpp::fixed_cstring<typename decltype(str)::value_type, str.size()>{str}>{}; \
     }())
 
 #else
-namespace MetaEngine {
+namespace ME::cpp {
 template <typename Char, Char... chars>
 struct TStr;
 }
 
-namespace MetaEngine::details {
+namespace ME::cpp::details {
 template <typename Char, typename T, std::size_t... N>
 constexpr auto TSTRHelperImpl(std::index_sequence<N...>) {
     return TStr<Char, T::get()[N]...>{};
@@ -99,7 +99,7 @@ constexpr auto TSTRHelper(T) {
     using Char = typename SV::value_type;
     return TSTRHelperImpl<Char, T>(std::make_index_sequence<T::get().size()>{});
 }
-}  // namespace MetaEngine::details
+}  // namespace ME::cpp::details
 
 // [C-style string type (value)]
 #define TSTR(s)                                                               \
@@ -107,10 +107,10 @@ constexpr auto TSTRHelper(T) {
         struct tmp {                                                          \
             static constexpr auto get() { return std::basic_string_view{s}; } \
         };                                                                    \
-        return MetaEngine::details::TSTRHelper(tmp{});                        \
+        return ME::cpp::details::TSTRHelper(tmp{});                        \
     }())
 
-namespace MetaEngine {
+namespace ME::cpp {
 template <typename C, C... chars>
 struct TStr {
     using Char = C;
@@ -131,7 +131,7 @@ template <char... chars>
 using TStrC_of = TStr<char, chars...>;
 template <auto c>
 using TStr_of_a = TStr<decltype(c), c>;
-}  // namespace MetaEngine
+}  // namespace ME::cpp
 
 #endif  // METADOT_TSTR_NTTPC
 #endif  // METADOT_TSTR
@@ -139,7 +139,7 @@ using TStr_of_a = TStr<decltype(c), c>;
 #ifndef METADOT_TSTR_UTIL
 #define METADOT_TSTR_UTIL
 
-namespace MetaEngine {
+namespace ME::cpp {
 template <typename T>
 concept TStrLike = requires {
                        { T::View() } -> std::same_as<std::basic_string_view<typename T::Char>>;
@@ -389,7 +389,7 @@ constexpr auto int_to_TSTR() {
         }
     }
 }
-}  // namespace MetaEngine
+}  // namespace ME::cpp
 
 #endif  // !METADOT_TSTR_UTIL
 

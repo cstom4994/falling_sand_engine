@@ -15,9 +15,9 @@
 #include <thread>
 #include <utility>
 
-#include "engine/core/cpp/promise.hpp"
+#include "engine/utils/promise.hpp"
 
-namespace MetaEngine {
+namespace ME::cpp {
 
 class Service {
     using Defer = Promise::Defer;
@@ -26,7 +26,7 @@ class Service {
     using Timers = std::multimap<TimePoint, Defer>;
     using Tasks = std::deque<Defer>;
 #if METADOT_PROMISE_MULTITHREAD
-    using Mutex = MetaEngine::Promise::Mutex;
+    using Mutex = ME::cpp::promise::Mutex;
 #endif
 
     Timers timers_;
@@ -60,7 +60,7 @@ public:
 
     // delay for milliseconds
     Promise delay(uint64_t time_ms) {
-        return MetaEngine::Promise::newPromise([&](Defer &defer) {
+        return ME::cpp::promise::newPromise([&](Defer &defer) {
             TimePoint now = std::chrono::steady_clock::now();
             TimePoint time = now + std::chrono::milliseconds(time_ms);
             timers_.emplace(time, defer);
@@ -69,7 +69,7 @@ public:
 
     // yield for other tasks to run
     Promise yield() {
-        return MetaEngine::Promise::newPromise([&](Defer &defer) {
+        return ME::cpp::promise::newPromise([&](Defer &defer) {
 #if METADOT_PROMISE_MULTITHREAD
             std::lock_guard<Mutex> lock(*mutex_);
 #endif
@@ -80,7 +80,7 @@ public:
 
     // Resolve the defer object in this io thread
     void runInIoThread(const std::function<void()> &func) {
-        MetaEngine::Promise::newPromise([=](Defer &defer) {
+        ME::cpp::promise::newPromise([=](Defer &defer) {
 #if METADOT_PROMISE_MULTITHREAD
             std::lock_guard<Mutex> lock(*mutex_);
 #endif
@@ -174,6 +174,6 @@ public:
         cond_.notify_one();
     }
 };
-}  // namespace MetaEngine
+}  // namespace ME::cpp
 
 #endif

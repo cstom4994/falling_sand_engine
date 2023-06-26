@@ -2,9 +2,9 @@
 
 #include "rng.h"
 
-#include "engine/core/cpp/utils.hpp"
+#include "engine/utils/utils.hpp"
 #include "engine/core/mathlib.hpp"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 
 RNG* RNG_Create() {
     srand(time(NULL));

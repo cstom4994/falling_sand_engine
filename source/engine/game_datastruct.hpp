@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "engine/core/core.hpp"
-#include "engine/core/cpp/type.hpp"
+#include "engine/utils/type.hpp"
 #include "engine/core/mathlib.hpp"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/ecs/ecs.hpp"
@@ -626,7 +626,7 @@ struct RigidBodyBinding : public ME::LuaWrapper::PodBind::Binding<RigidBodyBindi
 
     // Lua constructor
     static int create(lua_State *L) {
-        std::cout << "Create called\n";
+        ME::println("Create called");
         ME::LuaWrapper::PodBind::CheckArgCount(L, 2);
         b2Body *body = (b2Body *)lua_touserdata(L, 1);
         const char *name = luaL_checkstring(L, 2);

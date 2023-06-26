@@ -6,13 +6,13 @@
 #include <tuple>
 #include <utility>
 
-#include "engine/core/cpp/templatelist.hpp"
-#include "engine/core/cpp/tstr.hpp"
-#include "engine/core/cpp/type.hpp"
+#include "engine/utils/templatelist.hpp"
+#include "engine/utils/tstr.hpp"
+#include "engine/utils/type.hpp"
 
 namespace ME::meta::static_refl {
 
-using namespace MetaEngine;
+using namespace ME::cpp;
 
 template <typename Name, typename T>
 struct NamedValue;

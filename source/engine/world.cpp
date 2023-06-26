@@ -15,14 +15,14 @@
 #include "chunk.hpp"
 #include "engine/core/const.h"
 #include "engine/core/core.hpp"
-#include "engine/core/cpp/utils.hpp"
+#include "engine/utils/utils.hpp"
 #include "engine/core/debug.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/macros.hpp"
 #include "engine/core/mathlib.hpp"
 #include "engine/core/memory.h"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 #include "engine/engine.h"
 #include "engine/game_utils/cells.h"
 #include "engine/game_utils/jsonwarp.h"
@@ -3183,8 +3183,8 @@ void World::tickEntities(R_Target *t) {
 
     // worldEntities.erase(std::remove_if(worldEntities.begin(), worldEntities.end(), func), worldEntities.end());
     registry.for_each_component<WorldEntity>([&](MetaEngine::ECS::entity e, WorldEntity &we) {
-        bool destory = func(&we);
-        if (destory) {
+        bool destroy = func(&we);
+        if (destroy) {
             if ((MetaEngine::ECS::exists<Player>{})(e)) this->player = 0;
             registry.destroy_entity(e);
         }

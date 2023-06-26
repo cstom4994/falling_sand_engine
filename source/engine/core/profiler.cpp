@@ -12,7 +12,7 @@
 #include "engine/core/core.hpp"
 #include "engine/core/memory.h"
 #include "engine/core/platform.h"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 #include "engine/renderer/gpu.hpp"
 #include "engine/ui/surface.h"
 #include "libs/lz4/lz4.h"

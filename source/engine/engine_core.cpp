@@ -3,8 +3,8 @@
 #include "engine/engine_core.h"
 
 #include "engine/core/core.hpp"
-#include "engine/core/cpp/utils.hpp"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utils.hpp"
+#include "engine/utils/utility.hpp"
 
 engine_core Core;
 windows Screen;

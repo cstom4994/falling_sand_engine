@@ -4,7 +4,7 @@
 #define ME_MDPLOT_H
 
 #include "engine/core/core.hpp"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 #include "libs/imgui/md4c.h"
 
 #define MDPLOT_PARSER_TEST(...) METADOT_BUG(__VA_ARGS__)

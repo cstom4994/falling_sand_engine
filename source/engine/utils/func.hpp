@@ -5,7 +5,7 @@
 
 #include "typelist.hpp"
 
-namespace MetaEngine {
+namespace ME::cpp {
 // type Object : if not member function, it is void
 // type ArgList : TypeList<Args...>
 // type Return
@@ -52,9 +52,9 @@ struct FuncExpand;
 
 template <typename Lambda>
 constexpr auto DecayLambda(Lambda&& lambda) noexcept;
-}  // namespace MetaEngine
+}  // namespace ME::cpp
 
-namespace MetaEngine::details {
+namespace ME::cpp::details {
 // ref: qobjectdefs_impl.h
 
 template <typename T>
@@ -99,9 +99,9 @@ struct CheckCompatibleArguments<TypeList<ToArgHead, ToArgTail...>, TypeList<From
     static constexpr bool value = AreArgumentsCompatible<typename RmvConstRef<ToArgHead>::type, typename RmvConstRef<FromArgHead>::type>::value &&
                                   CheckCompatibleArguments<TypeList<ToArgTail...>, TypeList<FromArgTail...>>::value;
 };
-}  // namespace MetaEngine::details
+}  // namespace ME::cpp::details
 
-namespace MetaEngine::details {
+namespace ME::cpp::details {
 template <bool IsConst, bool IsVolatile, ReferenceMode Ref, bool IsNoexcept, typename Sig>
 struct FuncTraitsBase;
 
@@ -124,108 +124,108 @@ template <typename T>
 struct FuncTraitsDispatch<true, T> : FuncTraits<T> {
     using Function = T;
 };
-}  // namespace MetaEngine::details
+}  // namespace ME::cpp::details
 
 // 2*2*3*2 = 24
 template <typename Ret, typename... Args>  // 0000
-struct MetaEngine::FuncTraits<Ret(Args...)> : details::FuncTraitsBase<false, false, ReferenceMode::None, false, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...)> : details::FuncTraitsBase<false, false, ReferenceMode::None, false, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 1000
-struct MetaEngine::FuncTraits<Ret(Args...) const> : details::FuncTraitsBase<true, false, ReferenceMode::None, false, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) const> : details::FuncTraitsBase<true, false, ReferenceMode::None, false, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 0100
-struct MetaEngine::FuncTraits<Ret(Args...) volatile> : details::FuncTraitsBase<false, true, ReferenceMode::None, false, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) volatile> : details::FuncTraitsBase<false, true, ReferenceMode::None, false, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 1100
-struct MetaEngine::FuncTraits<Ret(Args...) const volatile> : details::FuncTraitsBase<true, true, ReferenceMode::None, false, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) const volatile> : details::FuncTraitsBase<true, true, ReferenceMode::None, false, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 0010
-struct MetaEngine::FuncTraits<Ret(Args...)&> : details::FuncTraitsBase<false, false, ReferenceMode::Left, false, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...)&> : details::FuncTraitsBase<false, false, ReferenceMode::Left, false, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 1010
-struct MetaEngine::FuncTraits<Ret(Args...) const&> : details::FuncTraitsBase<true, false, ReferenceMode::Left, false, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) const&> : details::FuncTraitsBase<true, false, ReferenceMode::Left, false, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 0110
-struct MetaEngine::FuncTraits<Ret(Args...) volatile&> : details::FuncTraitsBase<false, true, ReferenceMode::Left, false, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) volatile&> : details::FuncTraitsBase<false, true, ReferenceMode::Left, false, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 1110
-struct MetaEngine::FuncTraits<Ret(Args...) const volatile&> : details::FuncTraitsBase<true, true, ReferenceMode::Left, false, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) const volatile&> : details::FuncTraitsBase<true, true, ReferenceMode::Left, false, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 0020
-struct MetaEngine::FuncTraits<Ret(Args...) &&> : details::FuncTraitsBase<false, false, ReferenceMode::Right, false, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) &&> : details::FuncTraitsBase<false, false, ReferenceMode::Right, false, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 1020
-struct MetaEngine::FuncTraits<Ret(Args...) const&&> : details::FuncTraitsBase<true, false, ReferenceMode::Right, false, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) const&&> : details::FuncTraitsBase<true, false, ReferenceMode::Right, false, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 0120
-struct MetaEngine::FuncTraits<Ret(Args...) volatile&&> : details::FuncTraitsBase<false, true, ReferenceMode::Right, false, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) volatile&&> : details::FuncTraitsBase<false, true, ReferenceMode::Right, false, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 1120
-struct MetaEngine::FuncTraits<Ret(Args...) const volatile&&> : details::FuncTraitsBase<true, true, ReferenceMode::Right, false, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) const volatile&&> : details::FuncTraitsBase<true, true, ReferenceMode::Right, false, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 0001
-struct MetaEngine::FuncTraits<Ret(Args...) noexcept> : details::FuncTraitsBase<false, false, ReferenceMode::None, true, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) noexcept> : details::FuncTraitsBase<false, false, ReferenceMode::None, true, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 1001
-struct MetaEngine::FuncTraits<Ret(Args...) const noexcept> : details::FuncTraitsBase<true, false, ReferenceMode::None, true, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) const noexcept> : details::FuncTraitsBase<true, false, ReferenceMode::None, true, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 0101
-struct MetaEngine::FuncTraits<Ret(Args...) volatile noexcept> : details::FuncTraitsBase<false, true, ReferenceMode::None, true, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) volatile noexcept> : details::FuncTraitsBase<false, true, ReferenceMode::None, true, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 1101
-struct MetaEngine::FuncTraits<Ret(Args...) const volatile noexcept> : details::FuncTraitsBase<true, true, ReferenceMode::None, true, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) const volatile noexcept> : details::FuncTraitsBase<true, true, ReferenceMode::None, true, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 0011
-struct MetaEngine::FuncTraits<Ret(Args...) & noexcept> : details::FuncTraitsBase<false, false, ReferenceMode::Left, true, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) & noexcept> : details::FuncTraitsBase<false, false, ReferenceMode::Left, true, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 1011
-struct MetaEngine::FuncTraits<Ret(Args...) const & noexcept> : details::FuncTraitsBase<true, false, ReferenceMode::Left, true, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) const & noexcept> : details::FuncTraitsBase<true, false, ReferenceMode::Left, true, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 0111
-struct MetaEngine::FuncTraits<Ret(Args...) volatile & noexcept> : details::FuncTraitsBase<false, true, ReferenceMode::Left, true, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) volatile & noexcept> : details::FuncTraitsBase<false, true, ReferenceMode::Left, true, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 1111
-struct MetaEngine::FuncTraits<Ret(Args...) const volatile & noexcept> : details::FuncTraitsBase<true, true, ReferenceMode::Left, true, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) const volatile & noexcept> : details::FuncTraitsBase<true, true, ReferenceMode::Left, true, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 0021
-struct MetaEngine::FuncTraits<Ret(Args...) && noexcept> : details::FuncTraitsBase<false, false, ReferenceMode::Right, true, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) && noexcept> : details::FuncTraitsBase<false, false, ReferenceMode::Right, true, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 1021
-struct MetaEngine::FuncTraits<Ret(Args...) const && noexcept> : details::FuncTraitsBase<true, false, ReferenceMode::Right, true, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) const && noexcept> : details::FuncTraitsBase<true, false, ReferenceMode::Right, true, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 0121
-struct MetaEngine::FuncTraits<Ret(Args...) volatile && noexcept> : details::FuncTraitsBase<false, true, ReferenceMode::Right, true, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) volatile && noexcept> : details::FuncTraitsBase<false, true, ReferenceMode::Right, true, Ret(Args...)> {};
 
 template <typename Ret, typename... Args>  // 1121
-struct MetaEngine::FuncTraits<Ret(Args...) const volatile && noexcept> : details::FuncTraitsBase<true, true, ReferenceMode::Right, true, Ret(Args...)> {};
+struct ME::cpp::FuncTraits<Ret(Args...) const volatile && noexcept> : details::FuncTraitsBase<true, true, ReferenceMode::Right, true, Ret(Args...)> {};
 
 // dispatch
 template <typename Func>
-struct MetaEngine::FuncTraits<Func*> : FuncTraits<Func> {
+struct ME::cpp::FuncTraits<Func*> : FuncTraits<Func> {
     using Object = void;
     using Function = Func;
 };
 
 template <typename T, typename Func>
-struct MetaEngine::FuncTraits<Func T::*> : FuncTraits<Func> {
+struct ME::cpp::FuncTraits<Func T::*> : FuncTraits<Func> {
     using Object = T;
     using Function = Func;
 };
 
 template <typename Func>
-struct MetaEngine::FuncTraits<Func&> : FuncTraits<Func> {};
+struct ME::cpp::FuncTraits<Func&> : FuncTraits<Func> {};
 template <typename Func>
-struct MetaEngine::FuncTraits<Func&&> : FuncTraits<Func> {};
+struct ME::cpp::FuncTraits<Func&&> : FuncTraits<Func> {};
 template <typename Func>
-struct MetaEngine::FuncTraits<const Func&> : FuncTraits<Func> {};
+struct ME::cpp::FuncTraits<const Func&> : FuncTraits<Func> {};
 template <typename Func>
-struct MetaEngine::FuncTraits<const Func&&> : FuncTraits<Func> {};
+struct ME::cpp::FuncTraits<const Func&&> : FuncTraits<Func> {};
 
 template <typename T>
-struct MetaEngine::FuncTraits : details::FuncTraitsDispatch<std::is_function_v<T>, T> {};
+struct ME::cpp::FuncTraits : details::FuncTraitsDispatch<std::is_function_v<T>, T> {};
 
 template <typename Ret, typename... Args>
-struct MetaEngine::FuncExpand<Ret(Args...)> {
+struct ME::cpp::FuncExpand<Ret(Args...)> {
     template <typename Func>
     static auto get(Func&& func) noexcept {
         static_assert(std::is_void_v<Ret> || std::is_convertible_v<FuncTraits_Return<Func>, Ret>, "Func's return can't convert to Ret");
@@ -250,18 +250,18 @@ private:
 };
 
 template <typename Lambda>
-constexpr auto MetaEngine::DecayLambda(Lambda&& lambda) noexcept {
+constexpr auto ME::cpp::DecayLambda(Lambda&& lambda) noexcept {
     return static_cast<std::add_pointer_t<FuncTraits_Signature<std::remove_reference_t<Lambda>>>>(std::forward<Lambda>(lambda));
 }
 
 template <typename Obj, typename Func>
-struct MetaEngine::MemFuncOf {
+struct ME::cpp::MemFuncOf {
     static_assert(std::is_function_v<Func>);
     static constexpr auto get(Func Obj::*func) noexcept { return func; }
 };
 
 template <typename Func>
-struct MetaEngine::FuncOf {
+struct ME::cpp::FuncOf {
     static_assert(std::is_function_v<Func>);
     static constexpr auto get(Func* func) noexcept { return func; }
 };

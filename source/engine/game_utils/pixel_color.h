@@ -5,9 +5,9 @@
 
 #include <math.h>
 
-#include "engine/core/cpp/stl.hpp"
+#include "engine/utils/stl.hpp"
 
-namespace MetaEngine {
+namespace ME::cpp {
 
 class CColorFloat {
 public:
@@ -183,10 +183,10 @@ public:
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    float r; /*!<	The red component of this color		*/
-    float g; /*!<	The green component of this color	*/
-    float b; /*!<	The blue component of this color	*/
-    float a; /*!<	The alpha component of this color	*/
+    float r; /*!<   The red component of this color     */
+    float g; /*!<   The green component of this color   */
+    float b; /*!<   The blue component of this color    */
+    float a; /*!<   The alpha component of this color   */
 
     bool multiplied_with_alpha;
 
@@ -372,10 +372,10 @@ public:
 
     //=========================================================================
     ///////////////////////////////////////////////////////////////////////////
-    uint8 r; /*!<	The red component of this color		*/
-    uint8 g; /*!<	The green component of this color	*/
-    uint8 b; /*!<	The blue component of this color	*/
-    uint8 a; /*!<	The alpha component of this color	*/
+    uint8 r; /*!<   The red component of this color     */
+    uint8 g; /*!<   The green component of this color   */
+    uint8 b; /*!<   The blue component of this color    */
+    uint8 a; /*!<   The alpha component of this color   */
 
 private:
     static bool masks_initialized;
@@ -399,300 +399,300 @@ class CColor
 {
 public:
 
-	typedef unsigned int uint32;
-	typedef unsigned char uint8;
+    typedef unsigned int uint32;
+    typedef unsigned char uint8;
 
-	CColor( T r = 0, T g = 0, T b = 0, T a = 255 ) :
-	  r( r ),
-	  g( g ),
-	  b( b ),
-	  a( a ),
+    CColor( T r = 0, T g = 0, T b = 0, T a = 255 ) :
+      r( r ),
+      g( g ),
+      b( b ),
+      a( a ),
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-		RMask( 0x000000FF ),
-		GMask( 0x0000FF00 ),
-		BMask( 0x00FF0000 ),
-		AMask( 0xFF000000 ),
-		RShift( 0 ),
-		GShift( 8 ),
-		BShift( 16 ),
-		AShift( 24 )
+        RMask( 0x000000FF ),
+        GMask( 0x0000FF00 ),
+        BMask( 0x00FF0000 ),
+        AMask( 0xFF000000 ),
+        RShift( 0 ),
+        GShift( 8 ),
+        BShift( 16 ),
+        AShift( 24 )
 
 #else
-		RMask( 0xFF000000 ),
-		GMask( 0x00FF0000 ),
-		BMask( 0x0000FF00 ),
-		AMask( 0x000000FF ),
-		RShift( 24 ),
-		GShift( 16 ),
-		BShift( 8 ),
-		AShift( 0 )
+        RMask( 0xFF000000 ),
+        GMask( 0x00FF0000 ),
+        BMask( 0x0000FF00 ),
+        AMask( 0x000000FF ),
+        RShift( 24 ),
+        GShift( 16 ),
+        BShift( 8 ),
+        AShift( 0 )
 #endif
 
-	{
+    {
 
-	}
+    }
 
-	CColor( const CColor<T>& other ) : 
-	  r( other.r ),
+    CColor( const CColor<T>& other ) : 
+      r( other.r ),
       g( other.g ),
-	  b( other.b ),
-	  a( other.a ),
+      b( other.b ),
+      a( other.a ),
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-		RMask( 0x000000FF ),
-		GMask( 0x0000FF00 ),
-		BMask( 0x00FF0000 ),
-		AMask( 0xFF000000 ),
-		RShift( 0 ),
-		GShift( 8 ),
-		BShift( 16 ),
-		AShift( 24 )
+        RMask( 0x000000FF ),
+        GMask( 0x0000FF00 ),
+        BMask( 0x00FF0000 ),
+        AMask( 0xFF000000 ),
+        RShift( 0 ),
+        GShift( 8 ),
+        BShift( 16 ),
+        AShift( 24 )
 
 #else
-		RMask( 0xFF000000 ),
-		GMask( 0x00FF0000 ),
-		BMask( 0x0000FF00 ),
-		AMask( 0x000000FF ),
-		RShift( 24 ),
-		GShift( 16 ),
-		BShift( 8 ),
-		AShift( 0 )
+        RMask( 0xFF000000 ),
+        GMask( 0x00FF0000 ),
+        BMask( 0x0000FF00 ),
+        AMask( 0x000000FF ),
+        RShift( 24 ),
+        GShift( 16 ),
+        BShift( 8 ),
+        AShift( 0 )
 #endif
-	{
-	}
-	  
-	CColor( const T c[4] ) :
-	  r( c[0] ),
-	  g( c[1] ),
-	  b( c[2] ),
-	  a( c[3] ),
+    {
+    }
+      
+    CColor( const T c[4] ) :
+      r( c[0] ),
+      g( c[1] ),
+      b( c[2] ),
+      a( c[3] ),
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-		RMask( 0x000000FF ),
-		GMask( 0x0000FF00 ),
-		BMask( 0x00FF0000 ),
-		AMask( 0xFF000000 ),
-		RShift( 0 ),
-		GShift( 8 ),
-		BShift( 16 ),
-		AShift( 24 )
+        RMask( 0x000000FF ),
+        GMask( 0x0000FF00 ),
+        BMask( 0x00FF0000 ),
+        AMask( 0xFF000000 ),
+        RShift( 0 ),
+        GShift( 8 ),
+        BShift( 16 ),
+        AShift( 24 )
 
 #else
-		RMask( 0xFF000000 ),
-		GMask( 0x00FF0000 ),
-		BMask( 0x0000FF00 ),
-		AMask( 0x000000FF ),
-		RShift( 24 ),
-		GShift( 16 ),
-		BShift( 8 ),
-		AShift( 0 )
+        RMask( 0xFF000000 ),
+        GMask( 0x00FF0000 ),
+        BMask( 0x0000FF00 ),
+        AMask( 0x000000FF ),
+        RShift( 24 ),
+        GShift( 16 ),
+        BShift( 8 ),
+        AShift( 0 )
 #endif
-	{
+    {
 
-	}
+    }
 
-	  CColor( const uint32 clor ) :
+      CColor( const uint32 clor ) :
 
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-		RMask( 0x000000FF ),
-		GMask( 0x0000FF00 ),
-		BMask( 0x00FF0000 ),
-		AMask( 0xFF000000 ),
-		RShift( 0 ),
-		GShift( 8 ),
-		BShift( 16 ),
-		AShift( 24 )
+        RMask( 0x000000FF ),
+        GMask( 0x0000FF00 ),
+        BMask( 0x00FF0000 ),
+        AMask( 0xFF000000 ),
+        RShift( 0 ),
+        GShift( 8 ),
+        BShift( 16 ),
+        AShift( 24 )
 
 #else
-		RMask( 0xFF000000 ),
-		GMask( 0x00FF0000 ),
-		BMask( 0x0000FF00 ),
-		AMask( 0x000000FF ),
-		RShift( 24 ),
-		GShift( 16 ),
-		BShift( 8 ),
-		AShift( 0 )
+        RMask( 0xFF000000 ),
+        GMask( 0x00FF0000 ),
+        BMask( 0x0000FF00 ),
+        AMask( 0x000000FF ),
+        RShift( 24 ),
+        GShift( 16 ),
+        BShift( 8 ),
+        AShift( 0 )
 #endif
-	{
-		Set32( clor );	
-	}
-	
-	//-------------------------------------------------------------------------
-	// Operators
-	CColor<T> operator+(const CColor<T>& other) const
-	{
-		return CColor(r+other.r,g+other.g,b+other.b,a+other.a);
-	}
-	
-	CColor<T> operator-(const CColor<T>& other) const
-	{
-		return CColor(r-other.r,g-other.g,b-other.b,a-other.a);
-	}
-	
-	CColor<T> operator*(const CColor<T>& other) const
-	{
-		return CColor(r*other.r,g*other.g,b*other.b,a*other.a);
-	}
-	
-	CColor<T> operator/(const CColor<T>& other) const
-	{
-		return CColor(r/other.r,g/other.g,b/other.b,a/other.a);
-	}
-	
-	CColor<T> operator*(const T& num) const
-	{
-		return CColor(r*num,g*num,b*num,a*num);
-	}
-	
-	CColor<T> operator/(const T& num) const
-	{
-		return CColor(r/num,g/num,b/num,a/num);
-	}
-	
-	void operator+=(const CColor<T>& other)
-	{
-		r+=other.r;
-		g+=other.g;
-		b+=other.b;
-		a+=other.a;
-	}
-	
-	void operator-=(const CColor<T>& other)
-	{
-		r-=other.r;
-		g-=other.g;
-		b-=other.b;
-		a-=other.a;
-	}
-	
-	void operator*=(const T& num)
-	{
-		r*=num;
-		g*=num;
-		b*=num;
-		a*=num;
-	}
-	
-	void operator/=(const T& num)
-	{
-		r/=num;
-		g/=num;
-		b/=num;
-		a/=num;
-	}
-	
-	bool operator==(const CColor<T>& other) const
-	{
-		if (	r == other.r &&
-				g == other.g &&
-				b == other.b &&
-				a == other.a ) return true;
-		return false;
-	}
-	
-	bool operator!=(const CColor<T>& other) const
-	{
-		return !operator==(other);
-	}
+    {
+        Set32( clor );  
+    }
+    
+    //-------------------------------------------------------------------------
+    // Operators
+    CColor<T> operator+(const CColor<T>& other) const
+    {
+        return CColor(r+other.r,g+other.g,b+other.b,a+other.a);
+    }
+    
+    CColor<T> operator-(const CColor<T>& other) const
+    {
+        return CColor(r-other.r,g-other.g,b-other.b,a-other.a);
+    }
+    
+    CColor<T> operator*(const CColor<T>& other) const
+    {
+        return CColor(r*other.r,g*other.g,b*other.b,a*other.a);
+    }
+    
+    CColor<T> operator/(const CColor<T>& other) const
+    {
+        return CColor(r/other.r,g/other.g,b/other.b,a/other.a);
+    }
+    
+    CColor<T> operator*(const T& num) const
+    {
+        return CColor(r*num,g*num,b*num,a*num);
+    }
+    
+    CColor<T> operator/(const T& num) const
+    {
+        return CColor(r/num,g/num,b/num,a/num);
+    }
+    
+    void operator+=(const CColor<T>& other)
+    {
+        r+=other.r;
+        g+=other.g;
+        b+=other.b;
+        a+=other.a;
+    }
+    
+    void operator-=(const CColor<T>& other)
+    {
+        r-=other.r;
+        g-=other.g;
+        b-=other.b;
+        a-=other.a;
+    }
+    
+    void operator*=(const T& num)
+    {
+        r*=num;
+        g*=num;
+        b*=num;
+        a*=num;
+    }
+    
+    void operator/=(const T& num)
+    {
+        r/=num;
+        g/=num;
+        b/=num;
+        a/=num;
+    }
+    
+    bool operator==(const CColor<T>& other) const
+    {
+        if (    r == other.r &&
+                g == other.g &&
+                b == other.b &&
+                a == other.a ) return true;
+        return false;
+    }
+    
+    bool operator!=(const CColor<T>& other) const
+    {
+        return !operator==(other);
+    }
 
-	CColor< T >& operator=( const CColor<T>& other )
-	{
-		r = other.r;
-		g = other.g;
-		b = other.b;
-		a = other.a;
-		
-		return *this;
-	}
+    CColor< T >& operator=( const CColor<T>& other )
+    {
+        r = other.r;
+        g = other.g;
+        b = other.b;
+        a = other.a;
+        
+        return *this;
+    }
 
-	///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
 
 #ifndef __APPLE__
-	
-	T GetR() const { return r; }
-	T GetG() const { return g; }
-	T GetB() const { return b; }
-	T GetA() const { return a; }
-	
-	float GetRf() const { return (float)r / 255.0f; }
-	float GetGf() const { return (float)g / 255.0f; }
-	float GetBf() const { return (float)b / 255.0f; }
-	float GetAf() const { return (float)a / 255.0f; }
+    
+    T GetR() const { return r; }
+    T GetG() const { return g; }
+    T GetB() const { return b; }
+    T GetA() const { return a; }
+    
+    float GetRf() const { return (float)r / 255.0f; }
+    float GetGf() const { return (float)g / 255.0f; }
+    float GetBf() const { return (float)b / 255.0f; }
+    float GetAf() const { return (float)a / 255.0f; }
 
 #else
 
-	T GetR() const { return b; }
-	T GetG() const { return g; }
-	T GetB() const { return r; }
-	T GetA() const { return a; }
-	
-	float GetRf() const { return (float)b / 255.0f; }
-	float GetGf() const { return (float)g / 255.0f; }
-	float GetBf() const { return (float)r / 255.0f; }
-	float GetAf() const { return (float)a / 255.0f; }
+    T GetR() const { return b; }
+    T GetG() const { return g; }
+    T GetB() const { return r; }
+    T GetA() const { return a; }
+    
+    float GetRf() const { return (float)b / 255.0f; }
+    float GetGf() const { return (float)g / 255.0f; }
+    float GetBf() const { return (float)r / 255.0f; }
+    float GetAf() const { return (float)a / 255.0f; }
 
-#endif	
-	
-	void SetR( const T& cr ) { r = cr; }
-	void SetG( const T& cg ) { g = cg; }
-	void SetB( const T& cb ) { b = cb; }
-	void SetA( const T& ca ) { a = ca; }
+#endif  
+    
+    void SetR( const T& cr ) { r = cr; }
+    void SetG( const T& cg ) { g = cg; }
+    void SetB( const T& cb ) { b = cb; }
+    void SetA( const T& ca ) { a = ca; }
 
-	void SetFloat( float r, float g, float b, float a )
-	{
-		SetR( (T)(r * 255.f) );
-		SetG( (T)(g * 255.f) );
-		SetB( (T)(b * 255.f) );
-		SetA( (T)(a * 255.f) );
-	}
+    void SetFloat( float r, float g, float b, float a )
+    {
+        SetR( (T)(r * 255.f) );
+        SetG( (T)(g * 255.f) );
+        SetB( (T)(b * 255.f) );
+        SetA( (T)(a * 255.f) );
+    }
 
-	void Set32( const uint32& color ) 
-	{
-		uint32 r32, g32, b32, a32;
-		
-		r32 = color & RMask;
-		g32 = color & GMask;
-		b32 = color & BMask;
-		a32 = color & AMask;
+    void Set32( const uint32& color ) 
+    {
+        uint32 r32, g32, b32, a32;
+        
+        r32 = color & RMask;
+        g32 = color & GMask;
+        b32 = color & BMask;
+        a32 = color & AMask;
 
-		r = r32 >> RShift;
-		g = g32 >> GShift;
-		b = b32 >> BShift;
-		a = a32 >> AShift;
-	}
+        r = r32 >> RShift;
+        g = g32 >> GShift;
+        b = b32 >> BShift;
+        a = a32 >> AShift;
+    }
 
-	// BUGBUG: Chechk should the return be r32 | g32 | b32 | a32 !?
-	uint32 Get32() const
-	{
-		uint32 r32, g32, b32, a32;
-		
-		r32 = r << BShift;
-		g32 = g << GShift;
-		b32 = b << RShift;
-		a32 = a << AShift;
+    // BUGBUG: Chechk should the return be r32 | g32 | b32 | a32 !?
+    uint32 Get32() const
+    {
+        uint32 r32, g32, b32, a32;
+        
+        r32 = r << BShift;
+        g32 = g << GShift;
+        b32 = b << RShift;
+        a32 = a << AShift;
 
-		return r32 | g32 | b32 | a32;
-	}
+        return r32 | g32 | b32 | a32;
+    }
 
-	///////////////////////////////////////////////////////////////////////////
-	T	r;	/*!<	The red component of this color		*/
-	T	g;	/*!<	The green component of this color	*/
-	T	b;	/*!<	The blue component of this color	*/
-	T	a;	/*!<	The alpha component of this color	*/
+    ///////////////////////////////////////////////////////////////////////////
+    T   r;  /*!<    The red component of this color     */
+    T   g;  /*!<    The green component of this color   */
+    T   b;  /*!<    The blue component of this color    */
+    T   a;  /*!<    The alpha component of this color   */
 
 private:
 
-	const uint32	RMask;
-	const uint32	GMask;
-	const uint32	BMask;
-	const uint32	AMask;
-	
-	const uint8  RShift;
-	const uint8  GShift;
-	const uint8  BShift;
-	const uint8  AShift;
-	
+    const uint32    RMask;
+    const uint32    GMask;
+    const uint32    BMask;
+    const uint32    AMask;
+    
+    const uint8  RShift;
+    const uint8  GShift;
+    const uint8  BShift;
+    const uint8  AShift;
+    
 };
 #endif
 //-----------------------------------------------------------------------------
@@ -707,8 +707,8 @@ typedef CColorUint8 color;
 typedef CColorFloat fcolor;
 typedef color::uint8 uint8;
 typedef color::uint32 uint32;
-typedef MetaEngine::CStaticArray<unsigned char, 4> ccolor;
-typedef MetaEngine::CColorFloat fcolor;
+typedef ME::cpp::CStaticArray<unsigned char, 4> ccolor;
+typedef ME::cpp::CColorFloat fcolor;
 }  // namespace types
 
 // ----------------------------------------------------------------------------
@@ -740,6 +740,6 @@ types::uint32 Blend2Colors(types::uint32 c1, types::uint32 c2, float how_much_of
 
 // ----------------------------------------------------------------------------
 
-}  // namespace MetaEngine
+}  // namespace ME::cpp
 
 #endif

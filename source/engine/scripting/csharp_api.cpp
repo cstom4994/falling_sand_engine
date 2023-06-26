@@ -3,10 +3,12 @@
 
 #include <iostream>
 
+#include "engine/utils/utility.hpp"
+
 namespace ME {
 namespace Scripting {
 
-void hello_from_cpp() { std::cout << "C++: Hello!" << std::endl; }
+void hello_from_cpp() { ME::println("C++: Hello!"); }
 
 CSharpBasicApi::CSharpBasicApi(std::string& path_to_mono) {
     mono = new CSharpWrapper::mono(path_to_mono.c_str());

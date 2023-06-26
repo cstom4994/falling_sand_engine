@@ -23,16 +23,16 @@
 
 #ifdef __cpp_rtti
 #include <typeindex>
-namespace MetaEngine::Promise {
+namespace ME::cpp::promise {
 using type_index = std::type_index;
 
 template <typename T>
 inline type_index type_id() {
     return typeid(T);
 }
-}  // namespace MetaEngine::Promise
+}  // namespace ME::cpp::promise
 #else
-namespace MetaEngine::Promise {
+namespace ME::cpp::promise {
 using type_index = ptrdiff_t;
 
 template <typename T>
@@ -40,7 +40,7 @@ inline type_index type_id() {
     static char idHolder;
     return (type_index)&idHolder;
 }
-}  // namespace MetaEngine::Promise
+}  // namespace ME::cpp::promise
 #endif
 
 namespace std {
@@ -86,7 +86,7 @@ struct remove_cvref {
 
 }  // namespace std
 
-namespace MetaEngine::Promise {
+namespace ME::cpp::promise {
 
 template <typename T>
 struct tuple_remove_cvref {
@@ -1028,7 +1028,7 @@ static inline void call(std::shared_ptr<Task> task) {
                         }
                     }
                 }
-            } catch (const MetaEngine::Promise::bad_any_cast &ex) {
+            } catch (const ME::cpp::promise::bad_any_cast &ex) {
                 fprintf(stderr, "promise::bad_any_cast: %s -> %s", ex.from_.name(), ex.to_.name());
                 promiseHolder->value_ = std::current_exception();
                 promiseHolder->state_ = TaskState::kRejected;
@@ -1503,6 +1503,6 @@ Promise raceAndResolve(const std::list<Promise> &promise_list) {
     });
 }
 
-}  // namespace MetaEngine::Promise
+}  // namespace ME::cpp::promise
 
 #endif

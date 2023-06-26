@@ -19,18 +19,18 @@
 
 typedef struct ME_Audio ME_Audio;
 
-ME_Audio *METADOT_CDECL metadot_audio_load_ogg(const char *path /*= NULL*/);
-ME_Audio *METADOT_CDECL metadot_audio_load_wav(const char *path /*= NULL*/);
-ME_Audio *METADOT_CDECL metadot_audio_load_ogg_from_memory(void *memory, int byte_count);
-ME_Audio *METADOT_CDECL metadot_audio_load_wav_from_memory(void *memory, int byte_count);
-void METADOT_CDECL metadot_audio_destroy(ME_Audio *audio);
+ME_Audio *METADOT_CDECL ME_audio_load_ogg(const char *path /*= NULL*/);
+ME_Audio *METADOT_CDECL ME_audio_load_wav(const char *path /*= NULL*/);
+ME_Audio *METADOT_CDECL ME_audio_load_ogg_from_memory(void *memory, int byte_count);
+ME_Audio *METADOT_CDECL ME_audio_load_wav_from_memory(void *memory, int byte_count);
+void METADOT_CDECL ME_audio_destroy(ME_Audio *audio);
 
 // -------------------------------------------------------------------------------------------------
 
-void METADOT_CDECL metadot_audio_set_pan(float pan);
-void METADOT_CDECL metadot_audio_set_global_volume(float volume);
-void METADOT_CDECL metadot_audio_set_sound_volume(float volume);
-void METADOT_CDECL metadot_audio_set_pause(bool true_for_paused);
+void METADOT_CDECL ME_audio_set_pan(float pan);
+void METADOT_CDECL ME_audio_set_global_volume(float volume);
+void METADOT_CDECL ME_audio_set_sound_volume(float volume);
+void METADOT_CDECL ME_audio_set_pause(bool true_for_paused);
 
 // -------------------------------------------------------------------------------------------------
 
@@ -98,18 +98,18 @@ struct Sound : public ME_Sound {
     Sound(ME_Sound s) { *(ME_Sound *)this = s; }
 };
 
-ME_INLINE Audio *audio_load_ogg(const char *path = NULL) { return metadot_audio_load_ogg(path); }
-ME_INLINE Audio *audio_load_wav(const char *path = NULL) { return metadot_audio_load_wav(path); }
-ME_INLINE Audio *audio_load_ogg_from_memory(void *memory, int byte_count) { return metadot_audio_load_ogg_from_memory(memory, byte_count); }
-ME_INLINE Audio *audio_load_wav_from_memory(void *memory, int byte_count) { return metadot_audio_load_wav_from_memory(memory, byte_count); }
-ME_INLINE void audio_destroy(Audio *audio) { metadot_audio_destroy(audio); }
+ME_INLINE Audio *audio_load_ogg(const char *path = NULL) { return ME_audio_load_ogg(path); }
+ME_INLINE Audio *audio_load_wav(const char *path = NULL) { return ME_audio_load_wav(path); }
+ME_INLINE Audio *audio_load_ogg_from_memory(void *memory, int byte_count) { return ME_audio_load_ogg_from_memory(memory, byte_count); }
+ME_INLINE Audio *audio_load_wav_from_memory(void *memory, int byte_count) { return ME_audio_load_wav_from_memory(memory, byte_count); }
+ME_INLINE void audio_destroy(Audio *audio) { ME_audio_destroy(audio); }
 
 // -------------------------------------------------------------------------------------------------
 
-ME_INLINE void audio_set_pan(float pan) { metadot_audio_set_pan(pan); }
-ME_INLINE void audio_set_global_volume(float volume) { metadot_audio_set_global_volume(volume); }
-ME_INLINE void audio_set_sound_volume(float volume) { metadot_audio_set_sound_volume(volume); }
-ME_INLINE void audio_set_pause(bool true_for_paused) { metadot_audio_set_pause(true_for_paused); }
+ME_INLINE void audio_set_pan(float pan) { ME_audio_set_pan(pan); }
+ME_INLINE void audio_set_global_volume(float volume) { ME_audio_set_global_volume(volume); }
+ME_INLINE void audio_set_sound_volume(float volume) { ME_audio_set_sound_volume(volume); }
+ME_INLINE void audio_set_pause(bool true_for_paused) { ME_audio_set_pause(true_for_paused); }
 
 // -------------------------------------------------------------------------------------------------
 

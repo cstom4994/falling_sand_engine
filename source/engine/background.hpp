@@ -17,29 +17,39 @@
 #include "game_resources.hpp"
 
 struct BackgroundLayer {
-    std::vector<C_Surface *> surface;
-    std::vector<R_Image *> texture;
+    C_Surface *surface[3];
+    R_Image *texture[3];
     Texture *tex;
     f32 parralaxX;
     f32 parralaxY;
     f32 moveX;
     f32 moveY;
-    BackgroundLayer(Texture *texture, f32 parallaxX, f32 parallaxY, f32 moveX, f32 moveY);
-    ~BackgroundLayer();
-    void init();
 };
+
+BackgroundLayer *CreateBackgroundLayer(Texture *texture, f32 parallaxX, f32 parallaxY, f32 moveX, f32 moveY);
+void DestroyBackgroundLayer(BackgroundLayer *layer);
+void InitBackgroundLayer(BackgroundLayer *layer);
 
 class BackgroundObject {
 public:
     u32 solid;
-    std::vector<ME::ref<BackgroundLayer>> layers;
-    explicit BackgroundObject(u32 solid, std::vector<ME::ref<BackgroundLayer>> layers) : solid(std::move(solid)), layers(std::move(layers)){};
+    std::vector<BackgroundLayer *> layers;
+    BackgroundObject(u32 solid, std::vector<BackgroundLayer *> layers) : solid(std::move(solid)), layers(std::move(layers)){};
+    // BackgroundObject(u32 solid, std::vector<BackgroundLayer> layers) : solid(std::move(solid)) {
+    //     for (auto layer : layers) {
+    //         this->layers.push_back(ME::create_ref<BackgroundLayer>(layer));
+    //     }
+    // };
+    //  BackgroundObject(BackgroundObject &) = default;
+    ~BackgroundObject();
     void Init();
 };
 
 class BackgroundSystem : public IGameSystem {
 public:
     std::unordered_map<std::string, BackgroundObject *> m_backgrounds;
+
+    // static BackgroundObject TEST_OVERWORLD;
 
     void Push(std::string name, BackgroundObject *bg);
     BackgroundObject *Get(std::string name);

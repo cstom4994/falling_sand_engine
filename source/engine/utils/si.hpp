@@ -5,13 +5,13 @@
 
 #define SI_InterfaceTraits_Register(Interface, ...)    \
     template <>                                        \
-    struct MetaEngine::SI_InterfaceTraits<Interface> { \
+    struct ME::cpp::SI_InterfaceTraits<Interface> { \
         using IList = TemplateList<__VA_ARGS__>;       \
     }
 
 #define SI_InterfaceTraits_Register_Pro(Interface, ...) \
     template <>                                         \
-    struct MetaEngine::SI_InterfaceTraits<Interface> : MetaEngine::details::IListBase<__VA_ARGS__>
+    struct ME::cpp::SI_InterfaceTraits<Interface> : ME::cpp::details::IListBase<__VA_ARGS__>
 
 #define SI_CombineInterface(Interface, ...) \
     template <typename Base, typename Impl> \
@@ -22,22 +22,22 @@
 
 #define SI_ImplTraits_Register(Impl, ...)        \
     template <>                                  \
-    struct MetaEngine::SI_ImplTraits<Impl> {     \
+    struct ME::cpp::SI_ImplTraits<Impl> {     \
         using IList = TemplateList<__VA_ARGS__>; \
     }
 
 #define SI_ImplTraits_Register_Pro(Impl, ...) \
     template <>                               \
-    struct MetaEngine::SI_ImplTraits<Impl> : MetaEngine::details::IListBase<__VA_ARGS__>
+    struct ME::cpp::SI_ImplTraits<Impl> : ME::cpp::details::IListBase<__VA_ARGS__>
 
-namespace MetaEngine::details {
+namespace ME::cpp::details {
 template <typename Impl>
 struct SI;
 template <typename Impl>
 using SI_t = typename SI<Impl>::type;
-}  // namespace MetaEngine::details
+}  // namespace ME::cpp::details
 
-namespace MetaEngine {
+namespace ME::cpp {
 // IList : TemplateList<Interfaces...>
 template <typename Impl>
 struct SI_ImplTraits {};
@@ -53,9 +53,9 @@ template <typename T, template <typename Base, typename Impl> class Interface>
 struct SI_Contains;
 template <typename T, template <typename Base, typename Impl> class Interface>
 static constexpr bool SI_Contains_v = SI_Contains<T, Interface>::value;
-}  // namespace MetaEngine
+}  // namespace ME::cpp
 
-namespace MetaEngine::details {
+namespace ME::cpp::details {
 //
 // SI_ImplTraits_IList
 ////////////////////////
@@ -222,12 +222,12 @@ template <typename Void, typename T, template <typename Base, typename Impl> cla
 struct SI_Contains_Helper : std::false_type {};
 template <typename T, template <typename Base, typename Impl> class Interface>
 struct SI_Contains_Helper<std::void_t<ITopoSort_t<SI_ImplTraits_IList_t<T>>>, T, Interface> : std::bool_constant<TContain_v<ITopoSort_t<SI_ImplTraits_IList_t<T>>, Interface>> {};
-}  // namespace MetaEngine::details
+}  // namespace ME::cpp::details
 
 template <typename Impl>
-struct MetaEngine::details::SI : SI_Helper<ITopoSort_t<SI_ImplTraits_IList_t<Impl>>, Impl> {};
+struct ME::cpp::details::SI : SI_Helper<ITopoSort_t<SI_ImplTraits_IList_t<Impl>>, Impl> {};
 
 template <typename T, template <typename Base, typename Impl> class Interface>
-struct MetaEngine::SI_Contains : details::SI_Contains_Helper<void, T, Interface> {};
+struct ME::cpp::SI_Contains : details::SI_Contains_Helper<void, T, Interface> {};
 
 #endif

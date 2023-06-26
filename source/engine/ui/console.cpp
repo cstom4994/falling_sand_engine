@@ -5,6 +5,8 @@
 #include "engine/game.hpp"
 #include "engine/scripting/scripting.hpp"
 
+IMPLENGINE();
+
 typedef struct ConsoleArgv {
     char **argv, *data;
     const char *error;
@@ -321,8 +323,11 @@ void ME::MEconsole::draw_internal_display() noexcept {
                 break;
         }
 
+        bool outline = true;
+
         if (dtime >= 3500) {
             colour.w = std::abs((4000 - dtime) / 500.0f);
+            outline = false;
         }
 
         ME_draw_text(a.msg, ME_imvec2rgba(colour), x, y, true);
@@ -344,6 +349,8 @@ void ME::MEconsole::Init() {
         // console_imgui->System().RegisterVariable(name, value, Command::Arg<int>(""));
         convar.Value(name, value);
     });
+
+    convar.Value("game_scale", Screen.gameScale);
 }
 
 void ME::MEconsole::End() {}

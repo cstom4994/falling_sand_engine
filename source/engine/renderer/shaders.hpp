@@ -34,10 +34,10 @@ public:
     void Activate();
 };
 
-#define ShaderBaseDecl()                                                    \
-    u32 Init() {                                                            \
-        this->shader_name = MetaEngine::type_name<decltype(this)>().View(); \
-        return __super::Init();                                             \
+#define ShaderBaseDecl()                                                 \
+    u32 Init() {                                                         \
+        this->shader_name = ME::cpp::type_name<decltype(this)>().View(); \
+        return __super::Init();                                          \
     }
 
 typedef GLuint GLshader;   // a handle to a GL shader

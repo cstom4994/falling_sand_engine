@@ -15,14 +15,14 @@
 #include "engine/chunk.hpp"
 #include "engine/core/const.h"
 #include "engine/core/core.hpp"
-#include "engine/core/cpp/utils.hpp"
+#include "engine/utils/utils.hpp"
 #include "engine/core/dbgtools.h"
 #include "engine/core/debug.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/macros.hpp"
 #include "engine/core/memory.h"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 #include "engine/engine.h"
 #include "engine/game.hpp"
 #include "engine/game_datastruct.hpp"
@@ -1012,11 +1012,11 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     ImGui::SameLine();
                     if (ImGui::Button("Audio")) {
                         play ^= true;
-                        static ME_Audio *test_audio = metadot_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
+                        static ME_Audio *test_audio = ME_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
                         if (play) {
                             ME_ASSERT_E(test_audio);
                             // metadot_music_play(test_audio, 0.f);
-                            // metadot_audio_destroy(test_audio);
+                            // ME_audio_destroy(test_audio);
                             int err;
                             metadot_play_sound(test_audio, metadot_sound_params_defaults(), &err);
                         } else {

@@ -5952,17 +5952,17 @@ void b2Contact::InitializeRegisters() {
     AddType(b2ChainAndPolygonContact::Create, b2ChainAndPolygonContact::Destroy, b2Shape::e_chain, b2Shape::e_polygon);
 }
 
-void b2Contact::AddType(b2ContactCreateFcn *createFcn, b2ContactDestroyFcn *destoryFcn, b2Shape::Type type1, b2Shape::Type type2) {
+void b2Contact::AddType(b2ContactCreateFcn *createFcn, b2ContactDestroyFcn *destroyFcn, b2Shape::Type type1, b2Shape::Type type2) {
     ME_ASSERT_E(0 <= type1 && type1 < b2Shape::e_typeCount);
     ME_ASSERT_E(0 <= type2 && type2 < b2Shape::e_typeCount);
 
     s_registers[type1][type2].createFcn = createFcn;
-    s_registers[type1][type2].destroyFcn = destoryFcn;
+    s_registers[type1][type2].destroyFcn = destroyFcn;
     s_registers[type1][type2].primary = true;
 
     if (type1 != type2) {
         s_registers[type2][type1].createFcn = createFcn;
-        s_registers[type2][type1].destroyFcn = destoryFcn;
+        s_registers[type2][type1].destroyFcn = destroyFcn;
         s_registers[type2][type1].primary = false;
     }
 }

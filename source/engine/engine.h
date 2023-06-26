@@ -9,9 +9,9 @@
 #include <string.h>
 #include <time.h>
 
-#include "engine/core/cpp/utils.hpp"
+#include "engine/utils/utils.hpp"
 #include "engine/core/platform.h"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 #include "engine/engine_core.h"
 #include "engine/renderer/gpu.hpp"
 

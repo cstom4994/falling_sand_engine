@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include "engine/core/memory_tracer.hpp"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 
 allocation_metrics g_allocation_metrics = {.total_allocated = 0, .total_free = 0};
 

@@ -68,7 +68,7 @@ list ME_create_list(unsigned size) {
     return l;
 }
 
-void ME_destory_list(list *list) {
+void ME_destroy_list(list *list) {
     while (list->first) {
         ME_list_remove_start(list);
     }

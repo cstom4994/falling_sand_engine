@@ -3,7 +3,7 @@
 
 #include "typelist.hpp"
 
-namespace MetaEngine {
+namespace ME::cpp {
 template <template <typename...> class... Ts>
 struct TemplateList {};
 
@@ -86,9 +86,9 @@ template <typename TList, typename InstanceList>
 struct TCanGeneralizeFromList;
 template <typename TList, typename InstanceList>
 constexpr bool TCanGeneralizeFromList_v = TCanGeneralizeFromList<TList, InstanceList>::value;
-}  // namespace MetaEngine
+}  // namespace ME::cpp
 
-namespace MetaEngine {
+namespace ME::cpp {
 template <template <typename...> class... Ts>
 struct TLength<TemplateList<Ts...>> : std::integral_constant<std::size_t, sizeof...(Ts)> {};
 
@@ -158,6 +158,6 @@ struct TCanGeneralizeFromList<TemplateList<Ts...>, InstanceList> : std::bool_con
 
 template <template <typename...> class... Ts, template <typename...> class T>
 struct TContain<TemplateList<Ts...>, T> : std::bool_constant<(is_same_typename_template_v<Ts, T> || ...)> {};
-}  // namespace MetaEngine
+}  // namespace ME::cpp
 
 #endif

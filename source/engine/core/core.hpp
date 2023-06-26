@@ -36,7 +36,7 @@
 #include <vector>
 
 #include "engine/core/basic_types.h"
-#include "engine/core/cpp/struct.hpp"
+#include "engine/utils/struct.hpp"
 #include "engine/core/macros.hpp"
 
 #define METADOT_INT8_MAX 0x7F

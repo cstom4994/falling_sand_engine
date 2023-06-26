@@ -66,12 +66,12 @@ void AudioEngine::EndAudio() {
     }
 }
 
-ME_Audio *metadot_audio_load_ogg(const char *path) {
+ME_Audio *ME_audio_load_ogg(const char *path) {
     size_t size;
     auto vc = fs_read_entire_file_to_memory(path, size);
     void *data = vc.data();
     if (data) {
-        auto src = metadot_audio_load_ogg_from_memory(data, (int)size);
+        auto src = ME_audio_load_ogg_from_memory(data, (int)size);
         // ME_FW_FREE(data);
         return (ME_Audio *)src;
     } else {
@@ -79,12 +79,12 @@ ME_Audio *metadot_audio_load_ogg(const char *path) {
     }
 }
 
-ME_Audio *metadot_audio_load_wav(const char *path) {
+ME_Audio *ME_audio_load_wav(const char *path) {
     size_t size;
     auto vc = fs_read_entire_file_to_memory(path, size);
     void *data = vc.data();
     if (data) {
-        auto src = metadot_audio_load_wav_from_memory(data, (int)size);
+        auto src = ME_audio_load_wav_from_memory(data, (int)size);
         // ME_FW_FREE(data);
         return (ME_Audio *)src;
     } else {
@@ -92,27 +92,27 @@ ME_Audio *metadot_audio_load_wav(const char *path) {
     }
 }
 
-ME_Audio *metadot_audio_load_ogg_from_memory(void *memory, int byte_count) {
+ME_Audio *ME_audio_load_ogg_from_memory(void *memory, int byte_count) {
     auto src = cs_read_mem_ogg(memory, (size_t)byte_count, NULL);
     return (ME_Audio *)src;
 }
 
-ME_Audio *metadot_audio_load_wav_from_memory(void *memory, int byte_count) {
+ME_Audio *ME_audio_load_wav_from_memory(void *memory, int byte_count) {
     auto src = cs_read_mem_wav(memory, (size_t)byte_count, NULL);
     return (ME_Audio *)src;
 }
 
-void metadot_audio_destroy(ME_Audio *audio) { cs_free_audio_source((cs_audio_source_t *)audio); }
+void ME_audio_destroy(ME_Audio *audio) { cs_free_audio_source((cs_audio_source_t *)audio); }
 
 // -------------------------------------------------------------------------------------------------
 
-void metadot_audio_set_pan(float pan) { cs_set_global_pan(pan); }
+void ME_audio_set_pan(float pan) { cs_set_global_pan(pan); }
 
-void metadot_audio_set_global_volume(float volume) { cs_set_global_volume(volume); }
+void ME_audio_set_global_volume(float volume) { cs_set_global_volume(volume); }
 
-void metadot_audio_set_sound_volume(float volume) { cs_set_playing_sounds_volume(volume); }
+void ME_audio_set_sound_volume(float volume) { cs_set_playing_sounds_volume(volume); }
 
-void metadot_audio_set_pause(bool true_for_paused) { cs_set_global_pause(true_for_paused); }
+void ME_audio_set_pause(bool true_for_paused) { cs_set_global_pause(true_for_paused); }
 
 // -------------------------------------------------------------------------------------------------
 

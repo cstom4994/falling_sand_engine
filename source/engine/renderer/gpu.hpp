@@ -12,7 +12,7 @@
 
 #include "engine/core/core.hpp"
 #include "engine/core/sdl_wrapper.h"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 #include "engine/physics/box2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/shaders.hpp"

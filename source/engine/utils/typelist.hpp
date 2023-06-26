@@ -6,7 +6,7 @@
 
 #include "utils.hpp"
 
-namespace MetaEngine {
+namespace ME::cpp {
 template <typename... Ts>
 struct TypeList {};
 
@@ -152,9 +152,9 @@ template <typename List>
 struct IsUnique;
 template <typename List>
 constexpr bool IsUnique_v = IsUnique<List>::value;
-}  // namespace MetaEngine
+}  // namespace ME::cpp
 
-namespace MetaEngine::details {
+namespace ME::cpp::details {
 template <typename List, typename T, std::size_t N = 0, bool found = false>
 struct Find;
 
@@ -172,9 +172,9 @@ struct SearchInstance;
 
 template <typename List, bool haveSame = false>
 struct IsUnique;
-}  // namespace MetaEngine::details
+}  // namespace ME::cpp::details
 
-namespace MetaEngine {
+namespace ME::cpp {
 template <template <typename...> class OtherListTemplate, typename... Ts>
 struct ToTypeList<OtherListTemplate, OtherListTemplate<Ts...>> : std::type_identity<TypeList<Ts...>> {};
 
@@ -342,9 +342,9 @@ public:
 
 template <typename List>
 struct IsUnique : details::IsUnique<List> {};
-}  // namespace MetaEngine
+}  // namespace ME::cpp
 
-namespace MetaEngine::details {
+namespace ME::cpp::details {
 template <typename T, std::size_t N, typename... Ts>
 struct Find<TypeList<Ts...>, T, N, true> : std::integral_constant<std::size_t, N - 1> {};
 template <typename T, std::size_t N>
@@ -403,6 +403,6 @@ template <>
 struct IsUnique<TypeList<>, false> : std::true_type {};
 template <typename Head, typename... Tail>
 struct IsUnique<TypeList<Head, Tail...>, false> : IsUnique<TypeList<Tail...>, Contain_v<TypeList<Tail...>, Head>> {};
-}  // namespace MetaEngine::details
+}  // namespace ME::cpp::details
 
 #endif

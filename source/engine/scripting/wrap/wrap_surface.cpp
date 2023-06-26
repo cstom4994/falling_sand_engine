@@ -1,5 +1,5 @@
 
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/lua_wrapper_ext.hpp"
 #include "engine/ui/surface.h"

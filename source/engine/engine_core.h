@@ -9,7 +9,7 @@
 #include <string>
 
 #include "engine/core/core.hpp"
-#include "engine/core/cpp/utils.hpp"
+#include "engine/utils/utils.hpp"
 #include "engine/core/sdl_wrapper.h"
 
 typedef struct engine_core {

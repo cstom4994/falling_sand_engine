@@ -12,7 +12,7 @@
 #include "engine/audio/audio.h"
 #include "engine/core/const.h"
 #include "engine/core/macros.hpp"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 #include "engine/ecs/ecs.hpp"
 #include "engine/physics/box2d.h"
 #include "engine/renderer/renderer_gpu.h"

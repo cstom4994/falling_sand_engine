@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <exception>
+#include <format>
 #include <fstream>
 #include <functional>
 #include <future>
@@ -176,6 +177,17 @@ private:
     std::chrono::time_point<std::chrono::high_resolution_clock> startPos;
 };
 
+template <typename T>
+ME_INLINE void println(T res) {
+    std::cout << res << std::endl;
+}
+
+template <typename... Args>
+ME_INLINE void println(std::string_view fmt, Args &&...args) {
+    auto res = std::format(fmt, std::forward<Args>(args)...);
+    println(res);
+}
+
 }  // namespace ME
 
 template <typename T>
@@ -301,7 +313,7 @@ typedef struct list {
 } list;
 
 list ME_create_list(unsigned size);
-void ME_destory_list(list *list);
+void ME_destroy_list(list *list);
 
 int ME_list_is_empty(list list);
 

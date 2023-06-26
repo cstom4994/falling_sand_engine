@@ -11,7 +11,7 @@
 #include "engine/core/core.hpp"
 #include "engine/core/macros.hpp"
 #include "engine/core/sdl_wrapper.h"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 #include "libs/external/stb_image.h"
 #include "renderer_gpu.h"
 #include "renderer_opengl.h"

@@ -9,9 +9,9 @@
 #include <map>
 #include <string>
 
-#include "engine/core/cpp/struct.hpp"
+#include "engine/utils/struct.hpp"
 #include "engine/core/macros.hpp"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 #include "engine/engine.h"
 #include "engine/scripting/lua_wrapper.hpp"
 

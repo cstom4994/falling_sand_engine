@@ -10,7 +10,7 @@
 #include "engine/core/core.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 #include "engine/ecs/ecs.hpp"
 #include "engine/engine.h"
 #include "engine/scripting/lua_wrapper.hpp"

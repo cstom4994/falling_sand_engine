@@ -3,7 +3,7 @@
 
 #include <cstdlib>
 
-#include "engine/core/utils/tableinterface.h"
+#include "engine/utils/tableinterface.h"
 #include "engine/scripting/lua_wrapper.hpp"
 
 class Sequence {

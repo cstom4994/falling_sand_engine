@@ -12,12 +12,12 @@
 
 #include "engine/background.hpp"
 #include "engine/core/core.hpp"
-#include "engine/core/cpp/utils.hpp"
+#include "engine/utils/utils.hpp"
 #include "engine/core/debug.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/memory.h"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 #include "engine/game.hpp"
 #include "engine/game_datastruct.hpp"
 #include "engine/game_resources.hpp"
@@ -391,6 +391,10 @@ static void initInternalCalls() {
 }
 
 void MonoLayer::onAttach() {
+
+    ME::Timer timer;
+    timer.start();
+
     std::string monoPath;
 
     auto monoDir = std::filesystem::current_path();
@@ -512,6 +516,10 @@ void MonoLayer::onAttach() {
         happyLoad = false;
     }
     happyLoad = size || hotSwapEnable;
+
+    timer.stop();
+
+    METADOT_INFO(std::format("MonoLayer loading done in {0:.4f} ms", timer.get()).c_str());
 }
 
 void MonoLayer::onDetach() { callEntryMethod("OnDetach", entryInstance); }

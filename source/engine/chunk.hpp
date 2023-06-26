@@ -10,7 +10,7 @@
 
 #include "engine/core/const.h"
 #include "engine/core/core.hpp"
-#include "engine/core/cpp/property.hpp"
+#include "engine/utils/property.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
 #include "engine/meta/reflection.hpp"

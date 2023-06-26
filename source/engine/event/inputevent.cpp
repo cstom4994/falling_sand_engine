@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-#include "engine/core/cpp/stl.hpp"
+#include "engine/utils/stl.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/game.hpp"
@@ -357,7 +357,7 @@ std::string ControlSystem::SDLKeyToString(int sdlkey) {
 int ControlSystem::StringToSDLKey(const std::string &s) {
     InitKeymap();
 
-    std::map<std::string, int>::iterator i = SDLKeymap.find(MetaEngine::Lowercase(s));
+    std::map<std::string, int>::iterator i = SDLKeymap.find(ME::cpp::Lowercase(s));
     if (i == SDLKeymap.end()) return 0;
 
     return i->second;

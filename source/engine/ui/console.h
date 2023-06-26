@@ -2,7 +2,7 @@
 #ifndef ME_CONSOLE_H
 #define ME_CONSOLE_H
 
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/utility.hpp"
 #include "engine/cvar.hpp"
 #include "engine/ui/imgui_helper.hpp"
 

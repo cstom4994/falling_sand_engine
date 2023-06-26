@@ -5,7 +5,7 @@
 
 #include "name.hpp"
 
-namespace MetaEngine {
+namespace ME::cpp {
 class NameID {
 public:
     static constexpr std::size_t InvalidValue() noexcept { return static_cast<std::size_t>(-1); }
@@ -245,26 +245,26 @@ template <typename... Ts>
 constexpr auto TypeIDs_of = TempTypeIDs{TypeID_of<Ts>...};
 template <typename... Ts>
 constexpr auto Types_of = TempTypes{Type_of<Ts>...};
-}  // namespace MetaEngine
+}  // namespace ME::cpp
 
 template <>
-struct std::hash<MetaEngine::NameID> {
-    std::size_t operator()(const MetaEngine::NameID& ID) const noexcept { return ID.GetValue(); }
+struct std::hash<ME::cpp::NameID> {
+    std::size_t operator()(const ME::cpp::NameID& ID) const noexcept { return ID.GetValue(); }
 };
 
 template <>
-struct std::hash<MetaEngine::TypeID> {
-    std::size_t operator()(const MetaEngine::TypeID& ID) const noexcept { return ID.GetValue(); }
+struct std::hash<ME::cpp::TypeID> {
+    std::size_t operator()(const ME::cpp::TypeID& ID) const noexcept { return ID.GetValue(); }
 };
 
 template <>
-struct std::hash<MetaEngine::Name> {
-    std::size_t operator()(const MetaEngine::Name& name) const noexcept { return name.GetID().GetValue(); }
+struct std::hash<ME::cpp::Name> {
+    std::size_t operator()(const ME::cpp::Name& name) const noexcept { return name.GetID().GetValue(); }
 };
 
 template <>
-struct std::hash<MetaEngine::Type> {
-    std::size_t operator()(const MetaEngine::Type& type) const noexcept { return type.GetID().GetValue(); }
+struct std::hash<ME::cpp::Type> {
+    std::size_t operator()(const ME::cpp::Type& type) const noexcept { return type.GetID().GetValue(); }
 };
 
 #endif

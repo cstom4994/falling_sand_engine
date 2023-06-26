@@ -10,8 +10,8 @@
 #define ME_LUAWRAPPER_HPP
 
 #include "engine/core/core.hpp"
-#include "engine/core/cpp/name.hpp"
-#include "engine/core/cpp/type.hpp"
+#include "engine/utils/name.hpp"
+#include "engine/utils/type.hpp"
 #include "engine/core/macros.hpp"
 #include "engine/meta/reflection.hpp"
 #include "libs/lua/lua.hpp"
@@ -148,7 +148,7 @@ public:
 template <class T, class Base>
 class TypeInterfaceDecoratorCommon : public Base {
 public:
-    std::string_view GetTypeName() const override { return MetaEngine::type_name<T>().View(); }
+    std::string_view GetTypeName() const override { return ME::cpp::type_name<T>().View(); }
     bool IsConst() const override { return std::is_const<T>::value; }
 };
 namespace detail {
@@ -8290,7 +8290,7 @@ struct PODBinding {
         lua_pushcfunction(L, LuaBindingNewIndex);
         lua_setfield(L, -2, "__newindex");
         // lua_pushcfunction( L, destroy );  -- if you need to destruct a POD
-        // lua_setfield( L, -2, "__gc" );    -- set __gc to destory in the members.
+        // lua_setfield( L, -2, "__gc" );    -- set __gc to destroy in the members.
         lua_newtable(L);  // __properties
         setProperties(L, propTrait);
         lua_setfield(L, -2, "__properties");

@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "engine/core/core.hpp"
-#include "engine/core/cpp/type.hpp"
+#include "engine/utils/type.hpp"
 #include "engine/game_utils/jsonwarp.h"
 #include "engine/meta/reflection.hpp"
 #include "libs/parallel_hashmap/phmap.h"
@@ -114,7 +114,7 @@ CVAR_CAST_DECL(const char*);
 
 template <typename T>
 std::string NameOFType() {
-    std::string_view name_of_type = MetaEngine::type_name<T>().View();
+    std::string_view name_of_type = ME::cpp::type_name<T>().View();
     std::string name_of_type_str = std::string(name_of_type.data(), name_of_type.size());
     return name_of_type_str;
 }

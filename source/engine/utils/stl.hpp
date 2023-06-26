@@ -16,7 +16,7 @@
 
 #include "engine/core/debug.hpp"
 
-namespace MetaEngine {
+namespace ME::cpp {
 
 template <typename Type, typename SizeType = int>
 class CSafeArray {
@@ -1440,6 +1440,6 @@ void VectorSaveToTxtFile(std::vector<T> &array, const std::string &filename) {
 
 //-----------------------------------------------------------------------------
 
-}  // end of namespace MetaEngine
+}  // end of namespace ME::cpp
 
 #endif

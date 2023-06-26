@@ -19,7 +19,7 @@
 #include <utility>
 #include <vector>
 
-#include "engine/core/cpp/pfr.hpp"
+#include "engine/utils/pfr.hpp"
 #include "engine/renderer/renderer_gpu.h"
 
 #ifndef IMGUI_DEFINE_MATH_OPERATORS

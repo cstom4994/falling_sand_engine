@@ -9,8 +9,8 @@
 #include "engine/core/memory.h"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/engine.h"
-#include "libs/external/stb_image.h"
 #include "engine/renderer/renderer_gpu.h"
+#include "libs/external/stb_image.h"
 
 #define CUTE_ASEPRITE_IMPLEMENTATION
 #include "libs/cute/cute_aseprite.h"
@@ -133,22 +133,19 @@ Texture *LoadTextureInternal(const char *path, u32 pixelFormat) {
 C_Surface *ScaleSurface(C_Surface *src, f32 x, f32 y) {
     C_Surface *dest = SDL_CreateRGBSurface(src->flags, src->w * x, src->h * y, src->format->BitsPerPixel, src->format->Rmask, src->format->Gmask, src->format->Bmask, src->format->Amask);
 
-    C_Rect *srcR = new C_Rect;
-    srcR->w = src->w;
-    srcR->h = src->h;
+    C_Rect srcR;
+    srcR.w = src->w;
+    srcR.h = src->h;
 
-    C_Rect *dstR = new C_Rect;
-    dstR->w = dest->w;
-    dstR->h = dest->h;
+    C_Rect dstR;
+    dstR.w = dest->w;
+    dstR.h = dest->h;
 
-    SDL_FillRect(dest, dstR, 0x00000000);
+    SDL_FillRect(dest, &dstR, 0x00000000);
     SDL_SetSurfaceBlendMode(src,
                             SDL_BLENDMODE_NONE);  // override instead of overlap (prevents transparent things darkening)
-    SDL_BlitScaled(src, srcR, dest, dstR);
+    SDL_BlitScaled(src, &srcR, dest, &dstR);
 
-    delete srcR;
-    delete dstR;
-    src = dest;
     return src;
 }
 

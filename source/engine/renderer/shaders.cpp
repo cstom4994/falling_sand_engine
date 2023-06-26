@@ -3,8 +3,8 @@
 #include "shaders.hpp"
 
 #include "engine/core/core.hpp"
-#include "engine/core/cpp/name.hpp"
-#include "engine/core/utils/utility.hpp"
+#include "engine/utils/name.hpp"
+#include "engine/utils/utility.hpp"
 
 u32 ME_Shaders_LoadShader(R_ShaderEnum thisype, const char* filename) {
 

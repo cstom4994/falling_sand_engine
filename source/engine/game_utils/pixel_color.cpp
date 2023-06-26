@@ -3,7 +3,7 @@
 #include "engine/core/mathlib.hpp"
 #include "engine/core/sdl_wrapper.h"
 
-namespace MetaEngine {
+namespace ME::cpp {
 
 bool CColorUint8::masks_initialized = false;
 CColorUint8::uint32 CColorUint8::RMask;
@@ -210,4 +210,4 @@ types::uint32 Blend2Colors(types::uint32 c1, types::uint32 c2, float how_much_of
 
 //-----------------------------------------------------------------------------
 
-}  // namespace MetaEngine
+}  // namespace ME::cpp
