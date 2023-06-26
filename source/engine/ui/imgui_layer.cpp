@@ -15,14 +15,12 @@
 #include "engine/chunk.hpp"
 #include "engine/core/const.h"
 #include "engine/core/core.hpp"
-#include "engine/utils/utils.hpp"
 #include "engine/core/dbgtools.h"
 #include "engine/core/debug.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/macros.hpp"
 #include "engine/core/memory.h"
-#include "engine/utils/utility.hpp"
 #include "engine/engine.h"
 #include "engine/game.hpp"
 #include "engine/game_datastruct.hpp"
@@ -37,11 +35,11 @@
 #include "engine/scripting/scripting.hpp"
 #include "engine/ui/imgui_impl.hpp"
 #include "engine/ui/ui.hpp"
+#include "engine/utils/utility.hpp"
+#include "engine/utils/utils.hpp"
 #include "libs/glad/glad.h"
 #include "libs/imgui/font_awesome.h"
 #include "libs/imgui/imgui.h"
-
-IMPLENGINE();
 
 void profiler_draw_frame_bavigation(frame_info *_infos, uint32_t _numInfos) {
     ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_FirstUseEver);
@@ -398,7 +396,7 @@ int profiler_draw_frame(profiler_frame *_data, void *_buffer, size_t _bufferSize
         ImGui::Text("MemCurrentUsage: %.2f mb", ME_mem_current_usage_mb());
         ImGui::Text("MemTotalAllocated: %.2lf mb", (f64)(g_allocation_metrics.total_allocated / 1048576.0));
         ImGui::Text("MemTotalFree: %.2lf mb", (f64)(g_allocation_metrics.total_free / 1048576.0));
-        ImGui::Text("GC MemAllocInUsed: %.2lf mb", (f64)(ME_memory_bytes_inuse() / 1048576.0));
+        ImGui::Text("GC MemAllocInUsed: %.2lf mb", (f64)(ME_mem_bytes_inuse() / 1048576.0));
 
 #define GL_GPU_MEM_INFO_TOTAL_AVAILABLE_MEM_NVX 0x9048
 #define GL_GPU_MEM_INFO_CURRENT_AVAILABLE_MEM_NVX 0x9049
@@ -728,7 +726,7 @@ void ImGuiLayer::Init() {
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
 
-    ImGui_ImplSDL2_Init(Core.window, Core.glContext);
+    ImGui_ImplSDL2_Init(ENGINE()->window, ENGINE()->glContext);
 
     ImGui_ImplOpenGL3_Init();
 
@@ -738,7 +736,7 @@ void ImGuiLayer::Init() {
 
 #if defined(ME_IMM32)
     common_control_initialize();
-    ME_ASSERT_E(imguiIMMCommunication.subclassify(Core.window));
+    ME_ASSERT_E(imguiIMMCommunication.subclassify(ENGINE()->window));
 #endif
 
     m_pack_editor.Init();
@@ -780,14 +778,14 @@ void ImGuiLayer::Init() {
             "HWND", "HRESULT", "LPRESULT","D3D11_RENDER_TARGET_VIEW_DESC", "DXGI_SWAP_CHAIN_DESC","MSG","LRESULT","WPARAM", "LPARAM","UINT","LPVOID",
             "ID3D11Device", "ID3D11DeviceContext", "ID3D11Buffer", "ID3D11Buffer", "ID3D10Blob", "ID3D11VertexShader", "ID3D11InputLayout", "ID3D11Buffer",
             "ID3D10Blob", "ID3D11PixelShader", "ID3D11SamplerState", "ID3D11ShaderResourceView", "ID3D11RasterizerState", "ID3D11BlendState", "ID3D11DepthStencilState",
-            "IDXGISwapChain", "ID3D11RenderTargetView", "ID3D11Texture2D", "TextEditor" };
+            "IDXGISwapChain", "ID3D11ENGINE()->TargetView", "ID3D11Texture2D", "TextEditor" };
         static const char* idecls[] =
         {
             "typedef HWND_* HWND", "typedef long HRESULT", "typedef long* LPRESULT", "struct D3D11_RENDER_TARGET_VIEW_DESC", "struct DXGI_SWAP_CHAIN_DESC",
             "typedef tagMSG MSG\n * Message structure","typedef LONG_PTR LRESULT","WPARAM", "LPARAM","UINT","LPVOID",
             "ID3D11Device", "ID3D11DeviceContext", "ID3D11Buffer", "ID3D11Buffer", "ID3D10Blob", "ID3D11VertexShader", "ID3D11InputLayout", "ID3D11Buffer",
             "ID3D10Blob", "ID3D11PixelShader", "ID3D11SamplerState", "ID3D11ShaderResourceView", "ID3D11RasterizerState", "ID3D11BlendState", "ID3D11DepthStencilState",
-            "IDXGISwapChain", "ID3D11RenderTargetView", "ID3D11Texture2D", "class TextEditor" };
+            "IDXGISwapChain", "ID3D11ENGINE()->TargetView", "ID3D11Texture2D", "class TextEditor" };
         for (int i = 0; i < sizeof(identifiers) / sizeof(identifiers[0]); ++i)
         {
             TextEditor::Identifier id;
@@ -874,11 +872,11 @@ void ImGuiLayer::Draw() {
     (void)io;
 
     ImGui::Render();
-    SDL_GL_MakeCurrent(Core.window, Core.glContext);
+    SDL_GL_MakeCurrent(ENGINE()->window, ENGINE()->glContext);
 
     RenderFunction(ImGui::GetDrawData());
 
-    // Update and Render additional Platform Windows
+    // Update and ENGINE()-> additional Platform Windows
     // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
     //  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
@@ -1122,6 +1120,11 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     ImGui::Checkbox("包编辑器", &global.game->GameIsolate_.globaldef.draw_pack_editor);
                     ImGui::Checkbox("UI", &global.game->GameIsolate_.ui->uidata->elementLists["testElement1"]->visible);
                     if (ImGui::Button("Meo")) {
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("Wang")) {
+                        extern int test_wang();
+                        test_wang();
                     }
                     ImGui::EndTabItem();
                 }

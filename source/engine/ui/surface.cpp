@@ -2289,7 +2289,7 @@ static void ME_surface___renderText(MEsurface_context* ctx, MEsurface_vertex* ve
     MEsurface_state* state = ME_surface___getState(ctx);
     MEsurface_paint paint = state->fill;
 
-    // Render triangles.
+    // ENGINE()-> triangles.
     paint.image = ctx->fontImages[ctx->fontImageIdx];
 
     // Apply global alpha

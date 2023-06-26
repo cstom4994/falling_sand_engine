@@ -1022,7 +1022,7 @@ static void* cs_ctx_thread(void* udata) {
     return 0;
 }
 
-static OSStatus cs_memcpy_to_coreaudio(void* udata, AudioUnitRenderActionFlags* ioActionFlags, const AudioTimeStamp* inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList* ioData) {
+static OSStatus cs_memcpy_to_coreaudio(void* udata, AudioUnitENGINE()->ActionFlags* ioActionFlags, const AudioTimeStamp* inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList* ioData) {
     int bps = s_ctx->bps;
     int samples_requested_to_consume = inNumberFrames;
     AudioBuffer* buffer = ioData->mBuffers;
@@ -1150,7 +1150,7 @@ cs_error_t cs_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_
 
     AudioComponentInstance inst;
     OSStatus ret;
-    AURenderCallbackStruct input;
+    AUENGINE()->CallbackStruct input;
 
     ret = AudioComponentInstanceNew(comp, &inst);
     if (ret != noErr) return ME_SOUND_ERROR_AUDIOCOMPONENTINSTANCENEW_FAILED;
@@ -1229,7 +1229,7 @@ cs_error_t cs_init(void* os_handle, unsigned play_frequency_in_Hz, int buffered_
 
     input.inputProc = cs_memcpy_to_coreaudio;
     input.inputProcRefCon = s_ctx;
-    ret = AudioUnitSetProperty(inst, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, 0, &input, sizeof(input));
+    ret = AudioUnitSetProperty(inst, kAudioUnitProperty_SetENGINE()->Callback, kAudioUnitScope_Input, 0, &input, sizeof(input));
     if (ret != noErr) return ME_SOUND_ERROR_FAILED_TO_SET_RENDER_CALLBACK;  // This leaks memory, oh well.
 
 #elif ME_SOUND_PLATFORM == ME_SOUND_SDL

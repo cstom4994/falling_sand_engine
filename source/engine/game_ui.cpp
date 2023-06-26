@@ -10,7 +10,6 @@
 #include "engine/core/core.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
-#include "engine/utils/utility.hpp"
 #include "engine/ecs/ecs.hpp"
 #include "engine/engine.h"
 #include "engine/scripting/lua_wrapper.hpp"
@@ -18,6 +17,7 @@
 #include "engine/ui/imgui_impl.hpp"
 #include "engine/ui/imgui_layer.hpp"
 #include "engine/ui/ui.hpp"
+#include "engine/utils/utility.hpp"
 #include "game.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
@@ -25,8 +25,6 @@
 #include "world_generator.h"
 
 using namespace ME;
-
-IMPLENGINE();
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
 
@@ -135,13 +133,13 @@ void OptionsUI__DrawVideo(Game *game) {
 
                 switch (n) {
                     case 0:
-                        metadot_set_displaymode(engine_displaymode::WINDOWED);
+                        ME_win_set_displaymode(E_DisplayMode::WINDOWED);
                         break;
                     case 1:
-                        metadot_set_displaymode(engine_displaymode::BORDERLESS);
+                        ME_win_set_displaymode(E_DisplayMode::BORDERLESS);
                         break;
                     case 2:
-                        metadot_set_displaymode(engine_displaymode::FULLSCREEN);
+                        ME_win_set_displaymode(E_DisplayMode::FULLSCREEN);
                         break;
                 }
 
@@ -157,17 +155,17 @@ void OptionsUI__DrawVideo(Game *game) {
     }
 
     if (ImGui::Checkbox("VSync", &gameUI.OptionsUI__vsync)) {
-        metadot_set_VSync(gameUI.OptionsUI__vsync);
+        ME_set_vsync(gameUI.OptionsUI__vsync);
     }
 
     if (ImGui::Checkbox("失去焦点后最小化", &gameUI.OptionsUI__minimizeOnFocus)) {
-        metadot_set_minimize_onlostfocus(gameUI.OptionsUI__minimizeOnFocus);
+        ME_win_set_minimize_onlostfocus(gameUI.OptionsUI__minimizeOnFocus);
     }
 
     ImGui::Unindent(4);
     ImGui::Separator();
 
-    ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Rendering");
+    ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "ENGINE()->ing");
     ImGui::Indent(4);
 
     if (ImGui::Checkbox("高清贴图", &global.game->GameIsolate_.globaldef.hd_objects)) {
@@ -428,7 +426,7 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
 
         game->GameIsolate_.world = ME::create_scope<World>();
         game->GameIsolate_.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / 3 / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3,
-                                       Render.target, &global.audio, generator);
+                                       ENGINE()->target, &global.audio, generator);
         game->GameIsolate_.world->metadata.worldName = std::string(gameUI.MainMenuUI__worldNameBuf);
         game->GameIsolate_.world->metadata.lastOpenedTime = ME_gettime() / 1000;
         game->GameIsolate_.world->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
@@ -538,7 +536,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
             LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->Lua->s_lua["game_datastruct"]["ui"];
             s["state"] = 5;
 
-            game->fadeOutStart = Time.now;
+            game->fadeOutStart = ENGINE()->time.now;
             game->fadeOutLength = 250;
             game->fadeOutCallback = [&, game, worldName]() {
                 game->setGameState(LOADING, INGAME);
@@ -547,7 +545,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
 
                 game->GameIsolate_.world = ME::create_scope<World>();
                 game->GameIsolate_.world->init(METADOT_RESLOC(std::format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
-                                               (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, Render.target, &global.audio);
+                                               (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, ENGINE()->target, &global.audio);
                 game->GameIsolate_.world->metadata.lastOpenedTime = ME_gettime() / 1000;
                 game->GameIsolate_.world->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
                 game->GameIsolate_.world->metadata.save(game->GameIsolate_.world->worldName);
@@ -559,7 +557,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
                     }
                 }
 
-                game->fadeInStart = Time.now;
+                game->fadeInStart = ENGINE()->time.now;
                 game->fadeInLength = 250;
                 game->fadeInWaitFrames = 4;
             };

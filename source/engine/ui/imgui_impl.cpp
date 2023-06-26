@@ -19,8 +19,8 @@
 #include "engine/core/io/filesystem.h"
 #include "engine/core/memory.h"
 #include "engine/core/sdl_wrapper.h"
-#include "imgui_impl.hpp"
 #include "engine/renderer/renderer_gpu.h"
+#include "imgui_impl.hpp"
 
 #pragma region ImGuiImplementGL3
 

@@ -22,6 +22,7 @@
 #include "engine/core/platform.h"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/engine.h"
+#include "engine/engine_core.h"
 #include "engine/game.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
@@ -42,8 +43,6 @@
 #endif
 
 #define FS_LINE_INCR 256
-
-IMPLENGINE();
 
 namespace TestData {
 bool shaderOn = false;
@@ -242,26 +241,26 @@ static int renderImage(lua_State *L) {
         rect.w = srcRect.w * scale;
         rect.h = srcRect.h * scale;
 
-        R_BlitRect(data->texture, &srcRect, Render.target, &rect);
+        R_BlitRect(data->texture, &srcRect, ENGINE()->target, &rect);
     } else if (top > 6) {
         ME_rect srcRect = {(float)luaL_checkinteger(L, 4), (float)luaL_checkinteger(L, 5), (float)luaL_checkinteger(L, 6), (float)luaL_checkinteger(L, 7)};
 
         rect.w = srcRect.w;
         rect.h = srcRect.h;
 
-        R_BlitRect(data->texture, &srcRect, Render.target, &rect);
+        R_BlitRect(data->texture, &srcRect, ENGINE()->target, &rect);
     } else if (top > 3) {
         ME_rect srcRect = {0, 0, (float)luaL_checkinteger(L, 4), (float)luaL_checkinteger(L, 5)};
 
         rect.w = srcRect.w;
         rect.h = srcRect.h;
 
-        R_BlitRect(data->texture, &srcRect, Render.target, &rect);
+        R_BlitRect(data->texture, &srcRect, ENGINE()->target, &rect);
     } else {
         rect.w = data->width;
         rect.h = data->height;
 
-        R_BlitRect(data->texture, nullptr, Render.target, &rect);
+        R_BlitRect(data->texture, nullptr, ENGINE()->target, &rect);
     }
 
     return 0;
@@ -542,7 +541,7 @@ static int gpu_draw_pixel(lua_State *L) {
 
     ME_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
 
-    R_RectangleFilled(Render.target, off(x, y), off(x + 1, y + 1), colorS);
+    R_RectangleFilled(ENGINE()->target, off(x, y), off(x + 1, y + 1), colorS);
 
     return 0;
 }
@@ -556,7 +555,7 @@ static int gpu_draw_rectangle(lua_State *L) {
     ME_rect rect = {off(x, y), (float)luaL_checkinteger(L, 3), (float)luaL_checkinteger(L, 4)};
 
     ME_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
-    R_RectangleFilled2(Render.target, rect, colorS);
+    R_RectangleFilled2(ENGINE()->target, rect, colorS);
 
     return 0;
 }
@@ -594,7 +593,7 @@ static int gpu_blit_pixels(lua_State *L) {
         ME_rect rect = {off(x + xp, y + yp), 1, 1};
 
         ME_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
-        R_RectangleFilled2(Render.target, rect, colorS);
+        R_RectangleFilled2(ENGINE()->target, rect, colorS);
 
         lua_pop(L, 1);
     }
@@ -707,10 +706,10 @@ static int gpu_clear(lua_State *L) {
     if (lua_gettop(L) > 0) {
         int color = gpu_getColor(L, 1);
         ME_Color colorS = {TestData::palette[color][0], TestData::palette[color][1], TestData::palette[color][2], 255};
-        R_ClearColor(Render.target, colorS);
+        R_ClearColor(ENGINE()->target, colorS);
     } else {
         ME_Color colorS = {TestData::palette[0][0], TestData::palette[0][1], TestData::palette[0][2], 255};
-        R_ClearColor(Render.target, colorS);
+        R_ClearColor(ENGINE()->target, colorS);
     }
 
     return 0;
@@ -773,13 +772,13 @@ static int gpu_set_fullscreen(lua_State *L) {
 
 static int gpu_swap(lua_State *L) {
     ME_Color colorS = {TestData::palette[0][0], TestData::palette[0][1], TestData::palette[0][2], 255};
-    R_ClearColor(Render.realTarget, colorS);
+    R_ClearColor(ENGINE()->realTarget, colorS);
 
     // TestData::shader::updateShader();
 
-    R_BlitScale(TestData::buffer, nullptr, Render.realTarget, TestData::windowWidth / 2, TestData::windowHeight / 2, TestData::pixelScale, TestData::pixelScale);
+    R_BlitScale(TestData::buffer, nullptr, ENGINE()->realTarget, TestData::windowWidth / 2, TestData::windowHeight / 2, TestData::pixelScale, TestData::pixelScale);
 
-    R_Flip(Render.realTarget);
+    R_Flip(ENGINE()->realTarget);
 
     R_DeactivateShaderProgram();
 

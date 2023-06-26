@@ -9,10 +9,11 @@
 #include <string>
 
 #include "engine/core/core.hpp"
-#include "engine/utils/utils.hpp"
 #include "engine/core/sdl_wrapper.h"
+#include "engine/renderer/renderer_gpu.h"
+#include "engine/utils/utils.hpp"
 
-typedef struct engine_core {
+typedef struct EngineData {
     C_Window *window;
     C_GLContext *glContext;
 
@@ -20,43 +21,44 @@ typedef struct engine_core {
 
     // Maximum memory that can be used
     u64 max_mem = 4294967296;  // 4096mb
-} engine_core;
 
-typedef struct windows {
-    // Internal resolution, used in rendering
-    //  int gameWidth;
-    //  int gameHeight;
-
-    // Window resolution
     int windowWidth;
     int windowHeight;
 
-    i32 gameScale = 4;
+    i32 render_scale = 4;
 
     unsigned maxFPS;
-} windows;
 
-typedef struct engine_time {
-    i32 feelsLikeFps;
-    i64 lastTime;
-    i64 lastCheckTime;
-    i64 lastTickTime;
-    i64 lastLoadingTick;
-    i64 now;
-    i64 startTime;
-    i64 deltaTime;
+    R_Target *realTarget;
+    R_Target *target;
 
-    i32 tickCount;
+    struct {
+        i32 feelsLikeFps;
+        i64 lastTime;
+        i64 lastCheckTime;
+        i64 lastTickTime;
+        i64 lastLoadingTick;
+        i64 now;
+        i64 startTime;
+        i64 deltaTime;
 
-    f32 mspt;
-    i32 tpsTrace[TraceTimeNum];
-    f32 tps;
-    u32 maxTps;
+        i32 tickCount;
 
-    u16 frameTimesTrace[TraceTimeNum];
-    u32 frameCount;
-    f32 framesPerSecond;
-} engine_time;
+        f32 mspt;
+        i32 tpsTrace[TraceTimeNum];
+        f32 tps;
+        u32 maxTps;
+
+        u16 frameTimesTrace[TraceTimeNum];
+        u32 frameCount;
+        f32 framesPerSecond;
+    } time;
+
+} EngineData;
+
+extern EngineData g_engine_data;
+
+ME_INLINE EngineData *ENGINE() { return &g_engine_data; }
 
 void ExitGame();
 void GameExited();

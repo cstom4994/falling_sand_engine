@@ -8,15 +8,15 @@
 #include "chunk.hpp"
 #include "cvar.hpp"
 #include "engine/core/core.hpp"
-#include "engine/utils/utils.hpp"
 #include "engine/core/debug.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/macros.hpp"
-#include "engine/utils/utility.hpp"
 #include "engine/game_utils/cells.h"
 #include "engine/physics/box2d.h"
 #include "engine/scripting/lua_wrapper.hpp"
+#include "engine/utils/utility.hpp"
+#include "engine/utils/utils.hpp"
 #include "game.hpp"
 #include "game_resources.hpp"
 #include "reflectionflat.hpp"
@@ -1167,7 +1167,7 @@ bool RigidBody::set_surface(C_Surface *sur) {
 }
 
 C_Surface *RigidBody::get_surface() {
-    ME_ASSERT_E(this->surface);
+    // ME_ASSERT_E(this->surface);
     return this->surface;
 }
 
@@ -1195,7 +1195,7 @@ void Player::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
         ir->y += heldItem->pivotY;
         R_SetShapeBlendMode(R_BlendPresetEnum::R_BLEND_ADD);
         // R_BlitTransformX(heldItem->texture, NULL, target, ir->x, ir->y, fp->x, fp->y, holdAngle, 1, 1);
-        // SDL_RenderCopyExF(renderer, heldItem->texture, NULL, ir, holdAngle, fp, abs(holdAngle) > 90 ? SDL_FLIP_VERTICAL : SDL_FLIP_NONE);
+        // SDL_ENGINE()->CopyExF(renderer, heldItem->texture, NULL, ir, holdAngle, fp, abs(holdAngle) > 90 ? SDL_FLIP_VERTICAL : SDL_FLIP_NONE);
         ir->x *= scaleEnt;
         ir->y *= scaleEnt;
         ir->w *= scaleEnt;

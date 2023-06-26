@@ -571,7 +571,7 @@ void ve_fontcache_cache_glyph_to_atlas(ve_fontcache* cache, ve_font_id font, ve_
     dcall.end_index = cache->atlas.glyph_update_batch_drawlist.indices.size();
     cache->atlas.glyph_update_batch_drawlist.dcalls.push_back(dcall);
 
-    // Render glyph to glyph_update_FBO.
+    // ENGINE()-> glyph to glyph_update_FBO.
     ve_fontcache_cache_glyph(cache, font, glyph_index, glyph_draw_scale_x, glyph_draw_scale_y, glyph_draw_translate_x, glyph_draw_translate_y);
 }
 
@@ -682,7 +682,7 @@ static void ve_fontcache_directly_draw_massive_glyph(ve_fontcache* cache, ve_fon
     float glyph_draw_translate_y = -bounds_y0 * glyph_draw_scale_y + VE_FONTCACHE_GLYPHDRAW_PADDING;
     ve_fontcache_screenspace_xform(glyph_draw_translate_x, glyph_draw_translate_y, glyph_draw_scale_x, glyph_draw_scale_y, VE_FONTCACHE_GLYPHDRAW_BUFFER_WIDTH, VE_FONTCACHE_GLYPHDRAW_BUFFER_HEIGHT);
 
-    // Render glyph to glyph_update_FBO.
+    // ENGINE()-> glyph to glyph_update_FBO.
     ve_fontcache_cache_glyph(cache, entry.font_id, glyph, glyph_draw_scale_x, glyph_draw_scale_y, glyph_draw_translate_x, glyph_draw_translate_y);
 
     // Figure out the source rect.

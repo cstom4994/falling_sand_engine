@@ -24,11 +24,6 @@
 struct ShaderBase;
 struct MEsurface_context;
 
-typedef struct engine_render {
-    R_Target *realTarget;
-    R_Target *target;
-} engine_render;
-
 typedef struct Camera {
     MEvec3 camFront = {0.0f, 0.0f, 1.0f};
     MEvec3 camUp = {0.0f, 1.0f, 0.0f};
@@ -100,7 +95,7 @@ ME_PRIVATE(void) ME_check_gl_error(const char *file, const int line) {
     while ((err = glGetError()) != GL_NO_ERROR) {
         if (last_err != err) {
             last_err = err;
-            METADOT_ERROR(std::format("[Render] {0}({1}) {2}", file, line, gl_error_string(err)).c_str());
+            METADOT_ERROR(std::format("[ENGINE()->] {0}({1}) {2}", file, line, gl_error_string(err)).c_str());
         }
     }
 }

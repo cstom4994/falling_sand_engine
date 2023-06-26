@@ -187,28 +187,23 @@ public:
 
 }  // namespace ME
 
-typedef enum engine_displaymode { WINDOWED, BORDERLESS, FULLSCREEN } engine_displaymode;
-
-typedef enum engine_windowflashaction { START, START_COUNT, START_UNTIL_FG, STOP } engine_windowflashaction;
-
-typedef struct engine_platform {
-
-} engine_platform;
+typedef enum E_DisplayMode { WINDOWED, BORDERLESS, FULLSCREEN } E_DisplayMode;
+typedef enum E_WindowFlashaction { START, START_COUNT, START_UNTIL_FG, STOP } E_WindowFlashaction;
 
 #define RUNNER_EXIT 2
 
 int ParseRunArgs(int argc, char* argv[]);
-int metadot_initwindow();
-void metadot_endwindow();
-void metadot_set_displaymode(engine_displaymode mode);
-void metadot_set_windowflash(engine_windowflashaction action, int count, int period);
-void metadot_set_VSync(bool vsync);
-void metadot_set_minimize_onlostfocus(bool minimize);
-void metadot_set_windowtitle(const char* title);
-char* metadot_clipboard_get();
-void metadot_clipboard_set(const char* string);
+int ME_initwindow();
+void ME_endwindow();
+void ME_win_set_displaymode(E_DisplayMode mode);
+void ME_win_set_windowflash(E_WindowFlashaction action, int count, int period);
+void ME_set_vsync(bool vsync);
+void ME_win_set_minimize_onlostfocus(bool minimize);
+void ME_win_set_windowtitle(const char* title);
+char* ME_clipboard_get();
+void ME_clipboard_set(const char* string);
 
-ME_INLINE void metadot_platform_init_dpi() {
+ME_INLINE void ME_win_init_dpi() {
 #ifdef _WIN32
 #include <Windows.h>
     SetProcessDPIAware();

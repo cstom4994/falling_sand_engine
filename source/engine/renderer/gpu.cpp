@@ -11,8 +11,6 @@
 #include "engine/ui/surface_gl.h"
 #include "libs/imgui/imgui.h"
 
-engine_render Render;
-
 void ME_cam_push_matrix(Camera &cam, GLprogram shader, const char *uniform) {
     GLint camera_unif = glGetUniformLocation(shader, uniform);
     glUniformMatrix4fv(camera_unif, 1, GL_FALSE, ME_value_ptr(cam.cameraMatrix));
@@ -139,7 +137,7 @@ void draw_spinning_triangle(R_Target *screen) {
 
 void draw_3d_stuff(R_Target *screen) {
 
-    // R_Clear(Render.target);
+    // R_Clear(ENGINE()->target);
 
     // ME_GL_STATE_BACKUP();
 

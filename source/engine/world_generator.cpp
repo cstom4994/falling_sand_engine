@@ -3,6 +3,7 @@
 #include "world_generator.h"
 
 #include "engine/core/global.hpp"
+#include "engine/utils/random.hpp"
 #include "game.hpp"
 #include "game_datastruct.hpp"
 
@@ -320,8 +321,89 @@ std::vector<Populator *> DefaultGenerator::getPopulators() {
 
 #pragma endregion
 
-void ScriptingWorldGenerator::generateChunk(World *world, Chunk *ch) {
-    
-}
+void ScriptingWorldGenerator::generateChunk(World *world, Chunk *ch) {}
 
 std::vector<Populator *> ScriptingWorldGenerator::getPopulators() { return {}; }
+
+double wang_seed = 0;
+static CLGMRandom random(wang_seed);
+
+int myrand() { return random.Random(0, 2147483645 - 1); }
+
+#define STB_HBWANG_RAND() myrand()
+
+#define STB_HBWANG_IMPLEMENTATION
+#include "libs/external/stb_herringbone_wang_tile.h"
+
+#include "libs/external/stb_image.h"
+#include "libs/external/stb_image_write.h"
+
+using namespace std::string_literals;
+void genwang(std::string filename, unsigned char *data, int xs, int ys, int w, int h) {
+    stbhw_tileset ts;
+    if (xs < 1 || xs > 1000) {
+        fprintf(stderr, "xsize invalid or out of range\n");
+        exit(1);
+    }
+    if (ys < 1 || ys > 1000) {
+        fprintf(stderr, "ysize invalid or out of range\n");
+        exit(1);
+    }
+
+    stbhw_build_tileset_from_image(&ts, data, w * 3, w, h);
+    // allocate a buffer to create the final image to
+    int yimg = ys + 4;
+    auto buff = static_cast<unsigned char *>(malloc(3 * xs * yimg));
+    stbhw_generate_image(&ts, NULL, buff, xs * 3, xs, yimg);
+    stbi_write_png(filename.c_str(), xs, yimg, 3, buff, xs * 3);
+    stbhw_free_tileset(&ts);
+    free(buff);
+}
+
+int test_wang() {
+
+    // mapgen {tile-file} {xsize} {ysize} {seed} [n]
+
+    int xs = 128;
+    int ys = 128;
+
+    int n = 1;
+
+    int w, h;
+
+    unsigned char *data = stbi_load("data/assets/textures/wang_test.png", &w, &h, NULL, 3);
+
+    ME_ASSERT_E(data);
+
+    printf("Output size: %dx%d\n", xs, ys);
+
+    auto seed = std::stoull("123456");
+    printf("Using seed: %llu\n", seed);
+    wang_seed = seed;
+    {
+        CLGMRandom rnd(seed);
+
+        // int num = seed + xs + 11 * (xs / -11) - 12 * (seed / 12);
+        int num = xs % 11 + seed % 12;
+        printf("Some number: %d\n", num);
+        while (num-- > 0) {
+            rnd.Next();
+        }
+
+        for (int i = 0; i < n; ++i) {
+            double newSeed = rnd.Next() * 2147483645.0;
+            printf("Adjusted seed: %f\n", newSeed);
+            random.SetSeed(newSeed);
+
+            auto filename = std::string("output_wang");
+            filename = filename.substr(0, filename.size() - 4);
+            filename = filename + std::to_string(seed) + "#" + std::to_string(i) + ".png";
+
+            genwang(filename, data, xs, ys, w, h);
+        }
+    }
+
+    free(data);
+
+    return 0;
+}

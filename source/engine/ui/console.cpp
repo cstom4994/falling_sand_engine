@@ -5,8 +5,6 @@
 #include "engine/game.hpp"
 #include "engine/scripting/scripting.hpp"
 
-IMPLENGINE();
-
 typedef struct ConsoleArgv {
     char **argv, *data;
     const char *error;
@@ -350,7 +348,7 @@ void ME::MEconsole::Init() {
         convar.Value(name, value);
     });
 
-    convar.Value("game_scale", Screen.gameScale);
+    convar.Value("game_scale", ENGINE()->render_scale);
 }
 
 void ME::MEconsole::End() {}

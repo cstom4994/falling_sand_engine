@@ -118,7 +118,7 @@ f32 ME_mem_current_usage_mb() {
 //     return std::free(ptr);
 // }
 
-struct ME_memory_alloc_stack_t {
+struct ME_mem_alloc_stack_t {
     void* memory;
     size_t capacity;
     size_t bytes_left;
@@ -127,17 +127,17 @@ struct ME_memory_alloc_stack_t {
 #define ME_PTR_ADD(ptr, size) ((void*)(((char*)ptr) + (size)))
 #define ME_PTR_SUB(ptr, size) ((void*)(((char*)ptr) - (size)))
 
-ME_memory_alloc_stack_t* ME_memory_alloc_stack_create(void* memory_chunk, size_t size) {
-    ME_memory_alloc_stack_t* stack = (ME_memory_alloc_stack_t*)memory_chunk;
-    if (size < sizeof(ME_memory_alloc_stack_t)) return 0;
-    *(size_t*)ME_PTR_ADD(memory_chunk, sizeof(ME_memory_alloc_stack_t)) = 0;
-    stack->memory = ME_PTR_ADD(memory_chunk, sizeof(ME_memory_alloc_stack_t) + sizeof(size_t));
-    stack->capacity = size - sizeof(ME_memory_alloc_stack_t) - sizeof(size_t);
+ME_mem_alloc_stack_t* ME_mem_alloc_stack_create(void* memory_chunk, size_t size) {
+    ME_mem_alloc_stack_t* stack = (ME_mem_alloc_stack_t*)memory_chunk;
+    if (size < sizeof(ME_mem_alloc_stack_t)) return 0;
+    *(size_t*)ME_PTR_ADD(memory_chunk, sizeof(ME_mem_alloc_stack_t)) = 0;
+    stack->memory = ME_PTR_ADD(memory_chunk, sizeof(ME_mem_alloc_stack_t) + sizeof(size_t));
+    stack->capacity = size - sizeof(ME_mem_alloc_stack_t) - sizeof(size_t);
     stack->bytes_left = stack->capacity;
     return stack;
 }
 
-void* ME_memory_alloc_stack_alloc(ME_memory_alloc_stack_t* stack, size_t size) {
+void* ME_mem_alloc_stack_alloc(ME_mem_alloc_stack_t* stack, size_t size) {
     if (stack->bytes_left - sizeof(size_t) < size) return 0;
     void* user_mem = stack->memory;
     *(size_t*)ME_PTR_ADD(user_mem, size) = size;
@@ -146,7 +146,7 @@ void* ME_memory_alloc_stack_alloc(ME_memory_alloc_stack_t* stack, size_t size) {
     return user_mem;
 }
 
-int ME_memory_alloc_stack_free(ME_memory_alloc_stack_t* stack, void* memory) {
+int ME_mem_alloc_stack_free(ME_mem_alloc_stack_t* stack, void* memory) {
     if (!memory) return 0;
     size_t size = *(size_t*)ME_PTR_SUB(stack->memory, sizeof(size_t));
     void* prev = ME_PTR_SUB(stack->memory, size + sizeof(size_t));
@@ -156,24 +156,24 @@ int ME_memory_alloc_stack_free(ME_memory_alloc_stack_t* stack, void* memory) {
     return 1;
 }
 
-size_t ME_memory_alloc_stack_bytes_left(ME_memory_alloc_stack_t* stack) { return stack->bytes_left; }
+size_t ME_mem_alloc_stack_bytes_left(ME_mem_alloc_stack_t* stack) { return stack->bytes_left; }
 
-struct ME_memory_alloc_frame_t {
+struct ME_mem_alloc_frame_t {
     void* original;
     void* ptr;
     size_t capacity;
     size_t bytes_left;
 };
 
-ME_memory_alloc_frame_t* ME_memory_alloc_frame_create(void* memory_chunk, size_t size) {
-    ME_memory_alloc_frame_t* frame = (ME_memory_alloc_frame_t*)memory_chunk;
-    frame->original = ME_PTR_ADD(memory_chunk, sizeof(ME_memory_alloc_frame_t));
+ME_mem_alloc_frame_t* ME_mem_alloc_frame_create(void* memory_chunk, size_t size) {
+    ME_mem_alloc_frame_t* frame = (ME_mem_alloc_frame_t*)memory_chunk;
+    frame->original = ME_PTR_ADD(memory_chunk, sizeof(ME_mem_alloc_frame_t));
     frame->ptr = frame->original;
-    frame->capacity = frame->bytes_left = size - sizeof(ME_memory_alloc_frame_t);
+    frame->capacity = frame->bytes_left = size - sizeof(ME_mem_alloc_frame_t);
     return frame;
 }
 
-void* ME_memory_alloc_frame_alloc(ME_memory_alloc_frame_t* frame, size_t size) {
+void* ME_mem_alloc_frame_alloc(ME_mem_alloc_frame_t* frame, size_t size) {
     if (frame->bytes_left < size) return 0;
     void* user_mem = frame->ptr;
     frame->ptr = ME_PTR_ADD(frame->ptr, size);
@@ -181,29 +181,29 @@ void* ME_memory_alloc_frame_alloc(ME_memory_alloc_frame_t* frame, size_t size) {
     return user_mem;
 }
 
-void ME_memory_alloc_frame_free(ME_memory_alloc_frame_t* frame) {
+void ME_mem_alloc_frame_free(ME_mem_alloc_frame_t* frame) {
     frame->ptr = frame->original;
     frame->bytes_left = frame->capacity;
 }
 
-typedef struct ME_memory_alloc_heap_header_t {
-    struct ME_memory_alloc_heap_header_t* next;
-    struct ME_memory_alloc_heap_header_t* prev;
+typedef struct ME_mem_alloc_heap_header_t {
+    struct ME_mem_alloc_heap_header_t* next;
+    struct ME_mem_alloc_heap_header_t* prev;
     size_t size;
-} ME_memory_alloc_heap_header_t;
+} ME_mem_alloc_heap_header_t;
 
-typedef struct ME_memory_alloc_alloc_info_t ME_memory_alloc_alloc_info_t;
-struct ME_memory_alloc_alloc_info_t {
+typedef struct ME_mem_alloc_alloc_info_t ME_mem_alloc_alloc_info_t;
+struct ME_mem_alloc_alloc_info_t {
     const char* file;
     size_t size;
     int line;
 
-    struct ME_memory_alloc_alloc_info_t* next;
-    struct ME_memory_alloc_alloc_info_t* prev;
+    struct ME_mem_alloc_alloc_info_t* next;
+    struct ME_mem_alloc_alloc_info_t* prev;
 };
 
-static ME_memory_alloc_alloc_info_t* ME_memory_alloc_alloc_head() {
-    static ME_memory_alloc_alloc_info_t info;
+static ME_mem_alloc_alloc_info_t* ME_mem_alloc_alloc_head() {
+    static ME_mem_alloc_alloc_info_t info;
     static int init;
 
     if (!init) {
@@ -216,15 +216,15 @@ static ME_memory_alloc_alloc_info_t* ME_memory_alloc_alloc_head() {
 }
 
 #if 1
-void* ME_memory_alloc_leak_check_alloc(size_t size, const char* file, int line) {
-    ME_memory_alloc_alloc_info_t* mem = (ME_memory_alloc_alloc_info_t*)ME_MALLOC_FUNC(sizeof(ME_memory_alloc_alloc_info_t) + size);
+void* ME_mem_alloc_leak_check_alloc(size_t size, const char* file, int line) {
+    ME_mem_alloc_alloc_info_t* mem = (ME_mem_alloc_alloc_info_t*)ME_MALLOC_FUNC(sizeof(ME_mem_alloc_alloc_info_t) + size);
 
     if (!mem) return 0;
 
     mem->file = file;
     mem->line = line;
     mem->size = size;
-    ME_memory_alloc_alloc_info_t* head = ME_memory_alloc_alloc_head();
+    ME_mem_alloc_alloc_info_t* head = ME_mem_alloc_alloc_head();
     mem->prev = head;
     mem->next = head->next;
     head->next->prev = mem;
@@ -235,17 +235,17 @@ void* ME_memory_alloc_leak_check_alloc(size_t size, const char* file, int line) 
     return mem + 1;
 }
 
-void* ME_memory_alloc_leak_check_calloc(size_t count, size_t element_size, const char* file, int line) {
+void* ME_mem_alloc_leak_check_calloc(size_t count, size_t element_size, const char* file, int line) {
     size_t size = count * element_size;
-    void* mem = ME_memory_alloc_leak_check_alloc(size, file, line);
+    void* mem = ME_mem_alloc_leak_check_alloc(size, file, line);
     std::memset(mem, 0, size);
     return mem;
 }
 
-void ME_memory_alloc_leak_check_free(void* mem) {
+void ME_mem_alloc_leak_check_free(void* mem) {
     if (!mem) return;
 
-    ME_memory_alloc_alloc_info_t* info = (ME_memory_alloc_alloc_info_t*)mem - 1;
+    ME_mem_alloc_alloc_info_t* info = (ME_mem_alloc_alloc_info_t*)mem - 1;
     info->prev->next = info->next;
     info->next->prev = info->prev;
 
@@ -254,9 +254,9 @@ void ME_memory_alloc_leak_check_free(void* mem) {
     ME_FREE_FUNC(info);
 }
 
-int ME_memory_check_leaks() {
-    ME_memory_alloc_alloc_info_t* head = ME_memory_alloc_alloc_head();
-    ME_memory_alloc_alloc_info_t* next = head->next;
+int ME_mem_check_leaks() {
+    ME_mem_alloc_alloc_info_t* head = ME_mem_alloc_alloc_head();
+    ME_mem_alloc_alloc_info_t* next = head->next;
     int leaks = 0;
 
     while (next != head) {
@@ -273,9 +273,9 @@ int ME_memory_check_leaks() {
     return leaks;
 }
 
-int ME_memory_bytes_inuse() {
-    ME_memory_alloc_alloc_info_t* head = ME_memory_alloc_alloc_head();
-    ME_memory_alloc_alloc_info_t* next = head->next;
+int ME_mem_bytes_inuse() {
+    ME_mem_alloc_alloc_info_t* head = ME_mem_alloc_alloc_head();
+    ME_mem_alloc_alloc_info_t* next = head->next;
     int bytes = 0;
 
     while (next != head) {
@@ -288,11 +288,11 @@ int ME_memory_bytes_inuse() {
 
 #else
 
-inline void* ME_memory_alloc_leak_check_alloc(size_t size, char* file, int line) { return ME_MALLOC_FUNC(size); }
+inline void* ME_mem_alloc_leak_check_alloc(size_t size, char* file, int line) { return ME_MALLOC_FUNC(size); }
 
-void* ME_memory_alloc_leak_check_calloc(size_t count, size_t element_size, char* file, int line) { return ME_CALLOC_FUNC(count, size); }
+void* ME_mem_alloc_leak_check_calloc(size_t count, size_t element_size, char* file, int line) { return ME_CALLOC_FUNC(count, size); }
 
-inline void ME_memory_alloc_leak_check_free(void* mem) { return ME_FREE_FUNC(mem); }
+inline void ME_mem_alloc_leak_check_free(void* mem) { return ME_FREE_FUNC(mem); }
 
 inline int ME_CHECK_FOR_LEAKS() { return 0; }
 inline int ME_BYTES_IN_USE() { return 0; }
@@ -337,7 +337,7 @@ void ME_mem_init(int argc, char* argv[]) { ME_MEM_INIT(); }
 
 void ME_mem_end() {
     ME_MEM_EXIT();
-    ME_memory_check_leaks();
+    ME_mem_check_leaks();
 }
 
 void ME_mem_rungc() {}

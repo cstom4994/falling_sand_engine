@@ -17,8 +17,6 @@
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/renderer_opengl.h"
 
-IMPLENGINE();
-
 // Color definitions
 ME_Color bgPanelColor = {0.02, 0.02, 0.05};
 ME_Color bgLightColor = {0.2, 0.2, 0.35};
@@ -188,18 +186,18 @@ void UISystem::UIRendererDraw() {
         }
 
         if (e.second->type == ElementType::lineElement) {
-            R_Line(Render.target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, e.second->color);
+            R_Line(ENGINE()->target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, e.second->color);
         }
         if (e.second->type == ElementType::coloredRectangle || e.second->type == windowElement) {
-            if (!Img) R_RectangleFilled(Render.target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, e.second->color);
+            if (!Img) R_RectangleFilled(ENGINE()->target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, e.second->color);
         }
         if (e.second->type == ElementType::progressBarElement) {
             // METADOT_BUG("parent xy %d %d", p_x, p_y);
             int drect = e.second->w;
             float p = e.second->cclass.progressbar.bar_current / e.second->cclass.progressbar.bar_limit;
             int c = p_x + e.second->x + p * drect;
-            R_RectangleRound(Render.target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, 2.0f, e.second->color);
-            R_RectangleFilled(Render.target, p_x + e.second->x, p_y + e.second->y, c, p_y + e.second->y + e.second->h, e.second->color);
+            R_RectangleRound(ENGINE()->target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, 2.0f, e.second->color);
+            R_RectangleFilled(ENGINE()->target, p_x + e.second->x, p_y + e.second->y, c, p_y + e.second->y + e.second->h, e.second->color);
 
             if (e.second->cclass.progressbar.bar_type == 1) ME_draw_text(e.second->text, e.second->cclass.progressbar.bar_text_color, p_x + e.second->x, p_y + e.second->y);
         }
@@ -208,7 +206,7 @@ void UISystem::UIRendererDraw() {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
                 ME_rect dest{.x = (float)(e.second->x + p_x), .y = (float)(e.second->y + p_y), .w = (float)e.second->w, .h = (float)e.second->h};
-                R_BlitRect(Img, NULL, Render.target, &dest);
+                R_BlitRect(Img, NULL, ENGINE()->target, &dest);
             }
         }
         if (e.second->type == ElementType::windowElement) {
@@ -217,7 +215,7 @@ void UISystem::UIRendererDraw() {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
                 ME_rect dest{.x = (float)(e.second->x), .y = (float)(e.second->y), .w = (float)(e.second->w), .h = (float)(e.second->h)};
-                R_BlitRect(Img, NULL, Render.target, &dest);
+                R_BlitRect(Img, NULL, ENGINE()->target, &dest);
             }
         }
         if (e.second->type == ElementType::buttonElement) {
@@ -231,11 +229,11 @@ void UISystem::UIRendererDraw() {
             ME_draw_text(e.second->text, e.second->color, p_x + e.second->x, p_y + e.second->y);
         }
         if (e.second->type == ElementType::inputBoxElement) {
-            R_Rectangle(Render.target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, e.second->color);
+            R_Rectangle(ENGINE()->target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, e.second->color);
 
             if (e.second.get() == uidata->oninput) {
                 int slen = ImGui::CalcTextSize(e.second->text.c_str()).x + 2;
-                R_RectangleFilled(Render.target, p_x + e.second->x + slen, p_y + e.second->y + 2, p_x + e.second->x + slen + 2, p_y + e.second->y + e.second->h - 4,
+                R_RectangleFilled(ENGINE()->target, p_x + e.second->x + slen, p_y + e.second->y + 2, p_x + e.second->x + slen + 2, p_y + e.second->y + e.second->h - 4,
                                   e.second->cclass.inputbox.bg_color);
             }
         }
@@ -243,9 +241,9 @@ void UISystem::UIRendererDraw() {
         if (Img) R_FreeImage(Img);
 
         if (global.game->GameIsolate_.globaldef.draw_ui_debug) {
-            R_Rectangle(Render.target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, {255, 20, 147, 255});
+            R_Rectangle(ENGINE()->target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, {255, 20, 147, 255});
             if (e.second->resizable.resizable) {
-                R_Rectangle(Render.target, p_x + e.second->x + e.second->w - 20.0f, p_y + e.second->y + e.second->h - 20.0f, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h,
+                R_Rectangle(ENGINE()->target, p_x + e.second->x + e.second->w - 20.0f, p_y + e.second->y + e.second->h - 20.0f, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h,
                             {40, 20, 147, 255});
             }
         }
@@ -435,7 +433,7 @@ void UISystem::DrawPoint(MEvec3 pos, float size, Texture *texture, u8 r, u8 g, u
     }
 }
 
-void UISystem::DrawLine(MEvec3 min, MEvec3 max, float thickness, u8 r, u8 g, u8 b) { R_Line(Render.target, min.x, min.y, max.x, max.y, {r, g, b, 255}); }
+void UISystem::DrawLine(MEvec3 min, MEvec3 max, float thickness, u8 r, u8 g, u8 b) { R_Line(ENGINE()->target, min.x, min.y, max.x, max.y, {r, g, b, 255}); }
 
 void UISystem::Create() { UIRendererInit(); }
 

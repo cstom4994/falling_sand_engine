@@ -315,7 +315,7 @@ typedef struct R_MatrixStack {
 } R_MatrixStack;
 
 /*! \ingroup ContextControls
- * Rendering context data.  Only R_Targets which represent windows will store this. */
+ * ENGINE()->ing context data.  Only R_Targets which represent windows will store this. */
 typedef struct R_Context {
     /*! SDL_GLContext */
     void *context;
@@ -368,7 +368,7 @@ typedef struct R_Context {
 } R_Context;
 
 /*! \ingroup TargetControls
- * Render target object for use as a blitting destination.
+ * ENGINE()-> target object for use as a blitting destination.
  * A R_Target can be created from a R_Image with R_LoadTarget().
  * A R_Target can also represent a separate window with R_CreateTargetFromWindow().  In that case, 'context' is allocated and filled in.
  * Note: You must have passed the SDL_WINDOW_OPENGL flag to SDL_CreateWindow() for OpenGL renderers to work with new windows.
@@ -464,7 +464,7 @@ static const R_InitFlagEnum R_INIT_USE_COPY_TEXTURE_UPLOAD_FALLBACK = 0x40;
 
 static const u32 R_NONE = 0x0;
 
-/*! \ingroup Rendering
+/*! \ingroup ENGINE()->ing
  * Primitive types for rendering arbitrary geometry.  The values are intentionally identical to the GL_* primitives.
  * \see R_PrimitiveBatch()
  * \see R_PrimitiveBatchV()
@@ -848,7 +848,7 @@ R_Target *R_GetTarget(R_Image *image);
 /*! Deletes a render target in the proper way for this renderer. */
 void R_FreeTarget(R_Target *target);
 
-/*! Change the logical size of the given target.  Rendering to this target will be scaled as if the dimensions were actually the ones given. */
+/*! Change the logical size of the given target.  ENGINE()->ing to this target will be scaled as if the dimensions were actually the ones given. */
 void R_SetVirtualResolution(R_Target *target, u16 w, u16 h);
 
 /*! Query the logical size of the given target. */
@@ -979,7 +979,7 @@ R_Image *R_CopyImage(R_Image *image);
 /*! Deletes an image in the proper way for this renderer.  Also deletes the corresponding R_Target if applicable.  Be careful not to use that target afterward! */
 void R_FreeImage(R_Image *image);
 
-/*! Change the logical size of the given image.  Rendering this image will scaled it as if the dimensions were actually the ones given. */
+/*! Change the logical size of the given image.  ENGINE()->ing this image will scaled it as if the dimensions were actually the ones given. */
 void R_SetImageVirtualResolution(R_Image *image, u16 w, u16 h);
 
 /*! Reset the logical size of the given image to its original value. */
@@ -1237,7 +1237,7 @@ void R_MultMatrix(const float *matrix4x4);
 // End of Matrix
 /*! @} */
 
-/*! \ingroup Rendering
+/*! \ingroup ENGINE()->ing
  *  @{ */
 
 /*! Clears the contents of the given render target.  Fills the target with color {0, 0, 0, 0}. */
@@ -1309,21 +1309,21 @@ void R_BlitRect(R_Image *image, ME_rect *src_rect, R_Target *target, ME_rect *de
  */
 void R_BlitRectX(R_Image *image, ME_rect *src_rect, R_Target *target, ME_rect *dest_rect, float degrees, float pivot_x, float pivot_y, R_FlipEnum flip_direction);
 
-/*! Renders triangles from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
+/*! ENGINE()->s triangles from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
  * \param values A tightly-packed array of vertex position (e.g. x,y), texture coordinates (e.g. s,t), and color (e.g. r,g,b,a) values.  Texture coordinates and color values are expected to be already
  * normalized to 0.0 - 1.0.  Pass NULL to render with only custom shader attributes. \param indices If not NULL, this is used to specify which vertices to use and in what order (i.e. it indexes the
  * vertices in the 'values' array). \param flags Bit flags to control the interpretation of the 'values' array parameters.
  */
 void R_TriangleBatch(R_Image *image, R_Target *target, unsigned short num_vertices, float *values, unsigned int num_indices, unsigned short *indices, R_BatchFlagEnum flags);
 
-/*! Renders triangles from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
+/*! ENGINE()->s triangles from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
  * \param values A tightly-packed array of vertex position (e.g. x,y), texture coordinates (e.g. s,t), and color (e.g. r,g,b,a) values.  Texture coordinates and color values are expected to be already
  * normalized to 0.0 - 1.0 (or 0 - 255 for 8-bit color components).  Pass NULL to render with only custom shader attributes. \param indices If not NULL, this is used to specify which vertices to use
  * and in what order (i.e. it indexes the vertices in the 'values' array). \param flags Bit flags to control the interpretation of the 'values' array parameters.
  */
 void R_TriangleBatchX(R_Image *image, R_Target *target, unsigned short num_vertices, void *values, unsigned int num_indices, unsigned short *indices, R_BatchFlagEnum flags);
 
-/*! Renders primitives from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
+/*! ENGINE()->s primitives from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
  * \param primitive_type The kind of primitive to render.
  * \param values A tightly-packed array of vertex position (e.g. x,y), texture coordinates (e.g. s,t), and color (e.g. r,g,b,a) values.  Texture coordinates and color values are expected to be already
  * normalized to 0.0 - 1.0 (or 0 - 255 for 8-bit color components).  Pass NULL to render with only custom shader attributes. \param indices If not NULL, this is used to specify which vertices to use
@@ -1332,7 +1332,7 @@ void R_TriangleBatchX(R_Image *image, R_Target *target, unsigned short num_verti
 void R_PrimitiveBatch(R_Image *image, R_Target *target, R_PrimitiveEnum primitive_type, unsigned short num_vertices, float *values, unsigned int num_indices, unsigned short *indices,
                       R_BatchFlagEnum flags);
 
-/*! Renders primitives from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
+/*! ENGINE()->s primitives from the given set of vertices.  This lets you render arbitrary geometry.  It is a direct path to the GPU, so the format is different than typical SDL_gpu calls.
  * \param primitive_type The kind of primitive to render.
  * \param values A tightly-packed array of vertex position (e.g. x,y), texture coordinates (e.g. s,t), and color (e.g. r,g,b,a) values.  Texture coordinates and color values are expected to be already
  * normalized to 0.0 - 1.0 (or 0 - 255 for 8-bit color components).  Pass NULL to render with only custom shader attributes. \param indices If not NULL, this is used to specify which vertices to use
@@ -1347,13 +1347,13 @@ void R_FlushBlitBuffer(void);
 /*! Updates the given target's associated window.  For non-context targets (e.g. image targets), this will flush the blit buffer. */
 void R_Flip(R_Target *target);
 
-// End of Rendering
+// End of ENGINE()->ing
 /*! @} */
 
 /*! \ingroup Shapes
  *  @{ */
 
-/*! Renders a colored point.
+/*! ENGINE()->s a colored point.
  * \param target The destination render target
  * \param x x-coord of the point
  * \param y y-coord of the point
@@ -1361,7 +1361,7 @@ void R_Flip(R_Target *target);
  */
 void R_Pixel(R_Target *target, float x, float y, ME_Color color);
 
-/*! Renders a colored line.
+/*! ENGINE()->s a colored line.
  * \param target The destination render target
  * \param x1 x-coord of starting point
  * \param y1 y-coord of starting point
@@ -1371,7 +1371,7 @@ void R_Pixel(R_Target *target, float x, float y, ME_Color color);
  */
 void R_Line(R_Target *target, float x1, float y1, float x2, float y2, ME_Color color);
 
-/*! Renders a colored arc curve (circle segment).
+/*! ENGINE()->s a colored arc curve (circle segment).
  * \param target The destination render target
  * \param x x-coord of center point
  * \param y y-coord of center point
@@ -1382,7 +1382,7 @@ void R_Line(R_Target *target, float x1, float y1, float x2, float y2, ME_Color c
  */
 void R_Arc(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color);
 
-/*! Renders a colored filled arc (circle segment / pie piece).
+/*! ENGINE()->s a colored filled arc (circle segment / pie piece).
  * \param target The destination render target
  * \param x x-coord of center point
  * \param y y-coord of center point
@@ -1393,7 +1393,7 @@ void R_Arc(R_Target *target, float x, float y, float radius, float start_angle, 
  */
 void R_ArcFilled(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color);
 
-/*! Renders a colored circle outline.
+/*! ENGINE()->s a colored circle outline.
  * \param target The destination render target
  * \param x x-coord of center point
  * \param y y-coord of center point
@@ -1402,7 +1402,7 @@ void R_ArcFilled(R_Target *target, float x, float y, float radius, float start_a
  */
 void R_Circle(R_Target *target, float x, float y, float radius, ME_Color color);
 
-/*! Renders a colored filled circle.
+/*! ENGINE()->s a colored filled circle.
  * \param target The destination render target
  * \param x x-coord of center point
  * \param y y-coord of center point
@@ -1411,7 +1411,7 @@ void R_Circle(R_Target *target, float x, float y, float radius, ME_Color color);
  */
 void R_CircleFilled(R_Target *target, float x, float y, float radius, ME_Color color);
 
-/*! Renders a colored ellipse outline.
+/*! ENGINE()->s a colored ellipse outline.
  * \param target The destination render target
  * \param x x-coord of center point
  * \param y y-coord of center point
@@ -1422,7 +1422,7 @@ void R_CircleFilled(R_Target *target, float x, float y, float radius, ME_Color c
  */
 void R_Ellipse(R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color);
 
-/*! Renders a colored filled ellipse.
+/*! ENGINE()->s a colored filled ellipse.
  * \param target The destination render target
  * \param x x-coord of center point
  * \param y y-coord of center point
@@ -1433,7 +1433,7 @@ void R_Ellipse(R_Target *target, float x, float y, float rx, float ry, float deg
  */
 void R_EllipseFilled(R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color);
 
-/*! Renders a colored annular sector outline (ring segment).
+/*! ENGINE()->s a colored annular sector outline (ring segment).
  * \param target The destination render target
  * \param x x-coord of center point
  * \param y y-coord of center point
@@ -1445,7 +1445,7 @@ void R_EllipseFilled(R_Target *target, float x, float y, float rx, float ry, flo
  */
 void R_Sector(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color);
 
-/*! Renders a colored filled annular sector (ring segment).
+/*! ENGINE()->s a colored filled annular sector (ring segment).
  * \param target The destination render target
  * \param x x-coord of center point
  * \param y y-coord of center point
@@ -1457,7 +1457,7 @@ void R_Sector(R_Target *target, float x, float y, float inner_radius, float oute
  */
 void R_SectorFilled(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color);
 
-/*! Renders a colored triangle outline.
+/*! ENGINE()->s a colored triangle outline.
  * \param target The destination render target
  * \param x1 x-coord of first point
  * \param y1 y-coord of first point
@@ -1469,7 +1469,7 @@ void R_SectorFilled(R_Target *target, float x, float y, float inner_radius, floa
  */
 void R_Tri(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color);
 
-/*! Renders a colored filled triangle.
+/*! ENGINE()->s a colored filled triangle.
  * \param target The destination render target
  * \param x1 x-coord of first point
  * \param y1 y-coord of first point
@@ -1481,7 +1481,7 @@ void R_Tri(R_Target *target, float x1, float y1, float x2, float y2, float x3, f
  */
 void R_TriFilled(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color);
 
-/*! Renders a colored rectangle outline.
+/*! ENGINE()->s a colored rectangle outline.
  * \param target The destination render target
  * \param x1 x-coord of top-left corner
  * \param y1 y-coord of top-left corner
@@ -1491,14 +1491,14 @@ void R_TriFilled(R_Target *target, float x1, float y1, float x2, float y2, float
  */
 void R_Rectangle(R_Target *target, float x1, float y1, float x2, float y2, ME_Color color);
 
-/*! Renders a colored rectangle outline.
+/*! ENGINE()->s a colored rectangle outline.
  * \param target The destination render target
  * \param rect The rectangular area to draw
  * \param color The color of the shape to render
  */
 void R_Rectangle2(R_Target *target, ME_rect rect, ME_Color color);
 
-/*! Renders a colored filled rectangle.
+/*! ENGINE()->s a colored filled rectangle.
  * \param target The destination render target
  * \param x1 x-coord of top-left corner
  * \param y1 y-coord of top-left corner
@@ -1508,14 +1508,14 @@ void R_Rectangle2(R_Target *target, ME_rect rect, ME_Color color);
  */
 void R_RectangleFilled(R_Target *target, float x1, float y1, float x2, float y2, ME_Color color);
 
-/*! Renders a colored filled rectangle.
+/*! ENGINE()->s a colored filled rectangle.
  * \param target The destination render target
  * \param rect The rectangular area to draw
  * \param color The color of the shape to render
  */
 void R_RectangleFilled2(R_Target *target, ME_rect rect, ME_Color color);
 
-/*! Renders a colored rounded (filleted) rectangle outline.
+/*! ENGINE()->s a colored rounded (filleted) rectangle outline.
  * \param target The destination render target
  * \param x1 x-coord of top-left corner
  * \param y1 y-coord of top-left corner
@@ -1526,7 +1526,7 @@ void R_RectangleFilled2(R_Target *target, ME_rect rect, ME_Color color);
  */
 void R_RectangleRound(R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color);
 
-/*! Renders a colored rounded (filleted) rectangle outline.
+/*! ENGINE()->s a colored rounded (filleted) rectangle outline.
  * \param target The destination render target
  * \param rect The rectangular area to draw
  * \param radius The radius of the corners
@@ -1534,7 +1534,7 @@ void R_RectangleRound(R_Target *target, float x1, float y1, float x2, float y2, 
  */
 void R_RectangleRound2(R_Target *target, ME_rect rect, float radius, ME_Color color);
 
-/*! Renders a colored filled rounded (filleted) rectangle.
+/*! ENGINE()->s a colored filled rounded (filleted) rectangle.
  * \param target The destination render target
  * \param x1 x-coord of top-left corner
  * \param y1 y-coord of top-left corner
@@ -1545,7 +1545,7 @@ void R_RectangleRound2(R_Target *target, ME_rect rect, float radius, ME_Color co
  */
 void R_RectangleRoundFilled(R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color);
 
-/*! Renders a colored filled rounded (filleted) rectangle.
+/*! ENGINE()->s a colored filled rounded (filleted) rectangle.
  * \param target The destination render target
  * \param rect The rectangular area to draw
  * \param radius The radius of the corners
@@ -1553,7 +1553,7 @@ void R_RectangleRoundFilled(R_Target *target, float x1, float y1, float x2, floa
  */
 void R_RectangleRoundFilled2(R_Target *target, ME_rect rect, float radius, ME_Color color);
 
-/*! Renders a colored polygon outline.  The vertices are expected to define a convex polygon.
+/*! ENGINE()->s a colored polygon outline.  The vertices are expected to define a convex polygon.
  * \param target The destination render target
  * \param num_vertices Number of vertices (x and y pairs)
  * \param vertices An array of vertex positions stored as interlaced x and y coords, e.g. {x1, y1, x2, y2, ...}
@@ -1561,7 +1561,7 @@ void R_RectangleRoundFilled2(R_Target *target, ME_rect rect, float radius, ME_Co
  */
 void R_Polygon(R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color);
 
-/*! Renders a colored sequence of line segments.
+/*! ENGINE()->s a colored sequence of line segments.
  * \param target The destination render target
  * \param num_vertices Number of vertices (x and y pairs)
  * \param vertices An array of vertex positions stored as interlaced x and y coords, e.g. {x1, y1, x2, y2, ...}
@@ -1570,7 +1570,7 @@ void R_Polygon(R_Target *target, unsigned int num_vertices, float *vertices, ME_
  */
 void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color, bool close_loop);
 
-/*! Renders a colored filled polygon.  The vertices are expected to define a convex polygon.
+/*! ENGINE()->s a colored filled polygon.  The vertices are expected to define a convex polygon.
  * \param target The destination render target
  * \param num_vertices Number of vertices (x and y pairs)
  * \param vertices An array of vertex positions stored as interlaced x and y coords, e.g. {x1, y1, x2, y2, ...}

@@ -34,9 +34,9 @@ inline void CLGMRandom::SetSeed(double s) {
 }
 
 inline double CLGMRandom::Next() {
-    ME_ASSERT_E(seed);
-    //  m = 2147483647 = 2^31 - 1; a = 16807;
-    //  127773 = m div a; 2836 = m mod a
+    // ME_ASSERT_E(seed);
+    //   m = 2147483647 = 2^31 - 1; a = 16807;
+    //   127773 = m div a; 2836 = m mod a
     long iseed = (long)seed;
     long hi = iseed / 127773L;       // integer division
     long lo = iseed - hi * 127773L;  // modulo

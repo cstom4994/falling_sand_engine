@@ -38,8 +38,6 @@ void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::end
 extern int luaopen_surface(lua_State *L);
 extern int luaopen_surface_color(lua_State *L);
 
-IMPLENGINE();
-
 struct MyStruct {
     void (*func1)(std::string);
     void (*func2)(std::string);
@@ -239,8 +237,8 @@ static void InitLua(LuaCore *lc) {
 
     lc->s_lua["METADOT_RESLOC"] = ME::LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
     lc->s_lua["GetSurfaceFromTexture"] = ME::LuaWrapper::function([](Texture *tex) { return tex->surface; });
-    lc->s_lua["GetWindowH"] = ME::LuaWrapper::function([]() { return Screen.windowHeight; });
-    lc->s_lua["GetWindowW"] = ME::LuaWrapper::function([]() { return Screen.windowWidth; });
+    lc->s_lua["GetWindowH"] = ME::LuaWrapper::function([]() { return ENGINE()->windowHeight; });
+    lc->s_lua["GetWindowW"] = ME::LuaWrapper::function([]() { return ENGINE()->windowWidth; });
 
     REGISTER_LUAFUNC(SDL_FreeSurface);
     REGISTER_LUAFUNC(R_SetImageFilter);

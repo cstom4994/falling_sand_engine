@@ -4,8 +4,6 @@
 
 #include "engine/engine.h"
 
-IMPLENGINE();
-
 #pragma region Shaders
 
 void CrtShader::Update(int w, int h) {

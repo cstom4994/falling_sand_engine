@@ -13,10 +13,6 @@
 #include "game.hpp"
 #include "game_resources.hpp"
 
-/////////////////////////////////External data//////////////////////////////////
-
-IMPLENGINE();
-
 ////////////////////////////////////////////////////////////////////////////////
 
 unsigned char initializedEngine = 0;
@@ -33,7 +29,7 @@ int InitEngine(void (*InitCppReflection)()) {
 
     METADOT_INFO("Initializing Engine...");
 
-    bool init = InitTime() || InitFilesystem() || InitScreen(960, 540, 1, 60) || InitCore() || metadot_initwindow();
+    bool init = InitTime() || InitFilesystem() || InitScreen(960, 540, 1, 60) || InitCore() || ME_initwindow();
 
     if (init) {
         EndEngine(1);
@@ -75,13 +71,13 @@ void EndEngine(int errorOcurred) {
     }
 }
 void DrawSplash() {
-    R_Clear(Render.target);
-    R_Flip(Render.target);
+    R_Clear(ENGINE()->target);
+    R_Flip(ENGINE()->target);
     Texture *splashSurf = LoadTexture("data/assets/ui/splash.png");
     R_Image *splashImg = R_CopyImageFromSurface(splashSurf->surface);
     R_SetImageFilter(splashImg, R_FILTER_NEAREST);
-    R_BlitRect(splashImg, NULL, Render.target, NULL);
+    R_BlitRect(splashImg, NULL, ENGINE()->target, NULL);
     R_FreeImage(splashImg);
     DestroyTexture(splashSurf);
-    R_Flip(Render.target);
+    R_Flip(ENGINE()->target);
 }

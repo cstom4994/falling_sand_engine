@@ -15,8 +15,6 @@
 #define CUTE_ASEPRITE_IMPLEMENTATION
 #include "libs/cute/cute_aseprite.h"
 
-IMPLENGINE();
-
 void InitTexture(TexturePack *tex) {
     ME_ASSERT_E(tex);
 

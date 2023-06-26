@@ -1976,16 +1976,16 @@ void World::renderCells(unsigned char **texture) {
         (*texture)[offset + 1] = (color >> 8) & 0xff;                    // g
         (*texture)[offset + 0] = (color >> 16) & 0xff;                   // r
         (*texture)[offset + 3] = (u8)(cur->tile.mat->alpha * alphaMod);  // a
-        // SDL_SetRenderDrawColor(renderer, (cur->tile.color >> 16) & 0xff, (cur->tile.color >> 8) & 0xff, (cur->tile.color >> 0) & 0xff, (u8)(cur->tile.mat->alpha * alphaMod));
-        // SDL_RenderDrawPoint(renderer, (int)cur->x, (int)cur->y);
+        // SDL_SetENGINE()->DrawColor(renderer, (cur->tile.color >> 16) & 0xff, (cur->tile.color >> 8) & 0xff, (cur->tile.color >> 0) & 0xff, (u8)(cur->tile.mat->alpha * alphaMod));
+        // SDL_ENGINE()->DrawPoint(renderer, (int)cur->x, (int)cur->y);
     }
 }
 
 void World::tickCells() {
 
     /*C_Rect* fr = new C_Rect{ 0, 0, width, height };
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_RenderClear(renderer);
+    SDL_SetENGINE()->DrawColor(renderer, 0, 0, 0, 0);
+    SDL_ENGINE()->Clear(renderer);
     delete fr;*/
 
     auto func = [&](CellData *cur) {

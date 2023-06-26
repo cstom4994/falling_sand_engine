@@ -15,8 +15,6 @@
 #include "datapackage.h"
 #include "engine/engine.h"
 
-IMPLENGINE();
-
 bool InitFilesystem() {
 
     auto currentDir = std::filesystem::path(std::filesystem::current_path());
@@ -25,8 +23,8 @@ bool InitFilesystem() {
 
     for (int i = 0; i < 3; ++i) {
         if (std::filesystem::exists(currentDir / "Data")) {
-            Core.gamepath = normalizePath(currentDir.string()).c_str();
-            METADOT_INFO(std::format("Game data path detected: {0} (Base: {1})", Core.gamepath.c_str(), std::filesystem::current_path().string().c_str()).c_str());
+            ENGINE()->gamepath = normalizePath(currentDir.string()).c_str();
+            METADOT_INFO(std::format("Game data path detected: {0} (Base: {1})", ENGINE()->gamepath, std::filesystem::current_path().string().c_str()).c_str());
 
             // if (metadot_is_error(err)) {
             //     ME_ASSERT_E(0);

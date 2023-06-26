@@ -15,12 +15,6 @@
 #include "engine/engine_core.h"
 #include "engine/renderer/gpu.hpp"
 
-#define IMPLENGINE()             \
-    extern engine_core Core;     \
-    extern engine_render Render; \
-    extern windows Screen;       \
-    extern engine_time Time
-
 // Engine functions called from main
 int InitEngine(void (*InitCppReflection)());
 void EngineUpdate();
