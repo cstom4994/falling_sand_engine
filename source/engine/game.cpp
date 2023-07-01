@@ -40,6 +40,8 @@
 #include "engine/utils/promise.hpp"
 #include "engine/utils/utility.hpp"
 #include "engine/utils/utils.hpp"
+#include "game/items.hpp"
+#include "game/player.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
@@ -122,7 +124,7 @@ int Game::init(int argc, char *argv[]) {
     GameIsolate_.ui = ME::create_ref<UISystem>(4);
     GameIsolate_.systemList.push_back(GameIsolate_.ui);
 
-    GameIsolate_.shaderworker = ME::create_ref<ShaderWorkerSystem>(6, SystemFlags::SystemFlags_Render);
+    GameIsolate_.shaderworker = ME::create_ref<ShaderWorkerSystem>(6, SystemFlags::Render);
     GameIsolate_.systemList.push_back(GameIsolate_.shaderworker);
 
     GameIsolate_.backgrounds = ME::create_ref<BackgroundSystem>(8);
@@ -135,7 +137,7 @@ int Game::init(int argc, char *argv[]) {
     for (auto &s : GameIsolate_.systemList) {
         s->RegisterLua(Scripting::get_singleton_ptr()->Lua->s_lua);
         s->Create();
-        // if (!s->getFlag(SystemFlags::SystemFlags_ImGui)) {
+        // if (!s->getFlag(SystemFlags::ImGui)) {
         //     s->Create();
         // }
     }
@@ -976,21 +978,21 @@ int Game::run(int argc, char *argv[]) {
 
 #pragma endregion GameTick
 
-#pragma region ENGINE()->
+#pragma region Render
         // render
-        ME_profiler_scope_auto("ENGINE()->ing");
+        ME_profiler_scope_auto("Rendering");
 
         ENGINE()->target = ENGINE()->realTarget;
         R_Clear(ENGINE()->target);
 
         {
-            ME_profiler_scope_auto("ENGINE()->Early");
+            ME_profiler_scope_auto("RenderEarly");
             renderEarly();
             ENGINE()->target = ENGINE()->realTarget;
         }
 
         {
-            ME_profiler_scope_auto("ENGINE()->Late");
+            ME_profiler_scope_auto("RenderLate");
             renderLate();
             ENGINE()->target = ENGINE()->realTarget;
         }
@@ -1194,7 +1196,7 @@ int Game::run(int argc, char *argv[]) {
 
         R_Flip(ENGINE()->target);
 
-#pragma endregion ENGINE()->
+#pragma endregion Render
 
         EngineUpdateEnd();
     }
@@ -1837,7 +1839,7 @@ void Game::tick() {
         int i = 1;
 
         results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
-            // SDL_SetENGINE()->Target(renderer, textureCells);
+            // SDL_SetRenderTarget(renderer, textureCells);
             void *cellPixels = TexturePack_.pixelsCells_ar;
 
             memset(cellPixels, 0, (size_t)GameIsolate_.world->width * GameIsolate_.world->height * 4);
@@ -1845,7 +1847,7 @@ void Game::tick() {
             GameIsolate_.world->renderCells((u8 **)&cellPixels);
             GameIsolate_.world->tickCells();
 
-            // SDL_SetENGINE()->Target(renderer, NULL);
+            // SDL_SetRenderTarget(renderer, NULL);
         }));
 
         if (GameIsolate_.world->readyToMerge.size() == 0) {
@@ -1919,7 +1921,7 @@ void Game::tick() {
                         }
                     }
 
-                    if (!found) {
+                    if (!found && GameIsolate_.world->tiles != NULL) {
                         if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->id == MaterialsList::GENERIC_AIR.id) {
                             cur->tiles[tx + ty * cur->matWidth] = Tiles_NOTHING;
                         }
@@ -3124,8 +3126,8 @@ void Game::renderOverlays() {
 
     if (GameIsolate_.globaldef.draw_load_zones) {
         ME_rect r2m = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->meshZone.x * ENGINE()->render_scale),
-                              (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->meshZone.y * ENGINE()->render_scale), (f32)(GameIsolate_.world->meshZone.w * ENGINE()->render_scale),
-                              (f32)(GameIsolate_.world->meshZone.h * ENGINE()->render_scale)};
+                              (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->meshZone.y * ENGINE()->render_scale),
+                              (f32)(GameIsolate_.world->meshZone.w * ENGINE()->render_scale), (f32)(GameIsolate_.world->meshZone.h * ENGINE()->render_scale)};
 
         R_Rectangle2(ENGINE()->target, r2m, {0x00, 0xff, 0xff, 0xff});
         ME_draw_text_plate(ENGINE()->target, CC("刚体物理更新区域"), {255, 255, 255, 255}, r2m.x + 4, r2m.y + 4);
@@ -3140,22 +3142,23 @@ void Game::renderOverlays() {
         ME_rect r3 = ME_rect{(f32)(0), (f32)(0), (f32)((global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale)), (f32)(ENGINE()->windowHeight)};
         R_Rectangle2(ENGINE()->target, r3, col);
 
-        ME_rect r4 =
-                ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale + GameIsolate_.world->tickZone.w * ENGINE()->render_scale), (f32)(0),
-                        (f32)((ENGINE()->windowWidth) -
-                              (global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale + GameIsolate_.world->tickZone.w * ENGINE()->render_scale)),
-                        (f32)(ENGINE()->windowHeight)};
+        ME_rect r4 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale + GameIsolate_.world->tickZone.w * ENGINE()->render_scale),
+                             (f32)(0),
+                             (f32)((ENGINE()->windowWidth) -
+                                   (global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale + GameIsolate_.world->tickZone.w * ENGINE()->render_scale)),
+                             (f32)(ENGINE()->windowHeight)};
         R_Rectangle2(ENGINE()->target, r4, col);
 
-        ME_rect r5 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale), (f32)(0),
-                             (f32)(GameIsolate_.world->tickZone.w * ENGINE()->render_scale), (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale)};
+        ME_rect r5 =
+                ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale), (f32)(0),
+                        (f32)(GameIsolate_.world->tickZone.w * ENGINE()->render_scale), (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale)};
         R_Rectangle2(ENGINE()->target, r5, col);
 
         ME_rect r6 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale),
                              (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale + GameIsolate_.world->tickZone.h * ENGINE()->render_scale),
                              (f32)(GameIsolate_.world->tickZone.w * ENGINE()->render_scale),
-                             (f32)(ENGINE()->windowHeight -
-                                   (global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale + GameIsolate_.world->tickZone.h * ENGINE()->render_scale))};
+                             (f32)(ENGINE()->windowHeight - (global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale +
+                                                             GameIsolate_.world->tickZone.h * ENGINE()->render_scale))};
         R_Rectangle2(ENGINE()->target, r6, col);
 
         col = {0x00, 0xff, 0x00, 0xff};

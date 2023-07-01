@@ -86,11 +86,10 @@ static_inline void get_target_drawable_dimensions(R_Target *target, int *w, int 
 #endif
 
 // Workaround for Intel HD glVertexAttrib() bug.
-#ifdef R_USE_OPENGL
+
 // FIXME: This should probably exist in context storage, as I expect it to be a problem across contexts.
 static bool apply_Intel_attrib_workaround = false;
 static bool vendor_is_Intel = false;
-#endif
 
 static SDL_PixelFormat *AllocFormat(GLenum glFormat);
 static void FreeFormat(SDL_PixelFormat *format);
@@ -99,15 +98,11 @@ static char shader_message[256];
 
 static_inline void fast_upload_texture(const void *pixels, ME_rect update_rect, u32 format, int alignment, int row_length) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
-#if defined(R_USE_OPENGL) || R_GLES_MAJOR_VERSION > 2
     glPixelStorei(GL_UNPACK_ROW_LENGTH, row_length);
-#endif
 
     glTexSubImage2D(GL_TEXTURE_2D, 0, (GLint)update_rect.x, (GLint)update_rect.y, (GLsizei)update_rect.w, (GLsizei)update_rect.h, format, GL_UNSIGNED_BYTE, pixels);
 
-#if defined(R_USE_OPENGL) || R_GLES_MAJOR_VERSION > 2
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-#endif
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
 
@@ -153,30 +148,17 @@ void (*slow_upload_texture)(const unsigned char *pixels, ME_rect update_rect, u3
 
 static_inline void upload_texture(const void *pixels, ME_rect update_rect, u32 format, int alignment, int row_length, unsigned int pitch, int bytes_per_pixel) {
     (void)pitch;
-#if defined(R_USE_OPENGL) || R_GLES_MAJOR_VERSION > 2
     (void)bytes_per_pixel;
     fast_upload_texture(pixels, update_rect, format, alignment, row_length);
-#else
-    if (row_length == update_rect.w)
-        fast_upload_texture(pixels, update_rect, format, alignment, row_length);
-    else
-        slow_upload_texture(pixels, update_rect, format, alignment, pitch, bytes_per_pixel);
-
-#endif
 }
 
 static_inline void upload_new_texture(void *pixels, ME_rect update_rect, u32 format, int alignment, int row_length, int bytes_per_pixel) {
-#if defined(R_USE_OPENGL) || R_GLES_MAJOR_VERSION > 2
     (void)bytes_per_pixel;
     glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, row_length);
     glTexImage2D(GL_TEXTURE_2D, 0, format, (GLsizei)update_rect.w, (GLsizei)update_rect.h, 0, format, GL_UNSIGNED_BYTE, pixels);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-#else
-    glTexImage2D(GL_TEXTURE_2D, 0, format, (GLsizei)update_rect.w, (GLsizei)update_rect.h, 0, format, GL_UNSIGNED_BYTE, NULL);
-    upload_texture(pixels, update_rect, format, alignment, row_length, row_length * bytes_per_pixel, bytes_per_pixel);
-#endif
 }
 
 // Define intermediates for FBO functions in case we only have EXT or OES FBO support.
@@ -4759,9 +4741,7 @@ void Flip(R_Renderer *renderer, R_Target *target) {
         SDL_GL_SwapWindow(SDL_GetWindowFromID(renderer->current_context_target->context->windowID));
     }
 
-#ifdef R_USE_OPENGL
     if (vendor_is_Intel) apply_Intel_attrib_workaround = true;
-#endif
 }
 
 // Shader API

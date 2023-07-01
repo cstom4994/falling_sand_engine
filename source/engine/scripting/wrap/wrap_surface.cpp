@@ -1,10 +1,10 @@
 
-#include "engine/utils/utility.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/lua_wrapper_ext.hpp"
 #include "engine/ui/surface.h"
 #include "engine/ui/surface_gl.h"
 #include "engine/ui/ui.hpp"
+#include "engine/utils/utility.hpp"
 
 LBIND_TYPE(lbT_Context, "Surface.Context");
 LBIND_TYPE(lbT_Image, "Surface.Image");

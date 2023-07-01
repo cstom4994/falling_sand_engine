@@ -8,13 +8,13 @@ vec2 = { x = 0, y = 0, class = "vec2" }
 
 setmetatable(vec2, vec2)
 
-local fields = {}
+local vec_fields = {}
 
 vec2.__index = function(t, k)
     local var = rawget(vec2, k)
 
     if var == nil then
-        var = rawget(fields, k)
+        var = rawget(vec_fields, k)
 
         if var ~= nil then return var(t) end
     end
@@ -138,9 +138,9 @@ vec2.fromAngle = function(angle)
 end
 function VEC2(x, y) return vec2.new(x, y) end
 
-fields.magnitude = vec2.magnitude
-fields.normalized = vec2.normalize
-fields.sqrMagnitude = vec2.sqrMagnitude
+vec_fields.magnitude = vec2.magnitude
+vec_fields.normalized = vec2.normalize
+vec_fields.sqrMagnitude = vec2.sqrMagnitude
 
 -- Vector3====================================================================
 vec3 = {
@@ -152,13 +152,13 @@ vec3 = {
 
 setmetatable(vec3, vec3)
 
-local fields = {}
+local vec_fields = {}
 
 vec3.__index = function(t, k)
     local var = rawget(vec3, k)
 
     if var == nil then
-        var = rawget(fields, k)
+        var = rawget(vec_fields, k)
 
         if var ~= nil then return var(t) end
     end
@@ -292,9 +292,9 @@ vec3.__eq =
 function(va, d) return va.x == d.x and va.y == d.y and va.z == d.z end
 function VEC3(x, y, z) return vec3.new(x, y, z) end
 
-fields.magnitude = vec3.magnitude
-fields.normalized = vec3.normalize
-fields.sqrMagnitude = vec3.sqrMagnitude
+vec_fields.magnitude = vec3.magnitude
+vec_fields.normalized = vec3.normalize
+vec_fields.sqrMagnitude = vec3.sqrMagnitude
 
 -- Vector4====================================================================
 vec4 = {
@@ -306,13 +306,13 @@ vec4 = {
 
 setmetatable(vec4, vec4)
 
-local fields = {}
+local vec_fields = {}
 
 vec4.__index = function(t, k)
     local var = rawget(vec4, k)
 
     if var == nil then
-        var = rawget(fields, k)
+        var = rawget(vec_fields, k)
 
         if var ~= nil then return var(t) end
     end
@@ -460,6 +460,6 @@ vec4.__eq = function(va, d)
 end
 function VEC4(x, y, z, w) return vec4.new(x, y, z, w) end
 
-fields.magnitude = vec4.magnitude
-fields.normalized = vec4.normalize
-fields.sqrMagnitude = vec4.sqrMagnitude
+vec_fields.magnitude = vec4.magnitude
+vec_fields.normalized = vec4.normalize
+vec_fields.sqrMagnitude = vec4.sqrMagnitude

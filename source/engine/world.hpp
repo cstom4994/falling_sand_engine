@@ -15,6 +15,7 @@
 #include "engine/ecs/ecs.hpp"
 #include "engine/physics/box2d.h"
 #include "engine/utils/utility.hpp"
+#include "game/player.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
 #include "libs/fastnoise/fastnoise.h"

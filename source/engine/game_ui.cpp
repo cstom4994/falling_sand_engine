@@ -19,6 +19,8 @@
 #include "engine/ui/ui.hpp"
 #include "engine/utils/utility.hpp"
 #include "game.hpp"
+#include "game/items.hpp"
+#include "game/player.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "libs/imgui/imgui.h"
@@ -165,7 +167,7 @@ void OptionsUI__DrawVideo(Game *game) {
     ImGui::Unindent(4);
     ImGui::Separator();
 
-    ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "ENGINE()->ing");
+    ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "Rendering");
     ImGui::Indent(4);
 
     if (ImGui::Checkbox("高清贴图", &global.game->GameIsolate_.globaldef.hd_objects)) {

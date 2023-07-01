@@ -15,19 +15,20 @@ local safefunc = sandbox.protect([[
 
 safefunc()
 
-runf("Script:vec.lua")
+autoload("LUA::vec.lua")
+
 METADOT_INFO(i18n("loaded_vec"))
 
 content = i18n("welcome")
 
 add_packagepath(METADOT_RESLOC("data/scripts/samples"))
 
--- runf("Script:tests/test_ffi.lua")
--- runf("Script:tests/test_lz4.lua")
--- runf("Script:tests/test_csv.lua")
--- runf("Script:tests/test_p1.lua")
--- runf("Script:tests/test_cs.lua")
--- runf("Script:tests/test_string.lua")
+-- autoload("LUA::tests/test_ffi.lua")
+-- autoload("LUA::tests/test_lz4.lua")
+-- autoload("LUA::tests/test_csv.lua")
+-- autoload("LUA::tests/test_p1.lua")
+-- autoload("LUA::tests/test_cs.lua")
+-- autoload("LUA::tests/test_string.lua")
 
 function starts_with(str, start)
 	return str:sub(1, #start) == start

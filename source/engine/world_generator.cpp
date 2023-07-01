@@ -315,8 +315,8 @@ void DefaultGenerator::generateChunk(World *world, Chunk *ch) {
 }
 
 std::vector<Populator *> DefaultGenerator::getPopulators() {
+    return {new CavePopulator(), new OrePopulator(), new CobblePopulator()};
     // return {new CavePopulator(), new OrePopulator(), new CobblePopulator(), new TreePopulator()};
-    return {};
 }
 
 #pragma endregion
@@ -334,7 +334,6 @@ int myrand() { return random.Random(0, 2147483645 - 1); }
 
 #define STB_HBWANG_IMPLEMENTATION
 #include "libs/external/stb_herringbone_wang_tile.h"
-
 #include "libs/external/stb_image.h"
 #include "libs/external/stb_image_write.h"
 

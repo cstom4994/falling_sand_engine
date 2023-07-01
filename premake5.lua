@@ -93,6 +93,7 @@ do
     debugdir "output/../"
 
     files {"source/engine/**.cpp", "source/engine/**.c", "source/engine/**.h", "source/engine/**.hpp"}
+    files {"source/game/**.cpp", "source/game/**.c", "source/game/**.h", "source/game/**.hpp"}
 
     links {"MetaDotLibs", "SDL2", "ffi", mono_libs, win32_libs}
 end

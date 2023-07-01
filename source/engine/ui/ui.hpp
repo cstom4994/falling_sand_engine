@@ -14,6 +14,7 @@
 #include "engine/renderer/renderer_opengl.h"
 #include "engine/ui/imgui_impl.hpp"
 #include "engine/ui/imgui_layer.hpp"
+#include "game/player.hpp"
 
 typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement, windowElement, listBoxElement, inputBoxElement } ElementType;
 

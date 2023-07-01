@@ -7,29 +7,29 @@
 #include <string>
 #include <utility>
 
-#include "engine/utils/property.hpp"
 #include "engine/scripting/scripting.hpp"
 #include "engine/ui/imgui_helper.hpp"
+#include "engine/utils/property.hpp"
 
 struct Biome;
 
 MAKE_ENUM_FLAGS(SystemFlags, int){
-        SystemFlags_Default = 1 << 0,
-        SystemFlags_GamePlay = 1 << 1,
-        SystemFlags_ImGui = 1 << 2,
-        SystemFlags_Render = 1 << 3,
+        Default = 1 << 0,
+        GamePlay = 1 << 1,
+        ImGui = 1 << 2,
+        Render = 1 << 3,
 };
 
 class IGameSystem {
 protected:
     std::string name;
-    SystemFlags flags = SystemFlags::SystemFlags_Default;
+    SystemFlags flags = SystemFlags::Default;
 
 public:
     u32 priority;
 
 public:
-    IGameSystem(u32 p = -1, SystemFlags f = SystemFlags::SystemFlags_Default, std::string n = "unknown system") {
+    IGameSystem(u32 p = -1, SystemFlags f = SystemFlags::Default, std::string n = "unknown system") {
         if (p != -1) {
             priority = p;
         }
@@ -55,7 +55,7 @@ ME_GUI_DEFINE_BEGIN(template <>, IGameSystem)
 ImGui::Text("%s %d", var.getName().c_str(), var.priority);
 ME_GUI_DEFINE_END
 
-#define REGISTER_SYSTEM(name) name(u32 p, SystemFlags f = SystemFlags::SystemFlags_Default) : IGameSystem(p, f, #name){};
+#define REGISTER_SYSTEM(name) name(u32 p, SystemFlags f = SystemFlags::Default) : IGameSystem(p, f, #name){};
 
 class GameplayScriptSystem : public IGameSystem {
 public:

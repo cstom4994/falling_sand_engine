@@ -10,11 +10,12 @@
 
 #include "engine/core/const.h"
 #include "engine/core/core.hpp"
-#include "engine/utils/property.hpp"
-#include "game_basic.hpp"
-#include "game_datastruct.hpp"
 #include "engine/meta/reflection.hpp"
 #include "engine/meta/static_relfection.hpp"
+#include "engine/utils/property.hpp"
+#include "game/player.hpp"
+#include "game_basic.hpp"
+#include "game_datastruct.hpp"
 #include "reflectionflat.hpp"
 
 #define CHUNK_DATABASE_FORMAT "ssiiiiiiiBB"

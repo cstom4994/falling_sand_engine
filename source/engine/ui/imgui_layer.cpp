@@ -37,6 +37,8 @@
 #include "engine/ui/ui.hpp"
 #include "engine/utils/utility.hpp"
 #include "engine/utils/utils.hpp"
+#include "game/items.hpp"
+#include "game/player.hpp"
 #include "libs/glad/glad.h"
 #include "libs/imgui/font_awesome.h"
 #include "libs/imgui/imgui.h"

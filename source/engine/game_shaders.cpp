@@ -3,6 +3,7 @@
 #include "game_shaders.hpp"
 
 #include "engine/engine.h"
+#include "game/player.hpp"
 
 #pragma region Shaders
 

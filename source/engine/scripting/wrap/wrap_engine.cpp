@@ -22,7 +22,6 @@
 #include "engine/core/platform.h"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/engine.h"
-#include "engine/engine_core.h"
 #include "engine/game.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"

@@ -186,7 +186,7 @@ ME_PRIVATE(ve_font_id) basic_font;
 
 void ME_fontcache::ME_fontcache_drawcmd() {
 
-    ME_profiler_scope_auto("ENGINE()->GUI.Font");
+    ME_profiler_scope_auto("RenderGUI.Font");
 
     // TODO: plz!!! optimize this method
     ME_GL_STATE_BACKUP();
@@ -324,7 +324,7 @@ void ME_fontcache::ME_fontcache_load(const void *data, size_t data_size) {
 
 void ME_fontcache::ME_fontcache_push(std::string &text, MEvec2 pos) {
 
-    ME_profiler_scope_auto("ENGINE()->GUI.Font.Post");
+    ME_profiler_scope_auto("RenderGUI.Font.Post");
 
     ve_fontcache_configure_snap(&cache, this->screen_w, this->screen_h);
 
@@ -342,7 +342,7 @@ void ME_fontcache::ME_fontcache_push(std::string &text, MEvec2 pos) {
     //                    "           •    Be backend agnostic and easy to port to any API such as Vulkan, DirectX, OpenGL.\n"
     //                    "           •    Load TTF & OTF file formats directly.\n"
     //                    "           •    Use only runtime cache with no offline calculation.\n"
-    //                    "           •    ENGINE()-> glyphs at reasonable quality at a wide range of hb_font sizes.\n"
+    //                    "           •    Render glyphs at reasonable quality at a wide range of hb_font sizes.\n"
     //                    "           •    Support a good amount of internationalisation. そうですね!\n"
     //                    "           •    Support cached text shaping with HarfBuzz with simple Latin-style fallback.\n"
     //                    "           •    Load and unload fonts at any time.\n");

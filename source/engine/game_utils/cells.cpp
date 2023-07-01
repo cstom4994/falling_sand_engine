@@ -6,6 +6,7 @@
 #include "engine/core/core.hpp"
 #include "engine/core/mathlib.hpp"
 #include "engine/game_resources.hpp"
+#include "game/player.hpp"
 
 inline float Deg2Rad(float a) { return a * 0.01745329252f; }
 
