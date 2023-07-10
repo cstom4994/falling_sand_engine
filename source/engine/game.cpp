@@ -52,6 +52,8 @@
 #include "reflectionflat.hpp"
 #include "world_generator.h"
 
+GameData g_game_data;
+
 Global global;
 
 // Prints any ME message to the console
@@ -158,7 +160,7 @@ int Game::init(int argc, char *argv[]) {
 
     // register & set up materials
     METADOT_INFO("Setting up materials...");
-    movingTiles = new u16[global.GameData_.materials_count];
+    movingTiles = new u16[GAME()->materials_count];
     debugDraw = new ME_debugdraw(ENGINE()->target);
 
     global.audio.LoadEvent("event:/World/Explode", "explode.ogg");
@@ -450,24 +452,24 @@ int Game::run(int argc, char *argv[]) {
 
     // start game loop
     METADOT_INFO("Starting game loop...");
-    global.GameData_.freeCamX = GameIsolate_.world->width / 2.0f - CHUNK_W / 2.0f;
-    global.GameData_.freeCamY = GameIsolate_.world->height / 2.0f - (int)(CHUNK_H * 0.75);
+    GAME()->freeCamX = GameIsolate_.world->width / 2.0f - CHUNK_W / 2.0f;
+    GAME()->freeCamY = GameIsolate_.world->height / 2.0f - (int)(CHUNK_H * 0.75);
     if (GameIsolate_.world->player) {
-        // global.GameData_.plPosX = pl_we->x;
-        // global.GameData_.plPosY = pl_we->y;
+        // GAME()->plPosX = pl_we->x;
+        // GAME()->plPosY = pl_we->y;
     } else {
-        global.GameData_.plPosX = global.GameData_.freeCamX;
-        global.GameData_.plPosY = global.GameData_.freeCamY;
+        GAME()->plPosX = GAME()->freeCamX;
+        GAME()->plPosY = GAME()->freeCamY;
     }
 
     SDL_Event windowEvent;
 
     ENGINE()->render_scale = 3;
-    global.GameData_.ofsX = (int)(-CHUNK_W * 4);
-    global.GameData_.ofsY = (int)(-CHUNK_H * 2.5);
+    GAME()->ofsX = (int)(-CHUNK_W * 4);
+    GAME()->ofsY = (int)(-CHUNK_H * 2.5);
 
-    global.GameData_.ofsX = (global.GameData_.ofsX - ENGINE()->windowWidth / 2) / 2 * 3 + ENGINE()->windowWidth / 2;
-    global.GameData_.ofsY = (global.GameData_.ofsY - ENGINE()->windowHeight / 2) / 2 * 3 + ENGINE()->windowHeight / 2;
+    GAME()->ofsX = (GAME()->ofsX - ENGINE()->windowWidth / 2) / 2 * 3 + ENGINE()->windowWidth / 2;
+    GAME()->ofsY = (GAME()->ofsY - ENGINE()->windowHeight / 2) / 2 * 3 + ENGINE()->windowHeight / 2;
 
     InitFPS();
     objectDelete = new u8[GameIsolate_.world->width * GameIsolate_.world->height];
@@ -518,8 +520,8 @@ int Game::run(int argc, char *argv[]) {
                 if (ControlSystem::DEBUG_DRAW->get() && !GameIsolate_.ui->UIIsMouseOnControls()) {
                     // draw material
 
-                    int x = (int)((windowEvent.motion.x - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-                    int y = (int)((windowEvent.motion.y - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+                    int x = (int)((windowEvent.motion.x - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+                    int y = (int)((windowEvent.motion.y - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
                     if (lastDrawMX == 0 && lastDrawMY == 0) {
                         lastDrawMX = x;
@@ -554,8 +556,8 @@ int Game::run(int argc, char *argv[]) {
                     // erase material
 
                     // erase from world
-                    int x = (int)((windowEvent.motion.x - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-                    int y = (int)((windowEvent.motion.y - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+                    int x = (int)((windowEvent.motion.x - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+                    int y = (int)((windowEvent.motion.y - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
                     if (lastEraseMX == 0 && lastEraseMY == 0) {
                         lastEraseMX = x;
@@ -668,15 +670,15 @@ int Game::run(int argc, char *argv[]) {
                                     pl->holdtype = Hammer;
                                     // METADOT_BUG("hammer down: {0:d} {0:d} {0:d} {0:d} {0:d}", x, y, startInd, startInd % GameIsolate_.world->width, startInd / GameIsolate_.world->width);
                                     // GameIsolate_.world->setTile(pl->hammerX, pl->hammerY,
-                                    // MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x00ff00ff));
+                                    // MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0x00ff00ff));
                                 }
 #endif
 #undef HAMMER_DEBUG_PHYSICS
                             } else if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Chisel)) {
                                 // if hovering rigidbody, open in chisel
 
-                                int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-                                int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+                                int x = (int)((mx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+                                int y = (int)((my - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
                                 std::vector<RigidBody *> rbs = GameIsolate_.world->rigidBodies;  // copy
                                 for (size_t i = 0; i < rbs.size(); i++) {
@@ -796,8 +798,8 @@ int Game::run(int argc, char *argv[]) {
                                 }
                             } else if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
                                 if (pl->holdtype == Hammer) {
-                                    int x = (int)((windowEvent.button.x - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-                                    int y = (int)((windowEvent.button.y - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+                                    int x = (int)((windowEvent.button.x - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+                                    int y = (int)((windowEvent.button.y - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
                                     int dx = pl->hammerX - x;
                                     int dy = pl->hammerY - y;
@@ -838,18 +840,18 @@ int Game::run(int argc, char *argv[]) {
                                                 return false;
                                             }
                                             hitSolidYet = true;
-                                            GameIsolate_.world->tiles[index] = MaterialInstance(&MaterialsList::GENERIC_SAND, ME_draw_darken_color(GameIsolate_.world->tiles[index].color, 0.5f));
+                                            GameIsolate_.world->tiles[index] = MaterialInstance(&GAME()->materials_list.GENERIC_SAND, ME_draw_darken_color(GameIsolate_.world->tiles[index].color, 0.5f));
                                             GameIsolate_.world->dirty[index] = true;
                                             endInd = index;
                                             nTilesChanged++;
                                             return false;
                                         });
 
-                                        // GameIsolate_.world->setTile(segSx, segSy, MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x00ff00ff));
+                                        // GameIsolate_.world->setTile(segSx, segSy, MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0x00ff00ff));
                                         if (broke) break;
                                     }
 
-                                    // GameIsolate_.world->setTile(ex, ey, MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xff0000ff));
+                                    // GameIsolate_.world->setTile(ex, ey, MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xff0000ff));
 
                                     int hx = (pl->hammerX + (endInd % GameIsolate_.world->width)) / 2;
                                     int hy = (pl->hammerY + (endInd / GameIsolate_.world->width)) / 2;
@@ -866,9 +868,9 @@ int Game::run(int argc, char *argv[]) {
                                         global.audio.PlayEvent("event:/Player/Impact");
                                     }
 
-                                    // GameIsolate_.world->setTile((int)(hx), (int)(hy), MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xffffffff));
-                                    // GameIsolate_.world->setTile((int)(hx + udy * 6), (int)(hy - udx * 6), MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xffff00ff));
-                                    // GameIsolate_.world->setTile((int)(hx - udy * 6), (int)(hy + udx * 6), MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x00ffffff));
+                                    // GameIsolate_.world->setTile((int)(hx), (int)(hy), MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xffffffff));
+                                    // GameIsolate_.world->setTile((int)(hx + udy * 6), (int)(hy - udx * 6), MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xffff00ff));
+                                    // GameIsolate_.world->setTile((int)(hx - udy * 6), (int)(hy + udx * 6), MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0x00ffffff));
                                 }
                                 pl->holdtype = None;
                             }
@@ -877,10 +879,11 @@ int Game::run(int argc, char *argv[]) {
                 } else if (windowEvent.button.button == SDL_BUTTON_RIGHT) {
                     ControlSystem::rmouse_down = false;
                     ControlSystem::rmouse_up = true;
-                    // pick up / throw item
 
-                    int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-                    int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+                    // pickup and drop items
+
+                    int x = (int)((mx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+                    int y = (int)((my - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
                     bool swapped = false;
                     std::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
@@ -888,7 +891,7 @@ int Game::run(int argc, char *argv[]) {
                         RigidBody *cur = (*rbs)[i];
 
                         bool connect = false;
-                        if (!static_cast<bool>(cur->get_surface())) continue;
+                        if (!static_cast<bool>(cur->get_surface())) continue;  // skip if it does not have surface
                         if (cur->body->IsEnabled()) {
                             f32 s = sin(-cur->body->GetAngle());
                             f32 c = cos(-cur->body->GetAngle());
@@ -1045,8 +1048,8 @@ int Game::run(int argc, char *argv[]) {
 
         if (GameIsolate_.globaldef.draw_material_info && !ImGui::GetIO().WantCaptureMouse) {
 
-            int msx = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-            int msy = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+            int msx = (int)((mx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+            int msy = (int)((my - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
             MaterialInstance tile;
 
@@ -1054,7 +1057,7 @@ int Game::run(int argc, char *argv[]) {
                 tile = GameIsolate_.world->tiles[msx + msy * GameIsolate_.world->width];
                 // Drawing::drawText(target, tile.mat->name.c_str(), font16, mx + 14, my, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
-                if (tile.mat->id == MaterialsList::GENERIC_AIR.id) {
+                if (tile.mat->id == GAME()->materials_list.GENERIC_AIR.id) {
                     std::vector<RigidBody *> *rbs = &GameIsolate_.world->rigidBodies;
 
                     for (size_t i = 0; i < rbs->size(); i++) {
@@ -1078,7 +1081,7 @@ int Game::run(int argc, char *argv[]) {
                 }
 
                 // Draw Tooltop window
-                if (tile.mat->id != MaterialsList::GENERIC_AIR.id && !GameIsolate_.ui->UIIsMouseOnControls()) {
+                if (tile.mat->id != GAME()->materials_list.GENERIC_AIR.id && !GameIsolate_.ui->UIIsMouseOnControls()) {
 
                     ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.11f, 0.11f, 0.11f, 0.4f));
                     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.00f, 1.00f, 1.00f, 0.2f));
@@ -1096,10 +1099,10 @@ int Game::run(int argc, char *argv[]) {
 
                         int ln = 0;
                         if (tile.mat->interact) {
-                            for (size_t i = 0; i < global.GameData_.materials_container.size(); i++) {
+                            for (size_t i = 0; i < GAME()->materials_container.size(); i++) {
                                 if (tile.mat->nInteractions[i] > 0) {
                                     char buff2[40];
-                                    snprintf(buff2, sizeof(buff2), "    %s", global.GameData_.materials_container[i]->name.c_str());
+                                    snprintf(buff2, sizeof(buff2), "    %s", GAME()->materials_container[i]->name.c_str());
                                     // Drawing::drawText(target, buff2, font16, mx + 14, my + 14 * ++ln, 0xff, 0xff, 0xff, ALIGN_LEFT);
                                     ImGui::Text("%s", buff2);
 
@@ -1107,10 +1110,10 @@ int Game::run(int argc, char *argv[]) {
                                         MaterialInteraction inter = tile.mat->interactions[i][j];
                                         char buff1[40];
                                         if (inter.type == INTERACT_TRANSFORM_MATERIAL) {
-                                            snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "TRANSFORM", global.GameData_.materials_container[inter.data1]->name.c_str(), inter.data2,
+                                            snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "TRANSFORM", GAME()->materials_container[inter.data1]->name.c_str(), inter.data2,
                                                      inter.ofsX, inter.ofsY);
                                         } else if (inter.type == INTERACT_SPAWN_MATERIAL) {
-                                            snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "SPAWN", global.GameData_.materials_container[inter.data1]->name.c_str(), inter.data2,
+                                            snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "SPAWN", GAME()->materials_container[inter.data1]->name.c_str(), inter.data2,
                                                      inter.ofsX, inter.ofsY);
                                         }
                                         // Drawing::drawText(target, buff1, font16, mx + 14, my + 14 * ++ln, 0xff, 0xff, 0xff, ALIGN_LEFT);
@@ -1309,20 +1312,20 @@ void Game::updateFrameEarly() {
                         int ty = xx * s + yy * c + cur->body->GetPosition().y;
 
                         MaterialInstance tt = cur->tiles[xx + yy * cur->matWidth];
-                        if (tt.mat->id != MaterialsList::GENERIC_AIR.id) {
-                            if (GameIsolate_.world->tiles[tx + ty * GameIsolate_.world->width].mat->id == MaterialsList::GENERIC_AIR.id) {
+                        if (tt.mat->id != GAME()->materials_list.GENERIC_AIR.id) {
+                            if (GameIsolate_.world->tiles[tx + ty * GameIsolate_.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
                                 GameIsolate_.world->tiles[tx + ty * GameIsolate_.world->width] = tt;
                                 GameIsolate_.world->dirty[tx + ty * GameIsolate_.world->width] = true;
-                            } else if (GameIsolate_.world->tiles[(tx + 1) + ty * GameIsolate_.world->width].mat->id == MaterialsList::GENERIC_AIR.id) {
+                            } else if (GameIsolate_.world->tiles[(tx + 1) + ty * GameIsolate_.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
                                 GameIsolate_.world->tiles[(tx + 1) + ty * GameIsolate_.world->width] = tt;
                                 GameIsolate_.world->dirty[(tx + 1) + ty * GameIsolate_.world->width] = true;
-                            } else if (GameIsolate_.world->tiles[(tx - 1) + ty * GameIsolate_.world->width].mat->id == MaterialsList::GENERIC_AIR.id) {
+                            } else if (GameIsolate_.world->tiles[(tx - 1) + ty * GameIsolate_.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
                                 GameIsolate_.world->tiles[(tx - 1) + ty * GameIsolate_.world->width] = tt;
                                 GameIsolate_.world->dirty[(tx - 1) + ty * GameIsolate_.world->width] = true;
-                            } else if (GameIsolate_.world->tiles[tx + (ty + 1) * GameIsolate_.world->width].mat->id == MaterialsList::GENERIC_AIR.id) {
+                            } else if (GameIsolate_.world->tiles[tx + (ty + 1) * GameIsolate_.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
                                 GameIsolate_.world->tiles[tx + (ty + 1) * GameIsolate_.world->width] = tt;
                                 GameIsolate_.world->dirty[tx + (ty + 1) * GameIsolate_.world->width] = true;
-                            } else if (GameIsolate_.world->tiles[tx + (ty - 1) * GameIsolate_.world->width].mat->id == MaterialsList::GENERIC_AIR.id) {
+                            } else if (GameIsolate_.world->tiles[tx + (ty - 1) * GameIsolate_.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
                                 GameIsolate_.world->tiles[tx + (ty - 1) * GameIsolate_.world->width] = tt;
                                 GameIsolate_.world->dirty[tx + (ty - 1) * GameIsolate_.world->width] = true;
                             } else {
@@ -1352,16 +1355,16 @@ void Game::updateFrameEarly() {
     }
 
     if (ControlSystem::DEBUG_EXPLODE->get()) {
-        int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-        int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+        int x = (int)((mx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+        int y = (int)((my - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
         GameIsolate_.world->explosion(x, y, 30);
     }
 
     if (ControlSystem::DEBUG_CARVE->get()) {
         // carve square
 
-        int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale - 16);
-        int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale - 16);
+        int x = (int)((mx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale - 16);
+        int y = (int)((my - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale - 16);
 
         C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, 32, 32, 32, SDL_PIXELFORMAT_ARGB8888);
 
@@ -1407,8 +1410,8 @@ void Game::updateFrameEarly() {
 
             auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
-            global.GameData_.freeCamX = pl_we->x + pl_we->hw / 2.0f;
-            global.GameData_.freeCamY = pl_we->y - pl_we->hh / 2.0f;
+            GAME()->freeCamX = pl_we->x + pl_we->hw / 2.0f;
+            GAME()->freeCamY = pl_we->y - pl_we->hh / 2.0f;
             // GameIsolate_.world->worldEntities.erase(std::remove(GameIsolate_.world->worldEntities.begin(), GameIsolate_.world->worldEntities.end(), GameIsolate_.world->player),
             //                                         GameIsolate_.world->worldEntities.end());
             GameIsolate_.world->b2world->DestroyBody(pl_we->rb->body);
@@ -1544,8 +1547,8 @@ void Game::updateFrameEarly() {
 
         // rigidbody hover
 
-        int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-        int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+        int x = (int)((mx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+        int y = (int)((my - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
         bool swapped = false;
         f32 hoverDelta = 10.0 * ENGINE()->time.deltaTime / 1000.0;
@@ -1734,7 +1737,7 @@ void Game::tick() {
             for (int tx = 0; tx < cur->matWidth; tx++) {
                 for (int ty = 0; ty < cur->matHeight; ty++) {
                     MaterialInstance rmat = cur->tiles[tx + ty * cur->matWidth];
-                    if (rmat.mat->id == MaterialsList::GENERIC_AIR.id) continue;
+                    if (rmat.mat->id == GAME()->materials_list.GENERIC_AIR.id) continue;
 
                     // rotate point
                     int wx = (int)(tx * c - (ty + 1) * s + x);
@@ -1783,8 +1786,8 @@ void Game::tick() {
                 auto [pl_we, pl] = GameIsolate_.world->getHostPlayer();
 
                 if (pl->holdtype == Hammer) {
-                    int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-                    int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+                    int x = (int)((mx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+                    int y = (int)((my - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
                     R_Line(TexturePack_.textureEntitiesLQ->target, x, y, pl->hammerX, pl->hammerY, {0xff, 0xff, 0x00, 0xff});
                 }
             }
@@ -1809,8 +1812,8 @@ void Game::tick() {
             ENGINE()->render_scale += deltaScale;
             if (ENGINE()->render_scale < 1) ENGINE()->render_scale = 1;
 
-            global.GameData_.ofsX = (global.GameData_.ofsX - ENGINE()->windowWidth / 2) / oldScale * ENGINE()->render_scale + ENGINE()->windowWidth / 2;
-            global.GameData_.ofsY = (global.GameData_.ofsY - ENGINE()->windowHeight / 2) / oldScale * ENGINE()->render_scale + ENGINE()->windowHeight / 2;
+            GAME()->ofsX = (GAME()->ofsX - ENGINE()->windowWidth / 2) / oldScale * ENGINE()->render_scale + ENGINE()->windowWidth / 2;
+            GAME()->ofsY = (GAME()->ofsY - ENGINE()->windowHeight / 2) / oldScale * ENGINE()->render_scale + ENGINE()->windowHeight / 2;
         } else {
         }
 
@@ -1875,7 +1878,7 @@ void Game::tick() {
                 for (int ty = 0; ty < cur->matHeight; ty++) {
                     MaterialInstance rmat = cur->tiles[tx + ty * cur->matWidth];
                     ME_ASSERT_E(rmat.mat);
-                    if (rmat.mat->id == MaterialsList::GENERIC_AIR.id) continue;
+                    if (rmat.mat->id == GAME()->materials_list.GENERIC_AIR.id) continue;
 
                     // rotate point
                     int wx = (int)(tx * c - (ty + 1) * s + x);
@@ -1922,7 +1925,7 @@ void Game::tick() {
                     }
 
                     if (!found && GameIsolate_.world->tiles != NULL) {
-                        if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->id == MaterialsList::GENERIC_AIR.id) {
+                        if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
                             cur->tiles[tx + ty * cur->matWidth] = Tiles_NOTHING;
                         }
                     }
@@ -1932,7 +1935,7 @@ void Game::tick() {
             for (int tx = 0; tx < cur->get_surface()->w; tx++) {
                 for (int ty = 0; ty < cur->get_surface()->h; ty++) {
                     MaterialInstance mat = cur->tiles[tx + ty * cur->get_surface()->w];
-                    if (mat.mat->id == MaterialsList::GENERIC_AIR.id) {
+                    if (mat.mat->id == GAME()->materials_list.GENERIC_AIR.id) {
                         R_GET_PIXEL(cur->get_surface(), tx, ty) = 0x00000000;
                     } else {
                         R_GET_PIXEL(cur->get_surface(), tx, ty) = (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
@@ -1953,7 +1956,7 @@ void Game::tick() {
 
         if (ENGINE()->time.tickCount % 10 == 0) GameIsolate_.world->tickObjectsMesh();
 
-        for (int i = 0; i < global.GameData_.materials_count; i++) movingTiles[i] = 0;
+        for (int i = 0; i < GAME()->materials_count; i++) movingTiles[i] = 0;
 
         results.clear();
         results.push_back(GameIsolate_.updateDirtyPool->push([&](int id) {
@@ -1995,7 +1998,7 @@ void Game::tick() {
                         dpixelsEmission_ar[offset + 0] = ((emit >> 16) & 0xff);  // r
                         dpixelsEmission_ar[offset + 3] = ((emit >> 24) & 0xff);  // a
 
-                        if (GameIsolate_.world->tiles[i].mat->id == MaterialsList::FIRE.id) {
+                        if (GameIsolate_.world->tiles[i].mat->id == GAME()->materials_list.FIRE.id) {
                             dpixelsFire_ar[offset + 2] = ((color >> 0) & 0xff);                    // b
                             dpixelsFire_ar[offset + 1] = ((color >> 8) & 0xff);                    // g
                             dpixelsFire_ar[offset + 0] = ((color >> 16) & 0xff);                   // r
@@ -2333,8 +2336,8 @@ void Game::tickChunkLoading() {
             accLoadX -= subX;
             accLoadY -= subY;
 
-            global.GameData_.ofsX -= subX * ENGINE()->render_scale;
-            global.GameData_.ofsY -= subY * ENGINE()->render_scale;
+            GAME()->ofsX -= subX * ENGINE()->render_scale;
+            GAME()->ofsY -= subY * ENGINE()->render_scale;
         }
 
         GameIsolate_.world->tickChunks();
@@ -2393,24 +2396,24 @@ void Game::tickPlayer() {
         if (pl_we->vx < -4.5) pl_we->vx = -4.5;
     } else {
         if (state == INGAME) {
-            global.GameData_.freeCamX += (f32)((ControlSystem::PLAYER_LEFT->get() ? -5 : 0) + (ControlSystem::PLAYER_RIGHT->get() ? 5 : 0));
-            global.GameData_.freeCamY += (f32)((ControlSystem::PLAYER_UP->get() ? -5 : 0) + (ControlSystem::PLAYER_DOWN->get() ? 5 : 0));
+            GAME()->freeCamX += (f32)((ControlSystem::PLAYER_LEFT->get() ? -5 : 0) + (ControlSystem::PLAYER_RIGHT->get() ? 5 : 0));
+            GAME()->freeCamY += (f32)((ControlSystem::PLAYER_UP->get() ? -5 : 0) + (ControlSystem::PLAYER_DOWN->get() ? 5 : 0));
         } else {
         }
     }
 
     if (GameIsolate_.world->player) {
 
-        global.GameData_.desCamX = (f32)(-(mx - (ENGINE()->windowWidth / 2)) / 4);
-        global.GameData_.desCamY = (f32)(-(my - (ENGINE()->windowHeight / 2)) / 4);
+        GAME()->desCamX = (f32)(-(mx - (ENGINE()->windowWidth / 2)) / 4);
+        GAME()->desCamY = (f32)(-(my - (ENGINE()->windowHeight / 2)) / 4);
 
-        pl->holdAngle = (f32)(atan2(global.GameData_.desCamY, global.GameData_.desCamX) * 180 / (f32)M_PI);
+        pl->holdAngle = (f32)(atan2(GAME()->desCamY, GAME()->desCamX) * 180 / (f32)M_PI);
 
-        global.GameData_.desCamX = 0;
-        global.GameData_.desCamY = 0;
+        GAME()->desCamX = 0;
+        GAME()->desCamY = 0;
     } else {
-        global.GameData_.desCamX = 0;
-        global.GameData_.desCamY = 0;
+        GAME()->desCamX = 0;
+        GAME()->desCamY = 0;
     }
 
     if (GameIsolate_.world->player) {
@@ -2419,11 +2422,11 @@ void Game::tickPlayer() {
             if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
                 if (pl->holdtype == Vacuum) {
 
-                    int wcx = (int)((ENGINE()->windowWidth / 2.0f - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-                    int wcy = (int)((ENGINE()->windowHeight / 2.0f - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+                    int wcx = (int)((ENGINE()->windowWidth / 2.0f - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+                    int wcy = (int)((ENGINE()->windowHeight / 2.0f - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
-                    int wmx = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-                    int wmy = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+                    int wmx = (int)((mx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+                    int wmy = (int)((my - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
                     int mdx = wmx - wcx;
                     int mdy = wmy - wcy;
@@ -2585,7 +2588,7 @@ void Game::tickPlayer() {
                                                 R_GET_PIXEL(cur->get_surface(), ntx, nty) = 0x00000000;
                                                 upd = true;
 
-                                                makeCell(MaterialInstance(&MaterialsList::GENERIC_SOLID, pixel), (x + xx), (y + yy));
+                                                makeCell(MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, pixel), (x + xx), (y + yy));
                                             }
                                         }
                                     }
@@ -2674,36 +2677,36 @@ void Game::updateFrameLate() {
             if (ENGINE()->time.now - ENGINE()->time.lastTickTime <= ENGINE()->time.mspt) {
                 f32 thruTick = (f32)((ENGINE()->time.now - ENGINE()->time.lastTickTime) / ENGINE()->time.mspt);
 
-                global.GameData_.plPosX = pl_we->x + (int)(pl_we->vx * thruTick);
-                global.GameData_.plPosY = pl_we->y + (int)(pl_we->vy * thruTick);
+                GAME()->plPosX = pl_we->x + (int)(pl_we->vx * thruTick);
+                GAME()->plPosY = pl_we->y + (int)(pl_we->vy * thruTick);
             } else {
-                global.GameData_.plPosX = pl_we->x;
-                global.GameData_.plPosY = pl_we->y;
+                GAME()->plPosX = pl_we->x;
+                GAME()->plPosY = pl_we->y;
             }
 
             // plPosX = (f32)(plPosX + (pl_we->x - plPosX) / 25.0);
             // plPosY = (f32)(plPosY + (pl_we->y - plPosY) / 25.0);
 
-            nofsX = (int)(-((int)global.GameData_.plPosX + pl_we->hw / 2 + GameIsolate_.world->loadZone.x) * ENGINE()->render_scale + ENGINE()->windowWidth / 2);
-            nofsY = (int)(-((int)global.GameData_.plPosY + pl_we->hh / 2 + GameIsolate_.world->loadZone.y) * ENGINE()->render_scale + ENGINE()->windowHeight / 2);
+            nofsX = (int)(-((int)GAME()->plPosX + pl_we->hw / 2 + GameIsolate_.world->loadZone.x) * ENGINE()->render_scale + ENGINE()->windowWidth / 2);
+            nofsY = (int)(-((int)GAME()->plPosY + pl_we->hh / 2 + GameIsolate_.world->loadZone.y) * ENGINE()->render_scale + ENGINE()->windowHeight / 2);
         } else {
-            global.GameData_.plPosX = (f32)(global.GameData_.plPosX + (global.GameData_.freeCamX - global.GameData_.plPosX) / 50.0f);
-            global.GameData_.plPosY = (f32)(global.GameData_.plPosY + (global.GameData_.freeCamY - global.GameData_.plPosY) / 50.0f);
+            GAME()->plPosX = (f32)(GAME()->plPosX + (GAME()->freeCamX - GAME()->plPosX) / 50.0f);
+            GAME()->plPosY = (f32)(GAME()->plPosY + (GAME()->freeCamY - GAME()->plPosY) / 50.0f);
 
-            nofsX = (int)(-(global.GameData_.plPosX + 0 + GameIsolate_.world->loadZone.x) * ENGINE()->render_scale + ENGINE()->windowWidth / 2.0f);
-            nofsY = (int)(-(global.GameData_.plPosY + 0 + GameIsolate_.world->loadZone.y) * ENGINE()->render_scale + ENGINE()->windowHeight / 2.0f);
+            nofsX = (int)(-(GAME()->plPosX + 0 + GameIsolate_.world->loadZone.x) * ENGINE()->render_scale + ENGINE()->windowWidth / 2.0f);
+            nofsY = (int)(-(GAME()->plPosY + 0 + GameIsolate_.world->loadZone.y) * ENGINE()->render_scale + ENGINE()->windowHeight / 2.0f);
         }
 
-        accLoadX += (nofsX - global.GameData_.ofsX) / (f32)ENGINE()->render_scale;
-        accLoadY += (nofsY - global.GameData_.ofsY) / (f32)ENGINE()->render_scale;
+        accLoadX += (nofsX - GAME()->ofsX) / (f32)ENGINE()->render_scale;
+        accLoadY += (nofsY - GAME()->ofsY) / (f32)ENGINE()->render_scale;
         // METADOT_BUG("{0:f} {0:f}", plPosX, plPosY);
         // METADOT_BUG("a {0:d} {0:d}", nofsX, nofsY);
         // METADOT_BUG("{0:d} {0:d}", nofsX - ofsX, nofsY - ofsY);
-        global.GameData_.ofsX += (nofsX - global.GameData_.ofsX);
-        global.GameData_.ofsY += (nofsY - global.GameData_.ofsY);
+        GAME()->ofsX += (nofsX - GAME()->ofsX);
+        GAME()->ofsY += (nofsY - GAME()->ofsY);
 
-        global.GameData_.camX = (f32)(global.GameData_.camX + (global.GameData_.desCamX - global.GameData_.camX) * (ENGINE()->time.now - ENGINE()->time.lastTime) / 250.0f);
-        global.GameData_.camY = (f32)(global.GameData_.camY + (global.GameData_.desCamY - global.GameData_.camY) * (ENGINE()->time.now - ENGINE()->time.lastTime) / 250.0f);
+        GAME()->camX = (f32)(GAME()->camX + (GAME()->desCamX - GAME()->camX) * (ENGINE()->time.now - ENGINE()->time.lastTime) / 250.0f);
+        GAME()->camY = (f32)(GAME()->camY + (GAME()->desCamY - GAME()->camY) * (ENGINE()->time.now - ENGINE()->time.lastTime) / 250.0f);
     }
 }
 
@@ -2806,8 +2809,8 @@ void Game::renderEarly() {
                     if (pl->heldItem != NULL) {
                         if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
                             if (pl->holdtype == Hammer) {
-                                int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-                                int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+                                int x = (int)((mx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+                                int y = (int)((my - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
                                 int dx = x - pl->hammerX;
                                 int dy = y - pl->hammerY;
@@ -2836,15 +2839,15 @@ void Game::renderEarly() {
         }
 
         if (ControlSystem::mmouse_down) {
-            int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-            int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+            int x = (int)((mx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+            int y = (int)((my - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
             R_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - gameUI.DebugDrawUI__brushSize / 2.0f, y - gameUI.DebugDrawUI__brushSize / 2.0f,
                               x + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)), y + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)), {0xff, 0x40, 0x40, 0x90});
             R_Rectangle(TexturePack_.textureEntitiesLQ->target, x - gameUI.DebugDrawUI__brushSize / 2.0f, y - gameUI.DebugDrawUI__brushSize / 2.0f,
                         x + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)) + 1, y + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)) + 1, {0xff, 0x40, 0x40, 0xE0});
         } else if (ControlSystem::DEBUG_DRAW->get()) {
-            int x = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-            int y = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+            int x = (int)((mx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+            int y = (int)((my - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
             R_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - gameUI.DebugDrawUI__brushSize / 2.0f, y - gameUI.DebugDrawUI__brushSize / 2.0f,
                               x + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)), y + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)), {0x00, 0xff, 0xB0, 0x80});
             R_Rectangle(TexturePack_.textureEntitiesLQ->target, x - gameUI.DebugDrawUI__brushSize / 2.0f, y - gameUI.DebugDrawUI__brushSize / 2.0f,
@@ -2899,9 +2902,9 @@ void Game::renderLate() {
                     src.w = tw;
                     src.h = th;
 
-                    dst.x = (((global.GameData_.ofsX + global.GameData_.camX) + GameIsolate_.world->loadZone.x * ENGINE()->render_scale) + n * tw / bglayer->parralaxX) * bglayer->parralaxX +
+                    dst.x = (((GAME()->ofsX + GAME()->camX) + GameIsolate_.world->loadZone.x * ENGINE()->render_scale) + n * tw / bglayer->parralaxX) * bglayer->parralaxX +
                             GameIsolate_.world->width / 2.0f * ENGINE()->render_scale - tw / 2.0f;
-                    dst.y = ((global.GameData_.ofsY + global.GameData_.camY) + GameIsolate_.world->loadZone.y * ENGINE()->render_scale) * bglayer->parralaxY +
+                    dst.y = ((GAME()->ofsY + GAME()->camY) + GameIsolate_.world->loadZone.y * ENGINE()->render_scale) * bglayer->parralaxY +
                             GameIsolate_.world->height / 2.0f * ENGINE()->render_scale - th / 2.0f - ENGINE()->windowHeight / 3.0f * (ENGINE()->render_scale - 1);
                     dst.w = (f32)tw;
                     dst.h = (f32)th;
@@ -2942,7 +2945,7 @@ void Game::renderLate() {
             }
         }
 
-        ME_rect r1 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * ENGINE()->render_scale),
+        ME_rect r1 = ME_rect{(f32)(GAME()->ofsX + GAME()->camX), (f32)(GAME()->ofsY + GAME()->camY), (f32)(GameIsolate_.world->width * ENGINE()->render_scale),
                              (f32)(GameIsolate_.world->height * ENGINE()->render_scale)};
         R_SetBlendMode(TexturePack_.textureBackground, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureBackground, NULL, ENGINE()->target, &r1);
@@ -2982,8 +2985,8 @@ void Game::renderLate() {
 
         // done shader
 
-        int lmsx = (int)((mx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-        int lmsy = (int)((my - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+        int lmsx = (int)((mx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+        int lmsy = (int)((my - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
         R_Clear(TexturePack_.worldTexture->target);
 
@@ -3113,10 +3116,10 @@ void Game::renderOverlays() {
     snprintf(fpsText, sizeof(fpsText), "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, ENGINE()->time.feelsLikeFps);
     ME_draw_text(fpsText, {255, 255, 255, 255}, ENGINE()->windowWidth - ImGui::CalcTextSize(fpsText).x, 0);
 
-    ME_rect r1 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX), (f32)(global.GameData_.ofsY + global.GameData_.camY), (f32)(GameIsolate_.world->width * ENGINE()->render_scale),
+    ME_rect r1 = ME_rect{(f32)(GAME()->ofsX + GAME()->camX), (f32)(GAME()->ofsY + GAME()->camY), (f32)(GameIsolate_.world->width * ENGINE()->render_scale),
                          (f32)(GameIsolate_.world->height * ENGINE()->render_scale)};
-    ME_rect r2 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale),
-                         (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale), (f32)(GameIsolate_.world->tickZone.w * ENGINE()->render_scale),
+    ME_rect r2 = ME_rect{(f32)(GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale),
+                         (f32)(GAME()->ofsY + GAME()->camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale), (f32)(GameIsolate_.world->tickZone.w * ENGINE()->render_scale),
                          (f32)(GameIsolate_.world->tickZone.h * ENGINE()->render_scale)};
 
     if (GameIsolate_.globaldef.draw_temperature_map) {
@@ -3125,8 +3128,8 @@ void Game::renderOverlays() {
     }
 
     if (GameIsolate_.globaldef.draw_load_zones) {
-        ME_rect r2m = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->meshZone.x * ENGINE()->render_scale),
-                              (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->meshZone.y * ENGINE()->render_scale),
+        ME_rect r2m = ME_rect{(f32)(GAME()->ofsX + GAME()->camX + GameIsolate_.world->meshZone.x * ENGINE()->render_scale),
+                              (f32)(GAME()->ofsY + GAME()->camY + GameIsolate_.world->meshZone.y * ENGINE()->render_scale),
                               (f32)(GameIsolate_.world->meshZone.w * ENGINE()->render_scale), (f32)(GameIsolate_.world->meshZone.h * ENGINE()->render_scale)};
 
         R_Rectangle2(ENGINE()->target, r2m, {0x00, 0xff, 0xff, 0xff});
@@ -3139,31 +3142,31 @@ void Game::renderOverlays() {
         ME_Color col = {0xff, 0x00, 0x00, 0x20};
         R_SetShapeBlendMode(R_BLEND_NORMAL);
 
-        ME_rect r3 = ME_rect{(f32)(0), (f32)(0), (f32)((global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale)), (f32)(ENGINE()->windowHeight)};
+        ME_rect r3 = ME_rect{(f32)(0), (f32)(0), (f32)((GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale)), (f32)(ENGINE()->windowHeight)};
         R_Rectangle2(ENGINE()->target, r3, col);
 
-        ME_rect r4 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale + GameIsolate_.world->tickZone.w * ENGINE()->render_scale),
+        ME_rect r4 = ME_rect{(f32)(GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale + GameIsolate_.world->tickZone.w * ENGINE()->render_scale),
                              (f32)(0),
                              (f32)((ENGINE()->windowWidth) -
-                                   (global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale + GameIsolate_.world->tickZone.w * ENGINE()->render_scale)),
+                                   (GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale + GameIsolate_.world->tickZone.w * ENGINE()->render_scale)),
                              (f32)(ENGINE()->windowHeight)};
         R_Rectangle2(ENGINE()->target, r4, col);
 
         ME_rect r5 =
-                ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale), (f32)(0),
-                        (f32)(GameIsolate_.world->tickZone.w * ENGINE()->render_scale), (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale)};
+                ME_rect{(f32)(GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale), (f32)(0),
+                        (f32)(GameIsolate_.world->tickZone.w * ENGINE()->render_scale), (f32)(GAME()->ofsY + GAME()->camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale)};
         R_Rectangle2(ENGINE()->target, r5, col);
 
-        ME_rect r6 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale),
-                             (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale + GameIsolate_.world->tickZone.h * ENGINE()->render_scale),
+        ME_rect r6 = ME_rect{(f32)(GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale),
+                             (f32)(GAME()->ofsY + GAME()->camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale + GameIsolate_.world->tickZone.h * ENGINE()->render_scale),
                              (f32)(GameIsolate_.world->tickZone.w * ENGINE()->render_scale),
-                             (f32)(ENGINE()->windowHeight - (global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale +
+                             (f32)(ENGINE()->windowHeight - (GAME()->ofsY + GAME()->camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale +
                                                              GameIsolate_.world->tickZone.h * ENGINE()->render_scale))};
         R_Rectangle2(ENGINE()->target, r6, col);
 
         col = {0x00, 0xff, 0x00, 0xff};
-        ME_rect r7 = ME_rect{(f32)(global.GameData_.ofsX + global.GameData_.camX + GameIsolate_.world->width / 2 * ENGINE()->render_scale - (ENGINE()->windowWidth / 3 * ENGINE()->render_scale / 2)),
-                             (f32)(global.GameData_.ofsY + global.GameData_.camY + GameIsolate_.world->height / 2 * ENGINE()->render_scale - (ENGINE()->windowHeight / 3 * ENGINE()->render_scale / 2)),
+        ME_rect r7 = ME_rect{(f32)(GAME()->ofsX + GAME()->camX + GameIsolate_.world->width / 2 * ENGINE()->render_scale - (ENGINE()->windowWidth / 3 * ENGINE()->render_scale / 2)),
+                             (f32)(GAME()->ofsY + GAME()->camY + GameIsolate_.world->height / 2 * ENGINE()->render_scale - (ENGINE()->windowHeight / 3 * ENGINE()->render_scale / 2)),
                              (f32)(ENGINE()->windowWidth / 3 * ENGINE()->render_scale), (f32)(ENGINE()->windowHeight / 3 * ENGINE()->render_scale)};
         R_Rectangle2(ENGINE()->target, r7, col);
     }
@@ -3179,7 +3182,7 @@ void Game::renderOverlays() {
         //    y = ((y)*ENGINE()->gameScale + ofsY + camY);
 
         //    /*SDL_Rect* r = new SDL_Rect{ (int)x, (int)y, cur.surface->w * ENGINE()->gameScale, cur.surface->h * ENGINE()->gameScale };
-        //    SDL_ENGINE()->CopyEx(renderer, cur.texture, NULL, r, cur.body->GetAngle() * 180 / M_PI, new SDL_Point{ 0, 0 }, SDL_RendererFlip::SDL_FLIP_NONE);
+        //    SDL_RenderCopyEx(renderer, cur.texture, NULL, r, cur.body->GetAngle() * 180 / M_PI, new SDL_Point{ 0, 0 }, SDL_RendererFlip::SDL_FLIP_NONE);
         //    delete r;*/
 
         //    u32 color = 0x0000ff;
@@ -3262,11 +3265,11 @@ void Game::renderOverlays() {
         //    }
 
         //    /*color = 0xff0000;
-        //    SDL_SetENGINE()->DrawColor(renderer, (color >> 16) & 0xff, (color >> 8) & 0xff, (color >> 0) & 0xff, 0xff);
-        //    SDL_ENGINE()->DrawPoint(renderer, x, y);
+        //    SDL_SetRenderDrawColor(renderer, (color >> 16) & 0xff, (color >> 8) & 0xff, (color >> 0) & 0xff, 0xff);
+        //    SDL_RenderDrawPoint(renderer, x, y);
         //    color = 0x00ff00;
-        //    SDL_SetENGINE()->DrawColor(renderer, (color >> 16) & 0xff, (color >> 8) & 0xff, (color >> 0) & 0xff, 0xff);
-        //    SDL_ENGINE()->DrawPoint(renderer, cur.body->GetLocalCenter().x * ENGINE()->gameScale + ofsX, cur.body->GetLocalCenter().y * ENGINE()->gameScale + ofsY);*/
+        //    SDL_SetRenderDrawColor(renderer, (color >> 16) & 0xff, (color >> 8) & 0xff, (color >> 0) & 0xff, 0xff);
+        //    SDL_RenderDrawPoint(renderer, cur.body->GetLocalCenter().x * ENGINE()->gameScale + ofsX, cur.body->GetLocalCenter().y * ENGINE()->gameScale + ofsY);*/
         //}
 
         int minChX = (int)floor((GameIsolate_.world->meshZone.x - GameIsolate_.world->loadZone.x) / CHUNK_W);
@@ -3279,8 +3282,8 @@ void Game::renderOverlays() {
                 Chunk *ch = GameIsolate_.world->getChunk(cx, cy);
                 SDL_Color col = {255, 0, 0, 255};
 
-                f32 x = ((ch->x * CHUNK_W + GameIsolate_.world->loadZone.x) * ENGINE()->render_scale + global.GameData_.ofsX + global.GameData_.camX);
-                f32 y = ((ch->y * CHUNK_H + GameIsolate_.world->loadZone.y) * ENGINE()->render_scale + global.GameData_.ofsY + global.GameData_.camY);
+                f32 x = ((ch->x * CHUNK_W + GameIsolate_.world->loadZone.x) * ENGINE()->render_scale + GAME()->ofsX + GAME()->camX);
+                f32 y = ((ch->y * CHUNK_H + GameIsolate_.world->loadZone.y) * ENGINE()->render_scale + GAME()->ofsY + GAME()->camY);
 
                 R_Rectangle(ENGINE()->target, x, y, x + CHUNK_W * ENGINE()->render_scale, y + CHUNK_H * ENGINE()->render_scale, {50, 50, 0, 255});
 
@@ -3294,8 +3297,8 @@ void Game::renderOverlays() {
 
         GameIsolate_.world->b2world->SetDebugDraw(debugDraw);
         debugDraw->scale = ENGINE()->render_scale;
-        debugDraw->xOfs = global.GameData_.ofsX + global.GameData_.camX;
-        debugDraw->yOfs = global.GameData_.ofsY + global.GameData_.camY;
+        debugDraw->xOfs = GAME()->ofsX + GAME()->camX;
+        debugDraw->yOfs = GAME()->ofsY + GAME()->camY;
         debugDraw->SetFlags(0);
         if (GameIsolate_.globaldef.draw_b2d_shape) debugDraw->AppendFlags(ME_debugdraw::e_shapeBit);
         if (GameIsolate_.globaldef.draw_b2d_joint) debugDraw->AppendFlags(ME_debugdraw::e_jointBit);
@@ -3317,8 +3320,8 @@ void Game::renderOverlays() {
         int centerX = ENGINE()->windowWidth / 2;
         int centerY = CHUNK_UNLOAD_DIST * chSize + 10;
 
-        int pposX = global.GameData_.plPosX;
-        int pposY = global.GameData_.plPosY;
+        int pposX = GAME()->plPosX;
+        int pposY = GAME()->plPosY;
         int pchx = (int)((pposX / CHUNK_W) * chSize);
         int pchy = (int)((pposY / CHUNK_H) * chSize);
         int pchxf = (int)(((f32)pposX / CHUNK_W) * chSize);
@@ -3463,7 +3466,7 @@ ReadyToMerge ({16})
             pl_vy = pl_we->vy;
         }
 
-        auto a = std::format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, global.GameData_.plPosX, global.GameData_.plPosY, pl_vx, pl_vy, (int)GameIsolate_.world->cells.size(),
+        auto a = std::format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GAME()->plPosX, GAME()->plPosY, pl_vx, pl_vy, (int)GameIsolate_.world->cells.size(),
                              (int)GameIsolate_.world->Reg().entity_count(), rbCt, (int)GameIsolate_.world->rigidBodies.size(), (int)GameIsolate_.world->worldRigidBodies.size(), rbTriACt, rbTriCt,
                              rbTriWCt, chCt, (int)GameIsolate_.world->readyToReadyToMerge.size(), (int)GameIsolate_.world->readyToMerge.size());
 
@@ -3516,7 +3519,7 @@ ReadyToMerge ({16})
             }
 
             R_Line(ENGINE()->target, ENGINE()->windowWidth - TraceTimeNum - 30 + i, ENGINE()->windowHeight - 10 - h, ENGINE()->windowWidth - TraceTimeNum - 30 + i, ENGINE()->windowHeight - 10, col);
-            // SDL_ENGINE()->DrawLine(renderer, WIDTH - TraceTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - TraceTimeNum - 30 + i, HEIGHT - 10);
+            // SDL_RenderDrawLine(renderer, WIDTH - TraceTimeNum - 30 + i, HEIGHT - 10 - h, WIDTH - TraceTimeNum - 30 + i, HEIGHT - 10);
         }
 
         R_Line(ENGINE()->target, ENGINE()->windowWidth - 30 - TraceTimeNum - 5, ENGINE()->windowHeight - 10 - (int)(1000.0 / ENGINE()->time.framesPerSecond), ENGINE()->windowWidth - 25,
@@ -3631,11 +3634,11 @@ int Game::getAimSurface(int dist) {
     int mmx = ENGINE()->windowWidth / 2.0f + udx * dist;
     int mmy = ENGINE()->windowHeight / 2.0f + udy * dist;
 
-    int wcx = (int)((ENGINE()->windowWidth / 2.0f - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-    int wcy = (int)((ENGINE()->windowHeight / 2.0f - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+    int wcx = (int)((ENGINE()->windowWidth / 2.0f - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+    int wcy = (int)((ENGINE()->windowHeight / 2.0f - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
-    int wmx = (int)((mmx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-    int wmy = (int)((mmy - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+    int wmx = (int)((mmx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+    int wmy = (int)((mmy - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
     int startInd = -1;
     GameIsolate_.world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {
@@ -3735,11 +3738,11 @@ int Game::getAimSolidSurface(int dist) {
     int mmx = ENGINE()->windowWidth / 2.0f + udx * dist;
     int mmy = ENGINE()->windowHeight / 2.0f + udy * dist;
 
-    int wcx = (int)((ENGINE()->windowWidth / 2.0f - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-    int wcy = (int)((ENGINE()->windowHeight / 2.0f - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+    int wcx = (int)((ENGINE()->windowWidth / 2.0f - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+    int wcy = (int)((ENGINE()->windowHeight / 2.0f - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
-    int wmx = (int)((mmx - global.GameData_.ofsX - global.GameData_.camX) / ENGINE()->render_scale);
-    int wmy = (int)((mmy - global.GameData_.ofsY - global.GameData_.camY) / ENGINE()->render_scale);
+    int wmx = (int)((mmx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale);
+    int wmy = (int)((mmy - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale);
 
     int startInd = -1;
     GameIsolate_.world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {
@@ -3754,7 +3757,7 @@ int Game::getAimSolidSurface(int dist) {
 }
 
 void Game::updateMaterialSounds() {
-    u16 waterCt = std::min(movingTiles[MaterialsList::WATER.id], (u16)5000);
+    u16 waterCt = std::min(movingTiles[GAME()->materials_list.WATER.id], (u16)5000);
     f32 water = (f32)waterCt / 3000;
     // METADOT_BUG("{} / {} = {}", waterCt, 3000, water);
     global.audio.SetEventParameter("event:/World/WaterFlow", "FlowIntensity", water);

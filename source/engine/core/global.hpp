@@ -15,7 +15,6 @@
 #include "engine/core/platform.h"
 #include "engine/engine.h"
 #include "engine/game_shaders.hpp"
-#include "engine/game_ui.hpp"
 #include "engine/meta/reflection.hpp"
 #include "engine/ui/imgui_impl.hpp"
 
@@ -23,9 +22,14 @@ class Game;
 class Scripting;
 class UIData;
 
+struct I18N {
+    void Init();
+    void Load(std::string lang);
+    std::string Get(std::string text);
+};
+
 struct Global {
     Game *game = nullptr;
-    GameData GameData_;
     AudioEngine audio;
     I18N I18N;
 };

@@ -51,7 +51,7 @@ void Player::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
         ir->y += heldItem->pivotY;
         R_SetShapeBlendMode(R_BlendPresetEnum::R_BLEND_ADD);
         // R_BlitTransformX(heldItem->texture, NULL, target, ir->x, ir->y, fp->x, fp->y, holdAngle, 1, 1);
-        // SDL_ENGINE()->CopyExF(renderer, heldItem->texture, NULL, ir, holdAngle, fp, abs(holdAngle) > 90 ? SDL_FLIP_VERTICAL : SDL_FLIP_NONE);
+        // SDL_RenderCopyExF(renderer, heldItem->texture, NULL, ir, holdAngle, fp, abs(holdAngle) > 90 ? SDL_FLIP_VERTICAL : SDL_FLIP_NONE);
         ir->x *= scaleEnt;
         ir->y *= scaleEnt;
         ir->w *= scaleEnt;
@@ -110,7 +110,7 @@ void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
 Player::Player() {}
 
 Player::~Player() {
-    if (heldItem) delete heldItem;
+    if (heldItem) Item::deleteItem(heldItem);
 }
 
 MEvec2 rotate_point2(f32 cx, f32 cy, f32 angle, MEvec2 p) {

@@ -34,35 +34,9 @@ struct ImGuiContext;
 
 #define RegisterFunctions(name, func)    \
     Meta::AnyFunction any_##func{&func}; \
-    global.GameData_.HostData.Functions.insert(std::make_pair(#name, any_##func))
+    GAME()->HostData.Functions.insert(std::make_pair(#name, any_##func))
 
-#define GetFunctions(name) global.GameData_.HostData.Functions[name]
-
-struct GameData {
-    i32 ofsX = 0;
-    i32 ofsY = 0;
-
-    f32 plPosX = 0;
-    f32 plPosY = 0;
-
-    f32 camX = 0;
-    f32 camY = 0;
-
-    f32 desCamX = 0;
-    f32 desCamY = 0;
-
-    f32 freeCamX = 0;
-    f32 freeCamY = 0;
-
-    static std::vector<Biome *> biome_container;
-    static std::vector<Material *> materials_container;
-    static i32 materials_count;
-    static Material **materials_array;
-
-    struct {
-        std::unordered_map<std::string, ME::meta::any_function> Functions;
-    } HostData;
-};
+#define GetFunctions(name) GAME()->HostData.Functions[name]
 
 class WorldEntity {
 public:
@@ -224,40 +198,72 @@ ME::meta::static_refl::TypeInfo<Material>::ForEachVarOf(var, [](auto field, auto
 ME_GUI_DEFINE_END
 
 struct MaterialsList {
-    static std::unordered_map<int, Material> ScriptableMaterials;
-    static Material GENERIC_AIR;
-    static Material GENERIC_SOLID;
-    static Material GENERIC_SAND;
-    static Material GENERIC_LIQUID;
-    static Material GENERIC_GAS;
-    static Material GENERIC_PASSABLE;
-    static Material GENERIC_OBJECT;
-    static Material STONE;
-    static Material GRASS;
-    static Material DIRT;
-    static Material SMOOTH_STONE;
-    static Material COBBLE_STONE;
-    static Material SMOOTH_DIRT;
-    static Material COBBLE_DIRT;
-    static Material SOFT_DIRT;
-    static Material WATER;
-    static Material LAVA;
-    static Material CLOUD;
-    static Material GOLD_ORE;
-    static Material GOLD_MOLTEN;
-    static Material GOLD_SOLID;
-    static Material IRON_ORE;
-    static Material OBSIDIAN;
-    static Material STEAM;
-    static Material SOFT_DIRT_SAND;
-    static Material FIRE;
-    static Material FLAT_COBBLE_STONE;
-    static Material FLAT_COBBLE_DIRT;
+    std::unordered_map<int, Material> ScriptableMaterials;
+    Material GENERIC_AIR;
+    Material GENERIC_SOLID;
+    Material GENERIC_SAND;
+    Material GENERIC_LIQUID;
+    Material GENERIC_GAS;
+    Material GENERIC_PASSABLE;
+    Material GENERIC_OBJECT;
+    Material STONE;
+    Material GRASS;
+    Material DIRT;
+    Material SMOOTH_STONE;
+    Material COBBLE_STONE;
+    Material SMOOTH_DIRT;
+    Material COBBLE_DIRT;
+    Material SOFT_DIRT;
+    Material WATER;
+    Material LAVA;
+    Material CLOUD;
+    Material GOLD_ORE;
+    Material GOLD_MOLTEN;
+    Material GOLD_SOLID;
+    Material IRON_ORE;
+    Material OBSIDIAN;
+    Material STEAM;
+    Material SOFT_DIRT_SAND;
+    Material FIRE;
+    Material FLAT_COBBLE_STONE;
+    Material FLAT_COBBLE_DIRT;
 };
 
 void InitMaterials();
 void RegisterMaterial(int s_id, std::string name, std::string index_name, int physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor, u32 color);
 void PushMaterials();
+
+struct GameData {
+    i32 ofsX = 0;
+    i32 ofsY = 0;
+
+    f32 plPosX = 0;
+    f32 plPosY = 0;
+
+    f32 camX = 0;
+    f32 camY = 0;
+
+    f32 desCamX = 0;
+    f32 desCamY = 0;
+
+    f32 freeCamX = 0;
+    f32 freeCamY = 0;
+
+    std::vector<Biome *> biome_container;
+    std::vector<Material *> materials_container;
+    i32 materials_count;
+    Material **materials_array;
+
+    MaterialsList materials_list;
+
+    struct {
+        std::unordered_map<std::string, ME::meta::any_function> Functions;
+    } HostData;
+};
+
+extern GameData g_game_data;
+
+ME_INLINE GameData *GAME() { return &g_game_data; }
 
 class MaterialInstance {
 public:
@@ -272,7 +278,7 @@ public:
 
     MaterialInstance(Material *mat, u32 color, i32 temperature);
     MaterialInstance(Material *mat, u32 color) : MaterialInstance(mat, color, 0){};
-    MaterialInstance() : MaterialInstance(&MaterialsList::GENERIC_AIR, 0x000000, 0){};
+    MaterialInstance() : MaterialInstance(&GAME()->materials_list.GENERIC_AIR, 0x000000, 0){};
     inline bool operator==(const MaterialInstance &other) { return this->mat->id == other.mat->id; }
 };
 

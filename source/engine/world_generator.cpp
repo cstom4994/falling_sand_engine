@@ -16,7 +16,7 @@ void MaterialTestGenerator::generateChunk(World *world, Chunk *ch) {
     Material *mat;
 
     while (true) {
-        mat = global.GameData_.materials_container[rand() % global.GameData_.materials_container.size()];
+        mat = GAME()->materials_container[rand() % GAME()->materials_container.size()];
         if (mat->id >= 31 && (mat->physicsType == PhysicsType::SAND || mat->physicsType == PhysicsType::SOUP)) break;
     }
 
@@ -144,23 +144,23 @@ void DefaultGenerator::generateChunk(World *world, Chunk *ch) {
             // std::cout << "DefaultGenerator generate " << ch->x << " " << ch->y << " Biome: " << b->name << std::endl;
 
             if (b->id == BiomeGetID("TEST_1")) {
-                prop[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xffe00000);
+                prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xffe00000);
             } else if (b->id == BiomeGetID("TEST_2")) {
-                prop[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xff00ff00);
+                prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xff00ff00);
             } else if (b->id == BiomeGetID("TEST_3")) {
-                prop[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xff0000ff);
+                prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xff0000ff);
             } else if (b->id == BiomeGetID("TEST_4")) {
-                prop[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xffff00ff);
+                prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xffff00ff);
             }
 
             if (b->id == BiomeGetID("TEST_1_2")) {
-                prop[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xffFF6600);
+                prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xffFF6600);
             } else if (b->id == BiomeGetID("TEST_2_2")) {
-                prop[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xff00FFBF);
+                prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xff00FFBF);
             } else if (b->id == BiomeGetID("TEST_3_2")) {
-                prop[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xff005DFF);
+                prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xff005DFF);
             } else if (b->id == BiomeGetID("TEST_4_2")) {
-                prop[x + y * CHUNK_W] = MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xffC200FF);
+                prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xffC200FF);
             }
             // continue;
 
@@ -204,7 +204,7 @@ void DefaultGenerator::generateChunk(World *world, Chunk *ch) {
                     prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? TilesCreateSmoothStone(px, py) : TilesCreateSmoothDirt(px, py);
                 } else if (py > surf - 64) {
                     f64 n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) + 0.4) / 2.0;
-                    prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? TilesCreateSmoothDirt(px, py) : MaterialInstance(&MaterialsList::GENERIC_SOLID, 0xff0000);
+                    prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? TilesCreateSmoothDirt(px, py) : MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xff0000);
                 } else if (py > surf - 65) {
                     if (rand() % 2 == 0) prop[x + y * CHUNK_W] = TilesCreateGrass();
                 } else {
@@ -229,7 +229,7 @@ void DefaultGenerator::generateChunk(World *world, Chunk *ch) {
                     prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? TilesCreateSmoothStone(px, py) : TilesCreateSmoothDirt(px, py);
                 } else if (py > surf - 64) {
                     f64 n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) + 0.4) / 2.0;
-                    prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? TilesCreateSmoothDirt(px, py) : MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x00ff00);
+                    prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? TilesCreateSmoothDirt(px, py) : MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0x00ff00);
                 } else if (py > surf - 65) {
                     if (rand() % 2 == 0) prop[x + y * CHUNK_W] = TilesCreateGrass();
                 } else {
@@ -254,7 +254,7 @@ void DefaultGenerator::generateChunk(World *world, Chunk *ch) {
                     prop[x + y * CHUNK_W] = (n * (1 - thru) + n2 * thru) < 0.5 ? TilesCreateSmoothStone(px, py) : TilesCreateSmoothDirt(px, py);
                 } else if (py > surf - 64) {
                     f64 n = ((world->noise.GetPerlin(px * 4.0, py * 4.0, 0) / 2.0 + 0.5) + 0.4) / 2.0;
-                    prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? TilesCreateSmoothDirt(px, py) : MaterialInstance(&MaterialsList::GENERIC_SOLID, 0x0000ff);
+                    prop[x + y * CHUNK_W] = n < abs((surf - 64) - py) / 64.0 ? TilesCreateSmoothDirt(px, py) : MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0x0000ff);
                 } else if (py > surf - 65) {
                     if (rand() % 2 == 0) prop[x + y * CHUNK_W] = TilesCreateGrass();
                 } else {

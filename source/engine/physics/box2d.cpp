@@ -589,18 +589,20 @@ void b2World::DestroyBody(b2Body *b) {
     }
 
     // Delete the attached joints.
-    b2JointEdge *je = b->m_jointList;
-    while (je) {
-        b2JointEdge *je0 = je;
-        je = je->next;
+    if (b->m_jointList != NULL) {
+        b2JointEdge *je = b->m_jointList;
+        while (je) {
+            b2JointEdge *je0 = je;
+            je = je->next;
 
-        if (m_destructionListener) {
-            m_destructionListener->SayGoodbye(je0->joint);
+            if (m_destructionListener) {
+                m_destructionListener->SayGoodbye(je0->joint);
+            }
+
+            DestroyJoint(je0->joint);
+
+            b->m_jointList = je;
         }
-
-        DestroyJoint(je0->joint);
-
-        b->m_jointList = je;
     }
     b->m_jointList = nullptr;
 
@@ -9550,9 +9552,9 @@ void b2DistanceProxy::Set(const PVec2 *vertices, i32 count, float radius) {
 }
 
 struct b2SimplexVertex {
-    PVec2 wA;   // support point in proxyA
-    PVec2 wB;   // support point in proxyB
-    PVec2 w;    // wB - wA
+    PVec2 wA;    // support point in proxyA
+    PVec2 wB;    // support point in proxyB
+    PVec2 w;     // wB - wA
     float a;     // barycentric coordinate for closest point
     i32 indexA;  // wA index
     i32 indexB;  // wB index

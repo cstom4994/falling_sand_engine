@@ -572,7 +572,7 @@ void R_CloseCurrentRenderer(void) {
 }
 
 void R_Quit(void) {
-    if (gpu_num_error_codes > 0) METADOT_ERROR("R_Quit: %d uncleared error%s.", gpu_num_error_codes, (gpu_num_error_codes > 1 ? "s" : ""));
+    if (gpu_num_error_codes > 0) METADOT_ERROR(std::format("RendererQuit: {0} uncleared error {1}.", gpu_num_error_codes, (gpu_num_error_codes > 1 ? "s" : "")).c_str());
 
     gpu_free_error_queue();
 

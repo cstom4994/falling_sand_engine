@@ -7,8 +7,8 @@
 Item::Item() {}
 
 Item::~Item() {
-    R_FreeImage(texture);
-    SDL_FreeSurface(surface);
+    ME_ASSERT_E(this->texture);
+    ME_ASSERT_E(this->surface);
 }
 
 Item *Item::makeItem(ItemFlags flags, RigidBody *rb, std::string n) {
@@ -26,6 +26,13 @@ Item *Item::makeItem(ItemFlags flags, RigidBody *rb, std::string n) {
     i->name = n;
 
     return i;
+}
+
+void Item::deleteItem(Item *item) {
+    if (item != NULL) {
+        if (item->texture != NULL) R_FreeImage(item->texture);
+        if (item->surface != NULL) SDL_FreeSurface(item->surface);
+    }
 }
 
 u32 getpixel(C_Surface *surface, int x, int y) {

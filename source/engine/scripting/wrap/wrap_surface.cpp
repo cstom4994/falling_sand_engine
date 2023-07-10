@@ -983,6 +983,11 @@ static int opentype_image(lua_State *L) {
 
 /* color routines */
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4838)
+#endif
+
 static lbind_EnumItem colors[] = {{"aliceblue", 0xFFF0F8FF},
                                   {"antiquewhite", 0xFFFAEBD7},
                                   {"aqua", 0xFF00FFFF},
@@ -1125,6 +1130,10 @@ static lbind_EnumItem colors[] = {{"aliceblue", 0xFFF0F8FF},
                                   {"yellow", 0xFFFFFF00},
                                   {"yellowgreen", 0xFF9ACD32},
                                   {NULL, 0}};
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 static MEsurface_color unpack_color(unsigned packed) {
     MEsurface_color color;

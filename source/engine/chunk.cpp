@@ -107,22 +107,22 @@ void ChunkRead(Chunk *_struct) {
 
         // unsigned int content;
         // for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
-        // 	myfile.read((char*)&content, sizeof(unsigned int));
-        // 	int id = content;
-        // 	myfile.read((char*)&content, sizeof(unsigned int));
-        // 	u32 color = content;
-        // 	tiles[i] = MaterialInstance(global.GameData_.materials_container[id], color);
+        //  myfile.read((char*)&content, sizeof(unsigned int));
+        //  int id = content;
+        //  myfile.read((char*)&content, sizeof(unsigned int));
+        //  u32 color = content;
+        //  tiles[i] = MaterialInstance(GAME()->materials_container[id], color);
         // }
         // for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
-        // 	myfile.read((char*)&content, sizeof(unsigned int));
-        // 	int id = content;
-        // 	myfile.read((char*)&content, sizeof(unsigned int));
-        // 	u32 color = content;
-        // 	layer2[i] = MaterialInstance(global.GameData_.materials_container[id], color);
+        //  myfile.read((char*)&content, sizeof(unsigned int));
+        //  int id = content;
+        //  myfile.read((char*)&content, sizeof(unsigned int));
+        //  u32 color = content;
+        //  layer2[i] = MaterialInstance(GAME()->materials_container[id], color);
         // }
         // for (int i = 0; i < CHUNK_W * CHUNK_H; i++) {
-        // 	myfile.read((char*)&content, sizeof(unsigned int));
-        // 	background[i] = content;
+        //  myfile.read((char*)&content, sizeof(unsigned int));
+        //  background[i] = content;
         // }
 
         if (src_size != CHUNK_W * CHUNK_H * 2 * sizeof(MaterialInstanceData))
@@ -154,7 +154,7 @@ void ChunkRead(Chunk *_struct) {
             // twice as fast to set fields instead of making new ones
             tiles[i].color = readBuf[i].color;
             tiles[i].temperature = readBuf[i].temperature;
-            tiles[i].mat = global.GameData_.materials_array[readBuf[i].index];
+            tiles[i].mat = GAME()->materials_array[readBuf[i].index];
             // tiles[i].id = MaterialInstance::_curID++;
             // tiles[i].color = readBuf[i].color;
             // tiles[i].temperature = readBuf[i].temperature;
@@ -162,7 +162,7 @@ void ChunkRead(Chunk *_struct) {
 
             layer2[i].color = readBuf[i + CHUNK_W * CHUNK_H].color;
             layer2[i].temperature = readBuf[i + CHUNK_W * CHUNK_H].temperature;
-            layer2[i].mat = global.GameData_.materials_array[readBuf[CHUNK_W * CHUNK_H + i].index];
+            layer2[i].mat = GAME()->materials_array[readBuf[CHUNK_W * CHUNK_H + i].index];
             // layer2[i].id = MaterialInstance::_curID++;
             // layer2[i].color = readBuf[CHUNK_W * CHUNK_H + i].color;
             // layer2[i].temperature = readBuf[CHUNK_W * CHUNK_H + i].temperature;

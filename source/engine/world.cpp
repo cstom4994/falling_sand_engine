@@ -193,11 +193,11 @@ RigidBody *World::makeRigidBody(b2BodyType type, f32 x, f32 y, f32 angle, b2Poly
             for (int yy = 0; yy < rb->matHeight; yy++) {
                 u32 pixel = R_GET_PIXEL(rb->get_surface(), xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
-                    MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &MaterialsList::FIRE : &MaterialsList::OBSIDIAN, xx + (int)x, yy + (int)y);
+                    MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &GAME()->materials_list.FIRE : &GAME()->materials_list.OBSIDIAN, xx + (int)x, yy + (int)y);
                     inst.color = pixel;
                     rb->tiles[xx + yy * rb->matWidth] = inst;
                 } else {
-                    MaterialInstance inst = TilesCreate(&MaterialsList::GENERIC_AIR, xx + (int)x, yy + (int)y);
+                    MaterialInstance inst = TilesCreate(&GAME()->materials_list.GENERIC_AIR, xx + (int)x, yy + (int)y);
                     rb->tiles[xx + yy * rb->matWidth] = inst;
                 }
             }
@@ -206,7 +206,7 @@ RigidBody *World::makeRigidBody(b2BodyType type, f32 x, f32 y, f32 angle, b2Poly
         // for (int x = 0; x < rb->surface->w; x++) {
         //     for (int y = 0; y < rb->surface->h; y++) {
         //         MaterialInstance mat = rb->tiles[x + y * rb->surface->w];
-        //         if (mat.mat->id == MaterialsList::GENERIC_AIR.id) {
+        //         if (mat.mat->id == GAME()->materials_list.GENERIC_AIR.id) {
         //             R_GET_PIXEL(rb->surface, x, y) = 0x00000000;
         //         } else {
         //             R_GET_PIXEL(rb->surface, x, y) = (mat.mat->alpha << 24) + mat.color;
@@ -248,11 +248,11 @@ RigidBody *World::makeRigidBodyMulti(b2BodyType type, f32 x, f32 y, f32 angle, s
             for (int yy = 0; yy < rb->matHeight; yy++) {
                 u32 pixel = R_GET_PIXEL(rb->get_surface(), xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
-                    MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &MaterialsList::FIRE : &MaterialsList::OBSIDIAN, xx + (int)x, yy + (int)y);
+                    MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &GAME()->materials_list.FIRE : &GAME()->materials_list.OBSIDIAN, xx + (int)x, yy + (int)y);
                     inst.color = pixel;
                     rb->tiles[xx + yy * rb->matWidth] = inst;
                 } else {
-                    MaterialInstance inst = TilesCreate(&MaterialsList::GENERIC_AIR, xx + (int)x, yy + (int)y);
+                    MaterialInstance inst = TilesCreate(&GAME()->materials_list.GENERIC_AIR, xx + (int)x, yy + (int)y);
                     rb->tiles[xx + yy * rb->matWidth] = inst;
                 }
             }
@@ -286,7 +286,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     for (int x = 0; x < texture->w; x++) {
         for (int y = 0; y < texture->h; y++) {
             MaterialInstance mat = rb->tiles[x + y * texture->w];
-            if (mat.mat->id == MaterialsList::GENERIC_AIR.id) {
+            if (mat.mat->id == GAME()->materials_list.GENERIC_AIR.id) {
                 R_GET_PIXEL(texture, x, y) = 0x00000000;
             } else {
                 R_GET_PIXEL(texture, x, y) = (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
@@ -1052,7 +1052,7 @@ void World::tick() {
 
                                 int type = tile.mat->physicsType;
 
-                                if (tile.mat->id == MaterialsList::FIRE.id) {
+                                if (tile.mat->id == GAME()->materials_list.FIRE.id) {
                                     if (rand() % 10 == 0) {
                                         u32 rgb = 255;
                                         rgb = (rgb << 8) + 100 + rand() % 50;
@@ -1104,14 +1104,14 @@ void World::tick() {
                                     MaterialInstance belowTile = tiles[x + (y + 1) * width];
                                     int below = belowTile.mat->physicsType;
 
-                                    if (tile.mat->interact && belowTile.mat->id >= 0 && belowTile.mat->id < global.GameData_.materials_count && tile.mat->nInteractions[belowTile.mat->id] > 0) {
+                                    if (tile.mat->interact && belowTile.mat->id >= 0 && belowTile.mat->id < GAME()->materials_count && tile.mat->nInteractions[belowTile.mat->id] > 0) {
                                         for (int i = 0; i < tile.mat->nInteractions[belowTile.mat->id]; i++) {
                                             MaterialInteraction in = tile.mat->interactions[belowTile.mat->id][i];
                                             if (in.type == INTERACT_TRANSFORM_MATERIAL) {
                                                 for (int xx = in.ofsX - in.data2; xx <= in.ofsX + in.data2; xx++) {
                                                     for (int yy = in.ofsY - in.data2; yy <= in.ofsY + in.data2; yy++) {
                                                         if (tiles[(x + xx) + (y + yy) * width].mat->id == belowTile.mat->id) {
-                                                            tiles[(x + xx) + (y + yy) * width] = TilesCreate(global.GameData_.materials_container[in.data1], x + xx, y + yy);
+                                                            tiles[(x + xx) + (y + yy) * width] = TilesCreate(GAME()->materials_container[in.data1], x + xx, y + yy);
                                                             dirty[(x + xx) + (y + yy) * width] = true;
                                                             tickVisited[(x + xx) + (y + yy) * width] = true;
                                                         }
@@ -1121,7 +1121,7 @@ void World::tick() {
                                                 for (int xx = in.ofsX - in.data2; xx <= in.ofsX + in.data2; xx++) {
                                                     for (int yy = in.ofsY - in.data2; yy <= in.ofsY + in.data2; yy++) {
                                                         if ((xx == 0 && yy == 0) || tiles[(x + xx) + (y + yy) * width].mat->id == Tiles_NOTHING.mat->id) {
-                                                            tiles[(x + xx) + (y + yy) * width] = TilesCreate(global.GameData_.materials_container[in.data1], x + xx, y + yy);
+                                                            tiles[(x + xx) + (y + yy) * width] = TilesCreate(GAME()->materials_container[in.data1], x + xx, y + yy);
                                                             dirty[(x + xx) + (y + yy) * width] = true;
                                                             tickVisited[(x + xx) + (y + yy) * width] = true;
                                                         }
@@ -1138,7 +1138,7 @@ void World::tick() {
                                             MaterialInteraction in = tile.mat->reactions[i];
                                             if (in.type == REACT_TEMPERATURE_BELOW) {
                                                 if (tile.temperature < in.data1) {
-                                                    tiles[index] = TilesCreate(global.GameData_.materials_container[in.data2], x, y);
+                                                    tiles[index] = TilesCreate(GAME()->materials_container[in.data2], x, y);
                                                     tiles[index].temperature = tile.temperature;
                                                     dirty[index] = true;
                                                     tickVisited[index] = true;
@@ -1146,7 +1146,7 @@ void World::tick() {
                                                 }
                                             } else if (in.type == REACT_TEMPERATURE_ABOVE) {
                                                 if (tile.temperature > in.data1) {
-                                                    tiles[index] = TilesCreate(global.GameData_.materials_container[in.data2], x, y);
+                                                    tiles[index] = TilesCreate(GAME()->materials_container[in.data2], x, y);
                                                     tiles[index].temperature = tile.temperature;
                                                     dirty[index] = true;
                                                     tickVisited[index] = true;
@@ -1417,14 +1417,14 @@ void World::tick() {
                                     MaterialInstance belowTile = tiles[(x) + (y + 1) * width];
                                     int below = belowTile.mat->physicsType;
 
-                                    // if(tile.mat->interact && belowTile.mat->id >= 0 && belowTile.mat->id < global.GameData_.materials_count && tile.mat->nInteractions[belowTile.mat->id] > 0) {
+                                    // if(tile.mat->interact && belowTile.mat->id >= 0 && belowTile.mat->id < GAME()->materials_count && tile.mat->nInteractions[belowTile.mat->id] > 0) {
                                     //     for(int i = 0; i < tile.mat->nInteractions[belowTile.mat->id]; i++) {
                                     //         MaterialInteraction in = tile.mat->interactions[belowTile.mat->id][i];
                                     //         if(in.type == INTERACT_TRANSFORM_MATERIAL) {
                                     //             for(int xx = in.ofsX - in.data2; xx <= in.ofsX + in.data2; xx++) {
                                     //                 for(int yy = in.ofsY - in.data2; yy <= in.ofsY + in.data2; yy++) {
                                     //                     if(tiles[(x + xx) + (y + yy) * width].mat->id == belowTile.mat->id) {
-                                    //                         tiles[(x + xx) + (y + yy) * width] = TilesCreate(global.GameData_.materials_container[in.data1], x + xx, y + yy);
+                                    //                         tiles[(x + xx) + (y + yy) * width] = TilesCreate(GAME()->materials_container[in.data1], x + xx, y + yy);
                                     //                         dirty[(x + xx) + (y + yy) * width] = true;
                                     //                         tickVisited[(x + xx) + (y + yy) * width] = true;
                                     //                     }
@@ -1434,7 +1434,7 @@ void World::tick() {
                                     //             for(int xx = in.ofsX - in.data2; xx <= in.ofsX + in.data2; xx++) {
                                     //                 for(int yy = in.ofsY - in.data2; yy <= in.ofsY + in.data2; yy++) {
                                     //                     if((xx == 0 && yy == 0) || tiles[(x + xx) + (y + yy) * width].mat->id == Tiles_NOTHING.mat->id) {
-                                    //                         tiles[(x + xx) + (y + yy) * width] = TilesCreate(global.GameData_.materials_container[in.data1], x + xx, y + yy);
+                                    //                         tiles[(x + xx) + (y + yy) * width] = TilesCreate(GAME()->materials_container[in.data1], x + xx, y + yy);
                                     //                         dirty[(x + xx) + (y + yy) * width] = true;
                                     //                         tickVisited[(x + xx) + (y + yy) * width] = true;
                                     //                     }
@@ -1451,7 +1451,7 @@ void World::tick() {
                                     //         MaterialInteraction in = tile.mat->reactions[i];
                                     //         if(in.type == REACT_TEMPERATURE_BELOW) {
                                     //             if(tile.temperature < in.data1) {
-                                    //                 tiles[index] = TilesCreate(global.GameData_.materials_container[in.data2], x, y);
+                                    //                 tiles[index] = TilesCreate(GAME()->materials_container[in.data2], x, y);
                                     //                 tiles[index].temperature = tile.temperature;
                                     //                 dirty[index] = true;
                                     //                 tickVisited[index] = true;
@@ -1459,7 +1459,7 @@ void World::tick() {
                                     //             }
                                     //         } else if(in.type == REACT_TEMPERATURE_ABOVE) {
                                     //             if(tile.temperature > in.data1) {
-                                    //                 tiles[index] = TilesCreate(global.GameData_.materials_container[in.data2], x, y);
+                                    //                 tiles[index] = TilesCreate(GAME()->materials_container[in.data2], x, y);
                                     //                 tiles[index].temperature = tile.temperature;
                                     //                 dirty[index] = true;
                                     //                 tickVisited[index] = true;
@@ -1470,7 +1470,7 @@ void World::tick() {
                                     //     if(react) continue;
                                     // }
 
-                                    if (tile.mat->id == MaterialsList::WATER.id && belowTile.mat->id == MaterialsList::LAVA.id) {
+                                    if (tile.mat->id == GAME()->materials_list.WATER.id && belowTile.mat->id == GAME()->materials_list.LAVA.id) {
                                         tiles[index] = TilesCreateSteam();
                                         dirty[index] = true;
                                         tiles[(x) + (y + 1) * width] = TilesCreateObsidian(x, y + 1);
@@ -1479,7 +1479,7 @@ void World::tick() {
 
                                         for (int xx = -1; xx <= 1; xx++) {
                                             for (int yy = 0; yy <= 2; yy++) {
-                                                if (tiles[(x + xx) + (y + yy) * width].mat->id == MaterialsList::LAVA.id) {
+                                                if (tiles[(x + xx) + (y + yy) * width].mat->id == GAME()->materials_list.LAVA.id) {
                                                     tiles[(x + xx) + (y + yy) * width] = TilesCreateObsidian(x + xx, y + yy);
                                                     dirty[(x + xx) + (y + yy) * width] = true;
                                                     tickVisited[(x + xx) + (y + yy) * width] = true;
@@ -1834,7 +1834,7 @@ void World::tick() {
                                         dirty[(x + 1) + (y)*width] = true;
                                         tickVisited[(x + 1) + (y)*width] = true;
                                     } else {
-                                        if (tile.mat->id == MaterialsList::STEAM.id) {
+                                        if (tile.mat->id == GAME()->materials_list.STEAM.id) {
                                             if (rand() % 10 == 0) {
                                                 tiles[index] = TilesCreateWater();
                                                 dirty[index] = true;
@@ -1976,16 +1976,16 @@ void World::renderCells(unsigned char **texture) {
         (*texture)[offset + 1] = (color >> 8) & 0xff;                    // g
         (*texture)[offset + 0] = (color >> 16) & 0xff;                   // r
         (*texture)[offset + 3] = (u8)(cur->tile.mat->alpha * alphaMod);  // a
-        // SDL_SetENGINE()->DrawColor(renderer, (cur->tile.color >> 16) & 0xff, (cur->tile.color >> 8) & 0xff, (cur->tile.color >> 0) & 0xff, (u8)(cur->tile.mat->alpha * alphaMod));
-        // SDL_ENGINE()->DrawPoint(renderer, (int)cur->x, (int)cur->y);
+        // SDL_SetRenderDrawColor(renderer, (cur->tile.color >> 16) & 0xff, (cur->tile.color >> 8) & 0xff, (cur->tile.color >> 0) & 0xff, (u8)(cur->tile.mat->alpha * alphaMod));
+        // SDL_RenderDrawPoint(renderer, (int)cur->x, (int)cur->y);
     }
 }
 
 void World::tickCells() {
 
     /*C_Rect* fr = new C_Rect{ 0, 0, width, height };
-    SDL_SetENGINE()->DrawColor(renderer, 0, 0, 0, 0);
-    SDL_ENGINE()->Clear(renderer);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
     delete fr;*/
 
     auto func = [&](CellData *cur) {

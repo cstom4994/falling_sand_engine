@@ -5,6 +5,7 @@
 
 #include <vector>
 
+#include "engine/core/global.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/ui/imgui_impl.hpp"
@@ -12,12 +13,6 @@
 #include "world.hpp"
 
 class Game;
-
-struct I18N {
-    void Init();
-    void Load(std::string lang);
-    std::string Get(std::string text);
-};
 
 namespace GameUI {
 
@@ -42,7 +37,7 @@ public:
     int DebugDrawUI__selIndex = -1;
     std::vector<R_Image *> DebugDrawUI__images = {};
     std::vector<R_Image *> DebugDrawUI__tools_images = {};
-    Material *DebugDrawUI__selectedMaterial = &MaterialsList::GENERIC_AIR;
+    Material *DebugDrawUI__selectedMaterial = &GAME()->materials_list.GENERIC_AIR;
     u8 DebugDrawUI__brushSize = 5;
 
     // OptionsUI

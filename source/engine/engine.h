@@ -73,8 +73,6 @@ extern EngineData g_engine_data;
 
 ME_INLINE EngineData *ENGINE() { return &g_engine_data; }
 
-#define ENGINE() ENGINE()
-
 void ExitGame();
 void GameExited();
 

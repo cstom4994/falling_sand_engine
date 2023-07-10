@@ -29,7 +29,7 @@ static void create_biome(std::string name, int id) {
 
     METADOT_BUG("[LUA] create_biome ", name, " = ", id);
     Biome *b = new Biome(name, id);
-    global.GameData_.biome_container.push_back(b);
+    GAME()->biome_container.push_back(b);
 }
 
 // static void audio_load_bank(std::string name, unsigned int type) {}
@@ -54,7 +54,7 @@ Biome *BiomeGet(std::string name) {
 
     std::lock_guard<std::mutex> lock_here(g_data_getter_mutex);
 
-    for (auto t : global.GameData_.biome_container)
+    for (auto t : GAME()->biome_container)
         if (t->name == name) return t;
     return nullptr;
 }

@@ -818,8 +818,8 @@ void ImGuiLayer::Init() {
     //    // Register variables
     //    console_imgui->System().RegisterVariable("background_color", clear_color, imvec4_setter);
 
-    //    console_imgui->System().RegisterVariable("plPosX", global.GameData_.plPosX, Command::Arg<f32>(""));
-    //    console_imgui->System().RegisterVariable("plPosY", global.GameData_.plPosY, Command::Arg<f32>(""));
+    //    console_imgui->System().RegisterVariable("plPosX", GAME()->plPosX, Command::Arg<f32>(""));
+    //    console_imgui->System().RegisterVariable("plPosY", GAME()->plPosY, Command::Arg<f32>(""));
 
     //    console_imgui->System().RegisterVariable("scale", Screen.gameScale, Command::Arg<i32>(""));
 
