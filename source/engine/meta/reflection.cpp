@@ -13,7 +13,7 @@
 #include "engine/core/memory.h"
 #include "engine/utils/utility.hpp"
 
-//#define STB_DS_IMPLEMENTATION
+// #define STB_DS_IMPLEMENTATION
 #include "libs/external/stb_ds.h"
 
 meta_registry_t meta_registry_new() {
@@ -112,6 +112,40 @@ void print_obj(meta_registry_t *meta, void *obj, meta_class_t *cls) {
         }
     }
 }
+
+#if 1
+
+namespace UMeta {
+struct Range {
+    float minV;
+    float maxV;
+};
+}  // namespace UMeta
+
+template <>
+struct ME::meta::static_refl::TypeInfo<UMeta::Range> : TypeInfoBase<UMeta::Range> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("minV"), &Type::minV},
+            Field{TSTR("maxV"), &Type::maxV},
+    };
+};
+
+struct Point {
+    [[Attr::Range(1.f, 2.f)]] float x;
+    float y;
+};
+
+template <>
+struct ME::meta::static_refl::TypeInfo<Point> : TypeInfoBase<Point> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("x"), &Type::x, AttrList{Attr{TSTR("UMeta::Range"), std::tuple{1.f, 2.f}}}},
+            Field{TSTR("y"), &Type::y},
+    };
+};
+
+#endif
 
 i32 test() {
     meta_registry_t meta = meta_registry_new();
@@ -235,6 +269,16 @@ public:
 
 void init_reflection() {
     // test_reflection();
+
+    Point p{1.f, 2.f};
+    ME::meta::static_refl::TypeInfo<Point>::ForEachVarOf(p, [](const auto &field, auto &&var) {
+        constexpr auto tstr_range = TSTR("UMeta::Range");
+        if constexpr (decltype(field.attrs)::Contains(tstr_range)) {
+            // auto r = attr_init(tstr_range, field.attrs.Find(tstr_range).value);
+            std::cout << "[" << tstr_range.View() << "] " << std::endl;
+        }
+        std::cout << field.name << ": " << var << "\n====\n" << std::endl;
+    });
 
     ReflTestClass testclass;
     testclass.f1 = 1200.f;

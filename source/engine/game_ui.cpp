@@ -23,7 +23,6 @@
 #include "game/player.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
-#include "libs/imgui/imgui.h"
 #include "world_generator.h"
 
 using namespace ME;
@@ -586,21 +585,15 @@ void DrawDebugUI(Game *game) {
         ImGui::Checkbox(CC("调试材料"), &global.game->GameIsolate_.globaldef.draw_detailed_material_info);
         ImGui::Unindent(10.0f);
 
-        if (ImGui::TreeNode(CC("物理"))) {
-            ImGui::Checkbox(CC("绘制物理调试"), &global.game->GameIsolate_.globaldef.draw_physics_debug);
+        ImGui::SeparatorText(CC("物理"));
+        ImGui::Checkbox(CC("绘制物理调试"), &global.game->GameIsolate_.globaldef.draw_physics_debug);
 
-            if (ImGui::TreeNode("Box2D")) {
-                ImGui::Checkbox("shape", &global.game->GameIsolate_.globaldef.draw_b2d_shape);
-                ImGui::Checkbox("joint", &global.game->GameIsolate_.globaldef.draw_b2d_joint);
-                ImGui::Checkbox("aabb", &global.game->GameIsolate_.globaldef.draw_b2d_aabb);
-                ImGui::Checkbox("pair", &global.game->GameIsolate_.globaldef.draw_b2d_pair);
-                ImGui::Checkbox("center of mass", &global.game->GameIsolate_.globaldef.draw_b2d_centerMass);
-
-                ImGui::TreePop();
-            }
-
-            ImGui::TreePop();
-        }
+        ImGui::SeparatorText(CC("Box2D"));
+        ImGui::Checkbox("shape", &global.game->GameIsolate_.globaldef.draw_b2d_shape);
+        ImGui::Checkbox("joint", &global.game->GameIsolate_.globaldef.draw_b2d_joint);
+        ImGui::Checkbox("aabb", &global.game->GameIsolate_.globaldef.draw_b2d_aabb);
+        ImGui::Checkbox("pair", &global.game->GameIsolate_.globaldef.draw_b2d_pair);
+        ImGui::Checkbox("center of mass", &global.game->GameIsolate_.globaldef.draw_b2d_centerMass);
 
         if (ImGui::TreeNode(CC("GLSL方法"))) {
             if (ImGui::Button(CC("重新加载GLSL"))) {
@@ -608,41 +601,35 @@ void DrawDebugUI(Game *game) {
             }
             ImGui::Checkbox(CC("绘制GLSL"), &global.game->GameIsolate_.globaldef.draw_shaders);
 
-            if (ImGui::TreeNode(CC("光照"))) {
-                ImGui::SetNextItemWidth(80);
-                ImGui::SliderFloat(CC("质量"), &global.game->GameIsolate_.globaldef.lightingQuality, 0.0, 1.0, "", 0);
-                ImGui::Checkbox(CC("覆盖"), &global.game->GameIsolate_.globaldef.draw_light_overlay);
-                ImGui::Checkbox(CC("简单采样"), &global.game->GameIsolate_.globaldef.simpleLighting);
-                ImGui::Checkbox(CC("放射"), &global.game->GameIsolate_.globaldef.lightingEmission);
-                ImGui::Checkbox(CC("抖动"), &global.game->GameIsolate_.globaldef.lightingDithering);
+            ImGui::SeparatorText(CC("光照"));
+            ImGui::SetNextItemWidth(80);
+            ImGui::SliderFloat(CC("质量"), &global.game->GameIsolate_.globaldef.lightingQuality, 0.0, 1.0, "", 0);
+            ImGui::Checkbox(CC("覆盖"), &global.game->GameIsolate_.globaldef.draw_light_overlay);
+            ImGui::Checkbox(CC("简单采样"), &global.game->GameIsolate_.globaldef.simpleLighting);
+            ImGui::Checkbox(CC("放射"), &global.game->GameIsolate_.globaldef.lightingEmission);
+            ImGui::Checkbox(CC("抖动"), &global.game->GameIsolate_.globaldef.lightingDithering);
 
-                ImGui::TreePop();
-            }
-
-            if (ImGui::TreeNode(CC("水体"))) {
-                const char *items[] = {"off", "flow map", "distortion"};
-                const char *combo_label = items[global.game->GameIsolate_.globaldef.water_overlay];
-                ImGui::SetNextItemWidth(80 + 24);
-                if (ImGui::BeginCombo("Overlay", combo_label, 0)) {
-                    for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
-                        const bool is_selected = (global.game->GameIsolate_.globaldef.water_overlay == n);
-                        if (ImGui::Selectable(items[n], is_selected)) {
-                            global.game->GameIsolate_.globaldef.water_overlay = n;
-                        }
-
-                        // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-                        if (is_selected) {
-                            ImGui::SetItemDefaultFocus();
-                        }
+            ImGui::SeparatorText(CC("流体"));
+            const char *items[] = {"off", "flow map", "distortion"};
+            const char *combo_label = items[global.game->GameIsolate_.globaldef.water_overlay];
+            ImGui::SetNextItemWidth(80 + 24);
+            if (ImGui::BeginCombo("Overlay", combo_label, 0)) {
+                for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
+                    const bool is_selected = (global.game->GameIsolate_.globaldef.water_overlay == n);
+                    if (ImGui::Selectable(items[n], is_selected)) {
+                        global.game->GameIsolate_.globaldef.water_overlay = n;
                     }
-                    ImGui::EndCombo();
+
+                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                    if (is_selected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
                 }
-
-                ImGui::Checkbox(CC("显示流程"), &global.game->GameIsolate_.globaldef.water_showFlow);
-                ImGui::Checkbox(CC("像素化"), &global.game->GameIsolate_.globaldef.water_pixelated);
-
-                ImGui::TreePop();
+                ImGui::EndCombo();
             }
+
+            ImGui::Checkbox(CC("显示流程"), &global.game->GameIsolate_.globaldef.water_showFlow);
+            ImGui::Checkbox(CC("像素化"), &global.game->GameIsolate_.globaldef.water_pixelated);
 
             ImGui::TreePop();
         }
@@ -856,8 +843,8 @@ void DebugDrawUI__Draw(Game *game) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::ItemFlags_Tool);
                     i3->surface = LoadTexture("data/assets/objects/testPickaxe.png")->surface;
-                    i3->texture = R_CopyImageFromSurface(i3->surface);
-                    R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
+                    i3->image = R_CopyImageFromSurface(i3->surface);
+                    R_SetImageFilter(i3->image, R_FILTER_NEAREST);
                     i3->pivotX = 2;
 
                     auto pl = game->GameIsolate_.world->Reg().find_component<Player>(game->GameIsolate_.world->player);
@@ -879,8 +866,8 @@ void DebugDrawUI__Draw(Game *game) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::ItemFlags_Hammer);
                     i3->surface = LoadTexture("data/assets/objects/testHammer.png")->surface;
-                    i3->texture = R_CopyImageFromSurface(i3->surface);
-                    R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
+                    i3->image = R_CopyImageFromSurface(i3->surface);
+                    R_SetImageFilter(i3->image, R_FILTER_NEAREST);
                     i3->pivotX = 2;
                     auto pl = game->GameIsolate_.world->Reg().find_component<Player>(game->GameIsolate_.world->player);
                     pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world.get());
@@ -900,8 +887,8 @@ void DebugDrawUI__Draw(Game *game) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::ItemFlags_Vacuum);
                     i3->surface = LoadTexture("data/assets/objects/testVacuum.png")->surface;
-                    i3->texture = R_CopyImageFromSurface(i3->surface);
-                    R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
+                    i3->image = R_CopyImageFromSurface(i3->surface);
+                    R_SetImageFilter(i3->image, R_FILTER_NEAREST);
                     i3->pivotX = 6;
                     auto pl = game->GameIsolate_.world->Reg().find_component<Player>(game->GameIsolate_.world->player);
                     pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world.get());
@@ -924,8 +911,8 @@ void DebugDrawUI__Draw(Game *game) {
                     i3->surface = LoadTexture("data/assets/objects/testBucket.png")->surface;
                     i3->capacity = 100;
                     i3->loadFillTexture(LoadTexture("data/assets/objects/testBucket_fill.png")->surface);
-                    i3->texture = R_CopyImageFromSurface(i3->surface);
-                    R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
+                    i3->image = R_CopyImageFromSurface(i3->surface);
+                    R_SetImageFilter(i3->image, R_FILTER_NEAREST);
                     i3->pivotX = 0;
                     auto pl = game->GameIsolate_.world->Reg().find_component<Player>(game->GameIsolate_.world->player);
                     pl->setItemInHand(game->GameIsolate_.world->Reg().find_component<WorldEntity>(game->GameIsolate_.world->player), i3, game->GameIsolate_.world.get());

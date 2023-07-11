@@ -9,7 +9,6 @@
 #include "engine/ui/imgui_layer.hpp"
 #include "engine/ui/surface.h"
 #include "engine/ui/surface_gl.h"
-#include "libs/imgui/imgui.h"
 
 void ME_cam_push_matrix(Camera &cam, GLprogram shader, const char *uniform) {
     GLint camera_unif = glGetUniformLocation(shader, uniform);

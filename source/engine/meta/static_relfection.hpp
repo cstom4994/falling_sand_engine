@@ -256,7 +256,7 @@ constexpr const auto& ElemList<Elems...>::Find(Name) const {
     }();
     static_assert(idx != static_cast<std::size_t>(-1));
     return Get<idx>();*/
-    return Get<ME::FindIf_v<TypeList<Elems...>, detail::IsSameNameWith<Name>::template Ttype>>();
+    return Get<ME::cpp::FindIf_v<TypeList<Elems...>, detail::IsSameNameWith<Name>::template Ttype>>();
 }
 
 template <typename... Elems>

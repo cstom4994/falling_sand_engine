@@ -15,6 +15,7 @@ u32 ME_Shaders_LoadShader(R_ShaderEnum thisype, const char* filename) {
 
     if (!source) {
         R_PushErrorCode("load_shader", R_ERROR_FILE_NOT_FOUND, "Shader file \"%s\" not found", filename);
+        ME_fs_freestring(source);
         return METADOT_FAILED;
     }
 

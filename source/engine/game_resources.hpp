@@ -31,6 +31,11 @@ typedef struct TexturePack {
     Texture *obsidian;
     Texture *caveBG;
     Texture *testAse;
+
+    Texture *testVacuum;
+    Texture *testHammer;
+    Texture *testPickaxe;
+    Texture *testBucket;
 } TexturePack;
 
 void InitTexture(TexturePack *tex);

@@ -44,7 +44,7 @@ struct test_visitor {
 
 template <typename T>
 void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
-    ME::Struct::for_each(_struct, [&](const char *name, const auto &value) {
+    ME::meta::dostruct::for_each(_struct, [&](const char *name, const auto &value) {
         // METADOT_INFO("{} == {} ({})", name, value, typeid(value).name());
         struct_as(out, table_name, name, value);
     });
@@ -56,10 +56,10 @@ void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
 // void LoadLuaConfig(const T &_struct, LuaWrapper::LuaTable *luat) {
 //     int idx = 0;
 //     test_visitor vis;
-//     ME::Struct::apply_visitor(vis, _struct);
-//     ME::Struct::for_each(_struct, [&](const char *name, const auto &value) {
-//         // (*ME::Struct::get_pointer<idx>()) =
-//         //         (*luat)[name].get<decltype(ME::Struct::get<idx>(_struct))>();
+//     ME::meta::dostruct::apply_visitor(vis, _struct);
+//     ME::meta::dostruct::for_each(_struct, [&](const char *name, const auto &value) {
+//         // (*ME::meta::dostruct::get_pointer<idx>()) =
+//         //         (*luat)[name].get<decltype(ME::meta::dostruct::get<idx>(_struct))>();
 //         // (*vis1.result[idx].first) = (*luat)[name].get<>();
 //     });
 // }

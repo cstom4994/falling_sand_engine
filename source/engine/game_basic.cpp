@@ -8,6 +8,7 @@
 #include "engine/core/core.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
+#include "engine/core/memory.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/scripting.hpp"
 #include "game.hpp"
@@ -28,7 +29,7 @@ static void create_biome(std::string name, int id) {
     std::lock_guard<std::mutex> lock_here(g_data_getter_mutex);
 
     METADOT_BUG("[LUA] create_biome ", name, " = ", id);
-    Biome *b = new Biome(name, id);
+    Biome *b = alloc<Biome>::safe_malloc(name, id);
     GAME()->biome_container.push_back(b);
 }
 
@@ -36,8 +37,15 @@ static void create_biome(std::string name, int id) {
 // static void audio_load_event(std::string event) { global.audioEngine.LoadEvent(event); }
 // static void audio_play_event(std::string event) { global.audioEngine.PlayEvent(event); }
 
-static void textures_init() { InitTexture(global.game->GameIsolate_.texturepack); }
-static void textures_end() { EndTexture(global.game->GameIsolate_.texturepack); }
+static void textures_init() {
+    // 贴图初始化
+    global.game->GameIsolate_.texturepack = (TexturePack *)ME_MALLOC(sizeof(TexturePack));
+    InitTexture(global.game->GameIsolate_.texturepack);
+}
+static void textures_end() {
+    EndTexture(global.game->GameIsolate_.texturepack);
+    ME_FREE(global.game->GameIsolate_.texturepack);
+}
 static void textures_load(std::string name, std::string path) {}
 static void controls_init() { ControlSystem::InitKey(); }
 

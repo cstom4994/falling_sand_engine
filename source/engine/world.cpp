@@ -15,20 +15,20 @@
 #include "chunk.hpp"
 #include "engine/core/const.h"
 #include "engine/core/core.hpp"
-#include "engine/utils/utils.hpp"
 #include "engine/core/debug.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/macros.hpp"
 #include "engine/core/mathlib.hpp"
 #include "engine/core/memory.h"
-#include "engine/utils/utility.hpp"
 #include "engine/engine.h"
 #include "engine/game_utils/cells.h"
 #include "engine/game_utils/jsonwarp.h"
 #include "engine/physics/box2d.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/scripting.hpp"
+#include "engine/utils/utility.hpp"
+#include "engine/utils/utils.hpp"
 #include "game_datastruct.hpp"
 #include "game_resources.hpp"
 #include "npc.hpp"
@@ -448,8 +448,8 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
             // if(r.directions[i].x != 0) r.directions[i].x = r.directions[i].x / abs(r.directions[i].x);
             // if(r.directions[i].y != 0) r.directions[i].y = r.directions[i].y / abs(r.directions[i].y);
 
-            for (int ix = 0; ix < SDL_max(abs(r.directions[i].x), 1); ix++) {
-                for (int iy = 0; iy < SDL_max(abs(r.directions[i].y), 1); iy++) {
+            for (int ix = 0; ix < std::max(abs(r.directions[i].x), 1); ix++) {
+                for (int iy = 0; iy < std::max(abs(r.directions[i].y), 1); iy++) {
                     int ilx = (int)(lastX + ix * (r.directions[i].x < 0 ? -1 : 1));
                     int ily = (int)(lastY - iy * (r.directions[i].y < 0 ? -1 : 1));
 
@@ -804,8 +804,8 @@ found : {};
             // if(r.directions[i].x != 0) r.directions[i].x = r.directions[i].x / abs(r.directions[i].x);
             // if(r.directions[i].y != 0) r.directions[i].y = r.directions[i].y / abs(r.directions[i].y);
 
-            for (int ix = 0; ix < SDL_max(abs(r.directions[i].x), 1); ix++) {
-                for (int iy = 0; iy < SDL_max(abs(r.directions[i].y), 1); iy++) {
+            for (int ix = 0; ix < std::max(abs(r.directions[i].x), 1); ix++) {
+                for (int iy = 0; iy < std::max(abs(r.directions[i].y), 1); iy++) {
                     int ilx = (int)(lastX + ix * (r.directions[i].x < 0 ? -1 : 1));
                     int ily = (int)(lastY - iy * (r.directions[i].y < 0 ? -1 : 1));
 
@@ -897,25 +897,25 @@ found : {};
 
 #pragma endregion
 
-    Texture *texture = LoadTexture("data/assets/objects/testObject3.png");
+    // Texture *texture = LoadTexture("data/assets/objects/testObject3.png");
 
-    if (chunk->rb) {
-        delete[] chunk->rb->tiles;
-        if (chunk->rb->get_texture()) {
-            R_FreeImage(chunk->rb->get_texture());
-            SDL_FreeSurface(chunk->rb->get_surface());
-        }
-        delete chunk->rb;
-    }
-    chunk->rb = makeRigidBodyMulti(b2_staticBody, chunk->x * CHUNK_W + loadZone.x, chunk->y * CHUNK_H + loadZone.y, 0, chunk->polys, 1, 0.3, texture->surface);
+    // if (chunk->rb) {
+    //     delete[] chunk->rb->tiles;
+    //     if (chunk->rb->get_texture()) {
+    //         R_FreeImage(chunk->rb->get_texture());
+    //         SDL_FreeSurface(chunk->rb->get_surface());
+    //     }
+    //     delete chunk->rb;
+    // }
+    // chunk->rb = makeRigidBodyMulti(b2_staticBody, chunk->x * CHUNK_W + loadZone.x, chunk->y * CHUNK_H + loadZone.y, 0, chunk->polys, 1, 0.3, texture->surface);
 
-    for (b2Fixture *f = chunk->rb->body->GetFixtureList(); f; f = f->GetNext()) {
-        b2Filter bf = {};
-        bf.categoryBits = 0x0001;
-        f->SetFilterData(bf);
-    }
+    // for (b2Fixture *f = chunk->rb->body->GetFixtureList(); f; f = f->GetNext()) {
+    //     b2Filter bf = {};
+    //     bf.categoryBits = 0x0001;
+    //     f->SetFilterData(bf);
+    // }
 
-    worldRigidBodies.push_back(chunk->rb);
+    // worldRigidBodies.push_back(chunk->rb);
 }
 
 void World::updateWorldMesh() {
@@ -3411,7 +3411,9 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName, bool noSaveLoad) {
             meta.save(worldFileName);
         }
 
-        json metafile = json::parse(ME_fs_readfilestring(metaFilePath));
+        char *c_metafile = ME_fs_readfilestring(metaFilePath);
+
+        json metafile = json::parse(c_metafile);
 
         if (!metafile.empty()) {
 
@@ -3425,6 +3427,8 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName, bool noSaveLoad) {
         } else {
             METADOT_BUG("FP WAS NULL");
         }
+
+        ME_fs_freestring(c_metafile);
 
         delete[] metaFilePath;
     } else {
@@ -3450,7 +3454,7 @@ bool WorldMeta::save(std::string worldFileName) {
     json metafile = json::object();
     json root = json::object();
 
-    ME::Struct::for_each(*this, [&](const char *name, const auto &value) { root.add(name, value); });
+    ME::meta::dostruct::for_each(*this, [&](const char *name, const auto &value) { root.add(name, value); });
 
     // for (auto it = root.begin(); it != root.end(); ++it) {
     //     std::cout << it.key() << ":" << (*it).dump() << std::endl;

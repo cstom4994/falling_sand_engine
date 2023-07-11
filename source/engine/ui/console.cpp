@@ -343,7 +343,7 @@ void ME::MEconsole::Init() {
         }
     });
 
-    ME::Struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) {
+    ME::meta::dostruct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) {
         // console_imgui->System().RegisterVariable(name, value, Command::Arg<int>(""));
         convar.Value(name, value);
     });

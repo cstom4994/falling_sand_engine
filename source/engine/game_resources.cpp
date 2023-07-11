@@ -35,6 +35,11 @@ void InitTexture(TexturePack *tex) {
     tex->iron = LoadTexture("data/assets/textures/iron.png");
     tex->obsidian = LoadTexture("data/assets/textures/obsidian.png");
     tex->caveBG = LoadTexture("data/assets/backgrounds/testCave.png");
+
+    tex->testVacuum = LoadTexture("data/assets/objects/testVacuum.png");
+    tex->testBucket = LoadTexture("data/assets/objects/testBucket.png");
+    tex->testPickaxe = LoadTexture("data/assets/objects/testPickaxe.png");
+    tex->testHammer = LoadTexture("data/assets/objects/testHammer.png");
 }
 
 void EndTexture(TexturePack *tex) {
@@ -58,10 +63,15 @@ void EndTexture(TexturePack *tex) {
     DestroyTexture(tex->obsidian);
     DestroyTexture(tex->caveBG);
     DestroyTexture(tex->testAse);
+
+    DestroyTexture(tex->testVacuum);
+    DestroyTexture(tex->testBucket);
+    DestroyTexture(tex->testPickaxe);
+    DestroyTexture(tex->testHammer);
 }
 
 Texture *CreateTexture(C_Surface *surface) {
-    Texture *tex = new Texture;
+    Texture *tex = (Texture *)ME_MALLOC(sizeof(Texture));
     tex->surface = surface;
     return tex;
 }
@@ -69,7 +79,7 @@ Texture *CreateTexture(C_Surface *surface) {
 void DestroyTexture(Texture *tex) {
     ME_ASSERT_E(tex);
     if (tex->surface) SDL_FreeSurface(tex->surface);
-    delete tex;
+    ME_FREE(tex);
 }
 
 Texture *LoadTextureData(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }

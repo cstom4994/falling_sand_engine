@@ -1,6 +1,8 @@
 #ifndef ME_MEMORY_HPP
 #define ME_MEMORY_HPP
 
+#include <type_traits>
+
 #include "basic_types.h"
 
 //--------------------------------------------------------------------------------------------------------------------------------//
@@ -40,6 +42,29 @@ void ME_mem_alloc_frame_free(ME_mem_alloc_frame_t* frame);
 
 #ifndef ME_CALLOC
 #define ME_CALLOC(count, element_size) ME_mem_alloc_leak_check_calloc(count, element_size, (char*)__FILE__, __LINE__)
+#endif
+
+#ifndef ME_NEW
+#define ME_NEW(_name, _class, ...)      \
+    (_class*)ME_MALLOC(sizeof(_class)); \
+    new ((void*)_name) _class(__VA_ARGS__)
+#endif
+
+template <typename T>
+struct alloc {
+    template <typename... Args>
+    static T* safe_malloc(Args&&... args) {
+        void* mem = ME_MALLOC(sizeof(T));
+        if (!mem) {
+        }
+        return new (mem) T(std::forward<Args>(args)...);
+    }
+};
+
+#ifndef ME_DELETE
+#define ME_DELETE(_name, _class) \
+    _name->~_class();            \
+    ME_FREE(_name)
 #endif
 
 void* ME_mem_alloc_leak_check_alloc(size_t size, const char* file, int line);

@@ -23,15 +23,11 @@
 #include "reflectionflat.hpp"
 #include "world.hpp"
 
-// std::vector<Biome *> GAME()->biome_container;
-// std::vector<Material *> GAME()->materials_container;
-// i32 GAME()->materials_count = 0;
-// Material **GAME()->materials_array;
-
 void ReleaseGameData() {
-    for (auto b : GAME()->biome_container) {
-        if (static_cast<bool>(b)) delete b;
-    }
+    for (auto b : GAME()->biome_container)
+        if (static_cast<bool>(b)) {
+            ME_DELETE(b, Biome);
+        }
 }
 
 #pragma region Material
@@ -65,20 +61,16 @@ const struct ScriptableMaterialsId ScriptableMaterialsId[] = {{1001, "TEST_SAND"
 
                                                               {0xffff, "Unkown"}};
 
-#define INITMATERIAL(_index, _id, _name, _physics, _s, _a, _d, _i, _e, _c) GAME()->materials_list._index = Material(_id, _name, #_index, _physics, _s, _a, _d, _i, _e, _c)
-
 void test() {
 
     // Basic materials
-    INITMATERIAL(GENERIC_AIR, GAME()->materials_count++, "_AIR", PhysicsType::AIR, 0, 255, 0, 0, 16, 0);
-    INITMATERIAL(GENERIC_SOLID, GAME()->materials_count++, "_SOLID", PhysicsType::SOLID, 0, 255, 1, 0, 0, 0);
-    INITMATERIAL(GENERIC_SAND, GAME()->materials_count++, "_SAND", PhysicsType::SAND, 20, 255, 10, 2, 0, 0);
-    INITMATERIAL(GENERIC_LIQUID, GAME()->materials_count++, "_LIQUID", PhysicsType::SOUP, 0, 255, 1.5, 3, 0, 0);
-    INITMATERIAL(GENERIC_GAS, GAME()->materials_count++, "_GAS", PhysicsType::GAS, 0, 255, -1, 1, 0, 0);
-    INITMATERIAL(GENERIC_PASSABLE, GAME()->materials_count++, "_PASSABLE", PhysicsType::PASSABLE, 0, 255, 0, 0, 0, 0);
-    INITMATERIAL(GENERIC_OBJECT, GAME()->materials_count++, "_OBJECT", PhysicsType::OBJECT, 0, 255, 1000.0, 0, 0, 0);
-
-#undef INITMATERIAL
+    GAME()->materials_list.GENERIC_AIR = Material(GAME()->materials_count++, "_AIR", "GENERIC_AIR", PhysicsType::AIR, 0, 255, 0, 0, 16, 0);
+    GAME()->materials_list.GENERIC_SOLID = Material(GAME()->materials_count++, "_SOLID", "GENERIC_SOLID", PhysicsType::SOLID, 0, 255, 1, 0, 0, 0);
+    GAME()->materials_list.GENERIC_SAND = Material(GAME()->materials_count++, "_SAND", "GENERIC_SAND", PhysicsType::SAND, 20, 255, 10, 2, 0, 0);
+    GAME()->materials_list.GENERIC_LIQUID = Material(GAME()->materials_count++, "_LIQUID", "GENERIC_LIQUID", PhysicsType::SOUP, 0, 255, 1.5, 3, 0, 0);
+    GAME()->materials_list.GENERIC_GAS = Material(GAME()->materials_count++, "_GAS", "GENERIC_GAS", PhysicsType::GAS, 0, 255, -1, 1, 0, 0);
+    GAME()->materials_list.GENERIC_PASSABLE = Material(GAME()->materials_count++, "_PASSABLE", "GENERIC_PASSABLE", PhysicsType::PASSABLE, 0, 255, 0, 0, 0, 0);
+    GAME()->materials_list.GENERIC_OBJECT = Material(GAME()->materials_count++, "_OBJECT", "GENERIC_OBJECT", PhysicsType::OBJECT, 0, 255, 1000.0, 0, 0, 0);
 
     // Game contents
     GAME()->materials_list.STONE = Material(GAME()->materials_count++, "Stone", "STONE", PhysicsType::SOLID, 0, 1, 0);

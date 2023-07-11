@@ -2,6 +2,8 @@
 
 #include "sdl_surface_utils.h"
 
+#include <cmath>
+
 namespace ME::SurfaceBase {
 Uint32 get_pixel32(SDL_Surface *surface, int x, int y) {
     if (surface != NULL) {
@@ -94,8 +96,8 @@ void R_Surface_merge_color_rgba(SDL_Surface *surface, int y, int x1, int x2, Uin
     if (surface->w <= x1 && surface->h <= y) {
         return;
     }
-    int temp = SDL_min(x1, x2);
-    x2 = SDL_max(x1, x2);
+    int temp = std::min(x1, x2);
+    x2 = std::max(x1, x2);
     x1 = temp;
     Uint32 pixel;
     for (int i = x1; i < x2; i++) {
@@ -111,8 +113,8 @@ void R_Surface_horizontal_line_color_rgba(SDL_Surface *surface, int y, int x1, i
     if (surface->w <= x1 && surface->h <= y) {
         return;
     }
-    int temp = SDL_min(x1, x2);
-    x2 = SDL_max(x1, x2);
+    int temp = std::min(x1, x2);
+    x2 = std::max(x1, x2);
     x1 = temp;
     Uint32 pixel;
     for (int i = x1; i < x2; i++) {
@@ -128,8 +130,8 @@ void R_Surface_vertical_line_color_rgba(SDL_Surface *surface, int x, int y1, int
     if (surface->h <= y1 && surface->w <= x) {
         return;
     }
-    int temp = SDL_min(y1, y2);
-    y2 = SDL_max(y1, y2);
+    int temp = std::min(y1, y2);
+    y2 = std::max(y1, y2);
     y1 = temp;
     Uint32 pixel;
     for (int i = y1; i < y2; i++) {

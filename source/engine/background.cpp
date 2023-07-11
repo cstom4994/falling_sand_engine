@@ -93,6 +93,7 @@ BackgroundLayer *CreateBackgroundLayer(Texture *texture, f32 parallaxX, f32 para
 void DestroyBackgroundLayer(BackgroundLayer *layer) {
     for (auto &&image : layer->texture) R_FreeImage(image);
     if (layer->tex) DestroyTexture(layer->tex);
+    ME_FREE(layer);
 }
 
 void InitBackgroundLayer(BackgroundLayer *layer) {

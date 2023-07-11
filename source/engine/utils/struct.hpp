@@ -5,7 +5,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace ME::Struct {
+namespace ME::meta::dostruct {
 
 namespace traits {
 
@@ -93,7 +93,7 @@ constexpr auto for_each(S1 &&s1, S2 &&s2, V &&v) -> typename std::enable_if<trai
     traits::visitable<traits::clean_t<common_S>>::apply(std::forward<V>(v), std::forward<S1>(s1), std::forward<S2>(s2));
 }
 
-// Visit the types (ME::Struct::type_c<...>) of the registered members
+// Visit the types (ME::meta::dostruct::type_c<...>) of the registered members
 template <typename S, typename V>
 constexpr auto visit_types(V &&v) -> typename std::enable_if<traits::is_visitable<traits::clean_t<S>>::value>::type {
     traits::visitable<traits::clean_t<S>>::visit_types(std::forward<V>(v));
@@ -115,7 +115,7 @@ constexpr auto visit_accessors(V &&v) -> typename std::enable_if<traits::is_visi
 // This calls visit_pointers, for backwards compat reasons
 template <typename S, typename V>
 constexpr auto apply_visitor(V &&v) -> typename std::enable_if<traits::is_visitable<traits::clean_t<S>>::value>::type {
-    ME::Struct::visit_pointers<S>(std::forward<V>(v));
+    ME::meta::dostruct::visit_pointers<S>(std::forward<V>(v));
 }
 
 // Get value by index (like std::get for tuples)
@@ -430,9 +430,9 @@ static constexpr const int max_visitable_members = 69;
 
 #define ME_STRUCT_MEMBER_HELPER_PTR(MEMBER_NAME) std::forward<V>(visitor)(#MEMBER_NAME, &this_type::MEMBER_NAME);
 
-#define ME_STRUCT_MEMBER_HELPER_TYPE(MEMBER_NAME) std::forward<V>(visitor)(#MEMBER_NAME, ME::Struct::type_c<decltype(this_type::MEMBER_NAME)>{});
+#define ME_STRUCT_MEMBER_HELPER_TYPE(MEMBER_NAME) std::forward<V>(visitor)(#MEMBER_NAME, ME::meta::dostruct::type_c<decltype(this_type::MEMBER_NAME)>{});
 
-#define ME_STRUCT_MEMBER_HELPER_ACC(MEMBER_NAME) std::forward<V>(visitor)(#MEMBER_NAME, ME::Struct::accessor<decltype(&this_type::MEMBER_NAME), &this_type::MEMBER_NAME>{});
+#define ME_STRUCT_MEMBER_HELPER_ACC(MEMBER_NAME) std::forward<V>(visitor)(#MEMBER_NAME, ME::meta::dostruct::accessor<decltype(&this_type::MEMBER_NAME), &this_type::MEMBER_NAME>{});
 
 #define ME_STRUCT_MEMBER_HELPER_PAIR(MEMBER_NAME) std::forward<V>(visitor)(#MEMBER_NAME, std::forward<S1>(s1).MEMBER_NAME, std::forward<S2>(s2).MEMBER_NAME);
 
@@ -446,9 +446,9 @@ static constexpr const int max_visitable_members = 69;
                                                                                                                                                                                                \
     static constexpr auto get_pointer(std::integral_constant<int, fields_enum::MEMBER_NAME>)->decltype(&this_type::MEMBER_NAME) { return &this_type::MEMBER_NAME; }                            \
                                                                                                                                                                                                \
-    static constexpr auto get_accessor(std::integral_constant<int, fields_enum::MEMBER_NAME>)->ME::Struct::accessor<decltype(&this_type::MEMBER_NAME), &this_type::MEMBER_NAME> { return {}; } \
+    static constexpr auto get_accessor(std::integral_constant<int, fields_enum::MEMBER_NAME>)->ME::meta::dostruct::accessor<decltype(&this_type::MEMBER_NAME), &this_type::MEMBER_NAME> { return {}; } \
                                                                                                                                                                                                \
-    static auto type_at(std::integral_constant<int, fields_enum::MEMBER_NAME>)->ME::Struct::type_c<decltype(this_type::MEMBER_NAME)>;
+    static auto type_at(std::integral_constant<int, fields_enum::MEMBER_NAME>)->ME::meta::dostruct::type_c<decltype(this_type::MEMBER_NAME)>;
 
 // This macro specializes the trait, provides "apply" method which does the work.
 // Below, template parameter S should always be the same as STRUCT_NAME modulo const and reference.
@@ -465,7 +465,7 @@ static constexpr const int max_visitable_members = 69;
 //          we use tag dispatch with std::integral_constant<int> instead.
 
 #define METADOT_STRUCT(STRUCT_NAME, ...)                                                                                         \
-    namespace ME::Struct {                                                                                                       \
+    namespace ME::meta::dostruct {                                                                                                       \
     namespace traits {                                                                                                           \
                                                                                                                                  \
     template <>                                                                                                                  \
@@ -650,7 +650,7 @@ struct member_ptr_helper {
     static constexpr T S::*get_ptr() { return member_ptr; }
     using value_type = T;
 
-    using accessor_t = ME::Struct::accessor<T S::*, member_ptr>;
+    using accessor_t = ME::meta::dostruct::accessor<T S::*, member_ptr>;
 };
 
 // M should be derived from a member_ptr_helper
@@ -678,7 +678,7 @@ struct member_helper {
 
     template <typename V>
     constexpr static void visit_types(V &&visitor) {
-        std::forward<V>(visitor)(M::member_name(), ME::Struct::type_c<typename M::value_type>{});
+        std::forward<V>(visitor)(M::member_name(), ME::meta::dostruct::type_c<typename M::value_type>{});
     }
 };
 
@@ -740,7 +740,7 @@ struct structure_helper<TypeList<Ms...>> {
 namespace traits {
 
 template <typename T>
-struct visitable<T, typename std::enable_if<std::is_same<typename T::MetaEngine_Struct_Visitable_Structure_Tag__, ::ME::Struct::detail::intrusive_tag>::value>::type> {
+struct visitable<T, typename std::enable_if<std::is_same<typename T::MetaEngine_Struct_Visitable_Structure_Tag__, ::ME::meta::dostruct::detail::intrusive_tag>::value>::type> {
     static constexpr const std::size_t field_count = T::MetaEngine_Struct_Registered_Members_List__::size;
 
     // Apply to an instance
@@ -798,7 +798,7 @@ struct visitable<T, typename std::enable_if<std::is_same<typename T::MetaEngine_
 
     // Get type
     template <int idx>
-    static auto type_at(std::integral_constant<int, idx>) -> ME::Struct::type_c<typename detail::Find_t<typename T::MetaEngine_Struct_Registered_Members_List__, idx>::value_type>;
+    static auto type_at(std::integral_constant<int, idx>) -> ME::meta::dostruct::type_c<typename detail::Find_t<typename T::MetaEngine_Struct_Registered_Members_List__, idx>::value_type>;
 
     // Get name of structure
     static constexpr decltype(T::MetaEngine_Struct_Get_Name__()) get_name() { return T::MetaEngine_Struct_Get_Name__(); }
@@ -808,30 +808,30 @@ struct visitable<T, typename std::enable_if<std::is_same<typename T::MetaEngine_
 
 }  // namespace traits
 
-}  // namespace ME::Struct
+}  // namespace ME::meta::dostruct
 
-#define ME_STRUCT_GET_REGISTERED_MEMBERS decltype(MetaEngine_Struct_Get_Visitables__(::ME::Struct::detail::Rank<ME::Struct::detail::max_visitable_members_intrusive>{}))
+#define ME_STRUCT_GET_REGISTERED_MEMBERS decltype(MetaEngine_Struct_Get_Visitables__(::ME::meta::dostruct::detail::Rank<ME::meta::dostruct::detail::max_visitable_members_intrusive>{}))
 
 #define ME_STRUCT_MAKE_MEMBER_NAME(NAME) MetaEngine_Struct_Member_Record__##NAME
 
 #define BEGIN_VISITABLES(NAME)                                                                                        \
     typedef NAME ME_STRUCT_CURRENT_TYPE;                                                                      \
     static constexpr decltype(#NAME) MetaEngine_Struct_Get_Name__() { return #NAME; }                                 \
-    ::ME::Struct::detail::TypeList<> static inline MetaEngine_Struct_Get_Visitables__(::ME::Struct::detail::Rank<0>); \
+    ::ME::meta::dostruct::detail::TypeList<> static inline MetaEngine_Struct_Get_Visitables__(::ME::meta::dostruct::detail::Rank<0>); \
     static_assert(true, "")
 
 #define VISITABLE(TYPE, NAME)                                                                                                                                              \
     TYPE NAME;                                                                                                                                                             \
-    struct ME_STRUCT_MAKE_MEMBER_NAME(NAME) : ME::Struct::detail::member_ptr_helper<ME_STRUCT_CURRENT_TYPE, TYPE, &ME_STRUCT_CURRENT_TYPE::NAME> { \
-        static constexpr const ::ME::Struct::detail::char_array<sizeof(#NAME)> &member_name() { return #NAME; }                                                            \
+    struct ME_STRUCT_MAKE_MEMBER_NAME(NAME) : ME::meta::dostruct::detail::member_ptr_helper<ME_STRUCT_CURRENT_TYPE, TYPE, &ME_STRUCT_CURRENT_TYPE::NAME> { \
+        static constexpr const ::ME::meta::dostruct::detail::char_array<sizeof(#NAME)> &member_name() { return #NAME; }                                                            \
     };                                                                                                                                                                     \
-    static inline ::ME::Struct::detail::Append_t<ME_STRUCT_GET_REGISTERED_MEMBERS, ME_STRUCT_MAKE_MEMBER_NAME(NAME)> MetaEngine_Struct_Get_Visitables__(   \
-            ::ME::Struct::detail::Rank<ME_STRUCT_GET_REGISTERED_MEMBERS::size + 1>);                                                                               \
+    static inline ::ME::meta::dostruct::detail::Append_t<ME_STRUCT_GET_REGISTERED_MEMBERS, ME_STRUCT_MAKE_MEMBER_NAME(NAME)> MetaEngine_Struct_Get_Visitables__(   \
+            ::ME::meta::dostruct::detail::Rank<ME_STRUCT_GET_REGISTERED_MEMBERS::size + 1>);                                                                               \
     static_assert(true, "")
 
 #define END_VISITABLES                                                                            \
     typedef ME_STRUCT_GET_REGISTERED_MEMBERS MetaEngine_Struct_Registered_Members_List__; \
-    typedef ::ME::Struct::detail::intrusive_tag MetaEngine_Struct_Visitable_Structure_Tag__;      \
+    typedef ::ME::meta::dostruct::detail::intrusive_tag MetaEngine_Struct_Visitable_Structure_Tag__;      \
     static_assert(true, "")
 
 #endif

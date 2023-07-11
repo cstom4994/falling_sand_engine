@@ -71,7 +71,9 @@ public:
     bool getFlag(ItemFlags f) { return static_cast<bool>(flags & f); }
 
     C_Surface *surface = nullptr;
-    R_Image *texture = nullptr;
+    R_Image *image = nullptr;
+
+    // Texture *texture = nullptr;
 
     int pivotX = 0;
     int pivotY = 0;

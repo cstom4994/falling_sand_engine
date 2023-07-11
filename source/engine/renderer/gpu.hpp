@@ -17,7 +17,6 @@
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/shaders.hpp"
 #include "libs/glad/glad.h"
-#include "libs/imgui/imgui.h"
 
 #define R_GET_PIXEL(surface, x, y) *((u32 *)((u8 *)surface->pixels + ((y)*surface->pitch) + ((x) * sizeof(u32))))
 

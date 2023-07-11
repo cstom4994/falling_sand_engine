@@ -188,6 +188,11 @@ ME_INLINE void println(std::string_view fmt, Args &&...args) {
     println(res);
 }
 
+template <typename... Args>
+void println(const Args &...args) {
+    (std::cout << ... << args) << std::endl;
+}
+
 }  // namespace ME
 
 template <typename T>

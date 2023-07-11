@@ -7,7 +7,7 @@
 Item::Item() {}
 
 Item::~Item() {
-    ME_ASSERT_E(this->texture);
+    ME_ASSERT_E(this->image);
     ME_ASSERT_E(this->surface);
 }
 
@@ -17,12 +17,12 @@ Item *Item::makeItem(ItemFlags flags, RigidBody *rb, std::string n) {
     if (rb->item != NULL) {
         i = rb->item;
     } else {
-        i = new Item();
+        i = alloc<Item>::safe_malloc();
         i->flags = flags;
     }
 
     i->surface = rb->get_surface();
-    i->texture = rb->get_texture();
+    i->image = rb->get_texture();
     i->name = n;
 
     return i;
@@ -30,8 +30,9 @@ Item *Item::makeItem(ItemFlags flags, RigidBody *rb, std::string n) {
 
 void Item::deleteItem(Item *item) {
     if (item != NULL) {
-        if (item->texture != NULL) R_FreeImage(item->texture);
+        if (item->image != NULL) R_FreeImage(item->image);
         if (item->surface != NULL) SDL_FreeSurface(item->surface);
+        // ME_DELETE(item, Item);
     }
 }
 

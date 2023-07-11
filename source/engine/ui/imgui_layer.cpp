@@ -41,7 +41,6 @@
 #include "game/player.hpp"
 #include "libs/glad/glad.h"
 #include "libs/imgui/font_awesome.h"
-#include "libs/imgui/imgui.h"
 
 void profiler_draw_frame_bavigation(frame_info *_infos, uint32_t _numInfos) {
     ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_FirstUseEver);
@@ -823,7 +822,7 @@ void ImGuiLayer::Init() {
 
     //    console_imgui->System().RegisterVariable("scale", Screen.gameScale, Command::Arg<i32>(""));
 
-    //    ME::Struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>("")); });
+    //    ME::meta::dostruct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>("")); });
 
     //    // Register custom commands
     //    console_imgui->System().RegisterCommand("random_background_color", "Assigns a random color to the background application", [&clear_color]() {
@@ -1071,8 +1070,8 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                             Item *i3 = new Item();
                             i3->setFlag(ItemFlags::ItemFlags_Hammer);
                             i3->surface = LoadTexture("data/assets/objects/testHammer.png")->surface;
-                            i3->texture = R_CopyImageFromSurface(i3->surface);
-                            R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
+                            i3->image = R_CopyImageFromSurface(i3->surface);
+                            R_SetImageFilter(i3->image, R_FILTER_NEAREST);
                             i3->pivotX = 2;
 
                             TypeInfo<Player>::fields.ForEach([&](auto field) {
@@ -1244,7 +1243,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                     ImGui::TableHeadersRow();
 
-                    // ME::Struct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value,
+                    // ME::meta::dostruct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value,
                     // Command::Arg<int>(""));
                     // });
                     int i = 0;
@@ -1460,7 +1459,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     }
                 };
 
-                ME::Struct::for_each(global.game->GameIsolate_.globaldef, ShowCVar);
+                ME::meta::dostruct::for_each(global.game->GameIsolate_.globaldef, ShowCVar);
 
                 ImGui::EndTable();
             }

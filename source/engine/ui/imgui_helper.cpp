@@ -229,7 +229,7 @@ void ME_imgui_imm::operator()() {
             if (ImGui::Begin("##Overlay-IME-Candidate-List-Window", &show_ime_candidate_list,
                              ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings |
                                      ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav)) {
-                if (ImGui::ListBoxHeader("##IMECandidateListWindow", static_cast<int>(std::size(listbox_items)), static_cast<int>(std::size(listbox_items)))) {
+                if (ImGui::BeginListBox("##IMECandidateListWindow", ImVec2(static_cast<int>(std::size(listbox_items)), static_cast<int>(std::size(listbox_items))))) {
 
                     int i = 0;
                     for (const char *&listbox_item : listbox_items) {
@@ -259,7 +259,7 @@ void ME_imgui_imm::operator()() {
                         }
                         ++i;
                     }
-                    ImGui::ListBoxFooter();
+                    ImGui::EndListBox();
                 }
                 ImGui::Text("%d/%d", candidate_list.selection + 1, static_cast<int>(std::size(candidate_list.list_utf8)));
 #if defined(_DEBUG)

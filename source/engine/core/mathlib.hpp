@@ -16,7 +16,6 @@
 
 #include "engine/core/core.hpp"
 #include "engine/core/mathlib_base.hpp"
-#include "libs/imgui/imgui.h"
 
 #ifdef ME_PLATFORM_WIN32
 #undef far

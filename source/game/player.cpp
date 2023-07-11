@@ -56,7 +56,7 @@ void Player::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
         ir->y *= scaleEnt;
         ir->w *= scaleEnt;
         ir->h *= scaleEnt;
-        R_BlitRectX(heldItem->texture, NULL, target, ir, holdAngle, fx, fy, abs(holdAngle) > 90 ? R_FLIP_VERTICAL : R_FLIP_NONE);
+        R_BlitRectX(heldItem->image, NULL, target, ir, holdAngle, fx, fy, abs(holdAngle) > 90 ? R_FLIP_VERTICAL : R_FLIP_NONE);
         delete ir;
     }
 }

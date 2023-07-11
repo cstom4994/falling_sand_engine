@@ -104,7 +104,7 @@ typedef struct ME_Color {
     ME_Color(float R, float G, float B) : r(R * 255), g(G * 255), b(B * 255), a(255) {}
     ME_Color(MEvec3 &v3) : r(v3.r), g(v3.g), b(v3.b), a(255) {}
     ME_Color(MEvec3 &v3, u8 A) : r(v3.r), g(v3.g), b(v3.b), a(A) {}
-    ME_Color(ImVec4 &v4) : r((u8)v4.x), g((u8)v4.y), b((u8)v4.z), a((u8)v4.w) {}
+    // ME_Color(ImVec4 &v4) : r((u8)v4.x), g((u8)v4.y), b((u8)v4.z), a((u8)v4.w) {}
 
     void Set(float R, float G, float B) {
         r = R * 255;

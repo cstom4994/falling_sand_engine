@@ -39,9 +39,6 @@ int InitEngine(void (*InitCppReflection)()) {
 
     InitCppReflection();
 
-    // Open up resource bundle memory space
-    global.game->GameIsolate_.texturepack = new TexturePack;
-
     initializedEngine = true;
     METADOT_INFO("Engine sucessfully initialized!");
     return METADOT_OK;
@@ -57,8 +54,6 @@ void EngineUpdateEnd() {
 }
 
 void EndEngine(int errorOcurred) {
-
-    delete global.game->GameIsolate_.texturepack;
 
     if (SDL_WasInit(SDL_INIT_EVERYTHING) != 0) SDL_Quit();
 

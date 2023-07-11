@@ -48,7 +48,6 @@
 #include "game_shaders.hpp"
 #include "game_ui.hpp"
 #include "libs/glad/glad.h"
-#include "libs/imgui/imgui.h"
 #include "reflectionflat.hpp"
 #include "world_generator.h"
 
@@ -225,8 +224,8 @@ int Game::init(int argc, char *argv[]) {
     }
 
     // init threadpools
-    GameIsolate_.updateDirtyPool = new ME::thread_pool(4);
-    GameIsolate_.updateDirtyPool2 = new ME::thread_pool(2);
+    GameIsolate_.updateDirtyPool = alloc<ME::thread_pool>::safe_malloc(4);
+    GameIsolate_.updateDirtyPool2 = alloc<ME::thread_pool>::safe_malloc(4);
 
     return this->run(argc, argv);
 }
@@ -840,7 +839,8 @@ int Game::run(int argc, char *argv[]) {
                                                 return false;
                                             }
                                             hitSolidYet = true;
-                                            GameIsolate_.world->tiles[index] = MaterialInstance(&GAME()->materials_list.GENERIC_SAND, ME_draw_darken_color(GameIsolate_.world->tiles[index].color, 0.5f));
+                                            GameIsolate_.world->tiles[index] =
+                                                    MaterialInstance(&GAME()->materials_list.GENERIC_SAND, ME_draw_darken_color(GameIsolate_.world->tiles[index].color, 0.5f));
                                             GameIsolate_.world->dirty[index] = true;
                                             endInd = index;
                                             nTilesChanged++;
@@ -1110,11 +1110,11 @@ int Game::run(int argc, char *argv[]) {
                                         MaterialInteraction inter = tile.mat->interactions[i][j];
                                         char buff1[40];
                                         if (inter.type == INTERACT_TRANSFORM_MATERIAL) {
-                                            snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "TRANSFORM", GAME()->materials_container[inter.data1]->name.c_str(), inter.data2,
-                                                     inter.ofsX, inter.ofsY);
+                                            snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "TRANSFORM", GAME()->materials_container[inter.data1]->name.c_str(), inter.data2, inter.ofsX,
+                                                     inter.ofsY);
                                         } else if (inter.type == INTERACT_SPAWN_MATERIAL) {
-                                            snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "SPAWN", GAME()->materials_container[inter.data1]->name.c_str(), inter.data2,
-                                                     inter.ofsX, inter.ofsY);
+                                            snprintf(buff1, sizeof(buff1), "        %s %s r=%d x=%d y=%d", "SPAWN", GAME()->materials_container[inter.data1]->name.c_str(), inter.data2, inter.ofsX,
+                                                     inter.ofsY);
                                         }
                                         // Drawing::drawText(target, buff1, font16, mx + 14, my + 14 * ++ln, 0xff, 0xff, 0xff, ALIGN_LEFT);
                                         ImGui::Text("%s", buff1);
@@ -1239,8 +1239,8 @@ int Game::exit() {
     delete debugDraw;
     delete[] movingTiles;
 
-    delete GameIsolate_.updateDirtyPool;
-    delete GameIsolate_.updateDirtyPool2;
+    ME_DELETE(GameIsolate_.updateDirtyPool, thread_pool);
+    ME_DELETE(GameIsolate_.updateDirtyPool2, thread_pool);
 
     if (GameIsolate_.world.get()) {
         auto *p = GameIsolate_.world.release();
@@ -1435,9 +1435,9 @@ void Game::updateFrameEarly() {
             i3->setFlag(ItemFlags::ItemFlags_Vacuum);
             // i3->vacuumCells = {};
             i3->surface = LoadTexture("data/assets/objects/testVacuum.png")->surface;
-            i3->texture = R_CopyImageFromSurface(i3->texture);
+            i3->image = R_CopyImageFromSurface(i3->surface);
             i3->name = "初始物品";
-            R_SetImageFilter(i3->texture, R_FILTER_NEAREST);
+            R_SetImageFilter(i3->image, R_FILTER_NEAREST);
             i3->pivotX = 6;
 
             b2Filter bf = {};
@@ -1495,8 +1495,8 @@ void Game::updateFrameEarly() {
                     U16Point pt = pl->heldItem->fill[i];
                     R_GET_PIXEL(pl->heldItem->surface, pt.x, pt.y) = 0x00;
 
-                    pl->heldItem->texture = R_CopyImageFromSurface(pl->heldItem->surface);
-                    R_SetImageFilter(pl->heldItem->texture, R_FILTER_NEAREST);
+                    pl->heldItem->image = R_CopyImageFromSurface(pl->heldItem->surface);
+                    R_SetImageFilter(pl->heldItem->image, R_FILTER_NEAREST);
 
                     global.audio.SetEventParameter("event:/World/Sand", "Sand", 1);
 
@@ -1527,8 +1527,8 @@ void Game::updateFrameEarly() {
                                     u32 c = GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].color;
                                     R_GET_PIXEL(pl->heldItem->surface, pt.x, pt.y) = (GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width].mat->alpha << 24) + c;
 
-                                    pl->heldItem->texture = R_CopyImageFromSurface(pl->heldItem->surface);
-                                    R_SetImageFilter(pl->heldItem->texture, R_FILTER_NEAREST);
+                                    pl->heldItem->image = R_CopyImageFromSurface(pl->heldItem->surface);
+                                    R_SetImageFilter(pl->heldItem->image, R_FILTER_NEAREST);
 
                                     GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = Tiles_NOTHING;
                                     GameIsolate_.world->dirty[(x + xx) + (y + yy) * GameIsolate_.world->width] = true;
@@ -3129,8 +3129,8 @@ void Game::renderOverlays() {
 
     if (GameIsolate_.globaldef.draw_load_zones) {
         ME_rect r2m = ME_rect{(f32)(GAME()->ofsX + GAME()->camX + GameIsolate_.world->meshZone.x * ENGINE()->render_scale),
-                              (f32)(GAME()->ofsY + GAME()->camY + GameIsolate_.world->meshZone.y * ENGINE()->render_scale),
-                              (f32)(GameIsolate_.world->meshZone.w * ENGINE()->render_scale), (f32)(GameIsolate_.world->meshZone.h * ENGINE()->render_scale)};
+                              (f32)(GAME()->ofsY + GAME()->camY + GameIsolate_.world->meshZone.y * ENGINE()->render_scale), (f32)(GameIsolate_.world->meshZone.w * ENGINE()->render_scale),
+                              (f32)(GameIsolate_.world->meshZone.h * ENGINE()->render_scale)};
 
         R_Rectangle2(ENGINE()->target, r2m, {0x00, 0xff, 0xff, 0xff});
         ME_draw_text_plate(ENGINE()->target, CC("刚体物理更新区域"), {255, 255, 255, 255}, r2m.x + 4, r2m.y + 4);
@@ -3145,23 +3145,21 @@ void Game::renderOverlays() {
         ME_rect r3 = ME_rect{(f32)(0), (f32)(0), (f32)((GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale)), (f32)(ENGINE()->windowHeight)};
         R_Rectangle2(ENGINE()->target, r3, col);
 
-        ME_rect r4 = ME_rect{(f32)(GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale + GameIsolate_.world->tickZone.w * ENGINE()->render_scale),
-                             (f32)(0),
-                             (f32)((ENGINE()->windowWidth) -
-                                   (GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale + GameIsolate_.world->tickZone.w * ENGINE()->render_scale)),
-                             (f32)(ENGINE()->windowHeight)};
+        ME_rect r4 = ME_rect{
+                (f32)(GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale + GameIsolate_.world->tickZone.w * ENGINE()->render_scale), (f32)(0),
+                (f32)((ENGINE()->windowWidth) - (GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale + GameIsolate_.world->tickZone.w * ENGINE()->render_scale)),
+                (f32)(ENGINE()->windowHeight)};
         R_Rectangle2(ENGINE()->target, r4, col);
 
-        ME_rect r5 =
-                ME_rect{(f32)(GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale), (f32)(0),
-                        (f32)(GameIsolate_.world->tickZone.w * ENGINE()->render_scale), (f32)(GAME()->ofsY + GAME()->camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale)};
+        ME_rect r5 = ME_rect{(f32)(GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale), (f32)(0), (f32)(GameIsolate_.world->tickZone.w * ENGINE()->render_scale),
+                             (f32)(GAME()->ofsY + GAME()->camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale)};
         R_Rectangle2(ENGINE()->target, r5, col);
 
-        ME_rect r6 = ME_rect{(f32)(GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale),
-                             (f32)(GAME()->ofsY + GAME()->camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale + GameIsolate_.world->tickZone.h * ENGINE()->render_scale),
-                             (f32)(GameIsolate_.world->tickZone.w * ENGINE()->render_scale),
-                             (f32)(ENGINE()->windowHeight - (GAME()->ofsY + GAME()->camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale +
-                                                             GameIsolate_.world->tickZone.h * ENGINE()->render_scale))};
+        ME_rect r6 = ME_rect{
+                (f32)(GAME()->ofsX + GAME()->camX + GameIsolate_.world->tickZone.x * ENGINE()->render_scale),
+                (f32)(GAME()->ofsY + GAME()->camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale + GameIsolate_.world->tickZone.h * ENGINE()->render_scale),
+                (f32)(GameIsolate_.world->tickZone.w * ENGINE()->render_scale),
+                (f32)(ENGINE()->windowHeight - (GAME()->ofsY + GAME()->camY + GameIsolate_.world->tickZone.y * ENGINE()->render_scale + GameIsolate_.world->tickZone.h * ENGINE()->render_scale))};
         R_Rectangle2(ENGINE()->target, r6, col);
 
         col = {0x00, 0xff, 0x00, 0xff};
