@@ -30,7 +30,7 @@ struct I18N {
 
 struct Global {
     Game *game = nullptr;
-    AudioEngine audio;
+    ME::Audio audio;
     I18N I18N;
 };
 

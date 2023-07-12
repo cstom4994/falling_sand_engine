@@ -169,7 +169,7 @@ types::color InvertColor(const types::color &c) {
 // ----------------------------------------------------------------------------
 
 float ColorDistance(const types::fcolor &c1, const types::fcolor &c2) {
-    float t = (float)(MetaEngine::math::Absolute(c1.GetR() - c2.GetR()) + MetaEngine::math::Absolute(c1.GetG() - c2.GetG()) + MetaEngine::math::Absolute(c1.GetB() - c2.GetB()));
+    float t = (float)(ME::math::Absolute(c1.GetR() - c2.GetR()) + ME::math::Absolute(c1.GetG() - c2.GetG()) + ME::math::Absolute(c1.GetB() - c2.GetB()));
 
     return t / 3.f;
 }
@@ -177,7 +177,7 @@ float ColorDistance(const types::fcolor &c1, const types::fcolor &c2) {
 // ----------------------------------------------------------------------------
 
 float ColorDistance(const types::color &c1, const types::color &c2) {
-    float t = (float)(MetaEngine::math::Absolute(c1.GetR() - c2.GetR()) + MetaEngine::math::Absolute(c1.GetG() - c2.GetG()) + MetaEngine::math::Absolute(c1.GetB() - c2.GetB()));
+    float t = (float)(ME::math::Absolute(c1.GetR() - c2.GetR()) + ME::math::Absolute(c1.GetG() - c2.GetG()) + ME::math::Absolute(c1.GetB() - c2.GetB()));
 
     return t / (255.f * 3);
 }

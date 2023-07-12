@@ -19,7 +19,6 @@
 #include "cvar.hpp"
 #include "engine/audio/audio.h"
 #include "engine/core/const.h"
-#include "engine/utils/utils.hpp"
 #include "engine/core/debug.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/io/packer.hpp"
@@ -35,10 +34,11 @@
 #include "engine/ui/font.hpp"
 #include "engine/ui/imgui_layer.hpp"
 #include "engine/ui/ui.hpp"
+#include "engine/utils/utils.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
-#include "textures.hpp"
 #include "game_shaders.hpp"
+#include "textures.hpp"
 #include "world.hpp"
 
 struct MEsurface_context;
@@ -52,7 +52,7 @@ struct ME_assets_handle_t {
 
 class Game {
 public:
-    using EventCallbackFn = std::function<void(MetaEngine::Event &)>;
+    using EventCallbackFn = std::function<void(ME::Event &)>;
     using SystemList = std::vector<ME::ref<IGameSystem>>;
 
 public:
@@ -188,9 +188,9 @@ public:
     int run(int argc, char *argv[]);
     int exit();
     void updateFrameEarly();
-    void onEvent(MetaEngine::Event &e);
-    bool onWindowClose(MetaEngine::WindowCloseEvent &e);
-    bool onWindowResize(MetaEngine::WindowResizeEvent &e);
+    void onEvent(ME::Event &e);
+    bool onWindowClose(ME::WindowCloseEvent &e);
+    bool onWindowResize(ME::WindowResizeEvent &e);
     void setEventCallback(const EventCallbackFn &callback) { EventCallback = callback; }
     void tick();
     void tickChunkLoading();

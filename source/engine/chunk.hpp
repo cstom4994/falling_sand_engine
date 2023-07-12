@@ -12,7 +12,6 @@
 #include "engine/core/core.hpp"
 #include "engine/meta/reflection.hpp"
 #include "engine/meta/static_relfection.hpp"
-#include "engine/utils/property.hpp"
 #include "game/player.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
@@ -41,9 +40,7 @@ typedef struct Chunk {
 
     int x;
     int y;
-    // bool hasMeta = false;
-
-    Property<bool> hasMeta;
+    bool hasMeta = false;
 
     // in order for a chunk to execute phase generationPhase+1, all surrounding chunks must be at least generationPhase
     i8 generationPhase = 0;
@@ -56,6 +53,11 @@ typedef struct Chunk {
     std::vector<Biome *> biomes = {nullptr};
     std::vector<b2PolygonShape> polys = {};
     RigidBody *rb = nullptr;
+
+    Chunk() = default;
+    ~Chunk() = default;
+
+    MOVE_ONLY(Chunk);
 } Chunk;
 
 template <>

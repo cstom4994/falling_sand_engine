@@ -737,7 +737,7 @@ void ImGuiLayer::Init() {
 
 #if defined(ME_IMM32)
     common_control_initialize();
-    ME_ASSERT_E(imguiIMMCommunication.subclassify(ENGINE()->window));
+    ME_ASSERT(imguiIMMCommunication.subclassify(ENGINE()->window));
 #endif
 
     m_pack_editor.Init();
@@ -971,7 +971,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             dockspace_id = ImGui::GetID("MyDockSpace");
             ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
         } else {
-            ME_ASSERT_E(0);
+            ME_ASSERT(0);
         }
         ImGui::End();
 
@@ -981,7 +981,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
             if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_SPIDER, "ui_test"))) {
                 ImGui::BeginTabBar(CC("测试#haha"));
-                static bool play;
+
                 if (ImGui::BeginTabItem(CC("测试"))) {
                     if (ImGui::Button("调用回溯")) print_callstack();
                     ImGui::SameLine();
@@ -999,7 +999,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                         rb->body->SetAngularDamping(0);
 
                         auto npc = global.game->GameIsolate_.world->Reg().create_entity();
-                        MetaEngine::ECS::entity_filler(npc)
+                        ME::ECS::entity_filler(npc)
                                 .component<Controlable>()
                                 .component<WorldEntity>(true, pl_transform.x, pl_transform.y, 0.0f, 0.0f, (int)pl_transform.z, (int)pl_transform.w, rb, std::string("NPC"))
                                 .component<Bot>(1);
@@ -1010,17 +1010,20 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     }
                     ImGui::SameLine();
                     if (ImGui::Button("Audio")) {
-                        play ^= true;
-                        static ME_Audio *test_audio = ME_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
-                        if (play) {
-                            ME_ASSERT_E(test_audio);
-                            // metadot_music_play(test_audio, 0.f);
-                            // ME_audio_destroy(test_audio);
-                            int err;
-                            metadot_play_sound(test_audio, metadot_sound_params_defaults(), &err);
-                        } else {
-                            MetaEngine::audio_set_pause(false);
-                        }
+                        // static bool play= 1;
+                        // static ME::ME_Audio *test_audio = ME::ME_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
+                        // static ME::Sound test_sound;
+                        // if (play) {
+                        //     ME_ASSERT(test_audio);
+                        //     // metadot_music_play(test_audio, 0.f);
+                        //     // ME_audio_destroy(test_audio);
+                        //     int err;
+                        //     test_sound = ME::metadot_play_sound(test_audio, ME::metadot_sound_params_defaults(), &err);
+                        //     play ^= 1;
+                        // } else {
+                        //     ME::metadot_sound_set_is_paused(test_sound, true);
+                        //     play ^= 1;
+                        // }
                     }
                     ImGui::SameLine();
                     if (ImGui::Button("StaticRefl")) {
@@ -1211,7 +1214,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                     ImGui::Text("ECS: %lu %lu", global.game->GameIsolate_.world->Reg().memory_usage().entities, global.game->GameIsolate_.world->Reg().memory_usage().components);
 
-                    global.game->GameIsolate_.world->Reg().for_joined_components<WorldEntity, Player>([&](MetaEngine::ECS::entity, WorldEntity &we, Player &p) {
+                    global.game->GameIsolate_.world->Reg().for_joined_components<WorldEntity, Player>([&](ME::ECS::entity, WorldEntity &we, Player &p) {
                         ImGui::Auto(we, "实体");
                         ImGui::Auto(p, "玩家");
                     });
@@ -1257,7 +1260,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                         if (ImGui::TableSetColumnIndex(1)) ImGui::TextUnformatted(s->getName().c_str());
                         if (ImGui::TableSetColumnIndex(2)) {
                             if (ImGui::SmallButton("Reload")) {
-                                METADOT_BUG("Reloading %s", s->getName().c_str());
+                                METADOT_BUG("Reloading ", s->getName().c_str());
                                 s->Reload();
                             }
                             ImGui::SameLine();

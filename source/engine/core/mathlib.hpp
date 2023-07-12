@@ -126,7 +126,7 @@ f32 fModulus(f32 a, f32 b);
 
 #include "engine/core/const.h"
 
-namespace MetaEngine {
+namespace ME {
 namespace math {
 
 //=============================================================================
@@ -269,15 +269,15 @@ public:
 };
 
 }  // namespace math
-}  // end of namespace MetaEngine
+}  // end of namespace ME
 
 // ---------- types ----------
 namespace types {
-typedef MetaEngine::math::CVector2<float> vector2;
-typedef MetaEngine::math::CVector2<double> dvector2;
-typedef MetaEngine::math::CVector2<int> ivector2;
+typedef ME::math::CVector2<float> vector2;
+typedef ME::math::CVector2<double> dvector2;
+typedef ME::math::CVector2<int> ivector2;
 
-typedef MetaEngine::math::CVector2<int> point;
+typedef ME::math::CVector2<int> point;
 
 }  // end of namespace types
 
@@ -286,7 +286,7 @@ typedef MetaEngine::math::CVector2<int> point;
 #include <math.h>
 #include <stdlib.h>
 
-namespace MetaEngine {
+namespace ME {
 namespace math {
 
 // typedef CVector2< float > Vec2;
@@ -364,15 +364,15 @@ struct CMat22 {
 };
 
 }  // end of namespace math
-}  // end of namespace MetaEngine
+}  // end of namespace ME
 
 //----------------- types --------------------------------------------
 
 namespace types {
-typedef MetaEngine::math::CMat22<float> mat22;
+typedef ME::math::CMat22<float> mat22;
 }  // end of namespace types
 
-namespace MetaEngine {
+namespace ME {
 namespace math {
 
 /// A transform contains translation and rotation. It is used to represent
@@ -405,15 +405,15 @@ struct CXForm {
 };
 
 }  // end of namespace math
-}  // End of namespace MetaEngine
+}  // End of namespace ME
 
 // -------------- types --------------------------
 
 namespace types {
-typedef MetaEngine::math::CXForm<float> xform;
+typedef ME::math::CXForm<float> xform;
 }  // end of namespace types
 
-namespace MetaEngine {
+namespace ME {
 namespace math {
 
 //-----------------------------------------------------------------------------
@@ -499,7 +499,7 @@ else
 return n;
 */
 
-    return MetaEngine::math::Max(n, -n);
+    return ME::math::Max(n, -n);
 }
 
 //=============================================================================
@@ -510,7 +510,7 @@ return n;
 
 template <typename Type>
 inline Type Clamp(const Type &a, const Type &low, const Type &high) {
-    return MetaEngine::math::Max(low, MetaEngine::math::Min(a, high));
+    return ME::math::Max(low, ME::math::Min(a, high));
 }
 
 //=============================================================================
@@ -836,16 +836,16 @@ float DistanceFromAABB(const CVector2<PType> &point, const CVector2<PType> &aabb
     if (IsPointInsideAABB(point, aabb_min, aabb_max)) return 0;
 
     float lowest = 0;
-    float temp = MetaEngine::math::DistanceFromLineSquared(aabb_min, CVector2<PType>(aabb_max.x, aabb_min.y), point);
+    float temp = ME::math::DistanceFromLineSquared(aabb_min, CVector2<PType>(aabb_max.x, aabb_min.y), point);
     if (temp < lowest) lowest = temp;
 
-    temp = MetaEngine::math::DistanceFromLineSquared(CVector2<PType>(aabb_max.x, aabb_min.y), CVector2<PType>(aabb_max.x, aabb_max.y), point);
+    temp = ME::math::DistanceFromLineSquared(CVector2<PType>(aabb_max.x, aabb_min.y), CVector2<PType>(aabb_max.x, aabb_max.y), point);
     if (temp < lowest) lowest = temp;
 
-    temp = MetaEngine::math::DistanceFromLineSquared(CVector2<PType>(aabb_max.x, aabb_max.y), CVector2<PType>(aabb_min.x, aabb_max.y), point);
+    temp = ME::math::DistanceFromLineSquared(CVector2<PType>(aabb_max.x, aabb_max.y), CVector2<PType>(aabb_min.x, aabb_max.y), point);
     if (temp < lowest) lowest = temp;
 
-    temp = MetaEngine::math::DistanceFromLineSquared(CVector2<PType>(aabb_min.x, aabb_max.y), CVector2<PType>(aabb_min.x, aabb_min.y), point);
+    temp = ME::math::DistanceFromLineSquared(CVector2<PType>(aabb_min.x, aabb_max.y), CVector2<PType>(aabb_min.x, aabb_min.y), point);
     if (temp < lowest) lowest = temp;
 
     return sqrtf(lowest);
@@ -976,14 +976,14 @@ public:
         mAng += other.mAng;
         if (mAng >= TWO_PI) mAng -= TWO_PI;
 
-        ME_ASSERT_E(mAng >= 0 && mAng <= TWO_PI);
+        ME_ASSERT(mAng >= 0 && mAng <= TWO_PI);
     }
 
     void operator-=(const CAngle &other) {
         mAng -= other.mAng;
         if (mAng < 0) mAng += TWO_PI;
 
-        ME_ASSERT_E(mAng >= 0 && mAng <= TWO_PI);
+        ME_ASSERT(mAng >= 0 && mAng <= TWO_PI);
     }
 
     CAngle operator+(const CAngle &other) const {
@@ -1012,12 +1012,12 @@ template <typename T>
 const T CAngle<T>::TWO_PI = (T)(2 * PI);
 
 }  // end of namespace math
-}  // namespace MetaEngine
+}  // namespace ME
 
 // ---------------- types ---------------------
 
 namespace types {
-typedef MetaEngine::math::CAngle<float> angle;
+typedef ME::math::CAngle<float> angle;
 }  // end of namespace types
 
 #pragma endregion PORO
@@ -1815,7 +1815,7 @@ bool METADOT_CDECL metadot_cast_ray(ME_Ray A, const void *B, const ME_Transform 
 //--------------------------------------------------------------------------------------------------
 // C++ API
 
-namespace MetaEngine {
+namespace ME {
 
 using v2 = ME_V2;
 
@@ -2109,7 +2109,7 @@ ME_INLINE void collide(const void *A, const MTransform *ax, ShapeType typeA, con
 }
 ME_INLINE bool cast_ray(Ray A, const void *B, const MTransform *bx, ShapeType typeB, Raycast *out) { return metadot_cast_ray(A, B, bx, typeB, out); }
 
-}  // namespace MetaEngine
+}  // namespace ME
 
 #pragma endregion c2
 

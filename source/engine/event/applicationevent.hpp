@@ -2,7 +2,7 @@
 
 #include "event.hpp"
 
-namespace MetaEngine {
+namespace ME {
 
 class WindowResizeEvent : public Event {
 public:
@@ -54,4 +54,4 @@ public:
     EVENT_CLASS_TYPE(AppRender)
     EVENT_CLASS_CATEGORY(EventCategoryApplication)
 };
-}  // namespace MetaEngine
+}  // namespace ME

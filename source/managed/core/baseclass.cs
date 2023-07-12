@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace MetaDotManagedCore
 {
-    public abstract class Layer
+    public abstract class BaseClass
     {
         public virtual void OnAttach() { }
         public virtual void OnDetach() { }

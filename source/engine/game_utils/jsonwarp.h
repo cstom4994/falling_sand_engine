@@ -13,7 +13,7 @@
 #include "libs/cJSON.h"
 #include "libs/cJSON_Utils.h"
 
-namespace MetaEngine::Json {
+namespace ME::Json {
 
 class Json {
 public:
@@ -462,6 +462,6 @@ private:
     std::string error_;
 };
 
-}  // namespace MetaEngine::Json
+}  // namespace ME::Json
 
 #endif

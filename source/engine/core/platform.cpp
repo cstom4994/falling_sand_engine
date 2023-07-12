@@ -4,7 +4,6 @@
 #include <string.h>
 
 #include "engine/audio/audio.h"
-#include "engine/audio/sound.h"
 #include "engine/core/const.h"
 #include "engine/core/core.hpp"
 #include "engine/core/global.hpp"
@@ -210,7 +209,7 @@ int ME_initwindow() {
     // glEnable(GL_DEBUG_OUTPUT);
     // glDebugMessageCallback(ME::DebugOutputGL::GLerrorCallback, nullptr);
 
-    global.audio.InitAudio();
+    global.audio.Init();
 
     // METADOT_INFO("Initializing InitFont...");
     // if (!Drawing::InitFont(&gl_context)) {
@@ -229,7 +228,7 @@ int ME_initwindow() {
     SDL_SysWMinfo info{};
     SDL_VERSION(&info.version);
     if (SDL_GetWindowWMInfo(ENGINE()->window, &info)) {
-        ME_ASSERT_E(IsWindow(info.info.win.window));
+        ME_ASSERT(IsWindow(info.info.win.window));
         // ENGINE()->wndh = info.info.win.window;
     } else {
         // ENGINE()->wndh = NULL;
@@ -244,8 +243,8 @@ int ME_initwindow() {
     // this->data->window = window;
     // this->data->imgui_context = m_ImGuiCore->getImGuiCtx();
 
-    // MetaEngine::AnyFunction func1{&IamAfuckingNamespace::func1};
-    // MetaEngine::AnyFunction func2{&IamAfuckingNamespace::func2};
+    // ME::AnyFunction func1{&IamAfuckingNamespace::func1};
+    // ME::AnyFunction func2{&IamAfuckingNamespace::func2};
 
     // this->data->Functions.insert(std::make_pair("func1", func1));
     // this->data->Functions.insert(std::make_pair("func2", func2));
@@ -257,10 +256,8 @@ int ME_initwindow() {
 
 void ME_endwindow() {
 
-    cs_shutdown();
-
     if (NULL != ENGINE()->target) R_FreeTarget(ENGINE()->target);
-    // if (ENGINE()->realTarget) R_FreeTarget(ENGINE()->realTarget);
+    // if (NULL != ENGINE()->realTarget) R_FreeTarget(ENGINE()->realTarget);
     if (ENGINE()->window) SDL_DestroyWindow(ENGINE()->window);
     R_Quit();
 }

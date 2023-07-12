@@ -7,8 +7,8 @@
 Item::Item() {}
 
 Item::~Item() {
-    ME_ASSERT_E(this->image);
-    ME_ASSERT_E(this->surface);
+    ME_ASSERT(this->image);
+    ME_ASSERT(this->surface);
 }
 
 Item *Item::makeItem(ItemFlags flags, RigidBody *rb, std::string n) {

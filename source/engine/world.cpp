@@ -30,9 +30,9 @@
 #include "engine/utils/utility.hpp"
 #include "engine/utils/utils.hpp"
 #include "game_datastruct.hpp"
-#include "textures.hpp"
 #include "npc.hpp"
 #include "reflectionflat.hpp"
+#include "textures.hpp"
 #include "world_generator.h"
 
 ME::thread_pool WorldSystem::tickPool(16);
@@ -42,9 +42,9 @@ ME::thread_pool WorldSystem::updateRigidBodyHitboxPool(16);
 std::mutex g_mutex_loadchunk;
 std::mutex g_mutex_updatechunkmesh;
 
-void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, AudioEngine *audioEngine) { init(worldPath, w, h, target, audioEngine, new MaterialTestGenerator()); }
+void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audio *audioEngine) { init(worldPath, w, h, target, audioEngine, new MaterialTestGenerator()); }
 
-void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, AudioEngine *audioEngine, WorldGenerator *generator) {
+void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audio *audioEngine, WorldGenerator *generator) {
 
     this->worldName = worldPath;
 
@@ -328,7 +328,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
             rb->set_surface(sf);
             texture = rb->get_surface();
         } else {
-            ME_ASSERT_E(0);
+            ME_ASSERT(0);
         }
     } else {
         return;
@@ -2214,7 +2214,7 @@ void World::tickObjects() {
     i32 velocityIterations = 5;
     i32 positionIterations = 2;
 
-    registry.for_each_component<WorldEntity>([this](MetaEngine::ECS::entity, WorldEntity &we) {
+    registry.for_each_component<WorldEntity>([this](ME::ECS::entity, WorldEntity &we) {
         we.rb->body->SetTransform(PVec2(we.x + loadZone.x + we.hw / 2 - 0.5, we.y + loadZone.y + we.hh / 2 - 1.5), 0);
         we.rb->body->SetLinearVelocity({(f32)(we.vx * 1.0), (f32)(we.vy * 1.0)});
     });
@@ -2223,7 +2223,7 @@ void World::tickObjects() {
 
     // b2world->Step(timeStep, velocityIterations, positionIterations);
 
-    registry.for_each_component<WorldEntity>([this](MetaEngine::ECS::entity, WorldEntity &we) {
+    registry.for_each_component<WorldEntity>([this](ME::ECS::entity, WorldEntity &we) {
         /*cur->x = cur->rb->body->GetPosition().x + 0.5 - cur->hw / 2 - loadZone.x;
         cur->y = cur->rb->body->GetPosition().y + 1.5 - cur->hh / 2 - loadZone.y;*/
         // cur->rb->body->SetTransform(b2Vec2(cur->x + loadZone.x + cur->hw / 2 - 0.5, cur->y + loadZone.y + cur->hh / 2 - 1.5), 0);
@@ -2376,16 +2376,16 @@ void World::tickChunkGeneration() {
             for (int xx = -1; xx <= 1; xx++) {
                 for (int yy = -1; yy <= 1; yy++) {
                     if (xx == 0 && yy == 0) continue;
-                    Chunk *c = getChunk(p.first + xx, p2.first + yy);
+                    Chunk *ch = getChunk(p.first + xx, p2.first + yy);
 
-                    if (c->generationPhase < p2.second->generationPhase) {
-                        if (c->pleaseDelete) {
-                            delete c;
+                    if (ch->generationPhase < p2.second->generationPhase) {
+                        if (ch->pleaseDelete) {
+                            delete ch;
                         }
                         goto nextChunk;
                     }
-                    if (c->pleaseDelete) {
-                        delete c;
+                    if (ch->pleaseDelete) {
+                        delete ch;
                     }
                 }
             }
@@ -2645,7 +2645,7 @@ Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
             generate_chunk_func(ch);
         }
     } else {
-        METADOT_BUG(std::format("generate_chunk_func {0} {1}", ch->x, ch->y).c_str());
+        // METADOT_BUG(std::format("generate_chunk_func {0} {1}", ch->x, ch->y).c_str());
         generate_chunk_func(ch);
     }
 
@@ -2892,7 +2892,7 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
 
     // for (int cx = ax; cx < ax + aw; cx++) {
     //     for (int cy = ay; cy < ay + ah; cy++) {
-    //         Chunk_Init(chs[cy + cx], 0, 0, (char *)"Chunks");
+    //         ChunkInit(chs[cy + cx], 0, 0, (char *)"Chunks");
     //     }
     // }
 
@@ -3182,10 +3182,10 @@ void World::tickEntities(R_Target *t) {
     };
 
     // worldEntities.erase(std::remove_if(worldEntities.begin(), worldEntities.end(), func), worldEntities.end());
-    registry.for_each_component<WorldEntity>([&](MetaEngine::ECS::entity e, WorldEntity &we) {
+    registry.for_each_component<WorldEntity>([&](ME::ECS::entity e, WorldEntity &we) {
         bool destroy = func(&we);
         if (destroy) {
-            if ((MetaEngine::ECS::exists<Player>{})(e)) this->player = 0;
+            if ((ME::ECS::exists<Player>{})(e)) this->player = 0;
             registry.destroy_entity(e);
         }
     });
@@ -3400,7 +3400,7 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName, bool noSaveLoad) {
 
     WorldMeta meta = WorldMeta();
 
-    using json = MetaEngine::Json::Json;
+    using json = ME::Json::Json;
 
     if (!noSaveLoad) {
 
@@ -3449,7 +3449,7 @@ bool WorldMeta::save(std::string worldFileName) {
     if (this->worldName.empty()) this->worldName = "WorldName";
     if (this->lastOpenedVersion.empty()) this->lastOpenedVersion = std::to_string(metadot_buildnum());
 
-    using json = MetaEngine::Json::Json;
+    using json = ME::Json::Json;
 
     json metafile = json::object();
     json root = json::object();
@@ -3558,7 +3558,7 @@ World::~World() {
 
     delete[] hasPopulator;
 
-    registry.for_each_component<WorldEntity>([&](const MetaEngine::ECS::entity e, WorldEntity &we) {
+    registry.for_each_component<WorldEntity>([&](const ME::ECS::entity e, WorldEntity &we) {
         if (static_cast<bool>(we.rb)) delete we.rb;
     });
 }

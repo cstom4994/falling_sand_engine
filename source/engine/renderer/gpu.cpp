@@ -742,6 +742,7 @@ void ME::inspect_vertex_array(const char *label, GLuint vao) {
     ImGui::PopID();
 }
 
+#if 1
 ME_debugdraw::ME_debugdraw(R_Target *target) {
     this->target = target;
     m_drawFlags = 0;
@@ -835,3 +836,5 @@ void ME_debugdraw::DrawAABB(b2AABB *aabb, const ME_Color &color) {
     R_Line(target, tr2.x, tr2.y, tr1.x, tr2.y, color);
     R_Line(target, tr1.x, tr2.y, tr1.x, tr1.y, color);
 }
+
+#endif

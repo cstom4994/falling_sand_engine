@@ -302,7 +302,7 @@ void ME_imgui_imm::operator()() {
     if (io.WantTextInput) {
         if (io.ImeWindowHandle) {
             IM_ASSERT(IsWindow(static_cast<HWND>(io.ImeWindowHandle)));
-            ME_ASSERT_E(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), HIMC(0), IACE_DEFAULT));
+            ME_ASSERT(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), HIMC(0), IACE_DEFAULT));
         }
     }
 
@@ -359,7 +359,7 @@ bool ME_imgui_imm::update_candidate_window(HWND hWnd) {
                 }
             }
         }
-        ME_ASSERT_E(ImmReleaseContext(hWnd, hImc));
+        ME_ASSERT(ImmReleaseContext(hWnd, hImc));
     }
     return result;
 }
@@ -368,7 +368,7 @@ LRESULT
 ME_imgui_imm::imm_communication_subclassproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
     switch (uMsg) {
         case WM_DESTROY: {
-            ME_ASSERT_E(ImmAssociateContextEx(hWnd, HIMC(0), IACE_DEFAULT));
+            ME_ASSERT(ImmAssociateContextEx(hWnd, HIMC(0), IACE_DEFAULT));
             if (!RemoveWindowSubclass(hWnd, reinterpret_cast<SUBCLASSPROC>(uIdSubclass), uIdSubclass)) {
                 IM_ASSERT(!"RemoveWindowSubclass() failed\n");
             }
@@ -542,7 +542,7 @@ ME_imgui_imm::imm_communication_subclassproc_implement(HWND hWnd, UINT uMsg, WPA
                         } break;
                     }
                 }
-                ME_ASSERT_E(ImmReleaseContext(hWnd, hImc));
+                ME_ASSERT(ImmReleaseContext(hWnd, hImc));
             }
 
         }  // end of WM_IME_COMPOSITION
@@ -599,14 +599,14 @@ ME_imgui_imm::imm_communication_subclassproc_implement(HWND hWnd, UINT uMsg, WPA
                                 }
                             }
                         }
-                        ME_ASSERT_E(ImmReleaseContext(hWnd, hImc));
+                        ME_ASSERT(ImmReleaseContext(hWnd, hImc));
                     }
                 }
 
                     IM_ASSERT(0 <= comm.request_candidate_list_str_commit);
                     if (comm.request_candidate_list_str_commit) {
                         if (comm.request_candidate_list_str_commit == 1) {
-                            ME_ASSERT_E(PostMessage(hWnd, IMGUI_IMM_COMMAND, IMGUI_IMM_COMMAND_COMPOSITION_COMPLETE, 0));
+                            ME_ASSERT(PostMessage(hWnd, IMGUI_IMM_COMMAND, IMGUI_IMM_COMMAND_COMPOSITION_COMPLETE, 0));
                         }
                         --(comm.request_candidate_list_str_commit);
                     }
@@ -636,7 +636,7 @@ ME_imgui_imm::imm_communication_subclassproc_implement(HWND hWnd, UINT uMsg, WPA
                     ImGuiIO &io = ImGui::GetIO();
                     if (io.ImeWindowHandle) {
                         IM_ASSERT(IsWindow(static_cast<HWND>(io.ImeWindowHandle)));
-                        ME_ASSERT_E(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), nullptr, IACE_IGNORENOCONTEXT));
+                        ME_ASSERT(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), nullptr, IACE_IGNORENOCONTEXT));
                     }
                 }
                     return 1;
@@ -664,8 +664,8 @@ ME_imgui_imm::imm_communication_subclassproc_implement(HWND hWnd, UINT uMsg, WPA
                 */
                 HIMC const hImc = ImmGetContext(hWnd);
                 if (hImc) {
-                    ME_ASSERT_E(ImmNotifyIME(hImc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0));
-                    ME_ASSERT_E(ImmReleaseContext(hWnd, hImc));
+                    ME_ASSERT(ImmNotifyIME(hImc, NI_COMPOSITIONSTR, CPS_COMPLETE, 0));
+                    ME_ASSERT(ImmReleaseContext(hWnd, hImc));
                 }
 #else
                         keybd_event(VK_RETURN, 0, 0, 0);

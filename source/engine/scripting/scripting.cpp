@@ -102,7 +102,7 @@ static int catch_panic(lua_State *L) {
 static int metadot_autoload(lua_State *L) {
     std::string string = lua_tostring(L, 1);
     auto &LuaCore = Scripting::get_singleton_ptr()->Lua->s_lua;
-    ME_ASSERT_E(&LuaCore);
+    ME_ASSERT(&LuaCore);
     if (ME_str_starts_with(string, "LUA::")) ME_str_replace_with(string, "LUA::", "data/scripts/");
     script_runfile(string.c_str());
     return 0;
@@ -144,7 +144,7 @@ static int ls(lua_State *L) {
 
 static void add_packagepath(const char *p) {
     auto &s_lua = Scripting::get_singleton_ptr()->Lua->s_lua;
-    ME_ASSERT_E(&s_lua);
+    ME_ASSERT(&s_lua);
     s_lua.dostring(std::format("package.path = "
                                "'{0}/?.lua;' .. package.path",
                                p),
@@ -154,7 +154,7 @@ static void add_packagepath(const char *p) {
 static int R_GetTextureAttr(R_Image *image, const char *attr) {
     if (strcmp(attr, "w")) return image->w;
     if (strcmp(attr, "h")) return image->h;
-    ME_ASSERT_E(0);
+    ME_ASSERT(0);
     return 0;
 }
 
@@ -557,7 +557,7 @@ void Scripting::End() {
 }
 
 void Scripting::Update() {
-    ME_ASSERT_E(Lua);
+    ME_ASSERT(Lua);
     // luaL_loadstring(_struct->L, s_couroutineFileSrc.c_str());
     // if (metadot_debug_pcall(_struct->L, 0, LUA_MULTRET, 0) != LUA_OK) {
     //     print_error(_struct->L);
@@ -571,14 +571,14 @@ void Scripting::Update() {
 }
 
 void Scripting::UpdateRender() {
-    ME_ASSERT_E(Lua);
+    ME_ASSERT(Lua);
     auto &luawrap = Lua->s_lua;
     auto OnRender = luawrap["OnRender"];
     OnRender();
 }
 
 void Scripting::UpdateTick() {
-    ME_ASSERT_E(Lua);
+    ME_ASSERT(Lua);
     auto &luawrap = Lua->s_lua;
     auto OnGameTickUpdate = luawrap["OnGameTickUpdate"];
     OnGameTickUpdate();

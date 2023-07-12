@@ -31,7 +31,7 @@ static const float FLUID_MaxFlow = 8.0f;
 // Adjusts flow speed (0.0f - 1.0f)
 static const float FLUID_FlowSpeed = 1.0f;
 
-#define TraceTimeNum 60
+static constexpr int TraceTimeNum = 60;
 
 static const int GameTick = 4;
 

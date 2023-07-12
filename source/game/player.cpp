@@ -23,7 +23,7 @@ bool RigidBody::set_surface(C_Surface *sur) {
 }
 
 C_Surface *RigidBody::get_surface() {
-    // ME_ASSERT_E(this->surface);
+    // ME_ASSERT(this->surface);
     return this->surface;
 }
 
@@ -33,7 +33,7 @@ bool RigidBody::set_texture(R_Image *tex) {
 }
 
 R_Image *RigidBody::get_texture() {
-    ME_ASSERT_E(this->texture);
+    ME_ASSERT(this->texture);
     return this->texture;
 }
 
@@ -129,20 +129,20 @@ MEvec2 rotate_point2(f32 cx, f32 cy, f32 angle, MEvec2 p) {
     return MEvec2(xn + cx, yn + cy);
 }
 
-void ControableSystem::process(MetaEngine::ECS::registry &world, const move_player_event &evt) {
+void ControableSystem::process(ME::ECS::registry &world, const move_player_event &evt) {
     world.for_joined_components<WorldEntity, Player>(
-            [&evt](MetaEngine::ECS::entity, WorldEntity &we, Player &pl) {
+            [&evt](ME::ECS::entity, WorldEntity &we, Player &pl) {
                 pl.renderLQ(&we, evt.g->TexturePack_.textureEntitiesLQ->target, evt.g->GameIsolate_.world->loadZone.x + (int)(we.vx * evt.thruTick),
                             evt.g->GameIsolate_.world->loadZone.y + (int)(we.vy * evt.thruTick));
                 pl.render(&we, evt.g->TexturePack_.textureEntities->target, evt.g->GameIsolate_.world->loadZone.x + (int)(we.vx * evt.thruTick),
                           evt.g->GameIsolate_.world->loadZone.y + (int)(we.vy * evt.thruTick));
             },
-            MetaEngine::ECS::exists<Player>{} && MetaEngine::ECS::exists<Controlable>{});
+            ME::ECS::exists<Player>{} && ME::ECS::exists<Controlable>{});
 }
 
-void WorldEntitySystem::process(MetaEngine::ECS::registry &world, const entity_update_event &evt) {
+void WorldEntitySystem::process(ME::ECS::registry &world, const entity_update_event &evt) {
     world.for_joined_components<WorldEntity>(
-            [&evt](MetaEngine::ECS::entity, WorldEntity &pl) {
+            [&evt](ME::ECS::entity, WorldEntity &pl) {
                 // entity fluid displacement & make solid
 
                 for (int tx = 0; tx < pl.hw; tx++) {
@@ -166,5 +166,5 @@ void WorldEntitySystem::process(MetaEngine::ECS::registry &world, const entity_u
                     }
                 }
             },
-            MetaEngine::ECS::exists<WorldEntity>{});
+            ME::ECS::exists<WorldEntity>{});
 }

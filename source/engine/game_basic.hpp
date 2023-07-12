@@ -9,7 +9,6 @@
 
 #include "engine/scripting/scripting.hpp"
 #include "engine/ui/imgui_helper.hpp"
-#include "engine/utils/property.hpp"
 
 struct Biome;
 
@@ -66,10 +65,6 @@ public:
     void Reload() override;
     void RegisterLua(ME::LuaWrapper::State &s_lua) override;
 };
-
-ME_GUI_DEFINE_BEGIN(template <typename T>, Property<T>)
-ImGui::Auto(var.get_value());
-ME_GUI_DEFINE_END
 
 // class IGameObject {
 // public:

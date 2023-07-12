@@ -36,8 +36,8 @@
 #include <vector>
 
 #include "engine/core/basic_types.h"
-#include "engine/utils/struct.hpp"
 #include "engine/core/macros.hpp"
+#include "engine/utils/struct.hpp"
 
 #define METADOT_INT8_MAX 0x7F
 #define METADOT_UINT8_MAX 0xFF
@@ -58,127 +58,9 @@ typedef struct Pixel {
     u8 a;
 } Pixel;
 
-#pragma region endian_h
-
-// MetaDot endian
-// https://github.com/mikepb/endian.h
-
-#if (defined(_WIN16) || defined(_WIN32) || defined(_WIN64)) && !defined(__WINDOWS__)
-
-#define __WINDOWS__
-
-#endif
-
-#if defined(__linux__) || defined(__CYGWIN__)
-
-#include <endian.h>
-
-#elif defined(__APPLE__)
-
-#include <libkern/OSByteOrder.h>
-
-#define htobe16(x) OSSwapHostToBigInt16(x)
-#define htole16(x) OSSwapHostToLittleInt16(x)
-#define be16toh(x) OSSwapBigToHostInt16(x)
-#define le16toh(x) OSSwapLittleToHostInt16(x)
-
-#define htobe32(x) OSSwapHostToBigInt32(x)
-#define htole32(x) OSSwapHostToLittleInt32(x)
-#define be32toh(x) OSSwapBigToHostInt32(x)
-#define le32toh(x) OSSwapLittleToHostInt32(x)
-
-#define htobe64(x) OSSwapHostToBigInt64(x)
-#define htole64(x) OSSwapHostToLittleInt64(x)
-#define be64toh(x) OSSwapBigToHostInt64(x)
-#define le64toh(x) OSSwapLittleToHostInt64(x)
-
-#define __BYTE_ORDER BYTE_ORDER
-#define __BIG_ENDIAN BIG_ENDIAN
-#define __LITTLE_ENDIAN LITTLE_ENDIAN
-#define __PDP_ENDIAN PDP_ENDIAN
-
-#elif defined(__OpenBSD__)
-
-#include <sys/endian.h>
-
-#elif defined(__NetBSD__) || defined(__FreeBSD__) || defined(__DragonFly__)
-
-#include <sys/endian.h>
-
-#define be16toh(x) betoh16(x)
-#define le16toh(x) letoh16(x)
-
-#define be32toh(x) betoh32(x)
-#define le32toh(x) letoh32(x)
-
-#define be64toh(x) betoh64(x)
-#define le64toh(x) letoh64(x)
-
-#elif defined(__WINDOWS__)
-
-#include <winsock2.h>
-
-#if BYTE_ORDER == LITTLE_ENDIAN
-
-#define htobe16(x) htons(x)
-#define htole16(x) (x)
-#define be16toh(x) ntohs(x)
-#define le16toh(x) (x)
-
-#define htobe32(x) htonl(x)
-#define htole32(x) (x)
-#define be32toh(x) ntohl(x)
-#define le32toh(x) (x)
-
-#define htobe64(x) htonll(x)
-#define htole64(x) (x)
-#define be64toh(x) ntohll(x)
-#define le64toh(x) (x)
-
-#elif BYTE_ORDER == BIG_ENDIAN
-
-/* that would be xbox 360 */
-#define htobe16(x) (x)
-#define htole16(x) __builtin_bswap16(x)
-#define be16toh(x) (x)
-#define le16toh(x) __builtin_bswap16(x)
-
-#define htobe32(x) (x)
-#define htole32(x) __builtin_bswap32(x)
-#define be32toh(x) (x)
-#define le32toh(x) __builtin_bswap32(x)
-
-#define htobe64(x) (x)
-#define htole64(x) __builtin_bswap64(x)
-#define be64toh(x) (x)
-#define le64toh(x) __builtin_bswap64(x)
-
-#else
-
-#error byte order not supported
-
-#endif
-
-#define __BYTE_ORDER BYTE_ORDER
-#define __BIG_ENDIAN BIG_ENDIAN
-#define __LITTLE_ENDIAN LITTLE_ENDIAN
-#define __PDP_ENDIAN PDP_ENDIAN
-
-#else
-
-#error platform not supported
-
-#endif
-
-#pragma endregion endian_h
-
 #pragma region engine_framework
 
-#include <stdint.h>
-
-#ifndef NOMINMAX
-#define NOMINMAX WINDOWS_IS_ANNOYING_AINT_IT
-#endif
+#include <cstdint>
 
 #ifdef ME_PLATFORM_WINDOWS
 #define METADOT_CDECL __cdecl
@@ -204,57 +86,6 @@ typedef struct Pixel {
 #define ME_ALIGN_FORWARD(v, n) ME_ALIGN_TRUNCATE((v) + (n)-1, (n))
 #define ME_ALIGN_TRUNCATE_PTR(p, n) ((void *)ME_ALIGN_TRUNCATE((uintptr_t)(p), n))
 #define ME_ALIGN_FORWARD_PTR(p, n) ((void *)ME_ALIGN_FORWARD((uintptr_t)(p), n))
-
-#ifdef ME_PLATFORM_WINDOWS
-
-#if !defined(_INITIALIZER_LIST_) && !defined(_INITIALIZER_LIST) && !defined(_LIBCPP_INITIALIZER_LIST)
-#define _INITIALIZER_LIST_        // MSVC
-#define _INITIALIZER_LIST         // GCC
-#define _LIBCPP_INITIALIZER_LIST  // Clang
-// Will probably need to add more here for more compilers later.
-
-namespace std {
-template <typename T>
-class initializer_list {
-public:
-    using value_type = T;
-    using reference = const T &;
-    using const_reference = const T &;
-    using size_type = size_t;
-
-    using iterator = const T *;
-    using const_iterator = const T *;
-
-    constexpr initializer_list() noexcept : m_first(0), m_last(0) {}
-
-    constexpr initializer_list(const T *first, const T *last) noexcept : m_first(first), m_last(last) {}
-
-    constexpr const T *begin() const noexcept { return m_first; }
-    constexpr const T *end() const noexcept { return m_last; }
-    constexpr size_t size() const noexcept { return (size_t)(m_last - m_first); }
-
-private:
-    const T *m_first;
-    const T *m_last;
-};
-
-template <class T>
-constexpr const T *begin(initializer_list<T> list) noexcept {
-    return list.begin();
-}
-template <class T>
-constexpr const T *end(initializer_list<T> list) noexcept {
-    return list.end();
-}
-}  // namespace std
-
-#endif
-
-#else  // ME_PLATFORM_WINDOWS
-
-#include <initializer_list>
-
-#endif  // ME_PLATFORM_WINDOWS
 
 // Not sure where to put this... Here is good I guess.
 ME_INLINE uint64_t metadot_fnv1a(const void *data, int size) {
@@ -290,41 +121,6 @@ METADOT_STRUCT(MarkdownData, data);
 #endif
 
 #define ME_OVERRIDE_ override
-
-#define MAKE_ENUM_FLAGS(TEnum, TBase)                                               \
-    enum class TEnum;                                                               \
-    inline TEnum operator~(TEnum a) {                                               \
-        using TUnder = typename std::underlying_type_t<TEnum>;                      \
-        return static_cast<TEnum>(~static_cast<TUnder>(a));                         \
-    }                                                                               \
-    inline TEnum operator|(TEnum a, TEnum b) {                                      \
-        using TUnder = typename std::underlying_type_t<TEnum>;                      \
-        return static_cast<TEnum>(static_cast<TUnder>(a) | static_cast<TUnder>(b)); \
-    }                                                                               \
-    inline TEnum operator&(TEnum a, TEnum b) {                                      \
-        using TUnder = typename std::underlying_type_t<TEnum>;                      \
-        return static_cast<TEnum>(static_cast<TUnder>(a) & static_cast<TUnder>(b)); \
-    }                                                                               \
-    inline TEnum operator^(TEnum a, TEnum b) {                                      \
-        using TUnder = typename std::underlying_type_t<TEnum>;                      \
-        return static_cast<TEnum>(static_cast<TUnder>(a) ^ static_cast<TUnder>(b)); \
-    }                                                                               \
-    inline TEnum &operator|=(TEnum &a, TEnum b) {                                   \
-        using TUnder = typename std::underlying_type_t<TEnum>;                      \
-        a = static_cast<TEnum>(static_cast<TUnder>(a) | static_cast<TUnder>(b));    \
-        return a;                                                                   \
-    }                                                                               \
-    inline TEnum &operator&=(TEnum &a, TEnum b) {                                   \
-        using TUnder = typename std::underlying_type_t<TEnum>;                      \
-        a = static_cast<TEnum>(static_cast<TUnder>(a) & static_cast<TUnder>(b));    \
-        return a;                                                                   \
-    }                                                                               \
-    inline TEnum &operator^=(TEnum &a, TEnum b) {                                   \
-        using TUnder = typename std::underlying_type_t<TEnum>;                      \
-        a = static_cast<TEnum>(static_cast<TUnder>(a) ^ static_cast<TUnder>(b));    \
-        return a;                                                                   \
-    }                                                                               \
-    enum class TEnum : TBase
 
 // A portable and safe way to add byte offset to any pointer
 // https://stackoverflow.com/questions/15934111/portable-and-safe-way-to-add-byte-offset-to-any-pointer

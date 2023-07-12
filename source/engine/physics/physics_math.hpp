@@ -12,6 +12,7 @@
 
 #include "engine/core/core.hpp"
 #include "engine/core/mathlib.hpp"
+#include "engine/core/sdl_wrapper.h"
 
 #define B2_NOT_USED(x) ((void)(x))
 
@@ -573,7 +574,7 @@ inline void PSweep::GetTransform(PTransform *xf, float beta) const {
 }
 
 inline void PSweep::Advance(float alpha) {
-    ME_ASSERT_E(alpha0 < 1.0f);
+    ME_ASSERT(alpha0 < 1.0f);
     float beta = (alpha - alpha0) / (1.0f - alpha0);
     c0 += beta * (c - c0);
     a0 += beta * (a - a0);

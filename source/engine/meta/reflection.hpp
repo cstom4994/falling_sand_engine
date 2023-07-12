@@ -2188,7 +2188,7 @@ public:
         void *get_address() { return p ? p->get_address() : nullptr; }
         template <class T>
         T get_value() {
-            ME_ASSERT_E(get_type() == type::capture<T>());
+            ME_ASSERT(get_type() == type::capture<T>());
             return get(p->get_address(), tag<T>{});
         }
 

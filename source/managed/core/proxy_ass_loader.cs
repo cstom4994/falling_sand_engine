@@ -14,7 +14,7 @@ namespace MetaDotManagedCore
     public class ProxyAssLoader
     {
         private Assembly ass;
-        public List<Layer> layers = new List<Layer>();
+        public List<BaseClass> layers = new List<BaseClass>();
         public void Load(string path)
         {
             ValidatePath(path);
@@ -41,14 +41,14 @@ namespace MetaDotManagedCore
             {
                 Log.METADOT_INFO("got " + ass.GetType("ManagedStart").GetMethod("Start").Invoke(null, null));
 
-                var lays = ass.GetTypes().Where(x => { return x.BaseType == typeof(Layer); });
+                var lays = ass.GetTypes().Where(x => { return x.BaseType == typeof(BaseClass); });
                 string layersList = " ";
                 foreach (var tempClass in lays)
                 {
                     // var curInsance = ass.CreateInstance(tempClass);
                     layersList += ", " + tempClass.Name;
                     var curInsance = Activator.CreateInstance(tempClass);
-                    layers.Add((Layer)curInsance);
+                    layers.Add((BaseClass)curInsance);
 
                     // using reflection I will be able to run the method as:
                     // curInsance.GetType().GetMethod("Run").Invoke(curInsance, null);
@@ -63,12 +63,12 @@ namespace MetaDotManagedCore
         }
         public void AttachLayers()
         {
-            foreach (Layer l in layers)
+            foreach (BaseClass l in layers)
                 l.OnAttach();
         }
         public void DetachLayers()
         {
-            foreach (Layer l in layers)
+            foreach (BaseClass l in layers)
                 l.OnDetach();
         }
         public void UnloadLayers()
@@ -77,14 +77,14 @@ namespace MetaDotManagedCore
         }
         public void UpdateLayers()
         {
-            foreach (Layer l in layers)
+            foreach (BaseClass l in layers)
                 l.OnUpdate();
         }
     }
     public class ProxyAssLoaderMarschal : MarshalByRefObject
     {
         private Assembly ass;
-        public List<Layer> layers = new List<Layer>();
+        public List<BaseClass> layers = new List<BaseClass>();
         public void Load(string path)
         {
             ValidatePath(path);
@@ -111,14 +111,14 @@ namespace MetaDotManagedCore
             {
                 Log.METADOT_INFO("got " + ass.GetType("ManagedStart").GetMethod("Start").Invoke(null, null));
 
-                var lays = ass.GetTypes().Where(x => { return x.BaseType == typeof(Layer); });
+                var lays = ass.GetTypes().Where(x => { return x.BaseType == typeof(BaseClass); });
                 string layersList = "";
                 foreach (var tempClass in lays)
                 {
                     // var curInsance = ass.CreateInstance(tempClass);
                     layersList += ", " + tempClass.Name;
                     var curInsance = Activator.CreateInstance(tempClass);
-                    layers.Add((Layer)curInsance);
+                    layers.Add((BaseClass)curInsance);
 
                     // using reflection I will be able to run the method as:
                     // curInsance.GetType().GetMethod("Run").Invoke(curInsance, null);
@@ -133,12 +133,12 @@ namespace MetaDotManagedCore
         }
         public void AttachLayers()
         {
-            foreach (Layer l in layers)
+            foreach (BaseClass l in layers)
                 l.OnAttach();
         }
         public void DetachLayers()
         {
-            foreach (Layer l in layers)
+            foreach (BaseClass l in layers)
                 l.OnDetach();
         }
         public void UnloadLayers()
@@ -147,7 +147,7 @@ namespace MetaDotManagedCore
         }
         public void UpdateLayers()
         {
-            foreach (Layer l in layers)
+            foreach (BaseClass l in layers)
                 l.OnUpdate();
         }
     }

@@ -3,7 +3,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using MetaDotManagedCore;
-public class MetaDotManagedRuntime : Layer
+public class MetaDotManagedRuntime : BaseClass
 {
     public override void OnAttach()
     {

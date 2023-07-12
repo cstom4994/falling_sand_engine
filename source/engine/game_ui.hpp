@@ -44,6 +44,8 @@ public:
     int OptionsUI__item_current_idx = 0;
     bool OptionsUI__vsync = false;
     bool OptionsUI__minimizeOnFocus = false;
+
+    std::map<std::string, FMOD::Studio::Bus *> OptionsUI__busMap = {};
 };
 
 void DrawDebugUI(Game *game);

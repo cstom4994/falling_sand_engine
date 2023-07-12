@@ -9,11 +9,11 @@
 #include <map>
 #include <string>
 
-#include "engine/utils/struct.hpp"
 #include "engine/core/macros.hpp"
-#include "engine/utils/utility.hpp"
 #include "engine/engine.h"
 #include "engine/scripting/lua_wrapper.hpp"
+#include "engine/utils/struct.hpp"
+#include "engine/utils/utility.hpp"
 
 struct lua_State;
 
@@ -103,6 +103,19 @@ public:
     void Update();
     void UpdateRender();
     void UpdateTick();
+
+    ME_INLINE auto FastCallFunc(std::string name) {
+        auto luacore = Scripting::get_singleton_ptr()->Lua;
+        auto &luawrap = luacore->s_lua;
+        auto func = luawrap[name];
+        return func;
+    }
+
+    ME_INLINE bool FastLoadLua(std::string path) {
+        auto luacore = Scripting::get_singleton_ptr()->Lua;
+        auto &luawrap = luacore->s_lua;
+        return luawrap.dofile(path);
+    }
 
 private:
     friend class ME::singleton<Scripting>;

@@ -29,7 +29,7 @@ defines {"WIN32", "_WIN32", "_WINDOWS", "NOMINMAX", "UNICODE", "_UNICODE", "_CRT
 platforms {"Win64"}
 
 filter "configurations:Debug"
-defines {"_DEBUG", "DEBUG"}
+defines {"_DEBUG", "DEBUG", "_CRTDBG_MAP_ALLOC"}
 symbols "On"
 
 filter "configurations:Release"
@@ -60,19 +60,20 @@ end
 filter "platforms:Win64"
 system "Windows"
 architecture "x86_64"
-libdirs {"dependencies/SDL2/lib/x64", "dependencies/libffi/lib", "dependencies/mono/lib"}
+libdirs {"dependencies/SDL2/lib/x64", "dependencies/libffi/lib", "dependencies/mono/lib", "dependencies/fmod/lib"}
 
 objdir "vsbuild/obj/%{cfg.platform}_%{cfg.buildcfg}"
 
 includedirs {"source"}
 
-includedirs {"dependencies/SDL2/include", "dependencies/libffi/include", "dependencies/mono/include"}
+includedirs {"dependencies/SDL2/include", "dependencies/libffi/include", "dependencies/mono/include",
+             "dependencies/fmod/include"}
 
 ----------------------------------------------------------------------------
 -- projects
 ----------------------------------------------------------------------------
 
-project "MetaDotLibs"
+project "external"
 do
     kind "StaticLib"
     language "C++"
@@ -82,6 +83,17 @@ do
            "source/libs/external/*.c"}
 
     files {"source/libs/**.h", "source/libs/**.hpp"}
+
+    files {"dependencies/SDL2/include/**.**", "dependencies/libffi/include/**.**", "dependencies/mono/include/**.**",
+           "dependencies/fmod/include/**.**"}
+
+    vpaths {
+        ["libs/*"] = {"source/libs"},
+        ["deps/sdl2/*"] = {"dependencies/SDL2/include"},
+        ["deps/libffi/*"] = {"dependencies/libffi/include"},
+        ["deps/mono/*"] = {"dependencies/mono/include"},
+        ["deps/fmod/*"] = {"dependencies/fmod/include"}
+    }
 
 end
 
@@ -95,7 +107,19 @@ do
     files {"source/engine/**.cpp", "source/engine/**.c", "source/engine/**.h", "source/engine/**.hpp"}
     files {"source/game/**.cpp", "source/game/**.c", "source/game/**.h", "source/game/**.hpp"}
 
-    links {"MetaDotLibs", "SDL2", "ffi", mono_libs, win32_libs}
+    files {"data/scripts/**.lua", "data/shaders/**.**"}
+
+    files {"premake5.lua"}
+
+    vpaths {
+        ["engine/*"] = {"source/engine"},
+        ["game/*"] = {"source/game"},
+        ["scripts/*"] = {"data/scripts"},
+        ["shaders/*"] = {"data/shaders"},
+        ["*"] = {"premake5.lua"}
+    }
+
+    links {"external", "SDL2", "ffi", "fmod_vc", "fmodstudio_vc", mono_libs, win32_libs}
 end
 
 project "ManagedCore"
@@ -110,6 +134,10 @@ do
     dotnetframework "4.8"
 
     files {"source/managed/core/**.cs"}
+
+    vpaths {
+        ["core/*"] = {"source/managed/core"}
+    }
 
     warnings "off"
 end
@@ -128,6 +156,10 @@ do
     dotnetframework "4.8"
 
     files {"source/managed/runtime/**.cs"}
+
+    vpaths {
+        ["runtime/*"] = {"source/managed/runtime"}
+    }
 
     warnings "off"
 end

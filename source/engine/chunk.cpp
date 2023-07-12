@@ -8,22 +8,21 @@
 #include <vector>
 
 #include "engine/core/core.hpp"
-#include "engine/core/core.hpp"
-#include "engine/utils/utils.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/datapackage.h"
 #include "engine/core/platform.h"
+#include "engine/utils/utils.hpp"
 #include "libs/lz4/lz4.h"
 
 void ChunkInit(Chunk *_struct, int x, int y, char *worldName) {
-    ME_ASSERT_E(_struct);
+    ME_ASSERT(_struct);
     _struct->x = x;
     _struct->y = y;
     _struct->pack_filename = std::string(std::string(worldName) + "/chunks/c_" + std::to_string(x) + "_" + std::to_string(y) + ".pack");
 }
 
 void ChunkDelete(Chunk *_struct) {
-    ME_ASSERT_E(_struct);
+    ME_ASSERT(_struct);
     if (_struct->tiles) delete[] _struct->tiles;
     if (_struct->layer2) delete[] _struct->layer2;
     if (_struct->background) delete[] _struct->background;
@@ -51,7 +50,7 @@ void ChunkLoadMeta(Chunk *_struct) {
 
     if (dp) {
         _struct->generationPhase = phase;
-        _struct->hasMeta.set_value(true);
+        _struct->hasMeta = true;
         datapack_free(dp);
     } else {
     }
@@ -94,7 +93,7 @@ void ChunkRead(Chunk *_struct) {
     if (dp) {
         int state = 0;
 
-        // METADOT_BUG("Datapack test result: %d, %d, %d, %d", leveldata.sz, compressed_size, leveldata2.sz, compressed_size2);
+        // METADOT_BUG(std::format("Datapack test result: {0} {1} {2} {3}", leveldata.sz, compressed_size, leveldata2.sz, compressed_size2).c_str());
 
         if (x != _struct->x || y != _struct->y)
             throw std::runtime_error("Wrong region block read sequence (" + std::to_string(x) + "," + std::to_string(y) + " should be " + std::to_string(_struct->x) + "," +
@@ -102,7 +101,7 @@ void ChunkRead(Chunk *_struct) {
 
         if (leveldata.sz != compressed_size || leveldata2.sz != compressed_size2) throw std::runtime_error("Unexpected block compression data");
 
-        _struct->hasMeta.set_value(true);
+        _struct->hasMeta = true;
         state = 1;
 
         // unsigned int content;
@@ -140,9 +139,9 @@ void ChunkRead(Chunk *_struct) {
         // 基本上，如果触发这两个检查中的任何一个，块都是不可读的，要么是因为写错了，要么是因为损坏。
         // TODO：让区块在损坏时重新生成(可能还会保存损坏区块的副本？)
         if (decompressed_size < 0) {
-            METADOT_ERROR("Error decompressing chunk tile data @ %d,%d (err %d).", _struct->x, _struct->y, decompressed_size);
+            METADOT_ERROR(std::format("Error decompressing chunk tile data @ {0},{1} (err {2}).", _struct->x, _struct->y, decompressed_size).c_str());
         } else if (decompressed_size != src_size) {
-            METADOT_ERROR("Decompressed chunk tile data is corrupt! @ %d,%d (was %d, expected %d).", _struct->x, _struct->y, decompressed_size, src_size);
+            METADOT_ERROR(std::format("Decompressed chunk tile data is corrupt! @ {0},{1} (was {2}, expected {3}).", _struct->x, _struct->y, decompressed_size, src_size).c_str());
         }
 
         // copy everything but the material pointer
@@ -172,16 +171,16 @@ void ChunkRead(Chunk *_struct) {
         const int decompressed_size2 = LZ4_decompress_safe((char *)leveldata2.addr, (char *)background, compressed_size2, src_size2);
 
         if (decompressed_size2 < 0) {
-            METADOT_ERROR("Error decompressing chunk background data @ %d,%d (err %d).", _struct->x, _struct->y, decompressed_size2);
+            METADOT_ERROR(std::format("Error decompressing chunk background data @ {0},{1} (err {2}).", _struct->x, _struct->y, decompressed_size2).c_str());
         } else if (decompressed_size2 != src_size2) {
-            METADOT_ERROR("Decompressed chunk background data is corrupt! @ %d,%d (was %d, expected %d).", _struct->x, _struct->y, decompressed_size2, src_size2);
+            METADOT_ERROR(std::format("Decompressed chunk background data is corrupt! @ {0},{1} (was {2}, expected {3}).", _struct->x, _struct->y, decompressed_size2, src_size2).c_str());
         }
 
         free(readBuf);
 
         datapack_free(dp);
     } else {
-        METADOT_ERROR("Read chunk %d %d faild", _struct->x, _struct->y);
+        METADOT_ERROR(std::format("Read chunk {0},{1} faild", _struct->x, _struct->y).c_str());
     }
 
     if (s) free(s);
@@ -230,7 +229,7 @@ void ChunkWrite(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer
     const int compressed_data_size = LZ4_compress_fast(src, compressed_data, src_size, max_dst_size, 10);
 
     if (compressed_data_size <= 0) {
-        METADOT_ERROR("Failed to compress chunk tile data @ %d,%d (err %d)", _struct->x, _struct->y, compressed_data_size);
+        METADOT_ERROR(std::format("Failed to compress chunk tile data @ {0},{1} (err {2})", _struct->x, _struct->y, compressed_data_size).c_str());
     }
 
     // if(compressed_data_size > 0){
@@ -252,7 +251,7 @@ void ChunkWrite(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer
     const int compressed_data_size2 = LZ4_compress_fast(src2, compressed_data2, src_size2, max_dst_size2, 10);
 
     if (compressed_data_size2 <= 0) {
-        METADOT_ERROR("Failed to compress chunk tile data @ %d,%d (err %d)", _struct->x, _struct->y, compressed_data_size2);
+        METADOT_ERROR(std::format("Failed to compress chunk tile data @ {0},{1} (err {2})", _struct->x, _struct->y, compressed_data_size2).c_str());
     }
 
     // if(compressed_data_size2 > 0){

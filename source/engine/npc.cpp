@@ -107,13 +107,13 @@ void Bot::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
 
 void Bot::renderLQ(WorldEntity *we, R_Target *target, int ofsX, int ofsY) { R_Rectangle(target, we->x + ofsX, we->y + ofsY, we->x + ofsX + we->hw, we->y + ofsY + we->hh, {0xff, 0x00, 0xff, 0xff}); }
 
-void NpcSystem::process(MetaEngine::ECS::registry &world, const move_player_event &evt) {
+void NpcSystem::process(ME::ECS::registry &world, const move_player_event &evt) {
     world.for_joined_components<WorldEntity, Bot>(
-            [&evt](MetaEngine::ECS::entity, WorldEntity &we, Bot &npc) {
+            [&evt](ME::ECS::entity, WorldEntity &we, Bot &npc) {
                 npc.renderLQ(&we, evt.g->TexturePack_.textureEntitiesLQ->target, evt.g->GameIsolate_.world->loadZone.x + (int)(we.vx * evt.thruTick),
                              evt.g->GameIsolate_.world->loadZone.y + (int)(we.vy * evt.thruTick));
                 npc.render(&we, evt.g->TexturePack_.textureEntities->target, evt.g->GameIsolate_.world->loadZone.x + (int)(we.vx * evt.thruTick),
                            evt.g->GameIsolate_.world->loadZone.y + (int)(we.vy * evt.thruTick));
             },
-            MetaEngine::ECS::exists<Bot>{} && MetaEngine::ECS::exists<Controlable>{});
+            ME::ECS::exists<Bot>{} && ME::ECS::exists<Controlable>{});
 }

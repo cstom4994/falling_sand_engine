@@ -30,7 +30,7 @@ static int Lnew(lua_State *L) {
     int flags;
     MEsurface_context *ctx;
     flags = lbind_optmask(L, 1, 0, &et);
-    ME_ASSERT_E(g_ctx);
+    ME_ASSERT(g_ctx);
 
     ctx = g_ctx;
     lbind_wrap(L, ctx, &lbT_Context);

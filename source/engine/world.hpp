@@ -85,19 +85,19 @@ public:
         phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>> chunkCache;
         std::vector<Populator *> populators;
 
-        MetaEngine::ECS::entity_id player;
+        ME::ECS::entity_id player;
     };
 
     struct {
-        MetaEngine::ECS::registry registry;
+        ME::ECS::registry registry;
     };
 
-    MetaEngine::ECS::registry &Reg() { return registry; }
+    ME::ECS::registry &Reg() { return registry; }
 
     bool *hasPopulator = nullptr;
     int highestPopulator = 0;
     FastNoise noise;
-    AudioEngine *audioEngine = nullptr;
+    ME::Audio *audioEngine = nullptr;
 
     MaterialInstance *tiles = nullptr;
     f32 *flowX = nullptr;
@@ -132,8 +132,8 @@ public:
     b2World *b2world = nullptr;
     RigidBody *staticBody = nullptr;
 
-    void init(std::string worldPath, u16 w, u16 h, R_Target *renderer, AudioEngine *audioEngine, WorldGenerator *generator);
-    void init(std::string worldPath, u16 w, u16 h, R_Target *target, AudioEngine *audioEngine);
+    void init(std::string worldPath, u16 w, u16 h, R_Target *renderer, ME::Audio *audioEngine, WorldGenerator *generator);
+    void init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audio *audioEngine);
     MaterialInstance getTile(int x, int y);
     void setTile(int x, int y, MaterialInstance type);
     MaterialInstance getTileLayer2(int x, int y);

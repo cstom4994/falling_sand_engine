@@ -281,7 +281,7 @@ void DefaultGenerator::generateChunk(World *world, Chunk *ch) {
             // Biome *b = world->getBiomeAt(px, py);
             Biome *b = BiomeGet("DEFAULT");
 
-            ME_ASSERT_E(b->id >= 0);
+            ME_ASSERT(b->id >= 0);
 
             // std::cout << "DefaultGenerator generate " << ch->x << " " << ch->y << " Biome: " << b->name << std::endl;
 
@@ -372,7 +372,7 @@ int test_wang() {
 
     unsigned char *data = stbi_load("data/assets/textures/wang_test.png", &w, &h, NULL, 3);
 
-    ME_ASSERT_E(data);
+    ME_ASSERT(data);
 
     printf("Output size: %dx%d\n", xs, ys);
 

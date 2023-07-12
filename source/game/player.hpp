@@ -4,6 +4,7 @@
 #define ME_PLAYER_HPP
 
 #include "engine/game_datastruct.hpp"
+#include "engine/physics/physics_math.hpp"
 #include "game/items.hpp"
 
 #pragma region Rigidbody
@@ -93,9 +94,9 @@ struct RigidBodyBinding : public ME::LuaWrapper::PodBind::Binding<RigidBodyBindi
     static int create(lua_State *L) {
         ME::println("Create called");
         ME::LuaWrapper::PodBind::CheckArgCount(L, 2);
-        b2Body *body = (b2Body *)lua_touserdata(L, 1);
+        // b2Body *body = (b2Body *)lua_touserdata(L, 1);
         const char *name = luaL_checkstring(L, 2);
-        RigidBodyPtr sp = ME::create_ref<RigidBody>(body, name);
+        RigidBodyPtr sp = ME::create_ref<RigidBody>(nullptr, name);
         push(L, sp);
         return 1;
     }
@@ -216,14 +217,14 @@ struct entity_update_event {
     Game *g;
 };
 
-class ControableSystem : public MetaEngine::ECS::system<move_player_event> {
+class ControableSystem : public ME::ECS::system<move_player_event> {
 public:
-    void process(MetaEngine::ECS::registry &world, const move_player_event &evt) override;
+    void process(ME::ECS::registry &world, const move_player_event &evt) override;
 };
 
-class WorldEntitySystem : public MetaEngine::ECS::system<entity_update_event> {
+class WorldEntitySystem : public ME::ECS::system<entity_update_event> {
 public:
-    void process(MetaEngine::ECS::registry &world, const entity_update_event &evt) override;
+    void process(ME::ECS::registry &world, const entity_update_event &evt) override;
 };
 
 #pragma endregion Player

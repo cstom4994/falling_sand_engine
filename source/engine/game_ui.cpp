@@ -207,41 +207,40 @@ void OptionsUI__DrawVideo(Game *game) {
 }
 
 void OptionsUI__DrawAudio(Game *game) {
-    // ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "音频");
-    // ImGui::Indent(4);
+    ImGui::TextColored(ImVec4(1.0, 1.0, 0.8, 1.0), "%s", "音频");
+    ImGui::Indent(4);
 
-    // if (gameUI.OptionsUI__busMap.size() == 0) {
-    //     FMOD::Studio::Bus *busses[20];
-    //     int busCt = 0;
-    //     global.audioEngine.GetBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"))->getBusList(busses, 20, &busCt);
+    if (gameUI.OptionsUI__busMap.size() == 0) {
+        FMOD::Studio::Bus *busses[20];
+        int busCt = 0;
+        global.audio.GetBank(METADOT_RESLOC("data/assets/audio/fmod/Build/Desktop/Master.bank"))->getBusList(busses, 20, &busCt);
 
-    //     gameUI.OptionsUI__busMap = {};
+        gameUI.OptionsUI__busMap = {};
 
-    //     for (int i = 0; i < busCt; i++) {
-    //         FMOD::Studio::Bus *b = busses[i];
-    //         char path[100];
-    //         int ctPath = 0;
-    //         b->getPath(path, 100, &ctPath);
+        for (int i = 0; i < busCt; i++) {
+            FMOD::Studio::Bus *b = busses[i];
+            char path[100];
+            int ctPath = 0;
+            b->getPath(path, 100, &ctPath);
 
-    //         gameUI.OptionsUI__busMap[std::string(path)] = b;
-    //     }
-    // }
+            gameUI.OptionsUI__busMap[std::string(path)] = b;
+        }
+    }
 
-    // std::vector<std::vector<std::string>> disp = {
-    //         {"bus:/Master", "Master"}, {"bus:/Master/Underwater/Music", "Music"}, {"bus:/Master/GUI", "GUI"}, {"bus:/Master/Underwater/Player", "Player"}, {"bus:/Master/Underwater/World",
-    //         "World"}};
+    std::vector<std::vector<std::string>> disp = {
+            {"bus:/Master", "Master"}, {"bus:/Master/Underwater/Music", "Music"}, {"bus:/Master/GUI", "GUI"}, {"bus:/Master/Underwater/Player", "Player"}, {"bus:/Master/Underwater/World", "World"}};
 
-    // for (auto &v : disp) {
-    //     f32 volume = 0;
-    //     gameUI.OptionsUI__busMap[v[0]]->getVolume(&volume);
-    //     volume *= 100;
-    //     if (ImGui::SliderFloat(v[1].c_str(), &volume, 0.0f, 100.0f, "%0.0f%%")) {
-    //         volume = std::max(0.0f, std::min(volume, 100.0f));
-    //         gameUI.OptionsUI__busMap[v[0]]->setVolume(volume / 100.0f);
-    //     }
-    // }
+    for (auto &v : disp) {
+        f32 volume = 0;
+        gameUI.OptionsUI__busMap[v[0]]->getVolume(&volume);
+        volume *= 100;
+        if (ImGui::SliderFloat(v[1].c_str(), &volume, 0.0f, 100.0f, "%0.0f%%")) {
+            volume = std::max(0.0f, std::min(volume, 100.0f));
+            gameUI.OptionsUI__busMap[v[0]]->setVolume(volume / 100.0f);
+        }
+    }
 
-    // ImGui::Unindent(4);
+    ImGui::Unindent(4);
 }
 
 void OptionsUI__DrawInput(Game *game) {}
@@ -286,7 +285,7 @@ void MainMenuUI__Setup() {
 
 void MainMenuUI__Draw(Game *game) {
 
-    ME_ASSERT_E(game);
+    ME_ASSERT(game);
 
     if (!gameUI.visible_mainmenu) return;
 

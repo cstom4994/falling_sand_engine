@@ -509,7 +509,7 @@ f32 NewMaths::fModulus(f32 a, f32 b) {
 
 #pragma region Poro
 
-namespace MetaEngine {
+namespace ME {
 namespace math {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -747,7 +747,7 @@ bool TestLineAABB(const CVector2<PointType> &p0, const CVector2<PointType> &p1, 
 ///////////////////////////////////////////////////////////////////////////////
 
 }  // end of namespace math
-}  // end of namespace MetaEngine
+}  // end of namespace ME
 
 #pragma endregion Poro
 
@@ -854,7 +854,7 @@ void metadot_norms(ME_V2 *verts, ME_V2 *norms, int count) { c2Norms((c2v *)verts
 void metadot_make_poly(ME_Poly *p) { c2MakePoly((c2Poly *)p); }
 
 ME_V2 metadot_centroid(const ME_V2 *metadot_verts, int count) {
-    using namespace MetaEngine;
+    using namespace ME;
     const v2 *verts = (const v2 *)metadot_verts;
     if (count == 0)
         return metadot_v2(0, 0);

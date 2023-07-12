@@ -5,7 +5,7 @@
 #include <cmath>
 #include <cstring>
 
-namespace MetaEngine::Json {
+namespace ME::Json {
 
 typedef unsigned char u_char;
 typedef unsigned int ngx_uint_t;
@@ -164,7 +164,7 @@ Rpc::~Rpc() {}
 
 void Rpc::registerSender(RpcSender *sender) { sender_ = sender; }
 
-void Rpc::registerHandler(const std::string &name, MetaEngine::Json::rpc_handler_t handler) { handlers_[name] = handler; }
+void Rpc::registerHandler(const std::string &name, ME::Json::rpc_handler_t handler) { handlers_[name] = handler; }
 
 Json Rpc::handleRequest(Json &req) {
     Response response;
@@ -247,19 +247,19 @@ bool Rpc::recv(Json &js) {
 /*
 ##### 数据类型
 
-​	int,float,bool,string
+​   int,float,bool,string
 
 ##### 是否可选，默认为必选
 
-​	optional 可省略为opt
+​   optional 可省略为opt
 
 ##### 范围区间表示
 
-​	(1,100) 表示 1 < x < 100
-​	[1,100) 表示 1 <= x < 100
-​	(1,100] 表示 1 < x <= 100
-​	[1,100] 表示 1 <= x <= 100
-​	{1,2,3,4,5} 表示在集合内
+​   (1,100) 表示 1 < x < 100
+​   [1,100) 表示 1 <= x < 100
+​   (1,100] 表示 1 < x <= 100
+​   [1,100] 表示 1 <= x <= 100
+​   {1,2,3,4,5} 表示在集合内
     !{1,2,3} 表示不在集合内
 
 ##### 示例如下：
@@ -569,4 +569,4 @@ bool Validator::validate(const Json &data, const Json &schema) {
     return true;
 }
 
-}  // namespace MetaEngine::Json
+}  // namespace ME::Json

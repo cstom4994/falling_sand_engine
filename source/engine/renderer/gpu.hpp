@@ -12,10 +12,10 @@
 
 #include "engine/core/core.hpp"
 #include "engine/core/sdl_wrapper.h"
-#include "engine/utils/utility.hpp"
 #include "engine/physics/box2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/shaders.hpp"
+#include "engine/utils/utility.hpp"
 #include "libs/glad/glad.h"
 
 #define R_GET_PIXEL(surface, x, y) *((u32 *)((u8 *)surface->pixels + ((y)*surface->pitch) + ((x) * sizeof(u32))))

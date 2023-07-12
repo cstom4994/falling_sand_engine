@@ -53,12 +53,12 @@ public:
     }
 
     inline Type &operator[](SizeType i) {
-        ME_ASSERT_E(!(i < 0 || i >= _size));
+        ME_ASSERT(!(i < 0 || i >= _size));
         return data[i];
     }
 
     inline const Type &operator[](SizeType i) const {
-        ME_ASSERT_E(!(i < 0 || i >= _size));
+        ME_ASSERT(!(i < 0 || i >= _size));
         return data[i];
     }
 
@@ -97,13 +97,13 @@ public:
     }
 
     inline const Type &Rand(SizeType i) const {
-        ME_ASSERT_E(!(i < 0 || i >= _size));
+        ME_ASSERT(!(i < 0 || i >= _size));
 
         return data[i];
     }
 
     inline Type &Rand(SizeType i) {
-        ME_ASSERT_E(!(i < 0 || i >= _size));
+        ME_ASSERT(!(i < 0 || i >= _size));
 
         return data[i];
     }
@@ -142,12 +142,12 @@ public:
     }
 
     T &operator[](int i) {
-        ME_ASSERT_E(i >= 0 && i < N);
+        ME_ASSERT(i >= 0 && i < N);
         return data[i];
     }
 
     const T &operator[](int i) const {
-        ME_ASSERT_E(i >= 0 && i < N);
+        ME_ASSERT(i >= 0 && i < N);
         return data[i];
     }
 
@@ -376,7 +376,7 @@ public:
     }
 
     void Crop(int _x, int _y, int _w, int _h) {
-        ME_ASSERT_E(false);
+        ME_ASSERT(false);
 
         /*
     std::vector< _Ty > tmpDataArray;
@@ -688,7 +688,7 @@ struct PointMatrix {
         float a = col1.x, b = col2.x, c = col1.y, d = col2.y;
         PointMatrix B;
         float det = (float)(a * d - b * c);
-        ME_ASSERT_E(det != 0);
+        ME_ASSERT(det != 0);
         if (det == 0) return B;
 
         det = float(1.0f) / det;
@@ -964,7 +964,7 @@ public:
             safty_count++;
         }
 
-        ME_ASSERT_E(safty_count < 10000);
+        ME_ASSERT(safty_count < 10000);
 
         /*
     for ( j = i->second.begin(); j != i->second.end(); ++j )
@@ -1070,7 +1070,7 @@ public:
         myMap[ first ].push_back( second );
         myMap[ first ].sort( ListSorter() );
         */
-            ME_ASSERT_E(false && "this should happen");
+            ME_ASSERT(false && "this should happen");
             return;
         }
 
@@ -1311,7 +1311,7 @@ bool VectorIsSorted(const std::vector<T> &array) {
     return true;
 }
 
-// binary search in the sorted array... Maybe we should ME_ASSERT_E( that it's sorted... )
+// binary search in the sorted array... Maybe we should ME_ASSERT( that it's sorted... )
 template <class T>
 bool VectorContainsSorted(const std::vector<T> &array, const T &element) {
     if (array.empty()) return false;

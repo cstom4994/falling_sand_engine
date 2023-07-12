@@ -85,7 +85,7 @@ overloaded(Ts...) -> overloaded<Ts...>;
 
 }  // namespace ME
 
-// MetaEngine METypeInfo Implement
+// ME METypeInfo Implement
 #define ImplTemplateTypeInfo(CLASS) \
     template <class T>              \
     inline constexpr METypeInfo GetTypeInfo<CLASS<T>> = {#CLASS, Selector::None, {&GetTypeInfo<T>}}
@@ -512,7 +512,7 @@ ImplTemplateTypeInfoMultiArgs(std::unordered_map);
 ImplTemplateTypeInfoMultiArgs(std::unordered_multiset);
 ImplTemplateTypeInfoMultiArgs(std::unordered_multimap);
 
-/* implement METypeInfo for MetaEngine Types */
+/* implement METypeInfo for ME Types */
 // ImplTypeInfo(Int8);
 // ImplTypeInfo(UInt8);
 // ImplTypeInfo(Int16);

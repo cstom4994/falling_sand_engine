@@ -155,8 +155,6 @@
 #endif
 #endif
 
-#define TraceTimeNum 60
-
 #define ME_APP_NAME "NekoEngine"
 #define ME_APP_VERSION_TEXT "0.0.1"
 #define ME_APP_VERSION_MAJOR 0
@@ -249,8 +247,11 @@
 #define ME_OK 0
 #define ME_FAILED -1
 
-#define ME_ASSERT(x, _c) assert(x)
-#define ME_ASSERT_E(x) assert(x)
+#ifdef ME_PLATFORM_WINDOWS
+#define ME_ASSERT SDL_assert
+#else
+#define ME_ASSERT assert
+#endif
 
 #define ME_PRIVATE(_result_type) static _result_type
 #define ME_PUBLIC(_result_type) _result_type

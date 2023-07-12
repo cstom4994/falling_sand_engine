@@ -2,6 +2,7 @@
 #pragma once
 
 #include "engine/core/core.hpp"
+#include "engine/core/sdl_wrapper.h"
 
 #if defined(ME_CS_DISABLE_EXCEPTIONS)
 namespace ME::CSharpWrapper {
@@ -107,7 +108,7 @@ class method {
     MonoMethod* m_native_ptr;
 
 public:
-    method(MonoDomain* domain, MonoMethod* native_ptr) : m_domain(domain), m_native_ptr(native_ptr) { ME_ASSERT_E(m_domain != nullptr); }
+    method(MonoDomain* domain, MonoMethod* native_ptr) : m_domain(domain), m_native_ptr(native_ptr) { ME_ASSERT(m_domain != nullptr); }
 
     MonoMethod* get_pointer() const { return m_native_ptr; }
 
@@ -138,12 +139,12 @@ public:
     }
 
     const char* get_signature() const {
-        ME_ASSERT_E(m_native_ptr != nullptr);
+        ME_ASSERT(m_native_ptr != nullptr);
         return mono_method_get_reflection_name(m_native_ptr);
     }
 
     const char* get_name() const {
-        ME_ASSERT_E(m_native_ptr != nullptr);
+        ME_ASSERT(m_native_ptr != nullptr);
         return mono_method_get_name(m_native_ptr);
     }
 
@@ -439,7 +440,7 @@ public:
     MonoClass* get_pointer() const { return m_class; }
 
     MonoClassField* get_field_pointer(const char* field_name) const {
-        ME_ASSERT_E(m_class != nullptr);
+        ME_ASSERT(m_class != nullptr);
         MonoClassField* field = mono_class_get_field_from_name(m_class, field_name);
         if (field == nullptr) {
             throw_exception("could not find field in class");
@@ -448,13 +449,13 @@ public:
     }
 
     bool has_field(const char* field_name) const {
-        ME_ASSERT_E(m_class != nullptr);
+        ME_ASSERT(m_class != nullptr);
         MonoClassField* field = mono_class_get_field_from_name(m_class, field_name);
         return field != nullptr;
     }
 
     MonoProperty* get_property_pointer(const char* property_name) const {
-        ME_ASSERT_E(m_class != nullptr);
+        ME_ASSERT(m_class != nullptr);
         MonoProperty* prop = mono_class_get_property_from_name(m_class, property_name);
         if (prop == nullptr) {
             throw_exception("could not find property in class");
@@ -463,13 +464,13 @@ public:
     }
 
     bool has_property(const char* property_name) const {
-        ME_ASSERT_E(m_class != nullptr);
+        ME_ASSERT(m_class != nullptr);
         MonoProperty* prop = mono_class_get_property_from_name(m_class, property_name);
         return prop != nullptr;
     }
 
     MonoMethod* get_method_pointer(const char* name) const {
-        ME_ASSERT_E(m_class != nullptr);
+        ME_ASSERT(m_class != nullptr);
         MonoMethod* m = get_method_pointer_or_null(name);
         if (m == nullptr) {
             throw_exception("could not find method in class");
@@ -478,7 +479,7 @@ public:
     }
 
     bool has_method(const char* name) const {
-        ME_ASSERT_E(m_class != nullptr);
+        ME_ASSERT(m_class != nullptr);
         MonoMethod* m = get_method_pointer_or_null(name);
         return m != nullptr;
     }
@@ -525,37 +526,37 @@ public:
     }
 
     method_view get_methods() const {
-        ME_ASSERT_E(m_class != nullptr);
+        ME_ASSERT(m_class != nullptr);
         return method_view(get_current_domain(), m_class);
     }
 
     field_view get_fields() const {
-        ME_ASSERT_E(m_class != nullptr);
+        ME_ASSERT(m_class != nullptr);
         return field_view(m_class);
     }
 
     property_view get_properties() const {
-        ME_ASSERT_E(m_class != nullptr);
+        ME_ASSERT(m_class != nullptr);
         return property_view(m_class);
     }
 
     const char* get_namespace() const {
-        ME_ASSERT_E(m_class != nullptr);
+        ME_ASSERT(m_class != nullptr);
         return mono_class_get_namespace(m_class);
     }
 
     class_type get_nesting_type() const {
-        ME_ASSERT_E(m_class != nullptr);
+        ME_ASSERT(m_class != nullptr);
         return class_type(mono_class_get_nesting_type(m_class));
     }
 
     class_type get_parent_type() const {
-        ME_ASSERT_E(m_class != nullptr);
+        ME_ASSERT(m_class != nullptr);
         return class_type(mono_class_get_parent(m_class));
     }
 
     const char* get_name() const {
-        ME_ASSERT_E(m_class != nullptr);
+        ME_ASSERT(m_class != nullptr);
         return mono_class_get_name(m_class);
     }
 
@@ -609,7 +610,7 @@ public:
     object(MonoObject* object) : m_object(object), m_domain(mono_object_get_domain(object)) {}
 
     object(MonoDomain* domain, MonoClass* class_t) : m_domain(domain) {
-        ME_ASSERT_E(m_domain != nullptr);
+        ME_ASSERT(m_domain != nullptr);
         alloc_object(m_domain, &m_object, class_t);
         mono_runtime_object_init(m_object);
     }
@@ -628,7 +629,7 @@ public:
     object(field_wrapper wrapper) : object(wrapper.get()) {}
 
     class_type get_class() const {
-        ME_ASSERT_E(m_object != nullptr);
+        ME_ASSERT(m_object != nullptr);
         MonoClass* cl = mono_object_get_class(m_object);
         return class_type(cl);
     }
@@ -638,12 +639,12 @@ public:
     size_t get_gc_generation() const { return (size_t)mono_gc_get_generation(m_object); }
 
     void lock() {
-        ME_ASSERT_E(m_gchandle == 0);
+        ME_ASSERT(m_gchandle == 0);
         m_gchandle = mono_gchandle_new(m_object, true);
     }
 
     void unlock() {
-        ME_ASSERT_E(m_gchandle != 0);
+        ME_ASSERT(m_gchandle != 0);
         mono_gchandle_free(m_gchandle);
         m_gchandle = 0;
     }
@@ -714,7 +715,7 @@ public:
 
     template <typename T>
     T as() const {
-        ME_ASSERT_E(m_object != nullptr);
+        ME_ASSERT(m_object != nullptr);
         return from_mono_converter<T>::convert(m_domain, m_object);
     }
 
@@ -1054,7 +1055,7 @@ class assembly {
 
 public:
     assembly(MonoDomain* domain, const char* path) : m_domain(domain) {
-        ME_ASSERT_E(domain != nullptr);
+        ME_ASSERT(domain != nullptr);
 
         m_assembly = mono_domain_assembly_open(domain, path);
         if (m_assembly == nullptr) {

@@ -87,7 +87,7 @@ namespace ME::cvar {
 
 template <typename T>
 T Cast(std::string) {
-    ME_ASSERT_E("Cast unavailable");
+    ME_ASSERT("Cast unavailable");
     return T{};
 }
 
@@ -119,14 +119,14 @@ std::string NameOFType() {
     return name_of_type_str;
 }
 
-using Json = MetaEngine::Json::Json;
+using Json = ME::Json::Json;
 
 template <typename T>
 struct Translator {
     typedef T type;
 
     static void BuildJson(Json& j, const T& v) { j.add(v); }
-    static std::string to_str(const T& v) { return to_string(v); }
+    static std::string to_str(const T& v) { return std::to_string(v); }
     static T Parse(std::string s) { return Cast<T>(s); }
     static std::string Name() { return NameOFType<T>(); }
 };

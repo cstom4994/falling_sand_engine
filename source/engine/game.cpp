@@ -150,7 +150,7 @@ int Game::init(int argc, char *argv[]) {
 
     if (pack_result != SUCCESS_PACK_RESULT) {
         METADOT_ERROR("%d", pack_result);
-        ME_ASSERT_E(0);
+        ME_ASSERT(0);
     }
 
     // Initialize the rng seed
@@ -162,12 +162,12 @@ int Game::init(int argc, char *argv[]) {
     movingTiles = new u16[GAME()->materials_count];
     debugDraw = new ME_debugdraw(ENGINE()->target);
 
-    global.audio.LoadEvent("event:/World/Explode", "explode.ogg");
-    global.audio.LoadEvent("event:/Music/Title", "title.ogg");
+    // global.audio.LoadEvent("event:/World/Explode");
+    // global.audio.LoadEvent("event:/Music/Title");
 
     // Play sound effects when the game starts
     global.audio.PlayEvent("event:/Music/Title");
-    // global.audioEngine.Update();
+    global.audio.Update();
 
     // Initialize the world
     METADOT_INFO("Initializing world...");
@@ -495,7 +495,7 @@ int Game::run(int argc, char *argv[]) {
 
             if (windowEvent.type == SDL_WINDOWEVENT) {
                 if (windowEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
-                    MetaEngine::WindowResizeEvent event(windowEvent.window.data1, windowEvent.window.data2);
+                    ME::WindowResizeEvent event(windowEvent.window.data1, windowEvent.window.data2);
                     EventCallback(event);
                 }
             }
@@ -1249,7 +1249,7 @@ int Game::exit() {
         delete p;
     }
 
-    global.audio.EndAudio();
+    global.audio.Shutdown();
     ME_endwindow();
 
     EndEngine(0);
@@ -1302,7 +1302,7 @@ void Game::updateFrameEarly() {
 
     if (ControlSystem::DEBUG_RIGID->get()) {
         for (auto &cur : GameIsolate_.world->rigidBodies) {
-            ME_ASSERT_E(cur);
+            ME_ASSERT(cur);
             if (cur->body->IsEnabled()) {
                 f32 s = sin(cur->body->GetAngle());
                 f32 c = cos(cur->body->GetAngle());
@@ -1448,7 +1448,7 @@ void Game::updateFrameEarly() {
             rb->body->GetFixtureList()[0].SetFilterData(bf);
 
             auto player = GameIsolate_.world->Reg().create_entity();
-            MetaEngine::ECS::entity_filler(player)
+            ME::ECS::entity_filler(player)
                     .component<Controlable>()
                     .component<WorldEntity>(true, pl_transform.x, pl_transform.y, 0.0f, 0.0f, (int)pl_transform.z, (int)pl_transform.w, rb, std::string("玩家"))
                     .component<Player>();
@@ -1560,7 +1560,7 @@ void Game::updateFrameEarly() {
         for (size_t i = 0; i < rbs.size(); i++) {
             RigidBody *cur = rbs[i];
 
-            ME_ASSERT_E(cur);
+            ME_ASSERT(cur);
 
             if (swapped) {
                 cur->hover = (f32)std::fmax(0, cur->hover - hoverDelta);
@@ -1618,15 +1618,15 @@ void Game::updateFrameEarly() {
     }
 }
 
-void Game::onEvent(MetaEngine::Event &e) {
-    MetaEngine::EventDispatcher dispatcher(e);
-    dispatcher.Dispatch<MetaEngine::WindowCloseEvent>(ME_BIND_EVENT_FN(onWindowClose));
-    dispatcher.Dispatch<MetaEngine::WindowResizeEvent>(ME_BIND_EVENT_FN(onWindowResize));
+void Game::onEvent(ME::Event &e) {
+    ME::EventDispatcher dispatcher(e);
+    dispatcher.Dispatch<ME::WindowCloseEvent>(ME_BIND_EVENT_FN(onWindowClose));
+    dispatcher.Dispatch<ME::WindowResizeEvent>(ME_BIND_EVENT_FN(onWindowResize));
 }
 
-bool Game::onWindowClose(MetaEngine::WindowCloseEvent &e) { return true; }
+bool Game::onWindowClose(ME::WindowCloseEvent &e) { return true; }
 
-bool Game::onWindowResize(MetaEngine::WindowResizeEvent &e) {
+bool Game::onWindowResize(ME::WindowResizeEvent &e) {
     R_SetWindowResolution(e.GetWidth(), e.GetHeight());
     R_ResetProjection(ENGINE()->realTarget);
     ResolutionChanged(e.GetWidth(), e.GetHeight());
@@ -1880,7 +1880,7 @@ void Game::tick() {
             for (int tx = 0; tx < cur->matWidth; tx++) {
                 for (int ty = 0; ty < cur->matHeight; ty++) {
                     MaterialInstance rmat = cur->tiles[tx + ty * cur->matWidth];
-                    ME_ASSERT_E(rmat.mat);
+                    ME_ASSERT(rmat.mat);
                     if (rmat.mat->id == GAME()->materials_list.GENERIC_AIR.id) continue;
 
                     // rotate point
@@ -3720,10 +3720,10 @@ ME_assets_handle_t Game::get_assets(std::string path) {
     if (pack_result != SUCCESS_PACK_RESULT) {
         ME_destroy_pack_reader(GameIsolate_.pack_reader);
         METADOT_ERROR("%d", pack_result);
-        ME_ASSERT_E(0);
+        ME_ASSERT(0);
     }
 
-    ME_ASSERT_E(handle.data);
+    ME_ASSERT(handle.data);
 
     return handle;
 }
