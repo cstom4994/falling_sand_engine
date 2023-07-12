@@ -11,7 +11,7 @@
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "game.hpp"
-#include "game_resources.hpp"
+#include "textures.hpp"
 
 BackgroundObject::~BackgroundObject() {
     for (size_t i = 0; i < layers.size(); i++) {

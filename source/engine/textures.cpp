@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "game_resources.hpp"
+#include "textures.hpp"
 
 #include <string.h>
 

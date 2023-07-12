@@ -30,7 +30,7 @@
 #include "engine/utils/utility.hpp"
 #include "engine/utils/utils.hpp"
 #include "game_datastruct.hpp"
-#include "game_resources.hpp"
+#include "textures.hpp"
 #include "npc.hpp"
 #include "reflectionflat.hpp"
 #include "world_generator.h"

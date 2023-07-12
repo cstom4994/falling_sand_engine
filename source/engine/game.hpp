@@ -37,7 +37,7 @@
 #include "engine/ui/ui.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
-#include "game_resources.hpp"
+#include "textures.hpp"
 #include "game_shaders.hpp"
 #include "world.hpp"
 

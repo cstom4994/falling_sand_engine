@@ -3223,7 +3223,7 @@ public:
     };
 
     /// @brief If reference value is none or nil return true. Otherwise false.
-    bool isNilref_() const {
+    bool is_nil_ref_impl() const {
         int t = type();
         return t == LUA_TNIL || t == LUA_TNONE;
     }
@@ -3279,8 +3279,8 @@ public:
     //@{
     template <typename OtherDrived>
     inline bool operator==(const LuaBasicTypeFunctions<OtherDrived> &rhs) const {
-        if (isNilref_() || rhs.isNilref_()) {
-            return !isNilref_() == !rhs.isNilref_();
+        if (is_nil_ref_impl() || rhs.is_nil_ref_impl()) {
+            return !is_nil_ref_impl() == !rhs.is_nil_ref_impl();
         }
         lua_State *state = state_();
         util::ScopedSavedStack save(state);
@@ -3290,8 +3290,8 @@ public:
     }
     template <typename OtherDrived>
     inline bool operator<(const LuaBasicTypeFunctions<OtherDrived> &rhs) const {
-        if (isNilref_() || rhs.isNilref_()) {
-            return !isNilref_() != !rhs.isNilref_();
+        if (is_nil_ref_impl() || rhs.is_nil_ref_impl()) {
+            return !is_nil_ref_impl() != !rhs.is_nil_ref_impl();
         }
         lua_State *state = state_();
         util::ScopedSavedStack save(state);
@@ -3301,8 +3301,8 @@ public:
     }
     template <typename OtherDrived>
     inline bool operator<=(const LuaBasicTypeFunctions<OtherDrived> &rhs) const {
-        if (isNilref_() || rhs.isNilref_()) {
-            return !isNilref_() == !rhs.isNilref_();
+        if (is_nil_ref_impl() || rhs.is_nil_ref_impl()) {
+            return !is_nil_ref_impl() == !rhs.is_nil_ref_impl();
         }
         lua_State *state = state_();
         util::ScopedSavedStack save(state);
@@ -3585,7 +3585,7 @@ protected:
     }
 
 public:
-    bool isNilref() const { return state_ == 0 || lua_type(state_, stack_index_) == LUA_TNIL; }
+    bool is_nil_ref() const { return state_ == 0 || lua_type(state_, stack_index_) == LUA_TNIL; }
 
     int push() const {
         lua_pushvalue(state_, stack_index_);
@@ -3786,7 +3786,7 @@ public:
     int push() const { return push(ref_.state()); }
     /// @brief push to Lua stack
     int push(lua_State *state) const {
-        if (isNilref()) {
+        if (is_nil_ref()) {
             lua_pushnil(state);
             return 1;
         }
@@ -3805,7 +3805,7 @@ public:
     }
     lua_State *state() const { return ref_.state(); }
 
-    bool isNilref() const { return ref_.ref() == LUA_REFNIL; }
+    bool is_nil_ref() const { return ref_.ref() == LUA_REFNIL; }
 
     void unref() { ref_.reset(); }
 
@@ -6739,7 +6739,7 @@ public:
         return *this;
     }
 
-    bool isNilref() const {
+    bool is_nil_ref() const {
         if (!state_) {
             return false;
         }
@@ -7451,7 +7451,7 @@ public:
         if (!f) {  // load failed
             return false;
         }
-        if (!env.isNilref()) {
+        if (!env.is_nil_ref()) {
             f.setFunctionEnv(env);
         }
 
@@ -7492,7 +7492,7 @@ public:
             return false;
         }
 
-        if (!env.isNilref()) {  // register _ENV
+        if (!env.is_nil_ref()) {  // register _ENV
             env.push();
 #if LUA_VERSION_NUM >= 502
             lua_setupvalue(state_, -2, 1);
@@ -7521,7 +7521,7 @@ public:
             ErrorHandler::handle(status, state_);
             return false;
         }
-        if (!env.isNilref()) {  // register _ENV
+        if (!env.is_nil_ref()) {  // register _ENV
             env.push();
 #if LUA_VERSION_NUM >= 502
             lua_setupvalue(state_, -2, 1);

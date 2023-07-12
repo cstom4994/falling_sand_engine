@@ -44,11 +44,11 @@
 #include "game/player.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
-#include "game_resources.hpp"
 #include "game_shaders.hpp"
 #include "game_ui.hpp"
 #include "libs/glad/glad.h"
 #include "reflectionflat.hpp"
+#include "textures.hpp"
 #include "world_generator.h"
 
 GameData g_game_data;
@@ -962,22 +962,24 @@ int Game::run(int argc, char *argv[]) {
 #pragma endregion SDL_Input
 
 #pragma region GameTick
-        ME_profiler_scope_auto("GameTick");
+        {
+            ME_profiler_scope_auto("GameTick");
 
-        if (GameIsolate_.globaldef.tick_world) updateFrameEarly();
+            if (GameIsolate_.globaldef.tick_world) updateFrameEarly();
 
-        while (ENGINE()->time.now - ENGINE()->time.lastTickTime > (1000.0f / ENGINE()->time.maxTps)) {
-            Scripting::get_singleton_ptr()->UpdateTick();
-            Scripting::get_singleton_ptr()->Update();
-            if (GameIsolate_.globaldef.tick_world) {
-                tick();
+            while (ENGINE()->time.now - ENGINE()->time.lastTickTime > (1000.0f / ENGINE()->time.maxTps)) {
+                Scripting::get_singleton_ptr()->UpdateTick();
+                Scripting::get_singleton_ptr()->Update();
+                if (GameIsolate_.globaldef.tick_world) {
+                    tick();
+                }
+                ENGINE()->target = ENGINE()->realTarget;
+                ENGINE()->time.lastTickTime = ENGINE()->time.now;
+                ENGINE()->time.tickCount++;
             }
-            ENGINE()->target = ENGINE()->realTarget;
-            ENGINE()->time.lastTickTime = ENGINE()->time.now;
-            ENGINE()->time.tickCount++;
-        }
 
-        if (GameIsolate_.globaldef.tick_world) updateFrameLate();
+            if (GameIsolate_.globaldef.tick_world) updateFrameLate();
+        }
 
 #pragma endregion GameTick
 
@@ -1633,7 +1635,8 @@ bool Game::onWindowResize(MetaEngine::WindowResizeEvent &e) {
 
 void Game::tick() {
 
-    // METADOT_BUG("{0:d} {0:d}", accLoadX, accLoadY);
+    // METADOT_BUG(std::format("{0:f} {1:f}", accLoadX, accLoadY).c_str());
+
     if (state == LOADING) {
         if (GameIsolate_.world) {
             // tick chunkloading
@@ -1715,7 +1718,7 @@ void Game::tick() {
             u8 outlineAlpha = (u8)(cur->hover * 255);
             if (outlineAlpha > 0) {
                 ME_Color col = {0xff, 0xff, 0x80, outlineAlpha};
-                R_SetShapeBlendMode(R_BLEND_NORMAL_FACTOR_ALPHA);  // SDL_BLENDMODE_BLEND
+                R_SetShapeBlendMode(R_BLEND_NORMAL_FACTOR_ALPHA);
                 for (auto &l : cur->outline) {
                     MEvec2 *vec = new MEvec2[l.GetNumPoints()];
                     for (int j = 0; j < l.GetNumPoints(); j++) {
@@ -1724,13 +1727,13 @@ void Game::tick() {
                     ME_draw_polygon(tgtLQ, col, vec, (int)x, (int)y, ENGINE()->render_scale, l.GetNumPoints(), cur->body->GetAngle(), 0, 0);
                     delete[] vec;
                 }
-                R_SetShapeBlendMode(R_BLEND_NORMAL);  // SDL_BLENDMODE_NONE
+                R_SetShapeBlendMode(R_BLEND_NORMAL);
             }
 
             // displace fluids
 
-            f32 s = sin(cur->body->GetAngle());
-            f32 c = cos(cur->body->GetAngle());
+            f32 s = std::sin(cur->body->GetAngle());
+            f32 c = std::cos(cur->body->GetAngle());
 
             std::vector<std::pair<int, int>> checkDirs = {{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
@@ -1870,8 +1873,8 @@ void Game::tick() {
             f32 x = cur->body->GetPosition().x;
             f32 y = cur->body->GetPosition().y;
 
-            f32 s = sin(cur->body->GetAngle());
-            f32 c = cos(cur->body->GetAngle());
+            f32 s = std::sin(cur->body->GetAngle());
+            f32 c = std::cos(cur->body->GetAngle());
 
             std::vector<std::pair<int, int>> checkDirs = {{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
             for (int tx = 0; tx < cur->matWidth; tx++) {

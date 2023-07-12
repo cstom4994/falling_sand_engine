@@ -22,7 +22,7 @@
 #include "game/items.hpp"
 #include "game/player.hpp"
 #include "game_datastruct.hpp"
-#include "game_resources.hpp"
+#include "textures.hpp"
 #include "world_generator.h"
 
 using namespace ME;

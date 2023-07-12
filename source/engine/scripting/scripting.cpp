@@ -18,7 +18,7 @@
 #include "engine/core/memory.h"
 #include "engine/game.hpp"
 #include "engine/game_datastruct.hpp"
-#include "engine/game_resources.hpp"
+#include "engine/textures.hpp"
 #include "engine/meta/reflection.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/csharp_api.h"

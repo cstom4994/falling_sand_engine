@@ -8,7 +8,7 @@
 #include "engine/core/core.hpp"
 #include "game/player.hpp"
 #include "game_datastruct.hpp"
-#include "game_resources.hpp"
+#include "textures.hpp"
 
 class State {
 public:

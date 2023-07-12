@@ -9,7 +9,7 @@ void InitGlobalDEF(GlobalDEF* _struct, bool openDebugUIs) {
 
     auto GlobalDEF = Scripting::get_singleton_ptr()->Lua->s_lua["global_def"];
 
-    if (!GlobalDEF.isNilref()) {
+    if (!GlobalDEF.is_nil_ref()) {
         LoadLuaConfig(_struct, GlobalDEF, draw_frame_graph);
         LoadLuaConfig(_struct, GlobalDEF, draw_background);
         LoadLuaConfig(_struct, GlobalDEF, draw_background_grid);

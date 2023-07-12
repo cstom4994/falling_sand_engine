@@ -7,7 +7,7 @@
 #include "engine/core/core.hpp"
 #include "engine/core/mathlib.hpp"
 #include "engine/game_datastruct.hpp"
-#include "engine/game_resources.hpp"
+#include "engine/textures.hpp"
 #include "engine/renderer/gpu.hpp"
 
 struct CellData {

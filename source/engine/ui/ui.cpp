@@ -12,7 +12,7 @@
 #include "engine/engine.h"
 #include "engine/event/inputevent.hpp"
 #include "engine/game.hpp"
-#include "engine/game_resources.hpp"
+#include "engine/textures.hpp"
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/renderer_opengl.h"

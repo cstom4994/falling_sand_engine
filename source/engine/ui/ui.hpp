@@ -8,7 +8,7 @@
 
 #include "engine/core/core.hpp"
 #include "engine/game_basic.hpp"
-#include "engine/game_resources.hpp"
+#include "engine/textures.hpp"
 #include "engine/meta/reflection.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/renderer_opengl.h"

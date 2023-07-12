@@ -19,7 +19,7 @@
 #include "game.hpp"
 #include "game/items.hpp"
 #include "game/player.hpp"
-#include "game_resources.hpp"
+#include "textures.hpp"
 #include "reflectionflat.hpp"
 #include "world.hpp"
 
@@ -1053,27 +1053,30 @@ std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, Mater
 
             char buff[40];
             snprintf(buff, sizeof(buff), "data/assets/objects/tree%d.png", rand() % 8 + 1);
-            C_Surface *tex = LoadTexture(buff)->surface;
+            Texture *tree_tex = LoadTexture(buff);
+            C_Surface *tree_tex_surface = tree_tex->surface;
 
-            px -= tex->w / 2;
-            py -= tex->h - 2;
+            px -= tree_tex_surface->w / 2;
+            py -= tree_tex_surface->h - 2;
 
             b2PolygonShape s;
             s.SetAsBox(1, 1);
-            RigidBody *rb = world->makeRigidBody(b2_dynamicBody, px, py, 0, s, 1, 0.3, tex);
-            for (int texX = 0; texX < tex->w; texX++) {
+            RigidBody *rb = world->makeRigidBody(b2_dynamicBody, px, py, 0, s, 1, 0.3, tree_tex_surface);
+            for (int texX = 0; texX < tree_tex_surface->w; texX++) {
                 b2Filter bf = {};
                 bf.categoryBits = 0x0002;
                 bf.maskBits = 0x0001;
                 rb->body->GetFixtureList()[0].SetFilterData(bf);
-                if (((R_GET_PIXEL(tex, texX, tex->h - 1) >> 24) & 0xff) != 0x00) {
+                if (((R_GET_PIXEL(tree_tex_surface, texX, tree_tex_surface->h - 1) >> 24) & 0xff) != 0x00) {
                     rb->weldX = texX;
-                    rb->weldY = tex->h - 1;
+                    rb->weldY = tree_tex_surface->h - 1;
                     break;
                 }
             }
             world->rigidBodies.push_back(rb);
             world->updateRigidBodyHitbox(rb);
+
+            DestroyTexture(tree_tex);
 
             return {};
         }

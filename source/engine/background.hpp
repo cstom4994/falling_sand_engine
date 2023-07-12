@@ -14,7 +14,7 @@
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "game_datastruct.hpp"
-#include "game_resources.hpp"
+#include "textures.hpp"
 
 struct BackgroundLayer {
     C_Surface *surface[3];

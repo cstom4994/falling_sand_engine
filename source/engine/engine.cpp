@@ -10,7 +10,7 @@
 #include "engine/core/memory.h"
 #include "engine/core/platform.h"
 #include "game.hpp"
-#include "game_resources.hpp"
+#include "textures.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 
