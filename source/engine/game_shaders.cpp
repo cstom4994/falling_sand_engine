@@ -202,22 +202,22 @@ void ShaderWorkerSystem::Create() {
     this->blurShader = new BlurShader;
     this->untexturedShader = new UntexturedShader;
 
-    this->crtShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    this->crtShader->fragment_shader_file = METADOT_RESLOC("data/shaders/crt.frag");
-    this->waterShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    this->waterShader->fragment_shader_file = METADOT_RESLOC("data/shaders/water.frag");
-    this->waterFlowPassShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    this->waterFlowPassShader->fragment_shader_file = METADOT_RESLOC("data/shaders/waterFlow.frag");
-    this->newLightingShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    this->newLightingShader->fragment_shader_file = METADOT_RESLOC("data/shaders/newLighting.frag");
-    this->fireShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    this->fireShader->fragment_shader_file = METADOT_RESLOC("data/shaders/fire.frag");
-    this->fire2Shader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    this->fire2Shader->fragment_shader_file = METADOT_RESLOC("data/shaders/fire2.frag");
-    this->blurShader->vertex_shader_file = METADOT_RESLOC("data/shaders/common.vert");
-    this->blurShader->fragment_shader_file = METADOT_RESLOC("data/shaders/gaussian_blur.frag");
-    this->untexturedShader->vertex_shader_file = METADOT_RESLOC("data/shaders/untextured.vert");
-    this->untexturedShader->fragment_shader_file = METADOT_RESLOC("data/shaders/untextured.frag");
+    this->crtShader->vertex_shader_file = ME_fs_get_path("data/shaders/common.vert");
+    this->crtShader->fragment_shader_file = ME_fs_get_path("data/shaders/crt.frag");
+    this->waterShader->vertex_shader_file = ME_fs_get_path("data/shaders/common.vert");
+    this->waterShader->fragment_shader_file = ME_fs_get_path("data/shaders/water.frag");
+    this->waterFlowPassShader->vertex_shader_file = ME_fs_get_path("data/shaders/common.vert");
+    this->waterFlowPassShader->fragment_shader_file = ME_fs_get_path("data/shaders/waterFlow.frag");
+    this->newLightingShader->vertex_shader_file = ME_fs_get_path("data/shaders/common.vert");
+    this->newLightingShader->fragment_shader_file = ME_fs_get_path("data/shaders/newLighting.frag");
+    this->fireShader->vertex_shader_file = ME_fs_get_path("data/shaders/common.vert");
+    this->fireShader->fragment_shader_file = ME_fs_get_path("data/shaders/fire.frag");
+    this->fire2Shader->vertex_shader_file = ME_fs_get_path("data/shaders/common.vert");
+    this->fire2Shader->fragment_shader_file = ME_fs_get_path("data/shaders/fire2.frag");
+    this->blurShader->vertex_shader_file = ME_fs_get_path("data/shaders/common.vert");
+    this->blurShader->fragment_shader_file = ME_fs_get_path("data/shaders/gaussian_blur.frag");
+    this->untexturedShader->vertex_shader_file = ME_fs_get_path("data/shaders/untextured.vert");
+    this->untexturedShader->fragment_shader_file = ME_fs_get_path("data/shaders/untextured.frag");
 
     this->waterFlowPassShader->dirty = false;
 

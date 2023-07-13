@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef ME_GAMERESOURCES_HPP
-#define ME_GAMERESOURCES_HPP
+#ifndef ME_TEXTURES_HPP
+#define ME_TEXTURES_HPP
 
 #include "engine/core/core.hpp"
 #include "engine/core/sdl_wrapper.h"

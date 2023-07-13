@@ -7,8 +7,8 @@
 
 #include "chunk.hpp"
 #include "cvar.hpp"
+#include "engine/core/base_debug.hpp"
 #include "engine/core/core.hpp"
-#include "engine/core/debug.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/macros.hpp"
@@ -19,8 +19,8 @@
 #include "game.hpp"
 #include "game/items.hpp"
 #include "game/player.hpp"
-#include "textures.hpp"
 #include "reflectionflat.hpp"
+#include "textures.hpp"
 #include "world.hpp"
 
 void ReleaseGameData() {

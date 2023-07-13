@@ -24,8 +24,8 @@ class ShaderBase {
 public:
     u32 shader;
     R_ShaderBlock block;
-    const char* vertex_shader_file;
-    const char* fragment_shader_file;
+    std::string vertex_shader_file;
+    std::string fragment_shader_file;
 
     std::string_view shader_name;
 

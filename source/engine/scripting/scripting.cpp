@@ -11,14 +11,13 @@
 #include <vector>
 
 #include "engine/background.hpp"
+#include "engine/core/base_debug.hpp"
+#include "engine/core/base_memory.h"
 #include "engine/core/core.hpp"
-#include "engine/core/debug.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
-#include "engine/core/memory.h"
 #include "engine/game.hpp"
 #include "engine/game_datastruct.hpp"
-#include "engine/textures.hpp"
 #include "engine/meta/reflection.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/csharp_api.h"
@@ -27,6 +26,7 @@
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/lua_wrapper_ext.hpp"
 #include "engine/scripting/wrap/wrap_engine.hpp"
+#include "engine/textures.hpp"
 #include "engine/ui/imgui_impl.hpp"
 #include "engine/utils/utility.hpp"
 #include "engine/utils/utils.hpp"
@@ -247,8 +247,8 @@ static void InitLua(LuaCore *lc) {
     lc->s_lua["LoadTextureData"] = ME::LuaWrapper::function(LoadTextureData);
     lc->s_lua["DestroyTexture"] = ME::LuaWrapper::function(DestroyTexture);
     lc->s_lua["CreateTexture"] = ME::LuaWrapper::function(CreateTexture);
-    lc->s_lua["metadot_buildnum"] = ME::LuaWrapper::function(metadot_buildnum);
-    lc->s_lua["metadot_metadata"] = ME::LuaWrapper::function(metadot_metadata);
+    lc->s_lua["metadot_buildnum"] = ME::LuaWrapper::function(ME_buildnum);
+    lc->s_lua["metadot_metadata"] = ME::LuaWrapper::function(ME_metadata);
     lc->s_lua["add_packagepath"] = ME::LuaWrapper::function(add_packagepath);
 
 #undef REGISTER_LUAFUNC

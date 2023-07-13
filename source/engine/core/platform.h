@@ -351,30 +351,4 @@ inline static FILE *openFile(const char *filePath, const char *mode) {
 #define S_ISDIR(m) (((m)&0170000) == (0040000))
 #endif
 
-inline bool ME_fs_exists(const char* path) {
-    struct stat buffer;
-    return (stat(path, &buffer) == 0 || S_ISDIR(buffer.st_mode));
-}
-
-inline const char* ME_fs_get_filename(const char* path) {
-    int len = strlen(path);
-    int flag = 0;
-
-    for (int i = len - 1; i > 0; i--) {
-        if (path[i] == '\\' || path[i] == '//' || path[i] == '/') {
-            flag = 1;
-            path = path + i + 1;
-            break;
-        }
-    }
-    return path;
-}
-
-char* ME_fs_readfilestring(const char* path);
-void ME_fs_freestring(void* ptr);
-std::string ME_fs_normalize_path(const std::string& messyPath);
-bool ME_fs_directory_exists(const std::filesystem::path& path, std::filesystem::file_status status = std::filesystem::file_status{});
-void ME_fs_create_directory(const std::string& directory_name);
-std::string ME_fs_readfile(const std::string& filename);
-
 #endif  // ME_PLATFORM_H

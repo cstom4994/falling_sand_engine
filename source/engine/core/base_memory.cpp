@@ -8,7 +8,7 @@
 #include <cstring>
 #include <iostream>
 
-#include "engine/core/memory_tracer.hpp"
+#include "engine/core/base_memory_tracer.hpp"
 #include "engine/utils/utility.hpp"
 
 allocation_metrics g_allocation_metrics = {.total_allocated = 0, .total_free = 0};

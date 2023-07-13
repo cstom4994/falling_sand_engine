@@ -402,7 +402,7 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
         std::regex trimWhitespaceRegex("^ *(.+?) *$");
         worldTitle = regex_replace(worldTitle, trimWhitespaceRegex, "$1");
 
-        METADOT_INFO("Creating world named \"%s\" at \"%s\"", worldTitle.c_str(), METADOT_RESLOC(std::format("saves/{0}", wn).c_str()));
+        METADOT_INFO(std::format("Creating world named \"{0}\" at \"{1}\"", worldTitle, METADOT_RESLOC(std::format("saves/{0}", wn).c_str())).c_str());
         gameUI.visible_mainmenu = false;
         LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->Lua->s_lua["game_datastruct"]["ui"];
         s["state"] = 5;
@@ -429,7 +429,7 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
                                        ENGINE()->target, &global.audio, generator);
         game->GameIsolate_.world->metadata.worldName = std::string(gameUI.MainMenuUI__worldNameBuf);
         game->GameIsolate_.world->metadata.lastOpenedTime = ME_gettime() / 1000;
-        game->GameIsolate_.world->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
+        game->GameIsolate_.world->metadata.lastOpenedVersion = std::to_string(ME_buildnum());
         game->GameIsolate_.world->metadata.save(wpStr);
 
         METADOT_INFO("Queueing chunk loading...");
@@ -547,7 +547,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
                 game->GameIsolate_.world->init(METADOT_RESLOC(std::format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
                                                (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, ENGINE()->target, &global.audio);
                 game->GameIsolate_.world->metadata.lastOpenedTime = ME_gettime() / 1000;
-                game->GameIsolate_.world->metadata.lastOpenedVersion = std::to_string(metadot_buildnum());
+                game->GameIsolate_.world->metadata.lastOpenedVersion = std::to_string(ME_buildnum());
                 game->GameIsolate_.world->metadata.save(game->GameIsolate_.world->worldName);
 
                 METADOT_INFO("Queueing chunk loading...");

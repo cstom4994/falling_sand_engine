@@ -10,7 +10,7 @@
 
 #include "engine/core/core.hpp"
 #include "engine/core/dbgtools.h"
-#include "engine/core/memory.h"
+#include "engine/core/base_memory.h"
 #include "engine/utils/utility.hpp"
 
 // #define STB_DS_IMPLEMENTATION

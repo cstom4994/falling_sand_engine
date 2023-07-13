@@ -13,14 +13,14 @@
 
 #include "engine/audio/audio.h"
 #include "engine/chunk.hpp"
+#include "engine/core/base_debug.hpp"
+#include "engine/core/base_memory.h"
 #include "engine/core/const.h"
 #include "engine/core/core.hpp"
 #include "engine/core/dbgtools.h"
-#include "engine/core/debug.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/macros.hpp"
-#include "engine/core/memory.h"
 #include "engine/engine.h"
 #include "engine/game.hpp"
 #include "engine/game_datastruct.hpp"
@@ -1403,8 +1403,8 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             ImGui::Text("OpenGL version supported: %s", glGetString(GL_VERSION));
             ImGui::Text("Engine renderer: %s (%d.%d)\n", id.name, id.major_version, id.minor_version);
             ImGui::Text("Shader versions supported: %d to %d\n", renderer->min_shader_version, renderer->max_shader_version);
-            ImGui::Text("Platform: %s\n", metadot_metadata().platform.c_str());
-            ImGui::Text("Compiler: %s %s (with cpp %s)\n", metadot_metadata().compiler.c_str(), metadot_metadata().compiler_version.c_str(), metadot_metadata().cpp.c_str());
+            ImGui::Text("Platform: %s\n", ME_metadata().platform.c_str());
+            ImGui::Text("Compiler: %s %s (with cpp %s)\n", ME_metadata().compiler.c_str(), ME_metadata().compiler_version.c_str(), ME_metadata().cpp.c_str());
 
             //                MarkdownData TickInfoPanel;
             //                TickInfoPanel.data = R"(

@@ -15,9 +15,9 @@
 #include <string>
 #include <utility>
 
+#include "engine/core/base_memory.h"
 #include "engine/core/core.hpp"
 #include "engine/core/io/filesystem.h"
-#include "engine/core/memory.h"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "imgui_impl.hpp"
@@ -594,6 +594,9 @@ bool ImGui_ImplOpenGL3_CreateDeviceObjects() {
 
     char *vertex_shader = ME_fs_readfilestring(METADOT_RESLOC("data/shaders/imgui_common.vert"));
     char *fragment_shader = ME_fs_readfilestring(METADOT_RESLOC("data/shaders/imgui_common.frag"));
+
+    ME_ASSERT(vertex_shader);
+    ME_ASSERT(fragment_shader);
 
     // Create shaders
     GLuint vert_handle = glCreateShader(GL_VERTEX_SHADER);

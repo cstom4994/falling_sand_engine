@@ -17,7 +17,7 @@
 #include "engine/core/const.h"
 #include "engine/core/core.hpp"
 #include "engine/core/mathlib.hpp"
-#include "engine/core/memory.h"
+#include "engine/core/base_memory.h"
 // #include "engine/scripting/lua_wrapper.hpp"
 #include "libs/cJSON.h"
 // #include "sdl_wrapper.h"

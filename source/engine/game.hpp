@@ -19,7 +19,7 @@
 #include "cvar.hpp"
 #include "engine/audio/audio.h"
 #include "engine/core/const.h"
-#include "engine/core/debug.hpp"
+#include "engine/core/base_debug.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/io/packer.hpp"
 #include "engine/core/macros.hpp"

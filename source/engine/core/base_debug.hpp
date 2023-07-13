@@ -7,14 +7,14 @@
 #include "engine/core/macros.hpp"
 #include "engine/ui/imgui_impl.hpp"
 
-struct DebugInfo {
+struct AppMetaData {
     std::string platform;
     std::string compiler;
     std::string compiler_version;
     std::string cpp;
 };
 
-int metadot_buildnum(void);
-DebugInfo metadot_metadata(void);
+int ME_buildnum(void);
+AppMetaData ME_metadata(void);
 
 #endif

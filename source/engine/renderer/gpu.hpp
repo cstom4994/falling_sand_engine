@@ -94,7 +94,7 @@ ME_PRIVATE(void) ME_check_gl_error(const char *file, const int line) {
     while ((err = glGetError()) != GL_NO_ERROR) {
         if (last_err != err) {
             last_err = err;
-            METADOT_ERROR(std::format("[ENGINE()->] {0}({1}) {2}", file, line, gl_error_string(err)).c_str());
+            METADOT_ERROR(std::format("[Render] {0}({1}) {2}", file, line, gl_error_string(err)).c_str());
         }
     }
 }

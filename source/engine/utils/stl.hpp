@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "engine/core/debug.hpp"
+#include "engine/core/base_debug.hpp"
 
 namespace ME::cpp {
 
@@ -984,7 +984,7 @@ public:
 
 private:
     std::map<T1, std::list<T2>, PR> myMap;
-    // typename std::map< T1, std::list< T2 >, PR >::iterator	myIterator;
+    // typename std::map< T1, std::list< T2 >, PR >::iterator   myIterator;
     typename std::list<T2>::iterator myListIterator;
 };
 
@@ -1135,7 +1135,7 @@ public:
 
 private:
     std::map<T1, std::list<T2>, PR> myMap;
-    // typename std::map< T1, std::list< T2 >, PR >::iterator	myIterator;
+    // typename std::map< T1, std::list< T2 >, PR >::iterator   myIterator;
     typename std::list<T2>::iterator myListIterator;
 };
 
@@ -1160,7 +1160,7 @@ private:
     static name fromString(const std::string &str) { list(FROM_STRING_CASE) return name(); /* assert? throw? */ }
 
 // #include "Poro/utils/../config/cengdef.h"
-// __CENG_BEGIN	// NAMESPACE?
+// __CENG_BEGIN // NAMESPACE?
 
 //! This thing works the same way as PHP explode it cuts up the _string with
 //! _separator and pushes the peaces into a vector and returns that vector.

@@ -6,7 +6,7 @@
 
 #include "engine/core/core.hpp"
 #include "engine/core/io/filesystem.h"
-#include "engine/core/memory.h"
+#include "engine/core/base_memory.h"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/engine.h"
 #include "engine/renderer/renderer_gpu.h"

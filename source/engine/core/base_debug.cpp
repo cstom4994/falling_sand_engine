@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "debug.hpp"
+#include "base_debug.hpp"
 
 #include "engine/core/core.hpp"
 
@@ -8,7 +8,7 @@ static const char *date = __DATE__;
 static const char *mon[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 static const char mond[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-int metadot_buildnum(void) {
+int ME_buildnum(void) {
     int m = 0, d = 0, y = 0;
     static int b = 0;
 
@@ -31,9 +31,9 @@ int metadot_buildnum(void) {
     return b;
 }
 
-DebugInfo metadot_metadata() {
+AppMetaData ME_metadata() {
 
-    DebugInfo dinfo;
+    AppMetaData dinfo;
 
 #ifdef _WIN32
     dinfo.platform = "win32";
@@ -55,7 +55,7 @@ DebugInfo metadot_metadata() {
     dinfo.compiler_version = std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." + std::to_string(__GNUC_PATCHLEVEL__);
 #elif defined(_MSC_VER)
     dinfo.compiler = "msvc";
-    dinfo.compiler_version = _MSC_VER;
+    dinfo.compiler_version = std::to_string(_MSC_VER);
 #else
     dinfo.compiler = "unknown";
     dinfo.compiler_version = "unknown";

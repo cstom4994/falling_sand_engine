@@ -13,14 +13,14 @@
 #include <vector>
 
 #include "chunk.hpp"
+#include "engine/core/base_debug.hpp"
+#include "engine/core/base_memory.h"
 #include "engine/core/const.h"
 #include "engine/core/core.hpp"
-#include "engine/core/debug.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/macros.hpp"
 #include "engine/core/mathlib.hpp"
-#include "engine/core/memory.h"
 #include "engine/engine.h"
 #include "engine/game_utils/cells.h"
 #include "engine/game_utils/jsonwarp.h"
@@ -3407,13 +3407,13 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName, bool noSaveLoad) {
         char *metaFilePath = new char[255];
         snprintf(metaFilePath, 255, "%s/world.json", worldFileName.c_str());
 
-        if (!ME_fs_exists(METADOT_RESLOC(metaFilePath))) {
+        if (!std::filesystem::exists(metaFilePath)) {
+            METADOT_INFO(std::format("New world meta @ {0}", metaFilePath).c_str());
             meta.save(worldFileName);
         }
 
-        char *c_metafile = ME_fs_readfilestring(metaFilePath);
-
-        json metafile = json::parse(c_metafile);
+        auto c_metafile = ME_fs_readfile(metaFilePath);
+        json metafile = json::parse(c_metafile.c_str());
 
         if (!metafile.empty()) {
 
@@ -3427,8 +3427,6 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName, bool noSaveLoad) {
         } else {
             METADOT_BUG("FP WAS NULL");
         }
-
-        ME_fs_freestring(c_metafile);
 
         delete[] metaFilePath;
     } else {
@@ -3447,7 +3445,7 @@ bool WorldMeta::save(std::string worldFileName) {
     char *metaFilePath = new char[255];
     snprintf(metaFilePath, 255, "%s/world.json", worldFileName.c_str());
     if (this->worldName.empty()) this->worldName = "WorldName";
-    if (this->lastOpenedVersion.empty()) this->lastOpenedVersion = std::to_string(metadot_buildnum());
+    if (this->lastOpenedVersion.empty()) this->lastOpenedVersion = std::to_string(ME_buildnum());
 
     using json = ME::Json::Json;
 

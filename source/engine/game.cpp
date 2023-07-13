@@ -14,9 +14,9 @@
 #include <string_view>
 
 #include "background.hpp"
+#include "engine/core/base_debug.hpp"
 #include "engine/core/const.h"
 #include "engine/core/core.hpp"
-#include "engine/core/debug.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/job.h"
@@ -808,7 +808,7 @@ int Game::run(int argc, char *argv[]) {
 
                                     int ex = pl->hammerX + dx;
                                     int ey = pl->hammerY + dy;
-                                    METADOT_BUG("hammer up: %d %d %d %d", ex, ey, dx, dy);
+                                    METADOT_BUG(std::format("hammer up: {0} {1} {2} {3}", ex, ey, dx, dy).c_str());
                                     int endInd = -1;
 
                                     int nSegments = 1 + len / 10;
@@ -3662,7 +3662,7 @@ void Game::quitToMainMenu() {
 
     std::string worldName = "mainMenu";
 
-    METADOT_INFO("Loading main menu @ %s", METADOT_RESLOC(std::format("saves/{0}", worldName).c_str()));
+    METADOT_INFO("Loading main menu @ ", METADOT_RESLOC(std::format("saves/{0}", worldName).c_str()));
     gameUI.visible_mainmenu = false;
     state = LOADING;
     stateAfterLoad = MAIN_MENU;
@@ -3719,7 +3719,7 @@ ME_assets_handle_t Game::get_assets(std::string path) {
 
     if (pack_result != SUCCESS_PACK_RESULT) {
         ME_destroy_pack_reader(GameIsolate_.pack_reader);
-        METADOT_ERROR("%d", pack_result);
+        METADOT_ERROR("Game get assets faild:", pack_result);
         ME_ASSERT(0);
     }
 

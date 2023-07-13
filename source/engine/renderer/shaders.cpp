@@ -57,7 +57,7 @@ void ME_Shaders_FreeShader(u32 p) { R_FreeShaderProgram(p); }
 
 u32 ShaderBase::Init() {
     this->shader = 0;
-    this->block = ME_Shaders_LoadShaderProgram(&this->shader, this->vertex_shader_file, this->fragment_shader_file);
+    this->block = ME_Shaders_LoadShaderProgram(&this->shader, this->vertex_shader_file.c_str(), this->fragment_shader_file.c_str());
     if (this->shader_name.empty()) {
         METADOT_WARN("Shader program load with cbase");
     } else {
@@ -332,7 +332,7 @@ GLprogram* ME_shader_set::add_program(const std::vector<std::pair<std::string, G
         {
             std::ifstream ifs(tmpShaderNameType.name);
             if (!ifs) {
-                METADOT_ERROR("[ENGINE()->] Failed to open shader %s", tmpShaderNameType.name.c_str());
+                METADOT_ERROR("[Render] Failed to open shader %s", tmpShaderNameType.name.c_str());
             }
         }
 
@@ -434,7 +434,7 @@ void ME_shader_set::update_programs() {
                 log_s.replace(found_source, source_hash.size(), shader->first.name);
             }
 
-            METADOT_ERROR("[ENGINE()->] Error compiling ", shader->first.name.c_str(), "\n    ", log_s.c_str());
+            METADOT_ERROR("[Render] Error compiling ", shader->first.name.c_str(), "\n    ", log_s.c_str());
         }
     }
 
@@ -501,9 +501,9 @@ void ME_shader_set::update_programs() {
             }
 
             if (!status) {
-                METADOT_ERROR("[ENGINE()->] Error linking (", shader_names, ")");
+                METADOT_ERROR("[Render] Error linking (", shader_names, ")");
             } else {
-                METADOT_INFO("[ENGINE()->] Successfully linked (", shader_names, ")");
+                METADOT_INFO("[Render] Successfully linked (", shader_names, ")");
             }
 
             if (log[0] != '\0') {

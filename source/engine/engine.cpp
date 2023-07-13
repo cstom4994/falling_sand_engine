@@ -7,7 +7,7 @@
 #include "engine/core/core.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
-#include "engine/core/memory.h"
+#include "engine/core/base_memory.h"
 #include "engine/core/platform.h"
 #include "game.hpp"
 #include "textures.hpp"

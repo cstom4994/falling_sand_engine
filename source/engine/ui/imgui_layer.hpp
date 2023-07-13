@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "engine/audio/audio.h"
-#include "engine/core/debug.hpp"
+#include "engine/core/base_debug.hpp"
+#include "engine/core/base_memory.h"
 #include "engine/core/macros.hpp"
-#include "engine/core/memory.h"
 #include "engine/core/profiler.hpp"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/game_datastruct.hpp"
@@ -22,8 +22,8 @@
 #include "engine/ui/file_browser.h"
 #include "engine/ui/imgui_impl.hpp"
 #include "engine/ui/pack_editor.h"
-#include "libs/imgui/text_editor.h"
 #include "libs/imgui/font_awesome.h"
+#include "libs/imgui/text_editor.h"
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
 #define ICON_LANG(_i, _c) std::string(std::string(_i) + " " + global.I18N.Get(_c)).c_str()

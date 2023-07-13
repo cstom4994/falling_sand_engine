@@ -8,7 +8,7 @@
 #include <ctime>
 
 #include "engine/core/core.hpp"
-#include "engine/core/memory.h"
+#include "engine/core/base_memory.h"
 #include "engine/core/platform.h"
 #include "engine/scripting/scripting.hpp"
 // #include "runtime/ui/ui.hpp"
@@ -36,9 +36,8 @@ void ME::Logger::set_current_log_file(const char *file) noexcept {
 void ME::Logger::set_log_operation(log_operations op) noexcept { loggerInternal.operation_type = op; }
 
 void ME::LoggerInternal::writeline(std::string &msg) {
-    // char msgbuf[512];
-    // sprintf(msgbuf, "%s", msg.c_str());
     OutputDebugStringA(msg.c_str());
+    std::cout << msg;
 }
 
 std::string ME::LoggerInternal::get_current_time() noexcept {

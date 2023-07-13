@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "engine/core/core.hpp"
-#include "engine/core/memory.h"
+#include "engine/core/base_memory.h"
 #include "engine/core/platform.h"
 #include "engine/utils/utility.hpp"
 #include "engine/renderer/gpu.hpp"
