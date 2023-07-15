@@ -9,6 +9,7 @@
 #include <sys/types.h>
 
 #include "engine/core/core.hpp"
+#include "engine/core/io/filesystem.h"
 
 #pragma region lua_safe_alloc
 
@@ -1440,7 +1441,7 @@ void luaA_function_register_type(lua_State *L, void *src_func, luaA_Func auto_fu
 #pragma endregion LuaA
 
 int luaopen_debugger(lua_State *lua) {
-    if (luaL_dofile(lua, ("data/scripts/libs/debugger.lua"))) lua_error(lua);
+    if (luaL_dofile(lua, METADOT_RESLOC("data/scripts/libs/debugger.lua"))) lua_error(lua);
     return 1;
 }
 

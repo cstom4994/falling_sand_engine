@@ -10,10 +10,10 @@
 #define ME_LUAWRAPPER_HPP
 
 #include "engine/core/core.hpp"
-#include "engine/utils/name.hpp"
-#include "engine/utils/type.hpp"
 #include "engine/core/macros.hpp"
 #include "engine/meta/reflection.hpp"
+#include "engine/utils/name.hpp"
+#include "engine/utils/type.hpp"
 #include "libs/lua/lua.hpp"
 #include "lua_wrapper_base.hpp"
 #include "lua_wrapper_pp.hpp"
@@ -1091,7 +1091,8 @@ private:
         }
     }
 
-    typename std::aligned_storage<sizeof(T), std::alignment_of<T>::value>::type storage_;
+    // typename std::aligned_storage<sizeof(T), std::alignment_of<T>::value>::type storage_;
+    alignas(T) std::byte storage_[sizeof(T)];
 
     T *value_;
 };

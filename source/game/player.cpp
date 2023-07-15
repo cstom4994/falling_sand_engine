@@ -9,8 +9,8 @@
 #include "engine/world.hpp"
 
 RigidBody::RigidBody(b2Body *body, std::string name) {
-    this->body = body;
     this->name = std::string(name);
+    this->body = body;
 }
 
 RigidBody::~RigidBody() {
@@ -22,19 +22,20 @@ bool RigidBody::set_surface(C_Surface *sur) {
     return true;
 }
 
-C_Surface *RigidBody::get_surface() {
-    // ME_ASSERT(this->surface);
-    return this->surface;
-}
+C_Surface *RigidBody::get_surface() { return this->surface; }
 
 bool RigidBody::set_texture(R_Image *tex) {
     this->texture = tex;
     return true;
 }
 
-R_Image *RigidBody::get_texture() {
-    ME_ASSERT(this->texture);
-    return this->texture;
+R_Image *RigidBody::get_texture() { return this->texture; }
+
+void RigidBody::clean() {
+
+    if (NULL != this->tiles) delete[] this->tiles;
+    if (NULL != this->texture) R_FreeImage(this->get_texture());
+    if (NULL != this->surface) SDL_FreeSurface(this->get_surface());
 }
 
 void Player::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {

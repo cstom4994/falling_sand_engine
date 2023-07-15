@@ -35,10 +35,6 @@
 #include "textures.hpp"
 #include "world_generator.h"
 
-ME::thread_pool WorldSystem::tickPool(16);
-ME::thread_pool WorldSystem::tickVisitedPool(16);
-ME::thread_pool WorldSystem::updateRigidBodyHitboxPool(16);
-
 std::mutex g_mutex_loadchunk;
 std::mutex g_mutex_updatechunkmesh;
 
@@ -57,6 +53,10 @@ void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audi
 
     width = w;
     height = h;
+
+    world_sys.tickPool = ME::create_scope<ME::thread_pool>(16);
+    world_sys.tickVisitedPool = ME::create_scope<ME::thread_pool>(16);
+    world_sys.updateRigidBodyHitboxPool = ME::create_scope<ME::thread_pool>(16);
 
     this->audioEngine = audioEngine;
 
@@ -312,12 +312,12 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     maxY++;
 
     if (static_cast<bool>(texture)) {
-        // FIX ME
-        C_Surface *sf = SDL_CreateRGBSurfaceWithFormat(texture->flags, maxX - minX, maxY - minY, texture->format->BitsPerPixel, texture->format->format);
-        C_Rect src = {minX, minY, maxX - minX, maxY - minY};
-        SDL_SetSurfaceBlendMode(texture, SDL_BlendMode::SDL_BLENDMODE_NONE);
-        SDL_BlitSurface(texture, &src, sf, NULL);
-        SDL_FreeSurface(texture);
+        // TODO: 23/7/15 修复
+        // C_Surface *sf = SDL_CreateRGBSurfaceWithFormat(texture->flags, maxX - minX, maxY - minY, texture->format->BitsPerPixel, texture->format->format);
+        // C_Rect src = {minX, minY, maxX - minX, maxY - minY};
+        // SDL_SetSurfaceBlendMode(texture, SDL_BlendMode::SDL_BLENDMODE_NONE);
+        // SDL_BlitSurface(texture, &src, sf, NULL);
+        // SDL_FreeSurface(texture);
 
         if (static_cast<bool>(rb->get_surface())) {
             if (rb->get_surface()->w <= 1 || rb->get_surface()->h <= 1) {
@@ -325,8 +325,8 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
                 rigidBodies.erase(std::remove(rigidBodies.begin(), rigidBodies.end(), rb), rigidBodies.end());
                 return;
             }
-            rb->set_surface(sf);
-            texture = rb->get_surface();
+            // rb->set_surface(sf);
+            // texture = rb->get_surface();
         } else {
             ME_ASSERT(0);
         }
@@ -552,12 +552,12 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         std::vector<std::future<void>> poolResults = {};
 
         if (texture->w > 10) {
-            int nThreads = WorldSystem::updateRigidBodyHitboxPool.n_idle();
+            int nThreads = world_sys.updateRigidBodyHitboxPool->n_idle();
             int div = texture->w / nThreads;
             int rem = texture->w % nThreads;
 
             for (int thr = 0; thr < nThreads; thr++) {
-                poolResults.push_back(WorldSystem::updateRigidBodyHitboxPool.push([&, thr, div, rem](int id) {
+                poolResults.push_back(world_sys.updateRigidBodyHitboxPool->push([&, thr, div, rem](int id) {
                     int stx = thr * div;
                     int enx = stx + div + (thr == nThreads - 1 ? rem : 0);
 
@@ -675,9 +675,11 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
 
     rigidBodies.erase(std::remove(rigidBodies.begin(), rigidBodies.end(), rb), rigidBodies.end());
 
-    delete[] rb->tiles;
-    R_FreeImage(rb->get_texture());
-    SDL_FreeSurface(rb->get_surface());
+    // delete[] rb->tiles;
+    // R_FreeImage(rb->get_texture());
+    // SDL_FreeSurface(rb->get_surface());
+    // delete rb;
+    rb->clean();
     delete rb;
 }
 
@@ -1018,7 +1020,7 @@ void World::tick() {
 #endif
 #ifdef DO_MULTITHREADING
             bool *tickVisited = whichTickVisited ? tickVisited2 : tickVisited1;
-            std::future<void> tickVisitedDone = WorldSystem::tickVisitedPool.push([&](int id) { memset(whichTickVisited ? tickVisited1 : tickVisited2, false, (size_t)width * height); });
+            std::future<void> tickVisitedDone = world_sys.tickVisitedPool->push([&](int id) { memset(whichTickVisited ? tickVisited1 : tickVisited2, false, (size_t)width * height); });
 #else
             bool *tickVisited = tickVisited1;
             memset(tickVisited1, false, width * height);
@@ -1028,7 +1030,7 @@ void World::tick() {
                 for (int cy = tickZone.y + chOfsY * CHUNK_H; cy < (tickZone.y + tickZone.h); cy += CHUNK_H * 2) {
 
 #ifdef DO_MULTITHREADING
-                    results.push_back(WorldSystem::tickPool.push([&, cx, cy](int id) {
+                    results.push_back(world_sys.tickPool->push([&, cx, cy](int id) {
                         std::vector<CellData *> parts = {};
 
 #else
@@ -2197,10 +2199,10 @@ void World::tickObjects() {
             if (y + 100 > maxY) maxY = (int)y + 100;
         }
 
-        // if (cur->needsUpdate) {
-        //  updateRigidBodyHitbox(cur);
-        //  //continue;
-        // }
+        if (cur->needsUpdate) {
+            // updateRigidBodyHitbox(cur); // 在tickObjectsMesh中复写
+            // continue;
+        }
     }
 
     int meshZoneSnap = 16;
@@ -2220,8 +2222,6 @@ void World::tickObjects() {
     });
 
     b2world->Step(timeStep, velocityIterations, positionIterations);
-
-    // b2world->Step(timeStep, velocityIterations, positionIterations);
 
     registry.for_each_component<WorldEntity>([this](ME::ECS::entity, WorldEntity &we) {
         /*cur->x = cur->rb->body->GetPosition().x + 0.5 - cur->hw / 2 - loadZone.x;
@@ -2392,7 +2392,7 @@ void World::tickChunkGeneration() {
             m->generationPhase++;
             populateChunk(m, m->generationPhase, true);
 
-            gen_results.push_back(std::async(std::launch::async, ChunkWrite, m, m->tiles, m->layer2, m->background));
+            gen_results.push_back(std::async(std::launch::async, [&]() noexcept { m->ChunkWrite(m->tiles, m->layer2, m->background); }));
 
             if (n++ > 4) {
                 return;
@@ -2632,14 +2632,14 @@ Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
         chunk->generationPhase = 0;
         chunk->hasTileCache = true;
         this->populateChunk(chunk, 0, false);
-        if (!noSaveLoad) ChunkWrite(chunk, chunk->tiles, chunk->layer2, chunk->background);
+        if (!noSaveLoad) chunk->ChunkWrite(chunk->tiles, chunk->layer2, chunk->background);
     };
 
     if (ch->hasTileCache) {
         // prop = ch->tiles;
-    } else if (ChunkHasFile(ch) && !noSaveLoad) {
+    } else if (ch->ChunkHasFile() && !noSaveLoad) {
         try {
-            ChunkRead(ch);
+            ch->ChunkRead();
         } catch (...) {
             METADOT_BUG(std::format("Failed to read chunk {0} {1} so regenerate it", ch->x, ch->y).c_str());
             generate_chunk_func(ch);
@@ -2721,13 +2721,13 @@ void World::unloadChunk(Chunk *ch) {
     if (chunkCache[ch->x].contains(ch->y)) {
         chunkCache[ch->x].erase(ch->y);
     }
-    ChunkDelete(ch);
+    ch->ChunkDelete();
     /*delete data;
     delete layer2;*/
     // delete data;
 }
 
-void World::writeChunkToDisk(Chunk *ch) { ChunkWrite(ch, ch->tiles, ch->layer2, ch->background); }
+void World::writeChunkToDisk(Chunk *ch) { ch->ChunkWrite(ch->tiles, ch->layer2, ch->background); }
 
 void World::chunkSaveCache(Chunk *ch) {
     for (int x = 0; x < CHUNK_W; x++) {
@@ -2811,7 +2811,7 @@ void World::addStructure(PlacedStructure str) {
             int dx = x + loadZone.x + str.x;
             int dy = y + loadZone.y + str.y;
             Chunk *ch = new Chunk;
-            ChunkInit(ch, floor(dx / CHUNK_W), floor(dy / CHUNK_H), (char *)worldName.c_str());
+            ch->ChunkInit(floor(dx / CHUNK_W), floor(dy / CHUNK_H), (char *)worldName.c_str());
             // if(ch.e)
             if (dx >= 0 && dy >= 0 && dx < width && dy < height) {
                 tiles[dx + dy * width] = str.base.tiles[x + y * str.base.w];
@@ -2869,7 +2869,7 @@ Chunk *World::getChunk(int cx, int cy) {
         if (chunkCache[i]->x == cx && chunkCache[i]->y == cy) return chunkCache[i];
     }*/
     Chunk *c = new Chunk;
-    ChunkInit(c, cx, cy, (char *)worldName.c_str());
+    c->ChunkInit(cx, cy, (char *)worldName.c_str());
     c->generationPhase = -1;
     c->pleaseDelete = true;
     auto a = BiomeGet("DEFAULT");
@@ -2933,7 +2933,7 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
         for (int y = 0; y < ah; y++) {
             if (dirtyChunk[x + y * aw]) {
                 if (x != aw / 2 && y != ah / 2) {
-                    ChunkWrite(chs[x + y * aw], chs[x + y * aw]->tiles, chs[x + y * aw]->layer2, chs[x + y * aw]->background);
+                    chs[x + y * aw]->ChunkWrite(chs[x + y * aw]->tiles, chs[x + y * aw]->layer2, chs[x + y * aw]->background);
                     if (render) {
                         for (int i = 0; i < readyToMerge.size(); i++) {
                             if (readyToMerge[i] == chs[x + y * aw]) {
@@ -3485,9 +3485,9 @@ World::~World() {
     }
     cells.clear();
 
-    WorldSystem::tickPool.clear_queue();
-    WorldSystem::tickVisitedPool.clear_queue();
-    WorldSystem::updateRigidBodyHitboxPool.clear_queue();
+    world_sys.tickPool->clear_queue();
+    world_sys.tickVisitedPool->clear_queue();
+    world_sys.updateRigidBodyHitboxPool->clear_queue();
 
     // tickPool->stop(false);
     // delete tickPool;
@@ -3527,7 +3527,7 @@ World::~World() {
     readyToReadyToMerge.clear();
 
     for (auto &v : readyToMerge) {
-        ChunkDelete(v);
+        v->ChunkDelete();
     }
     readyToMerge.clear();
 
@@ -3543,7 +3543,7 @@ World::~World() {
                 METADOT_ERROR("Abnormal chunk delete %d", v2.first);
                 continue;
             }
-            ChunkDelete(v2.second);
+            v2.second->ChunkDelete();
         }
         v.second.clear();
     }

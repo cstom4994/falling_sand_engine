@@ -51,11 +51,11 @@ struct WorldMeta {
 };
 METADOT_STRUCT(WorldMeta, worldName, lastOpenedVersion, lastOpenedTime);
 
-class WorldSystem {
-public:
-    static ME::thread_pool tickPool;
-    static ME::thread_pool tickVisitedPool;
-    static ME::thread_pool updateRigidBodyHitboxPool;
+struct WorldSystem {
+    using TPL = ME::scope<ME::thread_pool>;
+    TPL tickPool;
+    TPL tickVisitedPool;
+    TPL updateRigidBodyHitboxPool;
 };
 
 class World {
@@ -90,6 +90,8 @@ public:
 
     struct {
         ME::ECS::registry registry;
+
+        WorldSystem world_sys;
     };
 
     ME::ECS::registry &Reg() { return registry; }

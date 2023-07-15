@@ -217,6 +217,18 @@ static void InitLua(LuaCore *lc) {
     lua_register(lc->L, "exit", metadot_exit);
     lua_register(lc->L, "ls", ls);
 
+    lc->s_lua.dostring(std::format("package.path = "
+                                   "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
+                                   "?/?.lua;' .. package.path",
+                                   METADOT_RESLOC("data/scripts"), normalizePath(std::filesystem::current_path().string()).c_str()),
+                       lc->s_lua.globalTable());
+
+    lc->s_lua.dostring(std::format("package.cpath = "
+                                   "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
+                                   "?/?.{2};' .. package.cpath",
+                                   METADOT_RESLOC("data/scripts"), normalizePath(std::filesystem::current_path().string()).c_str(), "dll"),
+                       lc->s_lua.globalTable());
+
     ME_debug_setup(lc->L, "debugger", "dbg", NULL, NULL);
 
     metadot_bind_image(lc->L);
@@ -252,18 +264,6 @@ static void InitLua(LuaCore *lc) {
     lc->s_lua["add_packagepath"] = ME::LuaWrapper::function(add_packagepath);
 
 #undef REGISTER_LUAFUNC
-
-    lc->s_lua.dostring(std::format("package.path = "
-                                   "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
-                                   "?/?.lua;' .. package.path",
-                                   METADOT_RESLOC("data/scripts"), normalizePath(std::filesystem::current_path().string()).c_str()),
-                       lc->s_lua.globalTable());
-
-    lc->s_lua.dostring(std::format("package.cpath = "
-                                   "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
-                                   "?/?.{2};' .. package.cpath",
-                                   METADOT_RESLOC("data/scripts"), normalizePath(std::filesystem::current_path().string()).c_str(), "dll"),
-                       lc->s_lua.globalTable());
 
     script_runfile("data/scripts/init.lua");
 }
@@ -389,15 +389,13 @@ static void initInternalCalls() {
 
 void MonoLayer::onAttach() {
 
-    std::string monoPath;
-
-    auto monoDir = std::filesystem::current_path();
+    std::filesystem::path monoDir = (std::filesystem::path(ENGINE()->exepath) / "net");
     if (monoDir.empty()) {
         METADOT_ERROR("Cannot find mono installation dir");
         return;
     }
-    // mono_set_dirs((monoDir / "output" / "net").string().c_str(), (monoDir / "etc").string().c_str());
-    mono_set_dirs("D:\\Projects\\Sandbox\\Dev\\output\\net", "");
+
+    mono_set_dirs(monoDir.string().c_str(), "");
     //  Init a domain
     domain = mono_jit_init("MetaDotManaged");
     if (!domain) {
@@ -408,9 +406,7 @@ void MonoLayer::onAttach() {
     initInternalCalls();
 
     // Open a assembly in the domain
-    std::string assPath = "D:\\Projects\\Sandbox\\Dev\\output\\ManagedCore.dll";
-    // App::get().getSettings().loadSet("ManagedDLL_FileName",assPath,std::string("Managedd.dll"));
-    // assPath = FUtil::getAbsolutePath(assPath.c_str());
+    std::string assPath = std::format("{0}/ManagedCore.dll", ENGINE()->exepath);
     assembly = mono_domain_assembly_open(domain, assPath.c_str());
     if (!assembly) {
         METADOT_ERROR("mono_domain_assembly_open failed");
@@ -570,16 +566,6 @@ void Scripting::Update() {
     Mono.onUpdate();
 }
 
-void Scripting::UpdateRender() {
-    ME_ASSERT(Lua);
-    auto &luawrap = Lua->s_lua;
-    auto OnRender = luawrap["OnRender"];
-    OnRender();
-}
+void Scripting::UpdateRender() { this->FastCallFunc("OnRender"); }
 
-void Scripting::UpdateTick() {
-    ME_ASSERT(Lua);
-    auto &luawrap = Lua->s_lua;
-    auto OnGameTickUpdate = luawrap["OnGameTickUpdate"];
-    OnGameTickUpdate();
-}
+void Scripting::UpdateTick() { this->FastCallFunc("OnGameTickUpdate"); }

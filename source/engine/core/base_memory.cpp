@@ -1,5 +1,3 @@
-#include "memory.h"
-
 #include <array>
 #include <cassert>
 #include <cerrno>
@@ -9,7 +7,9 @@
 #include <iostream>
 
 #include "engine/core/base_memory_tracer.hpp"
+#include "engine/core/io/filesystem.h"
 #include "engine/utils/utility.hpp"
+#include "memory.h"
 
 allocation_metrics g_allocation_metrics = {.total_allocated = 0, .total_free = 0};
 
@@ -254,19 +254,27 @@ void ME_mem_alloc_leak_check_free(void* mem) {
     ME_FREE_FUNC(info);
 }
 
-int ME_mem_check_leaks() {
+int ME_mem_check_leaks(bool detailed) {
     ME_mem_alloc_alloc_info_t* head = ME_mem_alloc_alloc_head();
     ME_mem_alloc_alloc_info_t* next = head->next;
     int leaks = 0;
 
+    std::size_t leaks_size = 0;
+
     while (next != head) {
-        METADOT_WARN(std::format("[Mem] LEAKED {0} bytes from file \"{1}\" at line {2} from address {3}.", next->size, next->file, next->line, (void*)(next + 1)).c_str());
+        if (detailed) {
+            METADOT_WARN(std::format("[Mem] LEAKED {0} bytes from file \"{1}\" at line {2} from address {3}.", next->size, ME_fs_get_filename(next->file), next->line, (void*)(next + 1)).c_str());
+        }
+        leaks_size += next->size;
         next = next->next;
         leaks = 1;
     }
 
-    if (leaks) {
+    if (leaks && detailed) {
         METADOT_INFO("[Mem] Memory leaks detected (see above).");
+    } else if (leaks) {
+        double megabytes = static_cast<double>(leaks_size) / 1048576;
+        METADOT_INFO(std::format("[Mem] Memory leaks detected with {0} bytes equal to {1:.4f} MB.", leaks_size, megabytes).c_str());
     } else {
         METADOT_BUG("[Mem] No memory leaks detected.");
     }
@@ -337,7 +345,7 @@ void ME_mem_init(int argc, char* argv[]) { ME_MEM_INIT(); }
 
 void ME_mem_end() {
     ME_MEM_EXIT();
-    ME_mem_check_leaks();
+    ME_mem_check_leaks(false);
 }
 
 void ME_mem_rungc() {}

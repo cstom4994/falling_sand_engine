@@ -32,8 +32,8 @@ InitGraphics = function()
     -- }
 
     logoSfc = LoadTextureData("data/assets/ui/logo.png")
-    title = R_CopyImageFromSurface(GetSurfaceFromTexture(logoSfc))
-    R_SetImageFilter(title, 0)
+    --title = R_CopyImageFromSurface(GetSurfaceFromTexture(logoSfc))
+    --R_SetImageFilter(title, 0)
     DestroyTexture(logoSfc)
 
 end

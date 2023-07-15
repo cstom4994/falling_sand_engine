@@ -1,6 +1,7 @@
 
 #include "renderer_opengl.h"
 
+#include "engine/core/base_memory.h"
 #include "engine/core/const.h"
 #include "engine/core/macros.hpp"
 #include "engine/core/sdl_wrapper.h"
@@ -131,7 +132,7 @@ void copy_upload_texture(const unsigned char *pixels, ME_rect update_rect, u32 f
         // If not already aligned, account for padding on each row
         if (rem > 0) w += alignment - rem;
 
-        unsigned char *copy = (unsigned char *)malloc(w * h);
+        unsigned char *copy = (unsigned char *)ME_MALLOC(w * h);
         unsigned char *dst = copy;
 
         for (i = 0; i < h; ++i) {
@@ -140,7 +141,7 @@ void copy_upload_texture(const unsigned char *pixels, ME_rect update_rect, u32 f
             dst += w;
         }
         fast_upload_texture(copy, update_rect, format, alignment, (int)update_rect.w);
-        free(copy);
+        ME_FREE(copy);
     }
 }
 
@@ -483,9 +484,9 @@ bool growBlitBuffer(R_CONTEXT_DATA *cdata, unsigned int minimum_vertices_needed)
 
     // R_LogError("Growing to %d vertices\n", new_max_num_vertices);
     //  Resize the blit buffer
-    new_buffer = (float *)malloc(new_max_num_vertices * R_BLIT_BUFFER_STRIDE);
+    new_buffer = (float *)ME_MALLOC(new_max_num_vertices * R_BLIT_BUFFER_STRIDE);
     memcpy(new_buffer, cdata->blit_buffer, cdata->blit_buffer_num_vertices * R_BLIT_BUFFER_STRIDE);
-    free(cdata->blit_buffer);
+    ME_FREE(cdata->blit_buffer);
     cdata->blit_buffer = new_buffer;
     cdata->blit_buffer_max_num_vertices = (unsigned short)new_max_num_vertices;
 
@@ -523,9 +524,9 @@ bool growIndexBuffer(R_CONTEXT_DATA *cdata, unsigned int minimum_vertices_needed
 
     // R_LogError("Growing to %d indices\n", new_max_num_vertices);
     //  Resize the index buffer
-    new_indices = (unsigned short *)malloc(new_max_num_vertices * sizeof(unsigned short));
+    new_indices = (unsigned short *)ME_MALLOC(new_max_num_vertices * sizeof(unsigned short));
     memcpy(new_indices, cdata->index_buffer, cdata->index_buffer_num_vertices * sizeof(unsigned short));
-    free(cdata->index_buffer);
+    ME_FREE(cdata->index_buffer);
     cdata->index_buffer = new_indices;
     cdata->index_buffer_max_num_vertices = new_max_num_vertices;
 
@@ -1094,17 +1095,17 @@ R_Target *CreateTargetFromWindow(R_Renderer *renderer, u32 windowID, R_Target *t
         int index_buffer_storage_size;
 
         created = true;
-        target = (R_Target *)malloc(sizeof(R_Target));
+        target = (R_Target *)ME_MALLOC(sizeof(R_Target));
         memset(target, 0, sizeof(R_Target));
         target->refcount = 1;
         target->is_alias = false;
-        target->data = (R_TARGET_DATA *)malloc(sizeof(R_TARGET_DATA));
+        target->data = (R_TARGET_DATA *)ME_MALLOC(sizeof(R_TARGET_DATA));
         memset(target->data, 0, sizeof(R_TARGET_DATA));
         ((R_TARGET_DATA *)target->data)->refcount = 1;
         target->image = NULL;
-        target->context = (R_Context *)malloc(sizeof(R_Context));
+        target->context = (R_Context *)ME_MALLOC(sizeof(R_Context));
         memset(target->context, 0, sizeof(R_Context));
-        cdata = (R_CONTEXT_DATA *)malloc(sizeof(R_CONTEXT_DATA));
+        cdata = (R_CONTEXT_DATA *)ME_MALLOC(sizeof(R_CONTEXT_DATA));
         memset(cdata, 0, sizeof(R_CONTEXT_DATA));
 
         target->context->refcount = 1;
@@ -1116,11 +1117,11 @@ R_Target *CreateTargetFromWindow(R_Renderer *renderer, u32 windowID, R_Target *t
         cdata->blit_buffer_max_num_vertices = R_BLIT_BUFFER_INIT_MAX_NUM_VERTICES;
         cdata->blit_buffer_num_vertices = 0;
         blit_buffer_storage_size = R_BLIT_BUFFER_INIT_MAX_NUM_VERTICES * R_BLIT_BUFFER_STRIDE;
-        cdata->blit_buffer = (float *)malloc(blit_buffer_storage_size);
+        cdata->blit_buffer = (float *)ME_MALLOC(blit_buffer_storage_size);
         cdata->index_buffer_max_num_vertices = R_BLIT_BUFFER_INIT_MAX_NUM_VERTICES;
         cdata->index_buffer_num_vertices = 0;
         index_buffer_storage_size = R_BLIT_BUFFER_INIT_MAX_NUM_VERTICES * sizeof(unsigned short);
-        cdata->index_buffer = (unsigned short *)malloc(index_buffer_storage_size);
+        cdata->index_buffer = (unsigned short *)ME_MALLOC(index_buffer_storage_size);
     } else {
         R_RemoveWindowMapping(target->context->windowID);
         cdata = (R_CONTEXT_DATA *)target->context->data;
@@ -1130,12 +1131,12 @@ R_Target *CreateTargetFromWindow(R_Renderer *renderer, u32 windowID, R_Target *t
     if (window == NULL) {
         R_PushErrorCode("R_CreateTargetFromWindow", R_ERROR_BACKEND_ERROR, "Failed to acquire the window from the given ID.");
         if (created) {
-            free(cdata->blit_buffer);
-            free(cdata->index_buffer);
-            free(target->context->data);
-            free(target->context);
-            free(target->data);
-            free(target);
+            ME_FREE(cdata->blit_buffer);
+            ME_FREE(cdata->index_buffer);
+            ME_FREE(target->context->data);
+            ME_FREE(target->context);
+            ME_FREE(target->data);
+            ME_FREE(target);
         }
         return NULL;
     }
@@ -1148,12 +1149,12 @@ R_Target *CreateTargetFromWindow(R_Renderer *renderer, u32 windowID, R_Target *t
         target->context->context = SDL_GL_CreateContext(window);
         if (target->context->context == NULL) {
             R_PushErrorCode("R_CreateTargetFromWindow", R_ERROR_BACKEND_ERROR, "Failed to create GL context.");
-            free(cdata->blit_buffer);
-            free(cdata->index_buffer);
-            free(target->context->data);
-            free(target->context);
-            free(target->data);
-            free(target);
+            ME_FREE(cdata->blit_buffer);
+            ME_FREE(cdata->index_buffer);
+            ME_FREE(target->context->data);
+            ME_FREE(target->context);
+            ME_FREE(target->data);
+            ME_FREE(target);
             return NULL;
         }
         R_AddWindowMapping(target);
@@ -1423,7 +1424,7 @@ R_Target *CreateAliasTarget(R_Renderer *renderer, R_Target *target) {
 
     if (target == NULL) return NULL;
 
-    result = (R_Target *)malloc(sizeof(R_Target));
+    result = (R_Target *)ME_MALLOC(sizeof(R_Target));
 
     // Copy the members
     *result = *target;
@@ -1879,9 +1880,9 @@ R_Image *CreateUninitializedImage(R_Renderer *renderer, u16 w, u16 h, R_FormatEn
     }
 
     // Create the R_Image
-    result = (R_Image *)malloc(sizeof(R_Image));
+    result = (R_Image *)ME_MALLOC(sizeof(R_Image));
     result->refcount = 1;
-    data = (R_IMAGE_DATA *)malloc(sizeof(R_IMAGE_DATA));
+    data = (R_IMAGE_DATA *)ME_MALLOC(sizeof(R_IMAGE_DATA));
     data->refcount = 1;
     result->target = NULL;
     result->renderer = renderer;
@@ -1951,9 +1952,9 @@ R_Image *CreateImage(R_Renderer *renderer, u16 w, u16 h, R_FormatEnum format) {
 
     // Initialize texture using a blank buffer
     if (zero_buffer_size < (unsigned int)(w * h * result->bytes_per_pixel)) {
-        free(zero_buffer);
+        ME_FREE(zero_buffer);
         zero_buffer_size = w * h * result->bytes_per_pixel;
-        zero_buffer = (unsigned char *)malloc(zero_buffer_size);
+        zero_buffer = (unsigned char *)ME_MALLOC(zero_buffer_size);
         memset(zero_buffer, 0, zero_buffer_size);
     }
 
@@ -2118,13 +2119,13 @@ R_Image *CreateImageUsingTexture(R_Renderer *renderer, R_TextureHandle handle, b
 
     // Finally create the image
 
-    data = (R_IMAGE_DATA *)malloc(sizeof(R_IMAGE_DATA));
+    data = (R_IMAGE_DATA *)ME_MALLOC(sizeof(R_IMAGE_DATA));
     data->refcount = 1;
     data->handle = (GLuint)handle;
     data->owns_handle = take_ownership;
     data->format = gl_format;
 
-    result = (R_Image *)malloc(sizeof(R_Image));
+    result = (R_Image *)ME_MALLOC(sizeof(R_Image));
     result->refcount = 1;
     result->target = NULL;
     result->renderer = renderer;
@@ -2167,7 +2168,7 @@ R_Image *CreateAliasImage(R_Renderer *renderer, R_Image *image) {
 
     if (image == NULL) return NULL;
 
-    result = (R_Image *)malloc(sizeof(R_Image));
+    result = (R_Image *)ME_MALLOC(sizeof(R_Image));
     // Copy the members
     *result = *image;
 
@@ -2237,17 +2238,17 @@ unsigned char *getRawTargetData(R_Renderer *renderer, R_Target *target) {
 
     bytes_per_pixel = 4;
     if (target->image != NULL) bytes_per_pixel = target->image->bytes_per_pixel;
-    data = (unsigned char *)malloc(target->base_w * target->base_h * bytes_per_pixel);
+    data = (unsigned char *)ME_MALLOC(target->base_w * target->base_h * bytes_per_pixel);
 
     // This can take regions of pixels, so using base_w and base_h with an image target should be fine.
     if (!readTargetPixels(renderer, target, ((R_TARGET_DATA *)target->data)->format, data)) {
-        free(data);
+        ME_FREE(data);
         return NULL;
     }
 
     // Flip the data vertically (OpenGL framebuffer is read upside down)
     pitch = target->base_w * bytes_per_pixel;
-    copy = (unsigned char *)malloc(pitch);
+    copy = (unsigned char *)ME_MALLOC(pitch);
 
     for (y = 0; y < target->base_h / 2; y++) {
         unsigned char *top = &data[target->base_w * y * bytes_per_pixel];
@@ -2256,7 +2257,7 @@ unsigned char *getRawTargetData(R_Renderer *renderer, R_Target *target) {
         memcpy(top, bottom, pitch);
         memcpy(bottom, copy, pitch);
     }
-    free(copy);
+    ME_FREE(copy);
 
     return data;
 }
@@ -2266,11 +2267,11 @@ unsigned char *getRawImageData(R_Renderer *renderer, R_Image *image) {
 
     if (image->target != NULL && isCurrentTarget(renderer, image->target)) FlushBlitBuffer(renderer);
 
-    data = (unsigned char *)malloc(image->texture_w * image->texture_h * image->bytes_per_pixel);
+    data = (unsigned char *)ME_MALLOC(image->texture_w * image->texture_h * image->bytes_per_pixel);
 
     // FIXME: Sometimes the texture is stored and read in RGBA even when I specify RGB.  getRawImageData() might need to return the stored format or Bpp.
     if (!readImagePixels(renderer, image, ((R_IMAGE_DATA *)image->data)->format, data)) {
-        free(data);
+        ME_FREE(data);
         return NULL;
     }
 
@@ -2304,7 +2305,7 @@ void *CopySurfaceFromTarget(R_Renderer *renderer, R_Target *target) {
 
     if (result == NULL) {
         R_PushErrorCode("R_CopySurfaceFromTarget", R_ERROR_DATA_ERROR, "Failed to create new %dx%d surface", target->base_w, target->base_h);
-        free(data);
+        ME_FREE(data);
         return NULL;
     }
 
@@ -2317,7 +2318,7 @@ void *CopySurfaceFromTarget(R_Renderer *renderer, R_Target *target) {
         }
     }
 
-    free(data);
+    ME_FREE(data);
 
     FreeFormat(format);
     return result;
@@ -2359,7 +2360,7 @@ void *CopySurfaceFromImage(R_Renderer *renderer, R_Image *image) {
 
     if (result == NULL) {
         R_PushErrorCode("R_CopySurfaceFromImage", R_ERROR_DATA_ERROR, "Failed to create new %dx%d surface", w, h);
-        free(data);
+        ME_FREE(data);
         return NULL;
     }
 
@@ -2372,7 +2373,7 @@ void *CopySurfaceFromImage(R_Renderer *renderer, R_Image *image) {
         }
     }
 
-    free(data);
+    ME_FREE(data);
 
     FreeFormat(format);
     return result;
@@ -2547,7 +2548,7 @@ SDL_PixelFormat *AllocFormat(GLenum glFormat) {
 
     // R_LogError("AllocFormat(): %d, Masks: %X %X %X %X\n", glFormat, Rmask, Gmask, Bmask, Amask);
 
-    result = (SDL_PixelFormat *)malloc(sizeof(SDL_PixelFormat));
+    result = (SDL_PixelFormat *)ME_MALLOC(sizeof(SDL_PixelFormat));
     memset(result, 0, sizeof(SDL_PixelFormat));
 
     result->BitsPerPixel = 8 * channels;
@@ -2588,7 +2589,7 @@ SDL_PixelFormat *AllocFormat(GLenum glFormat) {
     return result;
 }
 
-void FreeFormat(SDL_PixelFormat *format) { free(format); }
+void FreeFormat(SDL_PixelFormat *format) { ME_FREE(format); }
 
 // Returns NULL on failure.  Returns the original surface if no copy is needed.  Returns a new surface converted to the right format otherwise.
 SDL_Surface *copySurfaceIfNeeded(R_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, GLenum *surfaceFormatResult) {
@@ -2688,7 +2689,7 @@ R_Image *gpu_copy_image_pixels_only(R_Renderer *renderer, R_Image *image) {
 
                 result = CreateUninitializedImage(renderer, image->texture_w, image->texture_h, image->format);
                 if (result == NULL) {
-                    free(texture_data);
+                    ME_FREE(texture_data);
                     R_PushErrorCode("R_CopyImage", R_ERROR_BACKEND_ERROR, "Failed to create new image.");
                     return NULL;
                 }
@@ -2710,7 +2711,7 @@ R_Image *gpu_copy_image_pixels_only(R_Renderer *renderer, R_Image *image) {
                 result->texture_w = (u16)w;
                 result->texture_h = (u16)h;
 
-                free(texture_data);
+                ME_FREE(texture_data);
             }
             break;
         default:
@@ -3144,10 +3145,10 @@ void FreeImage(R_Renderer *renderer, R_Image *image) {
             R_MakeCurrent(image->context_target, image->context_target->context->windowID);
             glDeleteTextures(1, &data->handle);
         }
-        free(data);
+        ME_FREE(data);
     }
 
-    free(image);
+    ME_FREE(image);
 }
 
 R_Target *GetTarget(R_Renderer *renderer, R_Image *image) {
@@ -3178,10 +3179,10 @@ R_Target *GetTarget(R_Renderer *renderer, R_Image *image) {
         return NULL;
     }
 
-    result = (R_Target *)malloc(sizeof(R_Target));
+    result = (R_Target *)ME_MALLOC(sizeof(R_Target));
     memset(result, 0, sizeof(R_Target));
     result->refcount = 0;
-    data = (R_TARGET_DATA *)malloc(sizeof(R_TARGET_DATA));
+    data = (R_TARGET_DATA *)ME_MALLOC(sizeof(R_TARGET_DATA));
     data->refcount = 1;
     result->data = data;
     data->handle = handle;
@@ -3238,7 +3239,7 @@ void FreeTargetData(R_Renderer *renderer, R_TARGET_DATA *data) {
         glDeleteFramebuffersPROC(1, &data->handle);
     }
 
-    free(data);
+    ME_FREE(data);
 }
 
 void FreeContext(R_Context *context) {
@@ -3254,8 +3255,8 @@ void FreeContext(R_Context *context) {
     // Time to actually free this context and its data
     cdata = (R_CONTEXT_DATA *)context->data;
 
-    free(cdata->blit_buffer);
-    free(cdata->index_buffer);
+    ME_FREE(cdata->blit_buffer);
+    ME_FREE(cdata->index_buffer);
 
     if (!context->failed) {
 #ifdef R_USE_BUFFER_PIPELINE
@@ -3270,8 +3271,8 @@ void FreeContext(R_Context *context) {
 
     if (context->context != 0) SDL_GL_DeleteContext(context->context);
 
-    free(cdata);
-    free(context);
+    ME_FREE(cdata);
+    ME_FREE(context);
 }
 
 void FreeTarget(R_Renderer *renderer, R_Target *target) {
@@ -3324,7 +3325,7 @@ void FreeTarget(R_Renderer *renderer, R_Target *target) {
     R_ClearMatrixStack(&target->view_matrix);
     R_ClearMatrixStack(&target->model_matrix);
 
-    free(target);
+    ME_FREE(target);
 }
 
 #define SET_TEXTURED_VERTEX(x, y, s, t, r, g, b, a)                                       \
@@ -5658,12 +5659,12 @@ void SetAttributeSource(R_Renderer *renderer, int num_values, R_Attribute source
 
         // Make sure we have enough room for converted per-vertex data
         if (a->per_vertex_storage_size < needed_size) {
-            free(a->per_vertex_storage);
-            a->per_vertex_storage = malloc(needed_size);
+            ME_FREE(a->per_vertex_storage);
+            a->per_vertex_storage = ME_MALLOC(needed_size);
             a->per_vertex_storage_size = needed_size;
         }
     } else if (a->per_vertex_storage_size > 0) {
-        free(a->per_vertex_storage);
+        ME_FREE(a->per_vertex_storage);
         a->per_vertex_storage = NULL;
         a->per_vertex_storage_size = 0;
     }
@@ -6781,7 +6782,7 @@ void PolygonFilled(R_Renderer *renderer, R_Target *target, unsigned int num_vert
 }
 
 R_Renderer *R_CreateRenderer_OpenGL_3(R_RendererID request) {
-    R_Renderer *renderer = (R_Renderer *)malloc(sizeof(R_Renderer));
+    R_Renderer *renderer = (R_Renderer *)ME_MALLOC(sizeof(R_Renderer));
     if (renderer == NULL) return NULL;
 
     memset(renderer, 0, sizeof(R_Renderer));
@@ -6796,7 +6797,7 @@ R_Renderer *R_CreateRenderer_OpenGL_3(R_RendererID request) {
 
     renderer->current_context_target = NULL;
 
-    // renderer->impl = (R_RendererImpl *)malloc(sizeof(R_RendererImpl));
+    // renderer->impl = (R_RendererImpl *)ME_MALLOC(sizeof(R_RendererImpl));
     // memset(renderer->impl, 0, sizeof(R_RendererImpl));
     // SET_COMMON_FUNCTIONS(renderer->impl);
 
@@ -6806,6 +6807,6 @@ R_Renderer *R_CreateRenderer_OpenGL_3(R_RendererID request) {
 void R_FreeRenderer_OpenGL_3(R_Renderer *renderer) {
     if (renderer == NULL) return;
 
-    // free(renderer->impl);
-    free(renderer);
+    // ME_FREE(renderer->impl);
+    ME_FREE(renderer);
 }

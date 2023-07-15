@@ -105,15 +105,15 @@ public:
     void UpdateTick();
 
     ME_INLINE auto FastCallFunc(std::string name) {
-        auto luacore = Scripting::get_singleton_ptr()->Lua;
-        auto &luawrap = luacore->s_lua;
+        ME_ASSERT(Lua);
+        auto &luawrap = Lua->s_lua;
         auto func = luawrap[name];
         return func;
     }
 
     ME_INLINE bool FastLoadLua(std::string path) {
-        auto luacore = Scripting::get_singleton_ptr()->Lua;
-        auto &luawrap = luacore->s_lua;
+        ME_ASSERT(Lua);
+        auto &luawrap = Lua->s_lua;
         return luawrap.dofile(path);
     }
 

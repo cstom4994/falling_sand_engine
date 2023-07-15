@@ -70,7 +70,7 @@ struct alloc {
 void* ME_mem_alloc_leak_check_alloc(size_t size, const char* file, int line);
 void* ME_mem_alloc_leak_check_calloc(size_t count, size_t element_size, const char* file, int line);
 void ME_mem_alloc_leak_check_free(void* mem);
-int ME_mem_check_leaks();
+int ME_mem_check_leaks(bool detailed);
 int ME_mem_bytes_inuse();
 
 typedef struct allocation_metrics {

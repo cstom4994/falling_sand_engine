@@ -35,7 +35,7 @@ struct ME::meta::static_refl::TypeInfo<MaterialInstanceData> : TypeInfoBase<Mate
 };
 
 // Chunk data structure
-typedef struct Chunk {
+struct Chunk {
     std::string pack_filename;
 
     int x;
@@ -58,7 +58,19 @@ typedef struct Chunk {
     ~Chunk() = default;
 
     MOVE_ONLY(Chunk);
-} Chunk;
+
+    // Initialize a chunk
+    void ChunkInit(int x, int y, char *worldName);
+    // Uninitialize a chunk
+    void ChunkDelete();
+    // Check chunk's meta data
+    void ChunkLoadMeta();
+
+    // static MaterialInstanceData* readBuf;
+    void ChunkRead();
+    void ChunkWrite(MaterialInstance *tiles, MaterialInstance *layer2, u32 *background);
+    bool ChunkHasFile();
+};
 
 template <>
 struct ME::meta::static_refl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
@@ -84,18 +96,6 @@ struct ME::meta::static_refl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
 ME_GUI_DEFINE_BEGIN(template <>, b2PolygonShape)
 ImGui::Auto("b2PolygonShape");
 ME_GUI_DEFINE_END
-
-// Initialize a chunk
-void ChunkInit(Chunk *_struct, int x, int y, char *worldName);
-// Uninitialize a chunk
-void ChunkDelete(Chunk *_struct);
-// Check chunk's meta data
-void ChunkLoadMeta(Chunk *_struct);
-
-// static MaterialInstanceData* readBuf;
-void ChunkRead(Chunk *_struct);
-void ChunkWrite(Chunk *_struct, MaterialInstance *tiles, MaterialInstance *layer2, u32 *background);
-bool ChunkHasFile(Chunk *_struct);
 
 class ChunkReadyToMerge {
 public:

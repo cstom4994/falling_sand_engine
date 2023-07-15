@@ -50,6 +50,12 @@ public:
     virtual void RegisterLua(ME::LuaWrapper::State &s_lua) = 0;
 };
 
+template <>
+struct ME::meta::static_refl::TypeInfo<IGameSystem> : TypeInfoBase<IGameSystem> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {};
+};
+
 ME_GUI_DEFINE_BEGIN(template <>, IGameSystem)
 ImGui::Text("%s %d", var.getName().c_str(), var.priority);
 ME_GUI_DEFINE_END
@@ -65,21 +71,5 @@ public:
     void Reload() override;
     void RegisterLua(ME::LuaWrapper::State &s_lua) override;
 };
-
-// class IGameObject {
-// public:
-//     IGameObject(){};
-//     ~IGameObject(){};
-
-//     virtual void Create();
-//     virtual void Destory();
-//     virtual void RegisterReflection();
-// };
-
-// template <>
-// struct ME::meta::static_refl::TypeInfo<IGameObject> : TypeInfoBase<IGameObject> {
-//     static constexpr AttrList attrs = {};
-//     static constexpr FieldList fields = {};
-// };
 
 #endif

@@ -19,7 +19,9 @@ bool InitFilesystem() {
 
     auto currentDir = std::filesystem::path(std::filesystem::current_path());
 
-#if 1
+    char buffer[MAX_PATH];
+    GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    ENGINE()->exepath = std::filesystem::path(buffer).parent_path().string();
 
     for (int i = 0; i < 3; ++i) {
         if (std::filesystem::exists(currentDir / "Data")) {
@@ -32,19 +34,6 @@ bool InitFilesystem() {
 
     METADOT_ERROR("Game data path detect failed");
     return METADOT_FAILED;
-
-#else
-
-    if (!std::filesystem::exists(currentDir / "Data")) {
-        METADOT_ERROR("Game data path detect failed");
-        return METADOT_FAILED;
-    } else {
-        Core.gamepath = currentDir;
-        METADOT_INFO("Game data path detected: %s", Core.gamepath.c_str());
-        return METADOT_OK;
-    }
-
-#endif
 }
 
 std::string ME_fs_get_path(std::string path) {
@@ -70,7 +59,7 @@ std::vector<char> ME_fs_read_file_to_vec(const char *path, size_t &size) {
         size = size_;
         return buffer;
     } else {
-        METADOT_ERROR("Unable to load file %s", path);
+        METADOT_ERROR("Unable to load file ", path);
         return std::vector<char>();
     }
 }

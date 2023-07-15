@@ -216,25 +216,25 @@ R_FeatureEnum R_GetRequiredFeatures(void) { return gpu_required_features; }
 static void gpu_init_error_queue(void) {
     if (gpu_error_code_queue == NULL) {
         unsigned int i;
-        gpu_error_code_queue = (R_ErrorObject *)malloc(sizeof(R_ErrorObject) * gpu_error_code_queue_size);
+        gpu_error_code_queue = (R_ErrorObject *)ME_MALLOC(sizeof(R_ErrorObject) * gpu_error_code_queue_size);
 
         for (i = 0; i < gpu_error_code_queue_size; i++) {
-            gpu_error_code_queue[i].function = (char *)malloc(R_ERROR_FUNCTION_STRING_MAX + 1);
+            gpu_error_code_queue[i].function = (char *)ME_MALLOC(R_ERROR_FUNCTION_STRING_MAX + 1);
             gpu_error_code_queue[i].error = R_ERROR_NONE;
-            gpu_error_code_queue[i].details = (char *)malloc(R_ERROR_DETAILS_STRING_MAX + 1);
+            gpu_error_code_queue[i].details = (char *)ME_MALLOC(R_ERROR_DETAILS_STRING_MAX + 1);
         }
         gpu_num_error_codes = 0;
 
-        gpu_error_code_result.function = (char *)malloc(R_ERROR_FUNCTION_STRING_MAX + 1);
+        gpu_error_code_result.function = (char *)ME_MALLOC(R_ERROR_FUNCTION_STRING_MAX + 1);
         gpu_error_code_result.error = R_ERROR_NONE;
-        gpu_error_code_result.details = (char *)malloc(R_ERROR_DETAILS_STRING_MAX + 1);
+        gpu_error_code_result.details = (char *)ME_MALLOC(R_ERROR_DETAILS_STRING_MAX + 1);
     }
 }
 
 static void gpu_init_window_mappings(void) {
     if (gpu_window_mappings == NULL) {
         gpu_window_mappings_size = R_INITIAL_WINDOW_MAPPINGS_SIZE;
-        gpu_window_mappings = (R_WindowMapping *)malloc(gpu_window_mappings_size * sizeof(R_WindowMapping));
+        gpu_window_mappings = (R_WindowMapping *)ME_MALLOC(gpu_window_mappings_size * sizeof(R_WindowMapping));
         gpu_num_window_mappings = 0;
     }
 }
@@ -264,9 +264,9 @@ void R_AddWindowMapping(R_Target *target) {
     if (gpu_num_window_mappings >= gpu_window_mappings_size) {
         R_WindowMapping *new_array;
         gpu_window_mappings_size *= 2;
-        new_array = (R_WindowMapping *)malloc(gpu_window_mappings_size * sizeof(R_WindowMapping));
+        new_array = (R_WindowMapping *)ME_MALLOC(gpu_window_mappings_size * sizeof(R_WindowMapping));
         memcpy(new_array, gpu_window_mappings, gpu_num_window_mappings * sizeof(R_WindowMapping));
-        free(gpu_window_mappings);
+        ME_FREE(gpu_window_mappings);
         gpu_window_mappings = new_array;
     }
 
@@ -540,18 +540,18 @@ void gpu_free_error_queue(void) {
     unsigned int i;
     // Free the error queue
     for (i = 0; i < gpu_error_code_queue_size; i++) {
-        free(gpu_error_code_queue[i].function);
+        ME_FREE(gpu_error_code_queue[i].function);
         gpu_error_code_queue[i].function = NULL;
-        free(gpu_error_code_queue[i].details);
+        ME_FREE(gpu_error_code_queue[i].details);
         gpu_error_code_queue[i].details = NULL;
     }
-    free(gpu_error_code_queue);
+    ME_FREE(gpu_error_code_queue);
     gpu_error_code_queue = NULL;
     gpu_num_error_codes = 0;
 
-    free(gpu_error_code_result.function);
+    ME_FREE(gpu_error_code_result.function);
     gpu_error_code_result.function = NULL;
-    free(gpu_error_code_result.details);
+    ME_FREE(gpu_error_code_result.details);
     gpu_error_code_result.details = NULL;
 }
 
@@ -586,7 +586,7 @@ void R_Quit(void) {
     gpu_init_windowID = 0;
 
     // Free window mappings
-    free(gpu_window_mappings);
+    ME_FREE(gpu_window_mappings);
     gpu_window_mappings = NULL;
     gpu_window_mappings_size = 0;
     gpu_num_window_mappings = 0;
@@ -1849,7 +1849,7 @@ int gpu_strcasecmp(const char *s1, const char *s2) {
 }
 
 R_MatrixStack *R_CreateMatrixStack(void) {
-    R_MatrixStack *stack = (R_MatrixStack *)malloc(sizeof(R_MatrixStack));
+    R_MatrixStack *stack = (R_MatrixStack *)ME_MALLOC(sizeof(R_MatrixStack));
     stack->matrix = NULL;
     stack->size = 0;
     stack->storage_size = 0;
@@ -1859,7 +1859,7 @@ R_MatrixStack *R_CreateMatrixStack(void) {
 
 void R_FreeMatrixStack(R_MatrixStack *stack) {
     R_ClearMatrixStack(stack);
-    free(stack);
+    ME_FREE(stack);
 }
 
 void R_InitMatrixStack(R_MatrixStack *stack) {
@@ -1870,8 +1870,8 @@ void R_InitMatrixStack(R_MatrixStack *stack) {
     stack->storage_size = 1;
     stack->size = 1;
 
-    stack->matrix = (float **)malloc(sizeof(float *) * stack->storage_size);
-    stack->matrix[0] = (float *)malloc(sizeof(float) * 16);
+    stack->matrix = (float **)ME_MALLOC(sizeof(float *) * stack->storage_size);
+    stack->matrix[0] = (float *)ME_MALLOC(sizeof(float) * 16);
     R_MatrixIdentity(stack->matrix[0]);
 }
 
@@ -1881,9 +1881,9 @@ void R_CopyMatrixStack(const R_MatrixStack *source, R_MatrixStack *dest) {
     if (source == NULL || dest == NULL) return;
 
     R_ClearMatrixStack(dest);
-    dest->matrix = (float **)malloc(sizeof(float *) * source->storage_size);
+    dest->matrix = (float **)ME_MALLOC(sizeof(float *) * source->storage_size);
     for (i = 0; i < source->storage_size; ++i) {
-        dest->matrix[i] = (float *)malloc(matrix_size);
+        dest->matrix[i] = (float *)ME_MALLOC(matrix_size);
         memcpy(dest->matrix[i], source->matrix[i], matrix_size);
     }
     dest->storage_size = source->storage_size;
@@ -1892,9 +1892,9 @@ void R_CopyMatrixStack(const R_MatrixStack *source, R_MatrixStack *dest) {
 void R_ClearMatrixStack(R_MatrixStack *stack) {
     unsigned int i;
     for (i = 0; i < stack->storage_size; ++i) {
-        free(stack->matrix[i]);
+        ME_FREE(stack->matrix[i]);
     }
-    free(stack->matrix);
+    ME_FREE(stack->matrix);
 
     stack->matrix = NULL;
     stack->storage_size = 0;
@@ -2246,10 +2246,10 @@ void R_PushMatrix(void) {
 
         // Alloc new one
         unsigned int new_storage_size = stack->storage_size * 2 + 4;
-        float **new_stack = (float **)malloc(sizeof(float *) * new_storage_size);
+        float **new_stack = (float **)ME_MALLOC(sizeof(float *) * new_storage_size);
         unsigned int i;
         for (i = 0; i < new_storage_size; ++i) {
-            new_stack[i] = (float *)malloc(sizeof(float) * 16);
+            new_stack[i] = (float *)ME_MALLOC(sizeof(float) * 16);
         }
         // Copy old one
         for (i = 0; i < stack->size; ++i) {
@@ -2257,9 +2257,9 @@ void R_PushMatrix(void) {
         }
         // Free old one
         for (i = 0; i < stack->storage_size; ++i) {
-            free(stack->matrix[i]);
+            ME_FREE(stack->matrix[i]);
         }
-        free(stack->matrix);
+        ME_FREE(stack->matrix);
 
         // Switch to new one
         stack->storage_size = new_storage_size;

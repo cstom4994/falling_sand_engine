@@ -47,6 +47,8 @@ public:
 
     bool set_texture(R_Image *tex);
     R_Image *get_texture();
+
+    void clean();
 };
 
 template <>

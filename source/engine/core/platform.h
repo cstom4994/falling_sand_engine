@@ -205,7 +205,6 @@ void ME_clipboard_set(const char* string);
 
 ME_INLINE void ME_win_init_dpi() {
 #ifdef _WIN32
-#include <Windows.h>
     SetProcessDPIAware();
 #endif
 }
@@ -319,7 +318,7 @@ static int strncasecmp_l(const char *s1, const char *s2, size_t n, _locale_t loc
 
 #endif
 
-#endif /* _WIN32 */
+#endif
 
 #pragma endregion strings
 

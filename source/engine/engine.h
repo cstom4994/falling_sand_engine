@@ -31,6 +31,7 @@ typedef struct EngineData {
     C_GLContext *glContext;
 
     std::string gamepath;
+    std::string exepath;
 
     // Maximum memory that can be used
     u64 max_mem = 4294967296;  // 4096mb
