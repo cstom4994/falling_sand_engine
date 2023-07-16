@@ -101,13 +101,13 @@ public:
     FastNoise noise;
     ME::Audio *audioEngine = nullptr;
 
-    MaterialInstance *tiles = nullptr;
+    std::vector<MaterialInstance> tiles{};
     f32 *flowX = nullptr;
     f32 *flowY = nullptr;
     f32 *prevFlowX = nullptr;
     f32 *prevFlowY = nullptr;
-    MaterialInstance *layer2 = nullptr;
-    u32 *background = nullptr;
+    std::vector<MaterialInstance> layer2{};
+    std::vector<u32> background{};
     u16 width = 0;
     u16 height = 0;
     int tickCt = 0;
@@ -131,7 +131,7 @@ public:
     ME_rect lastMeshLoadZone{};
 
     MEvec2 gravity{};
-    b2World *b2world = nullptr;
+    ME::scope<b2World> b2world = nullptr;
     RigidBody *staticBody = nullptr;
 
     void init(std::string worldPath, u16 w, u16 h, R_Target *renderer, ME::Audio *audioEngine, WorldGenerator *generator);

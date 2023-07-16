@@ -420,6 +420,14 @@ int profiler_draw_frame(profiler_frame *_data, void *_buffer, size_t _bufferSize
         //         // ImGui::Auto(allocation_metrics::MemoryDebugMap, "map");
         // #endif
 
+        auto L = Scripting::get_singleton_ptr()->Lua->L;
+        lua_gc(L, LUA_GCCOLLECT, 0);
+        lua_Integer kb = lua_gc(L, LUA_GCCOUNT, 0);
+        lua_Integer bytes = lua_gc(L, LUA_GCCOUNTB, 0);
+
+        ImGui::Text("Lua MemoryUsage: %.2lf mb", ((f64)kb / 1024.0f));
+        ImGui::Text("Lua Remaining: %.2lf mb", ((f64)bytes / 1024.0f));
+
         ImGui::EndTabItem();
     }
 
@@ -1129,6 +1137,11 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     if (ImGui::Button("Wang")) {
                         extern int test_wang();
                         test_wang();
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Button("mdplot")) {
+                        extern int test_mdplot();
+                        test_mdplot();
                     }
                     ImGui::EndTabItem();
                 }

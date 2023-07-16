@@ -274,7 +274,7 @@ public:
     void add(const char* member) { _members.emplace_back(member); }
 
     void remove(const char* member) {
-        std::remove_if(_members.begin(), _members.end(), [=](auto& str) { return member == str; });
+        std::erase_if(_members, [=](auto& str) { return member == str; });
     }
 
     const std::string get_text() const { return _id; }

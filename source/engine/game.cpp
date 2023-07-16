@@ -1899,37 +1899,39 @@ void Game::tick() {
                             GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
                             found = true;
 
-                            // for(int dxx = -1; dxx <= 1; dxx++) {
-                            //     for(int dyy = -1; dyy <= 1; dyy++) {
-                            //         if(GameIsolate_.world->tiles[(wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND || GameIsolate_.world->tiles[(wxd +
-                            //         dxx) + (wyd + dyy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
-                            //             uint32_t color = GameIsolate_.world->tiles[(wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width].color;
+                            for (int dxx = -1; dxx <= 1; dxx++) {
+                                for (int dyy = -1; dyy <= 1; dyy++) {
+                                    if (GameIsolate_.world->tiles[(wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND ||
+                                        GameIsolate_.world->tiles[(wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
+                                        uint32_t color = GameIsolate_.world->tiles[(wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width].color;
 
-                            //            unsigned int offset = ((wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width) * 4;
+                                        unsigned int offset = ((wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width) * 4;
 
-                            //            dpixels_ar[offset + 2] = ((color >> 0) & 0xff);        // b
-                            //            dpixels_ar[offset + 1] = ((color >> 8) & 0xff);        // g
-                            //            dpixels_ar[offset + 0] = ((color >> 16) & 0xff);        // r
-                            //            dpixels_ar[offset + 3] = GameIsolate_.world->tiles[(wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width].mat->alpha;    // a
-                            //        }
-                            //    }
-                            //}
+                                        dpixels_ar[offset + 2] = ((color >> 0) & 0xff);                                                                        // b
+                                        dpixels_ar[offset + 1] = ((color >> 8) & 0xff);                                                                        // g
+                                        dpixels_ar[offset + 0] = ((color >> 16) & 0xff);                                                                       // r
+                                        dpixels_ar[offset + 3] = GameIsolate_.world->tiles[(wxd + dxx) + (wyd + dyy) * GameIsolate_.world->width].mat->alpha;  // a
+                                    }
+                                }
+                            }
 
-                            // if(!GameIsolate_.globaldef.draw_load_zones) {
-                            //     unsigned int offset = (wxd + wyd * GameIsolate_.world->width) * 4;
-                            //     dpixels_ar[offset + 2] = 0;        // b
-                            //     dpixels_ar[offset + 1] = 0;        // g
-                            //     dpixels_ar[offset + 0] = 0xff;        // r
-                            //     dpixels_ar[offset + 3] = 0xff;    // a
-                            // }
+                            if (!GameIsolate_.globaldef.draw_load_zones) {
+                                unsigned int offset = (wxd + wyd * GameIsolate_.world->width) * 4;
+                                dpixels_ar[offset + 2] = 0;     // b
+                                dpixels_ar[offset + 1] = 0;     // g
+                                dpixels_ar[offset + 0] = 0xff;  // r
+                                dpixels_ar[offset + 3] = 0xff;  // a
+                            }
 
                             break;
                         }
                     }
 
-                    if (!found && GameIsolate_.world->tiles != NULL) {
-                        if (GameIsolate_.world->tiles[wx + wy * GameIsolate_.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
-                            cur->tiles[tx + ty * cur->matWidth] = Tiles_NOTHING;
+                    if (!found && !GameIsolate_.world->tiles.empty()) {
+                        try {
+                            if (GameIsolate_.world->tiles.at(wx + wy * GameIsolate_.world->width).mat->id == GAME()->materials_list.GENERIC_AIR.id) cur->tiles[tx + ty * cur->matWidth] = Tiles_NOTHING;
+                        } catch (const std::out_of_range &ex) {
+                            METADOT_ERROR(std::format("[Exception] world->tiles[{0}] {1}", wx + wy * GameIsolate_.world->width, ex.what()).c_str());
                         }
                     }
                 }

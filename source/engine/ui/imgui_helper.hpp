@@ -132,12 +132,14 @@ using c_array_t = T[N];  // so arrays are regular types and can be used in macro
 template <typename AnyType>
 struct Auto_t {
     static void Auto(AnyType &anything, const std::string &name) {
-        static_assert(!std::is_reference_v<AnyType> && std::is_copy_constructible_v<std::remove_all_extents_t<AnyType>> && !std::is_polymorphic_v<AnyType> &&
-                              ME::pfr::detail::is_aggregate_initializable_n<AnyType, ME::pfr::detail::detect_fields_count_dispatch<AnyType>(ME::pfr::detail::size_t_<sizeof(AnyType) * 8>{},
-                                                                                                                                            1L)>::value,  // If the above is not a constexpr expression,
-                                                                                                                                                          // you are yousing an invalid type
-                      "This type cannot be converted to a tuple.");
-        auto tuple = ME::pfr::structure_tie(anything);
+        static_assert(
+                !std::is_reference_v<AnyType> && std::is_copy_constructible_v<std::remove_all_extents_t<AnyType>> && !std::is_polymorphic_v<AnyType> &&
+                        ME::cpp::pfr::detail::is_aggregate_initializable_n<AnyType, ME::cpp::pfr::detail::detect_fields_count_dispatch<AnyType>(ME::cpp::pfr::detail::size_t_<sizeof(AnyType) * 8>{},
+                                                                                                                                                1L)>::value,  // If the above is not a constexpr
+                expression,
+                // you are yousing an invalid type
+                "This type cannot be converted to a tuple.");
+        auto tuple = ME::cpp::pfr::structure_tie(anything);
         ImGui::detail::AutoTuple("Struct " + name, tuple);
     }
 };  // ImGui::Auto_t<>::Auto()

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <regex>
 #include <string>
+#include <cwctype>
 
 #include "text_editor.h"
 
@@ -1623,7 +1624,7 @@ void TextEditor::ColorizeInternal() {
                 auto &g = line[currentCoord.mColumn];
                 auto c = g.mChar;
 
-                if (c != mLanguageDefinition.mPreprocChar && !std::isspace(c)) firstChar = false;
+                if (c != mLanguageDefinition.mPreprocChar && !std::iswspace(c)) firstChar = false;
 
                 if (currentCoord.mColumn == line.size() - 1 && line[line.size() - 1].mChar == '\\')
                     concatenate = true;

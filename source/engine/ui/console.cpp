@@ -278,8 +278,8 @@ void ME::MEconsole::draw_internal_display() noexcept {
     log_msg log_list[10] = {};
     int n = 9;
 
-    std::vector<log_msg>::reverse_iterator backwardIterator;
-    for (backwardIterator = loggerInternal.message_log.rbegin(); backwardIterator != loggerInternal.message_log.rend(); backwardIterator++) {
+    std::vector<log_msg>::const_reverse_iterator backwardIterator;
+    for (backwardIterator = loggerInternal.message_log.crbegin(); backwardIterator != loggerInternal.message_log.crend(); backwardIterator++) {
         if (n < 0) break;
 
         i64 dtime = now - backwardIterator->time;

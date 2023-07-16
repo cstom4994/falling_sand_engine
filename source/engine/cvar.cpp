@@ -5,64 +5,64 @@
 #include "engine/scripting/scripting.hpp"
 #include "game_ui.hpp"
 
-void InitGlobalDEF(GlobalDEF* _struct, bool openDebugUIs) {
+void InitGlobalDEF(GlobalDEF* s, bool openDebugUIs) {
 
     auto GlobalDEF = Scripting::get_singleton_ptr()->Lua->s_lua["global_def"];
 
     if (!GlobalDEF.is_nil_ref()) {
-        LoadLuaConfig(_struct, GlobalDEF, draw_frame_graph);
-        LoadLuaConfig(_struct, GlobalDEF, draw_background);
-        LoadLuaConfig(_struct, GlobalDEF, draw_background_grid);
-        LoadLuaConfig(_struct, GlobalDEF, draw_load_zones);
-        LoadLuaConfig(_struct, GlobalDEF, draw_physics_debug);
-        LoadLuaConfig(_struct, GlobalDEF, draw_b2d_shape);
-        LoadLuaConfig(_struct, GlobalDEF, draw_b2d_joint);
-        LoadLuaConfig(_struct, GlobalDEF, draw_b2d_aabb);
-        LoadLuaConfig(_struct, GlobalDEF, draw_b2d_pair);
-        LoadLuaConfig(_struct, GlobalDEF, draw_b2d_centerMass);
-        LoadLuaConfig(_struct, GlobalDEF, draw_chunk_state);
-        LoadLuaConfig(_struct, GlobalDEF, draw_debug_stats);
-        LoadLuaConfig(_struct, GlobalDEF, draw_material_info);
-        LoadLuaConfig(_struct, GlobalDEF, draw_detailed_material_info);
-        LoadLuaConfig(_struct, GlobalDEF, draw_uinode_bounds);
-        LoadLuaConfig(_struct, GlobalDEF, draw_temperature_map);
-        LoadLuaConfig(_struct, GlobalDEF, draw_cursor);
-        LoadLuaConfig(_struct, GlobalDEF, ui_tweak);
-        LoadLuaConfig(_struct, GlobalDEF, draw_shaders);
-        LoadLuaConfig(_struct, GlobalDEF, water_overlay);
-        LoadLuaConfig(_struct, GlobalDEF, water_showFlow);
-        LoadLuaConfig(_struct, GlobalDEF, water_pixelated);
-        LoadLuaConfig(_struct, GlobalDEF, lightingQuality);
-        LoadLuaConfig(_struct, GlobalDEF, draw_light_overlay);
-        LoadLuaConfig(_struct, GlobalDEF, simpleLighting);
-        LoadLuaConfig(_struct, GlobalDEF, lightingEmission);
-        LoadLuaConfig(_struct, GlobalDEF, lightingDithering);
-        LoadLuaConfig(_struct, GlobalDEF, tick_world);
-        LoadLuaConfig(_struct, GlobalDEF, tick_box2d);
-        LoadLuaConfig(_struct, GlobalDEF, tick_temperature);
-        LoadLuaConfig(_struct, GlobalDEF, hd_objects);
-        LoadLuaConfig(_struct, GlobalDEF, hd_objects_size);
-        LoadLuaConfig(_struct, GlobalDEF, draw_ui_debug);
-        LoadLuaConfig(_struct, GlobalDEF, draw_imgui_debug);
-        LoadLuaConfig(_struct, GlobalDEF, draw_profiler);
-        LoadLuaConfig(_struct, GlobalDEF, draw_console);
-        LoadLuaConfig(_struct, GlobalDEF, draw_pack_editor);
+        s->draw_frame_graph = GlobalDEF["draw_frame_graph"].get<decltype(s->draw_frame_graph)>();
+        s->draw_background = GlobalDEF["draw_background"].get<decltype(s->draw_background)>();
+        s->draw_background_grid = GlobalDEF["draw_background_grid"].get<decltype(s->draw_background_grid)>();
+        s->draw_load_zones = GlobalDEF["draw_load_zones"].get<decltype(s->draw_load_zones)>();
+        s->draw_physics_debug = GlobalDEF["draw_physics_debug"].get<decltype(s->draw_physics_debug)>();
+        s->draw_b2d_shape = GlobalDEF["draw_b2d_shape"].get<decltype(s->draw_b2d_shape)>();
+        s->draw_b2d_joint = GlobalDEF["draw_b2d_joint"].get<decltype(s->draw_b2d_joint)>();
+        s->draw_b2d_aabb = GlobalDEF["draw_b2d_aabb"].get<decltype(s->draw_b2d_aabb)>();
+        s->draw_b2d_pair = GlobalDEF["draw_b2d_pair"].get<decltype(s->draw_b2d_pair)>();
+        s->draw_b2d_centerMass = GlobalDEF["draw_b2d_centerMass"].get<decltype(s->draw_b2d_centerMass)>();
+        s->draw_chunk_state = GlobalDEF["draw_chunk_state"].get<decltype(s->draw_chunk_state)>();
+        s->draw_debug_stats = GlobalDEF["draw_debug_stats"].get<decltype(s->draw_debug_stats)>();
+        s->draw_material_info = GlobalDEF["draw_material_info"].get<decltype(s->draw_material_info)>();
+        s->draw_detailed_material_info = GlobalDEF["draw_detailed_material_info"].get<decltype(s->draw_detailed_material_info)>();
+        s->draw_uinode_bounds = GlobalDEF["draw_uinode_bounds"].get<decltype(s->draw_uinode_bounds)>();
+        s->draw_temperature_map = GlobalDEF["draw_temperature_map"].get<decltype(s->draw_temperature_map)>();
+        s->draw_cursor = GlobalDEF["draw_cursor"].get<decltype(s->draw_cursor)>();
+        s->ui_tweak = GlobalDEF["ui_tweak"].get<decltype(s->ui_tweak)>();
+        s->draw_shaders = GlobalDEF["draw_shaders"].get<decltype(s->draw_shaders)>();
+        s->water_overlay = GlobalDEF["water_overlay"].get<decltype(s->water_overlay)>();
+        s->water_showFlow = GlobalDEF["water_showFlow"].get<decltype(s->water_showFlow)>();
+        s->water_pixelated = GlobalDEF["water_pixelated"].get<decltype(s->water_pixelated)>();
+        s->lightingQuality = GlobalDEF["lightingQuality"].get<decltype(s->lightingQuality)>();
+        s->draw_light_overlay = GlobalDEF["draw_light_overlay"].get<decltype(s->draw_light_overlay)>();
+        s->simpleLighting = GlobalDEF["simpleLighting"].get<decltype(s->simpleLighting)>();
+        s->lightingEmission = GlobalDEF["lightingEmission"].get<decltype(s->lightingEmission)>();
+        s->lightingDithering = GlobalDEF["lightingDithering"].get<decltype(s->lightingDithering)>();
+        s->tick_world = GlobalDEF["tick_world"].get<decltype(s->tick_world)>();
+        s->tick_box2d = GlobalDEF["tick_box2d"].get<decltype(s->tick_box2d)>();
+        s->tick_temperature = GlobalDEF["tick_temperature"].get<decltype(s->tick_temperature)>();
+        s->hd_objects = GlobalDEF["hd_objects"].get<decltype(s->hd_objects)>();
+        s->hd_objects_size = GlobalDEF["hd_objects_size"].get<decltype(s->hd_objects_size)>();
+        s->draw_ui_debug = GlobalDEF["draw_ui_debug"].get<decltype(s->draw_ui_debug)>();
+        s->draw_imgui_debug = GlobalDEF["draw_imgui_debug"].get<decltype(s->draw_imgui_debug)>();
+        s->draw_profiler = GlobalDEF["draw_profiler"].get<decltype(s->draw_profiler)>();
+        s->draw_console = GlobalDEF["draw_console"].get<decltype(s->draw_console)>();
+        s->draw_pack_editor = GlobalDEF["draw_pack_editor"].get<decltype(s->draw_pack_editor)>();
 
     } else {
         METADOT_ERROR("Load GlobalDEF failed");
     }
 
     gameUI.visible_debugdraw = openDebugUIs;
-    _struct->draw_frame_graph = openDebugUIs;
+    s->draw_frame_graph = openDebugUIs;
     if (!openDebugUIs) {
-        _struct->draw_background = true;
-        _struct->draw_background_grid = false;
-        _struct->draw_load_zones = false;
-        _struct->draw_physics_debug = false;
-        _struct->draw_chunk_state = false;
-        _struct->draw_debug_stats = false;
-        _struct->draw_detailed_material_info = false;
-        _struct->draw_temperature_map = false;
+        s->draw_background = true;
+        s->draw_background_grid = false;
+        s->draw_load_zones = false;
+        s->draw_physics_debug = false;
+        s->draw_chunk_state = false;
+        s->draw_debug_stats = false;
+        s->draw_detailed_material_info = false;
+        s->draw_temperature_map = false;
     }
 
     METADOT_INFO("GlobalDEF loaded");
@@ -72,7 +72,7 @@ void LoadGlobalDEF(std::string globaldef_src) {}
 
 void SaveGlobalDEF(std::string globaldef_src) {
     // std::string settings_data = "GetSettingsData = function()\nsettings_data = {}\n";
-    // SaveLuaConfig(*_struct, "settings_data", settings_data);
+    // SaveLuaConfig(*s, "settings_data", settings_data);
     // settings_data += "return settings_data\nend";
     // std::ofstream o(globaldef_src);
     // o << settings_data;

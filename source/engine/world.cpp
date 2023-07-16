@@ -120,13 +120,13 @@ void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audi
         }
     }
 
-    tiles = new MaterialInstance[w * h];
+    tiles.resize(w * h);
     flowX = new f32[w * h];
     flowY = new f32[w * h];
     prevFlowX = new f32[w * h];
     prevFlowY = new f32[w * h];
-    layer2 = new MaterialInstance[w * h];
-    background = new u32[w * h];
+    layer2.resize(w * h);
+    background.resize(w * h);
     for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
             setTile(x, y, Tiles_NOTHING);
@@ -141,7 +141,7 @@ void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audi
     }
 
     gravity = MEvec2(0, 20);
-    b2world = new b2World(gravity);
+    b2world = ME::create_scope<b2World>(gravity);
 
     struct gameplay_feature {};
     registry.assign_feature<gameplay_feature>().add_system<ControableSystem>().add_system<NpcSystem>().add_system<WorldEntitySystem>();
@@ -2135,7 +2135,9 @@ void World::tickCells() {
         return false;
     };
 
-    cells.erase(std::remove_if(cells.begin(), cells.end(), func), cells.end());
+    // cells.erase(std::remove_if(cells.begin(), cells.end(), func), cells.end());
+
+    std::erase_if(cells, func);
 
     // // Better cells removal effects
     // std::for_each(cells.begin(), cells.end(), [](CellData *cur) {
@@ -3474,11 +3476,11 @@ bool WorldMeta::save(std::string worldFileName) {
 
 World::~World() {
 
-    delete[] tiles;
+    tiles.clear();
     delete[] flowX;
     delete[] flowY;
-    delete[] layer2;
-    delete[] background;
+    layer2.clear();
+    background.clear();
 
     for (auto &v : cells) {
         delete v;
@@ -3506,7 +3508,8 @@ World::~World() {
     delete[] tickVisited1;
     delete[] tickVisited2;
 
-    delete b2world;
+    auto b2world_ptr = b2world.release();
+    delete b2world_ptr;
 
     for (auto &v : rigidBodies) {
         delete v;

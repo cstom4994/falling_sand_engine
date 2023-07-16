@@ -106,7 +106,7 @@ public:
     typedef std::map<int, std::string> ErrorMarkers;
     typedef std::unordered_set<int> Breakpoints;
     typedef std::array<ImU32, (unsigned) PaletteIndex::Max> Palette;
-    typedef char Char;
+    typedef wchar_t Char;
 
     struct Glyph
     {

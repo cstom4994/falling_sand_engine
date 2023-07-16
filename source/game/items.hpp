@@ -3,6 +3,8 @@
 #ifndef ME_ITEMS_HPP
 #define ME_ITEMS_HPP
 
+#include <string_view>
+
 #include "engine/core/core.hpp"
 #include "engine/core/mathlib.hpp"
 #include "engine/core/sdl_wrapper.h"
@@ -13,25 +15,11 @@
 #include "engine/utils/enum.hpp"
 #include "engine/utils/type.hpp"
 
-// MAKE_ENUM_FLAGS(ItemFlags, int){
-//         ItemFlags_None = 1 << 0,   ItemFlags_Rigidbody = 1 << 1, ItemFlags_Fluid_Container = 1 << 2, ItemFlags_Tool = 1 << 3,
-//         ItemFlags_Chisel = 1 << 4, ItemFlags_Hammer = 1 << 5,    ItemFlags_Vacuum = 1 << 6,
-// };
+ENUM_HPP_CLASS_DECL(ItemFlags, u64,
+                    (ItemFlags_None = 1 << 0)(ItemFlags_Rigidbody = 1 << 1)(ItemFlags_Fluid_Container = 1 << 2)(ItemFlags_Tool = 1 << 3)(ItemFlags_Chisel = 1 << 4)(ItemFlags_Hammer = 1 << 5)(
+                            ItemFlags_Vacuum = 1 << 6));
 
-enum class ItemFlags : u64 {
-    ItemFlags_None = 1 << 0,
-    ItemFlags_Rigidbody = 1 << 1,
-    ItemFlags_Fluid_Container = 1 << 2,
-    ItemFlags_Tool = 1 << 3,
-    ItemFlags_Chisel = 1 << 4,
-    ItemFlags_Hammer = 1 << 5,
-    ItemFlags_Vacuum = 1 << 6,
-};
-
-template <>
-struct ME::meta::doenum::customize::enum_range<ItemFlags> {
-    static constexpr bool is_flags = true;
-};
+ENUM_HPP_REGISTER_TRAITS(ItemFlags);
 
 // template <>
 // struct ME::meta::static_refl::TypeInfo<ItemFlags> : TypeInfoBase<ItemFlags> {
@@ -43,7 +31,7 @@ struct ME::meta::doenum::customize::enum_range<ItemFlags> {
 //     };
 // };
 
-ME_GUI_DEFINE_BEGIN(template <>, ItemFlags)
+ME_GUI_DEFINE_BEGIN(template <>, ME::cpp::bitflags::bitflags<ItemFlags>)
 // ImGui::Text("%s", std::format("ItemFlags: {0}", ME::meta::static_refl::TypeInfo<ItemFlags>::fields.NameOfValue(var)).c_str());
 
 // ME::meta::static_refl::TypeInfo<ItemFlags>::ForEachVarOf(var, [&](const auto &field, auto &&value) {
@@ -53,19 +41,30 @@ ME_GUI_DEFINE_BEGIN(template <>, ItemFlags)
 //     ImGui::Text("%d %d %s", (int)var, (int)value, std::string(field.name).c_str());
 // });
 
-auto flags_name = ME::meta::doenum::enum_name((ItemFlags)var);
-
-ImGui::Text("%d %s", (int)var, std::string(flags_name).c_str());
-
+// 获取物品枚举类别标志
+auto var_e = var.as_enum();
+if (ItemFlags_traits::to_string(var_e).has_value())  // 判断是否为混合类型
+{
+    std::string flags_name(ItemFlags_traits::to_string(var_e).value());
+    ImGui::Text("ItemFlags:%s(%d)", flags_name.c_str(), (int)var.as_enum());
+} else {
+    std::string flags_name;  // 不为可知单列枚举则为混合类型
+    for (int i = 0; i < ItemFlags_traits::size; i++) {
+        auto v = ItemFlags_traits::from_index(i).value();
+        if (var.has(v)) {
+            flags_name.append(ME::cpp::to_string(v).value());
+            if (i < ItemFlags_traits::size - 1) flags_name.append(",");
+        }
+    }
+    ImGui::Text("ItemFlags:%s(%d)", flags_name.c_str(), (int)var.as_enum());
+}
 ME_GUI_DEFINE_END
-
-using namespace ME::meta::doenum::bitwise_operators;
 
 class Item {
 public:
     std::string name;
 
-    ItemFlags flags = ItemFlags::ItemFlags_None;
+    ME::cpp::bitflags::bitflags<ItemFlags> flags = ItemFlags::ItemFlags_None;
 
     void setFlag(ItemFlags f) { flags |= f; }
     bool getFlag(ItemFlags f) { return static_cast<bool>(flags & f); }
@@ -98,14 +97,12 @@ public:
 template <>
 struct ME::meta::static_refl::TypeInfo<Item> : TypeInfoBase<Item> {
     static constexpr AttrList attrs = {};
-    static constexpr FieldList fields = {Field{TSTR("name"), &Type::name},
-
-                                         Field{TSTR("flags"), &Type::flags},         Field{TSTR("pivotX"), &Type::pivotX},    Field{TSTR("pivotY"), &Type::pivotY},
-                                         Field{TSTR("breakSize"), &Type::breakSize}, Field{TSTR("capacity"), &Type::capacity}};
+    static constexpr FieldList fields = {Field{TSTR("name"), &Type::name},     Field{TSTR("flags"), &Type::flags},         Field{TSTR("pivotX"), &Type::pivotX},
+                                         Field{TSTR("pivotY"), &Type::pivotY}, Field{TSTR("breakSize"), &Type::breakSize}, Field{TSTR("capacity"), &Type::capacity}};
 };
 
 ME_GUI_DEFINE_BEGIN(template <>, Item)
-ME::meta::static_refl::TypeInfo<Item>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
+ME::meta::static_refl::TypeInfo<Item>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(std::forward<decltype(value)>(value), std::string(field.name)); });
 ME_GUI_DEFINE_END
 
 using ItemLuaPtr = ME::ref<Item>;

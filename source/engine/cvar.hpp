@@ -23,9 +23,9 @@
 #include <vector>
 
 #include "engine/core/core.hpp"
-#include "engine/utils/type.hpp"
 #include "engine/game_utils/jsonwarp.h"
 #include "engine/meta/reflection.hpp"
+#include "engine/utils/type.hpp"
 #include "libs/parallel_hashmap/phmap.h"
 
 enum CommandType { CVAR_VAR = 0, CVAR_FUNC = 1 };
@@ -79,7 +79,7 @@ METADOT_STRUCT(GlobalDEF, draw_frame_graph, draw_background, draw_background_gri
                water_overlay, water_showFlow, water_pixelated, lightingQuality, draw_light_overlay, simpleLighting, lightingEmission, lightingDithering, tick_world, tick_box2d, tick_temperature,
                hd_objects, hd_objects_size, draw_ui_debug, draw_imgui_debug, draw_profiler, draw_console, draw_pack_editor);
 
-void InitGlobalDEF(GlobalDEF* _struct, bool openDebugUIs);
+void InitGlobalDEF(GlobalDEF* s, bool openDebugUIs);
 void LoadGlobalDEF(std::string globaldef_src);
 void SaveGlobalDEF(std::string globaldef_src);
 
