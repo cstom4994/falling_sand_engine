@@ -13,6 +13,7 @@
 #include "engine/core/core.hpp"
 #include "engine/core/mathlib.hpp"
 #include "engine/core/sdl_wrapper.h"
+// #include "engine/physics/inc/physics2d.h"
 
 #define B2_NOT_USED(x) ((void)(x))
 
@@ -25,6 +26,14 @@ inline bool b2IsValid(float x) { return isfinite(x); }
 
 #define b2Sqrt(x) sqrtf(x)
 #define b2Atan2(y, x) atan2f(y, x)
+
+ME_INLINE auto RectToPoint(const MEvec2 &v) {
+    MEvec2 a1 = {v.x / 2.0f, v.y / 2.0f};
+    MEvec2 a2 = {v.x / -2.0f, v.y / 2.0f};
+    MEvec2 b1 = {v.x / -2.0f, v.y / -2.0f};
+    MEvec2 b2 = {v.x / 2.0f, v.y / -2.0f};
+    return std::initializer_list<MEvec2>{a1, a2, b1, b2};
+}
 
 /// A 2D column vector.
 struct PVec2 {

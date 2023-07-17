@@ -8,7 +8,7 @@
 #include "engine/game_utils/cells.h"
 #include "engine/world.hpp"
 
-RigidBody::RigidBody(b2Body *body, std::string name) {
+RigidBody::RigidBody(ME::phy::Body *body, std::string name) {
     this->name = std::string(name);
     this->body = body;
 }
@@ -71,14 +71,15 @@ MEvec2 rotate_point2(f32 cx, f32 cy, f32 angle, MEvec2 p);
 void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
     RigidBody *r;
     if (heldItem != NULL) {
-        b2PolygonShape ps;
-        ps.SetAsBox(1, 1);
+        ME::phy::Rectangle *ps = new ME::phy::Rectangle;
+        // ps.SetAsBox(1, 1);
+        ps->set(1.0f, 1.0f);
 
         f32 angle = holdAngle;
 
         MEvec2 pt = rotate_point2(0, 0, angle * 3.1415 / 180.0, {(f32)(heldItem->surface->w / 2.0), (f32)(heldItem->surface->h / 2.0)});
 
-        r = world->makeRigidBody(b2_dynamicBody, we->x + we->hw / 2 + world->loadZone.x - pt.x + 16 * cos((holdAngle + 180) * 3.1415f / 180.0f),
+        r = world->makeRigidBody(ME::phy::Body::BodyType::Dynamic, we->x + we->hw / 2 + world->loadZone.x - pt.x + 16 * cos((holdAngle + 180) * 3.1415f / 180.0f),
                                  we->y + we->hh / 2 + world->loadZone.y - pt.y + 16 * sin((holdAngle + 180) * 3.1415f / 180.0f), angle, ps, 1, 0.3, heldItem->surface);
 
         //  0 -> -w/2 -h/2
@@ -93,12 +94,16 @@ void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
 
         strength += time / 1000.0 * 30;
 
-        r->body->SetLinearVelocity({(f32)(strength * (f32)cos((holdAngle + 180) * 3.1415f / 180.0f)), (f32)(strength * (f32)sin((holdAngle + 180) * 3.1415f / 180.0f)) - 10});
+        // r->body->SetLinearVelocity({(f32)(strength * (f32)cos((holdAngle + 180) * 3.1415f / 180.0f)), (f32)(strength * (f32)sin((holdAngle + 180) * 3.1415f / 180.0f)) - 10});
 
-        b2Filter bf = {};
-        bf.categoryBits = 0x0001;
-        // bf.maskBits = 0x0000;
-        r->body->GetFixtureList()[0].SetFilterData(bf);
+        r->body->velocity() = {(f32)(strength * (f32)cos((holdAngle + 180) * 3.1415f / 180.0f)), (f32)(strength * (f32)sin((holdAngle + 180) * 3.1415f / 180.0f)) - 10};
+
+        // TODO:  23/7/17 物理相关性实现
+
+        // b2Filter bf = {};
+        // bf.categoryBits = 0x0001;
+        //// bf.maskBits = 0x0000;
+        // r->body->GetFixtureList()[0].SetFilterData(bf);
 
         r->item = heldItem;
         world->rigidBodies.push_back(r);

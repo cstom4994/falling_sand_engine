@@ -160,7 +160,7 @@ int Game::init(int argc, char *argv[]) {
     // register & set up materials
     METADOT_INFO("Setting up materials...");
     movingTiles = new u16[GAME()->materials_count];
-    debugDraw = new ME_debugdraw(ENGINE()->target);
+    // debugDraw = new ME_debugdraw(ENGINE()->target);
 
     // global.audio.LoadEvent("event:/World/Explode");
     // global.audio.LoadEvent("event:/Music/Title");
@@ -593,17 +593,17 @@ int Game::run(int argc, char *argv[]) {
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
                         if (!static_cast<bool>(cur->get_surface())) continue;
-                        if (cur->body->IsEnabled()) {
-                            f32 s = sin(-cur->body->GetAngle());
-                            f32 c = cos(-cur->body->GetAngle());
+                        if (!cur->body->sleep()) {
+                            f32 s = sin(-cur->body->rotation());
+                            f32 c = cos(-cur->body->rotation());
                             bool upd = false;
                             for (f32 xx = -3; xx <= 3; xx += 0.5) {
                                 for (f32 yy = -3; yy <= 3; yy += 0.5) {
                                     if (abs(xx) + abs(yy) == 6) continue;
                                     // rotate point
 
-                                    f32 tx = x + xx - cur->body->GetPosition().x;
-                                    f32 ty = y + yy - cur->body->GetPosition().y;
+                                    f32 tx = x + xx - cur->body->position().x;
+                                    f32 ty = y + yy - cur->body->position().y;
 
                                     int ntx = (int)(tx * c - ty * s);
                                     int nty = (int)(tx * s + ty * c);
@@ -684,17 +684,17 @@ int Game::run(int argc, char *argv[]) {
                                     RigidBody *cur = rbs[i];
 
                                     bool connect = false;
-                                    if (cur->body->IsEnabled()) {
-                                        f32 s = sin(-cur->body->GetAngle());
-                                        f32 c = cos(-cur->body->GetAngle());
+                                    if (!cur->body->sleep()) {
+                                        f32 s = sin(-cur->body->rotation());
+                                        f32 c = cos(-cur->body->rotation());
                                         bool upd = false;
                                         for (f32 xx = -3; xx <= 3; xx += 0.5) {
                                             for (f32 yy = -3; yy <= 3; yy += 0.5) {
                                                 if (abs(xx) + abs(yy) == 6) continue;
                                                 // rotate point
 
-                                                f32 tx = x + xx - cur->body->GetPosition().x;
-                                                f32 ty = y + yy - cur->body->GetPosition().y;
+                                                f32 tx = x + xx - cur->body->position().x;
+                                                f32 ty = y + yy - cur->body->position().y;
 
                                                 int ntx = (int)(tx * c - ty * s);
                                                 int nty = (int)(tx * s + ty * c);
@@ -747,16 +747,20 @@ int Game::run(int argc, char *argv[]) {
 
                                 if (n > 0) {
                                     global.audio.PlayEvent("event:/Player/Impact");
-                                    b2PolygonShape s;
-                                    s.SetAsBox(1, 1);
-                                    RigidBody *rb = GameIsolate_.world->makeRigidBody(b2_dynamicBody, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
+                                    ME::phy::Rectangle *s = new ME::phy::Rectangle;
+                                    // s.SetAsBox(1, 1);
+                                    s->set(1.0f, 1.0f);
+                                    RigidBody *rb = GameIsolate_.world->makeRigidBody(ME::phy::Body::BodyType::Dynamic, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
 
-                                    b2Filter bf = {};
-                                    bf.categoryBits = 0x0001;
-                                    bf.maskBits = 0xffff;
-                                    rb->body->GetFixtureList()[0].SetFilterData(bf);
+                                    // TODO:  23/7/17 物理相关性实现
 
-                                    rb->body->SetLinearVelocity({(f32)((rand() % 100) / 100.0 - 0.5), (f32)((rand() % 100) / 100.0 - 0.5)});
+                                    // b2Filter bf = {};
+                                    // bf.categoryBits = 0x0001;
+                                    // bf.maskBits = 0xffff;
+                                    // rb->body->GetFixtureList()[0].SetFilterData(bf);
+
+                                    // rb->body->SetLinearVelocity({(f32)((rand() % 100) / 100.0 - 0.5), (f32)((rand() % 100) / 100.0 - 0.5)});
+                                    rb->body->velocity() = {(f32)((rand() % 100) / 100.0 - 0.5), (f32)((rand() % 100) / 100.0 - 0.5)};
 
                                     GameIsolate_.world->rigidBodies.push_back(rb);
                                     GameIsolate_.world->updateRigidBodyHitbox(rb);
@@ -892,17 +896,17 @@ int Game::run(int argc, char *argv[]) {
 
                         bool connect = false;
                         if (!static_cast<bool>(cur->get_surface())) continue;  // skip if it does not have surface
-                        if (cur->body->IsEnabled()) {
-                            f32 s = sin(-cur->body->GetAngle());
-                            f32 c = cos(-cur->body->GetAngle());
+                        if (!cur->body->sleep()) {
+                            f32 s = sin(-cur->body->rotation());
+                            f32 c = cos(-cur->body->rotation());
                             bool upd = false;
                             for (f32 xx = -3; xx <= 3; xx += 0.5) {
                                 for (f32 yy = -3; yy <= 3; yy += 0.5) {
                                     if (abs(xx) + abs(yy) == 6) continue;
                                     // rotate point
 
-                                    f32 tx = x + xx - cur->body->GetPosition().x;
-                                    f32 ty = y + yy - cur->body->GetPosition().y;
+                                    f32 tx = x + xx - cur->body->position().x;
+                                    f32 ty = y + yy - cur->body->position().y;
 
                                     int ntx = (int)(tx * c - ty * s);
                                     int nty = (int)(tx * s + ty * c);
@@ -924,7 +928,8 @@ int Game::run(int argc, char *argv[]) {
                                 pl->setItemInHand(GameIsolate_.world->Reg().find_component<WorldEntity>(GameIsolate_.world->player), Item::makeItem(ItemFlags::ItemFlags_Rigidbody, cur),
                                                   GameIsolate_.world.get());
 
-                                GameIsolate_.world->b2world->DestroyBody(cur->body);
+                                // GameIsolate_.world->b2world->DestroyBody(cur->body);
+                                GameIsolate_.world->phy->world().removeBody(cur->body);
                                 GameIsolate_.world->rigidBodies.erase(std::remove(GameIsolate_.world->rigidBodies.begin(), GameIsolate_.world->rigidBodies.end(), cur),
                                                                       GameIsolate_.world->rigidBodies.end());
 
@@ -1064,13 +1069,13 @@ int Game::run(int argc, char *argv[]) {
 
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
-                        if (cur->body->IsEnabled() && static_cast<bool>(cur->get_surface())) {
-                            f32 s = sin(-cur->body->GetAngle());
-                            f32 c = cos(-cur->body->GetAngle());
+                        if (!cur->body->sleep() && static_cast<bool>(cur->get_surface())) {
+                            f32 s = sin(-cur->body->rotation());
+                            f32 c = cos(-cur->body->rotation());
                             bool upd = false;
 
-                            f32 tx = msx - cur->body->GetPosition().x;
-                            f32 ty = msy - cur->body->GetPosition().y;
+                            f32 tx = msx - cur->body->position().x;
+                            f32 ty = msy - cur->body->position().y;
 
                             int ntx = (int)(tx * c - ty * s);
                             int nty = (int)(tx * s + ty * c);
@@ -1238,7 +1243,7 @@ int Game::exit() {
 
     delete[] objectDelete;
 
-    delete debugDraw;
+    // delete debugDraw;
     delete[] movingTiles;
 
     ME_DELETE(GameIsolate_.updateDirtyPool, thread_pool);
@@ -1303,15 +1308,15 @@ void Game::updateFrameEarly() {
     if (ControlSystem::DEBUG_RIGID->get()) {
         for (auto &cur : GameIsolate_.world->rigidBodies) {
             ME_ASSERT(cur);
-            if (cur->body->IsEnabled()) {
-                f32 s = sin(cur->body->GetAngle());
-                f32 c = cos(cur->body->GetAngle());
+            if (!cur->body->sleep()) {
+                f32 s = sin(cur->body->rotation());
+                f32 c = cos(cur->body->rotation());
                 bool upd = false;
 
                 for (int xx = 0; xx < cur->matWidth; xx++) {
                     for (int yy = 0; yy < cur->matHeight; yy++) {
-                        int tx = xx * c - yy * s + cur->body->GetPosition().x;
-                        int ty = xx * s + yy * c + cur->body->GetPosition().y;
+                        int tx = xx * c - yy * s + cur->body->position().x;
+                        int ty = xx * s + yy * c + cur->body->position().y;
 
                         MaterialInstance tt = cur->tiles[xx + yy * cur->matWidth];
                         if (tt.mat->id != GAME()->materials_list.GENERIC_AIR.id) {
@@ -1347,7 +1352,8 @@ void Game::updateFrameEarly() {
                 }
             }
 
-            GameIsolate_.world->b2world->DestroyBody(cur->body);
+            // GameIsolate_.world->b2world->DestroyBody(cur->body);
+            GameIsolate_.world->phy->world().removeBody(cur->body);
         }
         GameIsolate_.world->rigidBodies.clear();
     }
@@ -1383,14 +1389,18 @@ void Game::updateFrameEarly() {
             }
         }
         if (n > 0) {
-            b2PolygonShape s;
-            s.SetAsBox(1, 1);
-            RigidBody *rb = GameIsolate_.world->makeRigidBody(b2_dynamicBody, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
+            ME::phy::Rectangle *s = new ME::phy::Rectangle;
+            // s.SetAsBox(1, 1);
+            s->set(1.0f, 1.0f);
+            RigidBody *rb = GameIsolate_.world->makeRigidBody(ME::phy::Body::BodyType::Dynamic, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
             for (int tx = 0; tx < tex->w; tx++) {
-                b2Filter bf = {};
-                bf.categoryBits = 0x0002;
-                bf.maskBits = 0x0001;
-                rb->body->GetFixtureList()[0].SetFilterData(bf);
+
+                // TODO:  23/7/17 物理相关性实现
+
+                // b2Filter bf = {};
+                // bf.categoryBits = 0x0002;
+                // bf.maskBits = 0x0001;
+                // rb->body->GetFixtureList()[0].SetFilterData(bf);
             }
             GameIsolate_.world->rigidBodies.push_back(rb);
             GameIsolate_.world->updateRigidBodyHitbox(rb);
@@ -1416,7 +1426,8 @@ void Game::updateFrameEarly() {
             GAME()->freeCamY = pl_we->y - pl_we->hh / 2.0f;
             // GameIsolate_.world->worldEntities.erase(std::remove(GameIsolate_.world->worldEntities.begin(), GameIsolate_.world->worldEntities.end(), GameIsolate_.world->player),
             //                                         GameIsolate_.world->worldEntities.end());
-            GameIsolate_.world->b2world->DestroyBody(pl_we->rb->body);
+            // GameIsolate_.world->b2world->DestroyBody(pl_we->rb->body);
+            GameIsolate_.world->phy->world().removeBody(pl_we->rb->body);
             GameIsolate_.world->Reg().destroy_entity(GameIsolate_.world->player);
             // delete GameIsolate_.world->player;
             GameIsolate_.world->player = 0;
@@ -1425,13 +1436,17 @@ void Game::updateFrameEarly() {
             MEvec4 pl_transform{-GameIsolate_.world->loadZone.x + GameIsolate_.world->tickZone.x + GameIsolate_.world->tickZone.w / 2.0f,
                                 -GameIsolate_.world->loadZone.y + GameIsolate_.world->tickZone.y + GameIsolate_.world->tickZone.h / 2.0f, 10, 20};
 
-            b2PolygonShape sh;
-            sh.SetAsBox(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
-            RigidBody *rb =
-                    GameIsolate_.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.x + pl_transform.z / 2.0f - 0.5, pl_transform.y + pl_transform.w / 2.0f - 0.5, 0, sh, 1, 1, NULL);
-            rb->body->SetGravityScale(0);
-            rb->body->SetLinearDamping(0);
-            rb->body->SetAngularDamping(0);
+            ME::phy::Rectangle *sh = new ME::phy::Rectangle;
+            // sh.SetAsBox(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
+            sh->set(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
+            RigidBody *rb = GameIsolate_.world->makeRigidBody(ME::phy::Body::BodyType::Kinematic, pl_transform.x + pl_transform.z / 2.0f - 0.5, pl_transform.y + pl_transform.w / 2.0f - 0.5, 0, sh,
+                                                              1, 1, NULL);
+
+            // 阻尼实现
+
+            // rb->body->SetGravityScale(0);
+            // rb->body->SetLinearDamping(0);
+            // rb->body->SetAngularDamping(0);
 
             Item *i3 = new Item();
             i3->setFlag(ItemFlags::ItemFlags_Vacuum);
@@ -1442,10 +1457,12 @@ void Game::updateFrameEarly() {
             R_SetImageFilter(i3->image, R_FILTER_NEAREST);
             i3->pivotX = 6;
 
-            b2Filter bf = {};
-            bf.categoryBits = 0x0001;
-            // bf.maskBits = 0x0000;
-            rb->body->GetFixtureList()[0].SetFilterData(bf);
+            // TODO:  23/7/17 物理相关性实现
+
+            // b2Filter bf = {};
+            // bf.categoryBits = 0x0001;
+            //// bf.maskBits = 0x0000;
+            // rb->body->GetFixtureList()[0].SetFilterData(bf);
 
             auto player = GameIsolate_.world->Reg().create_entity();
             ME::ECS::entity_filler(player)
@@ -1568,17 +1585,17 @@ void Game::updateFrameEarly() {
             }
 
             bool connect = false;
-            if (cur->body->IsEnabled()) {
-                f32 s = sin(-cur->body->GetAngle());
-                f32 c = cos(-cur->body->GetAngle());
+            if (!cur->body->sleep()) {
+                f32 s = sin(-cur->body->rotation());
+                f32 c = cos(-cur->body->rotation());
                 bool upd = false;
                 for (f32 xx = -3; xx <= 3; xx += 0.5) {
                     for (f32 yy = -3; yy <= 3; yy += 0.5) {
                         if (abs(xx) + abs(yy) == 6) continue;
                         // rotate point
 
-                        f32 tx = x + xx - cur->body->GetPosition().x;
-                        f32 ty = y + yy - cur->body->GetPosition().y;
+                        f32 tx = x + xx - cur->body->position().x;
+                        f32 ty = y + yy - cur->body->position().y;
 
                         int ntx = (int)(tx * c - ty * s);
                         int nty = (int)(tx * s + ty * c);
@@ -1689,10 +1706,9 @@ void Game::tick() {
             RigidBody *cur = GameIsolate_.world->rigidBodies[i];
             if (cur == nullptr) continue;
             if (cur->get_surface() == nullptr) continue;
-            if (!cur->body->IsEnabled()) continue;
+            if (cur->body->sleep()) continue;
 
-            f32 x = cur->body->GetPosition().x;
-            f32 y = cur->body->GetPosition().y;
+            auto [x, y] = cur->body->position();
 
             // draw
 
@@ -1711,7 +1727,7 @@ void Game::tick() {
                 cur->texNeedsUpdate = false;
             }
 
-            R_BlitRectX(cur->get_texture(), NULL, tgt, &r, cur->body->GetAngle() * 180 / (f32)M_PI, 0, 0, R_FLIP_NONE);
+            R_BlitRectX(cur->get_texture(), NULL, tgt, &r, cur->body->rotation() * 180 / (f32)M_PI, 0, 0, R_FLIP_NONE);
 
             // draw outline
 
@@ -1724,7 +1740,7 @@ void Game::tick() {
                     for (int j = 0; j < l.GetNumPoints(); j++) {
                         vec[j] = {(f32)l.GetPoint(j).x / ENGINE()->render_scale, (f32)l.GetPoint(j).y / ENGINE()->render_scale};
                     }
-                    ME_draw_polygon(tgtLQ, col, vec, (int)x, (int)y, ENGINE()->render_scale, l.GetNumPoints(), cur->body->GetAngle(), 0, 0);
+                    ME_draw_polygon(tgtLQ, col, vec, (int)x, (int)y, ENGINE()->render_scale, l.GetNumPoints(), cur->body->rotation(), 0, 0);
                     delete[] vec;
                 }
                 R_SetShapeBlendMode(R_BLEND_NORMAL);
@@ -1732,8 +1748,8 @@ void Game::tick() {
 
             // displace fluids
 
-            f32 s = std::sin(cur->body->GetAngle());
-            f32 c = std::cos(cur->body->GetAngle());
+            f32 s = std::sin(cur->body->rotation());
+            f32 c = std::cos(cur->body->rotation());
 
             std::vector<std::pair<int, int>> checkDirs = {{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
@@ -1762,8 +1778,11 @@ void Game::tick() {
                             GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
-                            cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (f32)0.99, cur->body->GetLinearVelocity().y * (f32)0.99});
-                            cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (f32)0.98);
+                            // cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (f32)0.99, cur->body->GetLinearVelocity().y * (f32)0.99});
+                            // cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (f32)0.98);
+
+                            cur->body->velocity() = {cur->body->velocity().x * (f32)0.99, cur->body->velocity().y * (f32)0.99};
+                            cur->body->angularVelocity() = cur->body->angularVelocity() * (f32)0.98;
                             break;
                         } else if (GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
                             GameIsolate_.world->addCell(new CellData(GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width], (f32)wxd, (f32)(wyd - 3), (f32)((rand() % 10 - 5) / 10.0f),
@@ -1771,8 +1790,12 @@ void Game::tick() {
                             GameIsolate_.world->tiles[wxd + wyd * GameIsolate_.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             GameIsolate_.world->dirty[wxd + wyd * GameIsolate_.world->width] = true;
-                            cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (f32)0.998, cur->body->GetLinearVelocity().y * (f32)0.998});
-                            cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (f32)0.99);
+                            // cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (f32)0.998, cur->body->GetLinearVelocity().y * (f32)0.998});
+                            // cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (f32)0.99);
+
+                            cur->body->velocity() = {cur->body->velocity().x * (f32)0.998, cur->body->velocity().y * (f32)0.998};
+                            cur->body->angularVelocity() = cur->body->angularVelocity() * (f32)0.99;
+
                             break;
                         }
                     }
@@ -1868,13 +1891,12 @@ void Game::tick() {
             RigidBody *cur = GameIsolate_.world->rigidBodies[i];
             if (cur == nullptr) continue;
             if (cur->get_surface() == nullptr) continue;
-            if (!cur->body->IsEnabled()) continue;
+            if (cur->body->sleep()) continue;
 
-            f32 x = cur->body->GetPosition().x;
-            f32 y = cur->body->GetPosition().y;
+            auto [x, y] = cur->body->position();
 
-            f32 s = std::sin(cur->body->GetAngle());
-            f32 c = std::cos(cur->body->GetAngle());
+            f32 s = std::sin(cur->body->rotation());
+            f32 c = std::cos(cur->body->rotation());
 
             std::vector<std::pair<int, int>> checkDirs = {{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
             for (int tx = 0; tx < cur->matWidth; tx++) {
@@ -2572,17 +2594,17 @@ void Game::tickPlayer() {
                         for (size_t i = 0; i < rbs->size(); i++) {
                             RigidBody *cur = (*rbs)[i];
                             if (!static_cast<bool>(cur->get_surface())) continue;
-                            if (cur->body->IsEnabled()) {
-                                f32 s = sin(-cur->body->GetAngle());
-                                f32 c = cos(-cur->body->GetAngle());
+                            if (!cur->body->sleep()) {
+                                f32 s = sin(-cur->body->rotation());
+                                f32 c = cos(-cur->body->rotation());
                                 bool upd = false;
                                 for (int xx = -rad; xx <= rad; xx++) {
                                     for (int yy = -rad; yy <= rad; yy++) {
                                         if ((yy == -rad || yy == rad) && (xx == -rad || x == rad)) continue;
                                         // rotate point
 
-                                        f32 tx = x + xx - cur->body->GetPosition().x;
-                                        f32 ty = y + yy - cur->body->GetPosition().y;
+                                        f32 tx = x + xx - cur->body->position().x;
+                                        f32 ty = y + yy - cur->body->position().y;
 
                                         int ntx = (int)(tx * c - ty * s);
                                         int nty = (int)(tx * s + ty * c);
@@ -3179,13 +3201,13 @@ void Game::renderOverlays() {
         // for(size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
         //    RigidBody cur = *GameIsolate_.world->rigidBodies[i];
 
-        //    f32 x = cur.body->GetPosition().x;
-        //    f32 y = cur.body->GetPosition().y;
+        //    f32 x = cur.body->position().x;
+        //    f32 y = cur.body->position().y;
         //    x = ((x)*ENGINE()->gameScale + ofsX + camX);
         //    y = ((y)*ENGINE()->gameScale + ofsY + camY);
 
         //    /*SDL_Rect* r = new SDL_Rect{ (int)x, (int)y, cur.surface->w * ENGINE()->gameScale, cur.surface->h * ENGINE()->gameScale };
-        //    SDL_RenderCopyEx(renderer, cur.texture, NULL, r, cur.body->GetAngle() * 180 / M_PI, new SDL_Point{ 0, 0 }, SDL_RendererFlip::SDL_FLIP_NONE);
+        //    SDL_RenderCopyEx(renderer, cur.texture, NULL, r, cur.body->rotation() * 180 / M_PI, new SDL_Point{ 0, 0 }, SDL_RendererFlip::SDL_FLIP_NONE);
         //    delete r;*/
 
         //    u32 color = 0x0000ff;
@@ -3201,7 +3223,7 @@ void Game::renderOverlays() {
         //            b2PolygonShape* poly = (b2PolygonShape*)shape;
         //            b2Vec2* verts = poly->m_vertices;
 
-        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, ENGINE()->gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((ME_gettime() / 1000.0), 360)*/, 0, 0);
+        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, ENGINE()->gameScale, poly->m_count, cur.body->rotation()/* + fmod((ME_gettime() / 1000.0), 360)*/, 0, 0);
 
         //            break;
         //        }
@@ -3213,8 +3235,8 @@ void Game::renderOverlays() {
         // if(GameIsolate_.world->player) {
         //     RigidBody cur = *pl->rb;
 
-        //    f32 x = cur.body->GetPosition().x;
-        //    f32 y = cur.body->GetPosition().y;
+        //    f32 x = cur.body->position().x;
+        //    f32 y = cur.body->position().y;
         //    x = ((x)*ENGINE()->gameScale + ofsX + camX);
         //    y = ((y)*ENGINE()->gameScale + ofsY + camY);
 
@@ -3230,7 +3252,7 @@ void Game::renderOverlays() {
         //            b2PolygonShape* poly = (b2PolygonShape*)shape;
         //            b2Vec2* verts = poly->m_vertices;
 
-        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, ENGINE()->gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((ME_gettime() / 1000.0), 360)*/, 0, 0);
+        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, ENGINE()->gameScale, poly->m_count, cur.body->rotation()/* + fmod((ME_gettime() / 1000.0), 360)*/, 0, 0);
 
         //            break;
         //        }
@@ -3242,8 +3264,8 @@ void Game::renderOverlays() {
         // for(size_t i = 0; i < GameIsolate_.world->worldRigidBodies.size(); i++) {
         //     RigidBody cur = *GameIsolate_.world->worldRigidBodies[i];
 
-        //    f32 x = cur.body->GetPosition().x;
-        //    f32 y = cur.body->GetPosition().y;
+        //    f32 x = cur.body->position().x;
+        //    f32 y = cur.body->position().y;
         //    x = ((x)*ENGINE()->gameScale + ofsX + camX);
         //    y = ((y)*ENGINE()->gameScale + ofsY + camY);
 
@@ -3259,7 +3281,7 @@ void Game::renderOverlays() {
         //            b2PolygonShape* poly = (b2PolygonShape*)shape;
         //            b2Vec2* verts = poly->m_vertices;
 
-        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, ENGINE()->gameScale, poly->m_count, cur.body->GetAngle()/* + fmod((ME_gettime() / 1000.0), 360)*/, 0, 0);
+        //            Drawing::drawPolygon(target, col, verts, (int)x, (int)y, ENGINE()->gameScale, poly->m_count, cur.body->rotation()/* + fmod((ME_gettime() / 1000.0), 360)*/, 0, 0);
 
         //            break;
         //        }
@@ -3296,19 +3318,19 @@ void Game::renderOverlays() {
             }
         }
 
-        //
+        // 绘制物理调试信息
 
-        GameIsolate_.world->b2world->SetDebugDraw(debugDraw);
-        debugDraw->scale = ENGINE()->render_scale;
-        debugDraw->xOfs = GAME()->ofsX + GAME()->camX;
-        debugDraw->yOfs = GAME()->ofsY + GAME()->camY;
-        debugDraw->SetFlags(0);
-        if (GameIsolate_.globaldef.draw_b2d_shape) debugDraw->AppendFlags(ME_debugdraw::e_shapeBit);
-        if (GameIsolate_.globaldef.draw_b2d_joint) debugDraw->AppendFlags(ME_debugdraw::e_jointBit);
-        if (GameIsolate_.globaldef.draw_b2d_aabb) debugDraw->AppendFlags(ME_debugdraw::e_aabbBit);
-        if (GameIsolate_.globaldef.draw_b2d_pair) debugDraw->AppendFlags(ME_debugdraw::e_pairBit);
-        if (GameIsolate_.globaldef.draw_b2d_centerMass) debugDraw->AppendFlags(ME_debugdraw::e_centerOfMassBit);
-        GameIsolate_.world->b2world->ME_debugdraw();
+        // GameIsolate_.world->b2world->SetDebugDraw(debugDraw);
+        // debugDraw->scale = ENGINE()->render_scale;
+        // debugDraw->xOfs = GAME()->ofsX + GAME()->camX;
+        // debugDraw->yOfs = GAME()->ofsY + GAME()->camY;
+        // debugDraw->SetFlags(0);
+        // if (GameIsolate_.globaldef.draw_b2d_shape) debugDraw->AppendFlags(ME_debugdraw::e_shapeBit);
+        // if (GameIsolate_.globaldef.draw_b2d_joint) debugDraw->AppendFlags(ME_debugdraw::e_jointBit);
+        // if (GameIsolate_.globaldef.draw_b2d_aabb) debugDraw->AppendFlags(ME_debugdraw::e_aabbBit);
+        // if (GameIsolate_.globaldef.draw_b2d_pair) debugDraw->AppendFlags(ME_debugdraw::e_pairBit);
+        // if (GameIsolate_.globaldef.draw_b2d_centerMass) debugDraw->AppendFlags(ME_debugdraw::e_centerOfMassBit);
+        // GameIsolate_.world->b2world->ME_debugdraw();
     }
 
     // Drawing::drawText("fps",
@@ -3378,28 +3400,31 @@ void Game::renderOverlays() {
 
         int rbCt = 0;
         for (auto &r : GameIsolate_.world->rigidBodies) {
-            if (r->body->IsEnabled()) rbCt++;
+            if (!r->body->sleep()) rbCt++;
         }
 
         int rbTriACt = 0;
         int rbTriCt = 0;
-        for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
-            RigidBody cur = *GameIsolate_.world->rigidBodies[i];
 
-            b2Fixture *fix = cur.body->GetFixtureList();
-            while (fix) {
-                b2Shape *shape = fix->GetShape();
+        // 物理引擎相关信息
 
-                switch (shape->GetType()) {
-                    case b2Shape::Type::e_polygon:
-                        rbTriCt++;
-                        if (cur.body->IsEnabled()) rbTriACt++;
-                        break;
-                }
+        // for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
+        //     RigidBody cur = *GameIsolate_.world->rigidBodies[i];
 
-                fix = fix->GetNext();
-            }
-        }
+        //    b2Fixture *fix = cur.body->GetFixtureList();
+        //    while (fix) {
+        //        b2Shape *shape = fix->GetShape();
+
+        //        switch (shape->GetType()) {
+        //            case b2Shape::Type::e_polygon:
+        //                rbTriCt++;
+        //                if (cur.body->IsEnabled()) rbTriACt++;
+        //                break;
+        //        }
+
+        //        fix = fix->GetNext();
+        //    }
+        //}
 
         int rbTriWCt = 0;
 

@@ -12,7 +12,6 @@
 
 #include "engine/core/core.hpp"
 #include "engine/core/sdl_wrapper.h"
-#include "engine/physics/box2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/shaders.hpp"
 #include "engine/utils/utility.hpp"
@@ -287,7 +286,7 @@ void inspect_shader(const char *label, GLuint program);
 void inspect_vertex_array(const char *label, GLuint vao);
 }  // namespace ME
 
-#if 1
+#if 0
 
 class ME_debugdraw {
 

@@ -13,7 +13,7 @@
 #include "engine/core/const.h"
 #include "engine/core/macros.hpp"
 #include "engine/ecs/ecs.hpp"
-#include "engine/physics/box2d.h"
+#include "engine/physics/inc/physics2d.h"
 #include "engine/utils/utility.hpp"
 #include "game/player.hpp"
 #include "game_basic.hpp"
@@ -131,7 +131,7 @@ public:
     ME_rect lastMeshLoadZone{};
 
     MEvec2 gravity{};
-    ME::scope<b2World> b2world = nullptr;
+    ME::scope<ME::phy::PhysicsSystem> phy = nullptr;
     RigidBody *staticBody = nullptr;
 
     void init(std::string worldPath, u16 w, u16 h, R_Target *renderer, ME::Audio *audioEngine, WorldGenerator *generator);
@@ -152,8 +152,8 @@ public:
     void tickChunkGeneration();
     void addCell(CellData *cell);
     void explosion(int x, int y, int radius);
-    RigidBody *makeRigidBody(b2BodyType type, f32 x, f32 y, f32 angle, b2PolygonShape shape, f32 density, f32 friction, C_Surface *texture);
-    RigidBody *makeRigidBodyMulti(b2BodyType type, f32 x, f32 y, f32 angle, std::vector<b2PolygonShape> shape, f32 density, f32 friction, C_Surface *texture);
+    RigidBody *makeRigidBody(ME::phy::Body::BodyType type, f32 x, f32 y, f32 angle, ME::phy::Shape *shape, f32 density, f32 friction, C_Surface *texture);
+    RigidBody *makeRigidBodyMulti(ME::phy::Body::BodyType type, f32 x, f32 y, f32 angle, std::vector<ME::phy::Shape *> shape, f32 density, f32 friction, C_Surface *texture);
     void updateRigidBodyHitbox(RigidBody *rb);
     void updateChunkMesh(Chunk *chunk);
     void updateWorldMesh();

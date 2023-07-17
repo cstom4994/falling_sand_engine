@@ -12,7 +12,7 @@
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/macros.hpp"
-#include "engine/physics/box2d.h"
+#include "engine/physics/inc/physics2d.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/utils/utility.hpp"
 #include "engine/utils/utils.hpp"
@@ -1059,14 +1059,18 @@ std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, Mater
             px -= tree_tex_surface->w / 2;
             py -= tree_tex_surface->h - 2;
 
-            b2PolygonShape s;
-            s.SetAsBox(1, 1);
-            RigidBody *rb = world->makeRigidBody(b2_dynamicBody, px, py, 0, s, 1, 0.3, tree_tex_surface);
+            ME::phy::Rectangle *s = new ME::phy::Rectangle;
+            // s.SetAsBox(1, 1);
+            s->set(1.0f, 1.0f);
+            RigidBody *rb = world->makeRigidBody(ME::phy::Body::BodyType::Dynamic, px, py, 0, s, 1, 0.3, tree_tex_surface);
             for (int texX = 0; texX < tree_tex_surface->w; texX++) {
-                b2Filter bf = {};
-                bf.categoryBits = 0x0002;
-                bf.maskBits = 0x0001;
-                rb->body->GetFixtureList()[0].SetFilterData(bf);
+
+                // TODO:  23/7/17 物理相关性实现
+
+                // b2Filter bf = {};
+                // bf.categoryBits = 0x0002;
+                // bf.maskBits = 0x0001;
+                // rb->body->GetFixtureList()[0].SetFilterData(bf);
                 if (((R_GET_PIXEL(tree_tex_surface, texX, tree_tex_surface->h - 1) >> 24) & 0xff) != 0x00) {
                     rb->weldX = texX;
                     rb->weldY = tree_tex_surface->h - 1;

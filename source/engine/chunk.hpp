@@ -51,7 +51,7 @@ struct Chunk {
     MaterialInstance *layer2 = nullptr;
     u32 *background = nullptr;
     std::vector<Biome *> biomes = {nullptr};
-    std::vector<b2PolygonShape> polys = {};
+    std::vector<ME::phy::Shape *> polys = {};
     RigidBody *rb = nullptr;
 
     Chunk() = default;
@@ -93,8 +93,12 @@ struct ME::meta::static_refl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
     };
 };
 
-ME_GUI_DEFINE_BEGIN(template <>, b2PolygonShape)
-ImGui::Auto("b2PolygonShape");
+ME_GUI_DEFINE_BEGIN(template <>, ME::phy::Shape)
+ImGui::Auto("ME::phy::Shape");
+ME_GUI_DEFINE_END
+
+ME_GUI_DEFINE_BEGIN(template <>, ME::phy::Polygon)
+ImGui::Auto("ME::phy::Polygon");
 ME_GUI_DEFINE_END
 
 class ChunkReadyToMerge {

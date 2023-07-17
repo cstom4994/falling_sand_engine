@@ -17,7 +17,7 @@ private:
 public:
     std::string name;
 
-    b2Body *body = nullptr;
+    ME::phy::Body *body = nullptr;
 
     int matWidth = 0;
     int matHeight = 0;
@@ -39,7 +39,7 @@ public:
     Item *item = nullptr;
 
 public:
-    RigidBody(b2Body *body, std::string name = "unknown");
+    RigidBody(ME::phy::Body *body, std::string name = "unknown");
     ~RigidBody();
 
     bool set_surface(C_Surface *sur);

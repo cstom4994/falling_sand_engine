@@ -993,6 +993,9 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                 if (ImGui::BeginTabItem(CC("测试"))) {
                     if (ImGui::Button("调用回溯")) print_callstack();
                     ImGui::SameLine();
+
+#if 0
+
                     if (ImGui::Button("NPC")) {
 
                         MEvec4 pl_transform{-global.game->GameIsolate_.world->loadZone.x + global.game->GameIsolate_.world->tickZone.x + global.game->GameIsolate_.world->tickZone.w / 2.0f,
@@ -1016,6 +1019,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                         // npc_bot->setItemInHand(global.game->GameIsolate_.world->Reg().find_component<WorldEntity>(global.game->GameIsolate_.world->player), i3,
                         // global.game->GameIsolate_.world.get());
                     }
+#endif
                     ImGui::SameLine();
                     if (ImGui::Button("Audio")) {
                         // static bool play= 1;

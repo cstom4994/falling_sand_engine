@@ -18,8 +18,8 @@
 #include "background.hpp"
 #include "cvar.hpp"
 #include "engine/audio/audio.h"
-#include "engine/core/const.h"
 #include "engine/core/base_debug.hpp"
+#include "engine/core/const.h"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/io/packer.hpp"
 #include "engine/core/macros.hpp"
@@ -28,7 +28,7 @@
 #include "engine/event/inputevent.hpp"
 #include "engine/game_utils/rng.h"
 #include "engine/meta/reflection.hpp"
-#include "engine/physics/box2d.h"
+#include "engine/physics/inc/physics2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/scripting.hpp"
 #include "engine/ui/font.hpp"
@@ -59,7 +59,7 @@ public:
     EnumGameState state = LOADING;
     EnumGameState stateAfterLoad = MAIN_MENU;
 
-    ME_debugdraw *debugDraw;
+    // ME_debugdraw *debugDraw;
     ME_fontcache fontcache;
 
     MEsurface_context *surface;

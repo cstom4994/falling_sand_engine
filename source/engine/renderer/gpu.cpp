@@ -742,7 +742,8 @@ void ME::inspect_vertex_array(const char *label, GLuint vao) {
     ImGui::PopID();
 }
 
-#if 1
+#if 0
+
 ME_debugdraw::ME_debugdraw(R_Target *target) {
     this->target = target;
     m_drawFlags = 0;
