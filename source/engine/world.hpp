@@ -59,6 +59,8 @@ struct WorldSystem {
 };
 
 class World {
+    using PhyBodytype = ME::phy::Body::BodyType;
+
 public:
     std::string worldName = "";
     WorldMeta metadata{};
@@ -123,16 +125,17 @@ public:
     bool *lastActive = nullptr;
     bool *layer2Dirty = nullptr;
     bool *backgroundDirty = nullptr;
-    ME_rect loadZone;
-    ME_rect lastLoadZone{};
-    ME_rect tickZone{};
-    ME_rect meshZone{};
-    ME_rect lastMeshZone{};
-    ME_rect lastMeshLoadZone{};
+    MErect loadZone;
+    MErect lastLoadZone{};
+    MErect tickZone{};
+    MErect meshZone{};
+    MErect lastMeshZone{};
+    MErect lastMeshLoadZone{};
 
     MEvec2 gravity{};
     ME::scope<ME::phy::PhysicsSystem> phy = nullptr;
     RigidBody *staticBody = nullptr;
+    WorldGenerator *gen = nullptr;
 
     void init(std::string worldPath, u16 w, u16 h, R_Target *renderer, ME::Audio *audioEngine, WorldGenerator *generator);
     void init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audio *audioEngine);
@@ -152,8 +155,8 @@ public:
     void tickChunkGeneration();
     void addCell(CellData *cell);
     void explosion(int x, int y, int radius);
-    RigidBody *makeRigidBody(ME::phy::Body::BodyType type, f32 x, f32 y, f32 angle, ME::phy::Shape *shape, f32 density, f32 friction, C_Surface *texture);
-    RigidBody *makeRigidBodyMulti(ME::phy::Body::BodyType type, f32 x, f32 y, f32 angle, std::vector<ME::phy::Shape *> shape, f32 density, f32 friction, C_Surface *texture);
+    RigidBody *makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, ME::phy::Shape *shape, f32 density, f32 friction, C_Surface *texture);
+    RigidBody *makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<ME::phy::Shape *> shape, f32 density, f32 friction, C_Surface *texture);
     void updateRigidBodyHitbox(RigidBody *rb);
     void updateChunkMesh(Chunk *chunk);
     void updateWorldMesh();
@@ -162,7 +165,6 @@ public:
     void unloadChunk(Chunk *ch);
     void writeChunkToDisk(Chunk *ch);
     void chunkSaveCache(Chunk *ch);
-    WorldGenerator *gen = nullptr;
     void generateChunk(Chunk *ch);
     Biome *getBiomeAt(int x, int y);
     Biome *getBiomeAt(Chunk *ch, int x, int y);

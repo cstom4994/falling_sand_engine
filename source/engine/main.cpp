@@ -16,9 +16,28 @@
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #include <stdlib.h>
+
+// 重载全局 new 运算符
+void* operator new(size_t size) {
+    void* ptr = malloc(size);
+    // 在这里可以添加其他内存跟踪代码
+    return ptr;
+}
+
+// 重载全局 delete 运算符
+void operator delete(void* ptr) noexcept {
+    // 在这里可以添加其他内存跟踪代码
+    free(ptr);
+}
+
 #endif
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
+
+#ifdef CHECK_MEM
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
+
     const auto game = ME::create_scope<Game>(argc, argv);
     auto result = game->init(argc, argv);
 

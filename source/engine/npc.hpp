@@ -44,7 +44,7 @@ public:
 // Compare States, return a vector of keys?
 inline bool operator==(State lhs, const State &rhs) {
     // Check all Properties
-    if (lhs.pos != rhs.pos) {
+    if (!ME_vec2_equals(lhs.pos, rhs.pos)) {
         return false;
     }
     if (lhs.task != rhs.task) {
@@ -62,7 +62,7 @@ inline bool operator==(State lhs, const State &rhs) {
     if (lhs.target != rhs.target) {
         return false;
     }
-    if (lhs.range != rhs.range) {
+    if (!ME_vec2_equals(lhs.range, rhs.range)) {
         return false;
     }
     return true;
@@ -71,7 +71,7 @@ inline bool operator==(State lhs, const State &rhs) {
 // Compare States, return a vector of keys?
 inline bool operator||(State lhs, const State &rhs) {
     // Check all Properties
-    if (lhs.pos == rhs.pos) {
+    if (ME_vec2_equals(lhs.pos, rhs.pos)) {
         return true;
     }
     if (lhs.task == rhs.task) {
@@ -89,7 +89,7 @@ inline bool operator||(State lhs, const State &rhs) {
     if (lhs.target == rhs.target) {
         return true;
     }
-    if (lhs.range == rhs.range) {
+    if (ME_vec2_equals(lhs.range, rhs.range)) {
         return true;
     }
     return false;

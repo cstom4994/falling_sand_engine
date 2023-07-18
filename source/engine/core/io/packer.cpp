@@ -1,7 +1,6 @@
 
 #include "packer.hpp"
 
-#include <cassert>
 #include <cstdlib>
 #include <cstring>
 
@@ -27,16 +26,16 @@ struct ME_packreader_t {
 };
 
 ME_PRIVATE(void) destroy_pack_items(u64 itemCount, pack_item *items) {
-    assert(itemCount == 0 || (itemCount > 0 && items));
+    ME_ASSERT(itemCount == 0 || (itemCount > 0 && items));
 
     for (u64 i = 0; i < itemCount; i++) free(items[i].path);
     free(items);
 }
 
 ME_PRIVATE(ME_pack_result) create_pack_items(FILE *packFile, u64 itemCount, pack_item **_items) {
-    assert(packFile);
-    assert(itemCount > 0);
-    assert(_items);
+    ME_ASSERT(packFile);
+    ME_ASSERT(itemCount > 0);
+    ME_ASSERT(_items);
 
     pack_item *items = (pack_item *)malloc(itemCount * sizeof(pack_item));
 
@@ -92,8 +91,8 @@ ME_PRIVATE(ME_pack_result) create_pack_items(FILE *packFile, u64 itemCount, pack
 }
 
 ME_pack_result ME_create_file_pack_reader(const char *filePath, u32 dataBufferCapacity, bool isResourcesDirectory, ME_pack_reader *pack_reader) {
-    assert(filePath);
-    assert(pack_reader);
+    ME_ASSERT(filePath);
+    ME_ASSERT(pack_reader);
 
     ME_pack_reader pack = (ME_pack_reader)calloc(1, sizeof(ME_packreader_t));
 
@@ -198,13 +197,13 @@ void ME_destroy_pack_reader(ME_pack_reader pack_reader) {
 }
 
 u64 ME_get_pack_item_count(ME_pack_reader pack_reader) {
-    assert(pack_reader);
+    ME_ASSERT(pack_reader);
     return pack_reader->itemCount;
 }
 
 ME_PRIVATE(int) ME_compare_pack_items(const void *_a, const void *_b) {
     // NOTE: a and b should not be NULL!
-    // Skipping here assertions for debug build speed.
+    // Skipping here ME_ASSERTions for debug build speed.
 
     const pack_item *a = (pack_item *)_a;
     const pack_item *b = (pack_item *)_b;
@@ -217,10 +216,10 @@ ME_PRIVATE(int) ME_compare_pack_items(const void *_a, const void *_b) {
 }
 
 bool ME_get_pack_item_index(ME_pack_reader pack_reader, const char *path, u64 *index) {
-    assert(pack_reader);
-    assert(path);
-    assert(index);
-    assert(strlen(path) <= UINT8_MAX);
+    ME_ASSERT(pack_reader);
+    ME_ASSERT(path);
+    ME_ASSERT(index);
+    ME_ASSERT(strlen(path) <= UINT8_MAX);
 
     pack_item *searchItem = &pack_reader->searchItem;
 
@@ -236,22 +235,22 @@ bool ME_get_pack_item_index(ME_pack_reader pack_reader, const char *path, u64 *i
 }
 
 u32 ME_get_pack_item_data_size(ME_pack_reader pack_reader, u64 index) {
-    assert(pack_reader);
-    assert(index < pack_reader->itemCount);
+    ME_ASSERT(pack_reader);
+    ME_ASSERT(index < pack_reader->itemCount);
     return pack_reader->items[index].info.dataSize;
 }
 
 const char *ME_get_pack_item_path(ME_pack_reader pack_reader, u64 index) {
-    assert(pack_reader);
-    assert(index < pack_reader->itemCount);
+    ME_ASSERT(pack_reader);
+    ME_ASSERT(index < pack_reader->itemCount);
     return pack_reader->items[index].path;
 }
 
 ME_pack_result ME_read_pack_item_data(ME_pack_reader pack_reader, u64 index, const u8 **data, u32 *size) {
-    assert(pack_reader);
-    assert(index < pack_reader->itemCount);
-    assert(data);
-    assert(size);
+    ME_ASSERT(pack_reader);
+    ME_ASSERT(index < pack_reader->itemCount);
+    ME_ASSERT(data);
+    ME_ASSERT(size);
 
     pack_iteminfo info = pack_reader->items[index].info;
     u8 *dataBuffer = pack_reader->dataBuffer;
@@ -328,11 +327,11 @@ ME_pack_result ME_read_pack_item_data(ME_pack_reader pack_reader, u64 index, con
 }
 
 ME_pack_result ME_read_pack_path_item_data(ME_pack_reader pack_reader, const char *path, const u8 **data, u32 *size) {
-    assert(pack_reader);
-    assert(path);
-    assert(data);
-    assert(size);
-    assert(strlen(path) <= UINT8_MAX);
+    ME_ASSERT(pack_reader);
+    ME_ASSERT(path);
+    ME_ASSERT(data);
+    ME_ASSERT(size);
+    ME_ASSERT(strlen(path) <= UINT8_MAX);
 
     u64 index;
 
@@ -344,7 +343,7 @@ ME_pack_result ME_read_pack_path_item_data(ME_pack_reader pack_reader, const cha
 }
 
 void ME_free_pack_reader_buffers(ME_pack_reader pack_reader) {
-    assert(pack_reader);
+    ME_ASSERT(pack_reader);
     free(pack_reader->dataBuffer);
     free(pack_reader->zipBuffer);
     pack_reader->dataBuffer = NULL;
@@ -352,13 +351,13 @@ void ME_free_pack_reader_buffers(ME_pack_reader pack_reader) {
 }
 
 ME_PRIVATE(void) ME_removePackItemFiles(u64 itemCount, pack_item *packItems) {
-    assert(itemCount == 0 || (itemCount > 0 && packItems));
+    ME_ASSERT(itemCount == 0 || (itemCount > 0 && packItems));
 
     for (u64 i = 0; i < itemCount; i++) remove(packItems[i].path);
 }
 
 ME_pack_result ME_unpack_files(const char *filePath, bool printProgress) {
-    assert(filePath);
+    ME_ASSERT(filePath);
 
     ME_pack_reader pack_reader;
 
@@ -444,9 +443,9 @@ ME_pack_result ME_unpack_files(const char *filePath, bool printProgress) {
 }
 
 ME_PRIVATE(ME_pack_result) ME_write_pack_items(FILE *packFile, u64 itemCount, char **itemPaths, bool printProgress) {
-    assert(packFile);
-    assert(itemCount > 0);
-    assert(itemPaths);
+    ME_ASSERT(packFile);
+    ME_ASSERT(itemCount > 0);
+    ME_ASSERT(itemPaths);
 
     u32 bufferSize = 1;
 
@@ -633,7 +632,7 @@ ME_PRIVATE(ME_pack_result) ME_write_pack_items(FILE *packFile, u64 itemCount, ch
 
 ME_PRIVATE(int) ME_comparePackItemPaths(const void *_a, const void *_b) {
     // NOTE: a and b should not be NULL!
-    // Skipping here assertions for debug build speed.
+    // Skipping here ME_ASSERTions for debug build speed.
 
     char *a = *(char **)_a;
     char *b = *(char **)_b;
@@ -648,9 +647,9 @@ ME_PRIVATE(int) ME_comparePackItemPaths(const void *_a, const void *_b) {
 }
 
 ME_pack_result ME_pack_files(const char *filePath, u64 fileCount, const char **filePaths, bool printProgress) {
-    assert(filePath);
-    assert(fileCount > 0);
-    assert(filePaths);
+    ME_ASSERT(filePath);
+    ME_ASSERT(fileCount > 0);
+    ME_ASSERT(filePaths);
 
     char **itemPaths = (char **)malloc(fileCount * sizeof(char *));
 
@@ -713,9 +712,9 @@ ME_pack_result ME_pack_files(const char *filePath, u64 fileCount, const char **f
 }
 
 void ME_get_pack_library_version(u8 *majorVersion, u8 *minorVersion, u8 *patchVersion) {
-    assert(majorVersion);
-    assert(minorVersion);
-    assert(patchVersion);
+    ME_ASSERT(majorVersion);
+    ME_ASSERT(minorVersion);
+    ME_ASSERT(patchVersion);
 
     *majorVersion = PACK_VERSION_MAJOR;
     *minorVersion = PACK_VERSION_MINOR;
@@ -723,12 +722,12 @@ void ME_get_pack_library_version(u8 *majorVersion, u8 *minorVersion, u8 *patchVe
 }
 
 ME_pack_result ME_get_pack_info(const char *filePath, u8 *majorVersion, u8 *minorVersion, u8 *patchVersion, bool *isLittleEndian, u64 *_itemCount) {
-    assert(filePath);
-    assert(majorVersion);
-    assert(minorVersion);
-    assert(patchVersion);
-    assert(isLittleEndian);
-    assert(_itemCount);
+    ME_ASSERT(filePath);
+    ME_ASSERT(majorVersion);
+    ME_ASSERT(minorVersion);
+    ME_ASSERT(patchVersion);
+    ME_ASSERT(isLittleEndian);
+    ME_ASSERT(_itemCount);
 
     FILE *file = openFile(filePath, "rb");
 

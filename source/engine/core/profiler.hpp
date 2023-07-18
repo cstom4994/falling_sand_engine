@@ -166,21 +166,20 @@ struct profiler_scoped {
 #define ME_profiler_shutdown() void()
 #endif  // ME_DISABLE_PROFILING
 
-typedef struct profiler_free_list_t {
+struct profiler_free_list_t {
     u32 m_maxBlocks;
     u32 m_blockSize;
     u32 m_blocksFree;
     u32 m_blocksAlllocated;
     u8 *m_buffer;
     u8 *m_next;
+};
 
-} profiler_free_list_t;
-
-void ME_profiler_free_list_create(size_t _blockSize, u32 _maxBlocks, struct profiler_free_list_t *_freeList);
-void ME_profiler_free_list_destroy(struct profiler_free_list_t *_freeList);
-void *ME_profiler_free_list_alloc(struct profiler_free_list_t *_freeList);
-void ME_profiler_free_list_free(struct profiler_free_list_t *_freeList, void *_ptr);
-int ME_profiler_free_list_check_ptr(struct profiler_free_list_t *_freeList, void *_ptr);
+void ME_profiler_free_list_create(size_t _blockSize, u32 _maxBlocks, profiler_free_list_t *_freeList);
+void ME_profiler_free_list_destroy(profiler_free_list_t *_freeList);
+void *ME_profiler_free_list_alloc(profiler_free_list_t *_freeList);
+void ME_profiler_free_list_free(profiler_free_list_t *_freeList, void *_ptr);
+int ME_profiler_free_list_check_ptr(profiler_free_list_t *_freeList, void *_ptr);
 
 namespace ME::profiler {
 

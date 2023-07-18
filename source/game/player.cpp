@@ -33,6 +33,8 @@ R_Image *RigidBody::get_texture() { return this->texture; }
 
 void RigidBody::clean() {
 
+    if (NULL != body->shape()) delete body->shape();
+
     if (NULL != this->tiles) delete[] this->tiles;
     if (NULL != this->texture) R_FreeImage(this->get_texture());
     if (NULL != this->surface) SDL_FreeSurface(this->get_surface());
@@ -40,9 +42,9 @@ void RigidBody::clean() {
 
 void Player::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
     if (heldItem != NULL) {
-        int scaleEnt = global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1;
+        int scaleEnt = global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1;
 
-        ME_rect *ir = new ME_rect{(f32)(int)(ofsX + we->x + we->hw / 2.0 - heldItem->surface->w), (f32)(int)(ofsY + we->y + we->hh / 2.0 - heldItem->surface->h / 2), (f32)heldItem->surface->w,
+        MErect *ir = new MErect{(f32)(int)(ofsX + we->x + we->hw / 2.0 - heldItem->surface->w), (f32)(int)(ofsY + we->y + we->hh / 2.0 - heldItem->surface->h / 2), (f32)heldItem->surface->w,
                                   (f32)heldItem->surface->h};
         f32 fx = (f32)(int)(-ir->x + ofsX + we->x + we->hw / 2.0);
         f32 fy = (f32)(int)(-ir->y + ofsY + we->y + we->hh / 2.0);
@@ -138,10 +140,8 @@ MEvec2 rotate_point2(f32 cx, f32 cy, f32 angle, MEvec2 p) {
 void ControableSystem::process(ME::ECS::registry &world, const move_player_event &evt) {
     world.for_joined_components<WorldEntity, Player>(
             [&evt](ME::ECS::entity, WorldEntity &we, Player &pl) {
-                pl.renderLQ(&we, evt.g->TexturePack_.textureEntitiesLQ->target, evt.g->GameIsolate_.world->loadZone.x + (int)(we.vx * evt.thruTick),
-                            evt.g->GameIsolate_.world->loadZone.y + (int)(we.vy * evt.thruTick));
-                pl.render(&we, evt.g->TexturePack_.textureEntities->target, evt.g->GameIsolate_.world->loadZone.x + (int)(we.vx * evt.thruTick),
-                          evt.g->GameIsolate_.world->loadZone.y + (int)(we.vy * evt.thruTick));
+                pl.renderLQ(&we, evt.g->TexturePack_.textureEntitiesLQ->target, evt.g->Iso.world->loadZone.x + (int)(we.vx * evt.thruTick), evt.g->Iso.world->loadZone.y + (int)(we.vy * evt.thruTick));
+                pl.render(&we, evt.g->TexturePack_.textureEntities->target, evt.g->Iso.world->loadZone.x + (int)(we.vx * evt.thruTick), evt.g->Iso.world->loadZone.y + (int)(we.vy * evt.thruTick));
             },
             ME::ECS::exists<Player>{} && ME::ECS::exists<Controlable>{});
 }
@@ -154,20 +154,19 @@ void WorldEntitySystem::process(ME::ECS::registry &world, const entity_update_ev
                 for (int tx = 0; tx < pl.hw; tx++) {
                     for (int ty = 0; ty < pl.hh; ty++) {
 
-                        int wx = (int)(tx + pl.x + evt.g->GameIsolate_.world->loadZone.x);
-                        int wy = (int)(ty + pl.y + evt.g->GameIsolate_.world->loadZone.y);
-                        if (wx < 0 || wy < 0 || wx >= evt.g->GameIsolate_.world->width || wy >= evt.g->GameIsolate_.world->height) continue;
-                        if (evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width].mat->physicsType == PhysicsType::AIR) {
-                            evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width] = Tiles_OBJECT;
-                            evt.g->objectDelete[wx + wy * evt.g->GameIsolate_.world->width] = true;
-                        } else if (evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width].mat->physicsType == PhysicsType::SAND ||
-                                   evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width].mat->physicsType == PhysicsType::SOUP) {
-                            evt.g->GameIsolate_.world->addCell(new CellData(evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width], (f32)(wx + rand() % 3 - 1 - pl.vx),
-                                                                            (f32)(wy - abs(pl.vy)), (f32)(-pl.vx / 4 + (rand() % 10 - 5) / 5.0f), (f32)(-pl.vy / 4 + -(rand() % 5 + 5) / 5.0f), 0,
-                                                                            (f32)0.1));
-                            evt.g->GameIsolate_.world->tiles[wx + wy * evt.g->GameIsolate_.world->width] = Tiles_OBJECT;
-                            evt.g->objectDelete[wx + wy * evt.g->GameIsolate_.world->width] = true;
-                            evt.g->GameIsolate_.world->dirty[wx + wy * evt.g->GameIsolate_.world->width] = true;
+                        int wx = (int)(tx + pl.x + evt.g->Iso.world->loadZone.x);
+                        int wy = (int)(ty + pl.y + evt.g->Iso.world->loadZone.y);
+                        if (wx < 0 || wy < 0 || wx >= evt.g->Iso.world->width || wy >= evt.g->Iso.world->height) continue;
+                        if (evt.g->Iso.world->tiles[wx + wy * evt.g->Iso.world->width].mat->physicsType == PhysicsType::AIR) {
+                            evt.g->Iso.world->tiles[wx + wy * evt.g->Iso.world->width] = Tiles_OBJECT;
+                            evt.g->objectDelete[wx + wy * evt.g->Iso.world->width] = true;
+                        } else if (evt.g->Iso.world->tiles[wx + wy * evt.g->Iso.world->width].mat->physicsType == PhysicsType::SAND ||
+                                   evt.g->Iso.world->tiles[wx + wy * evt.g->Iso.world->width].mat->physicsType == PhysicsType::SOUP) {
+                            evt.g->Iso.world->addCell(new CellData(evt.g->Iso.world->tiles[wx + wy * evt.g->Iso.world->width], (f32)(wx + rand() % 3 - 1 - pl.vx), (f32)(wy - abs(pl.vy)),
+                                                                   (f32)(-pl.vx / 4 + (rand() % 10 - 5) / 5.0f), (f32)(-pl.vy / 4 + -(rand() % 5 + 5) / 5.0f), 0, (f32)0.1));
+                            evt.g->Iso.world->tiles[wx + wy * evt.g->Iso.world->width] = Tiles_OBJECT;
+                            evt.g->objectDelete[wx + wy * evt.g->Iso.world->width] = true;
+                            evt.g->Iso.world->dirty[wx + wy * evt.g->Iso.world->width] = true;
                         }
                     }
                 }

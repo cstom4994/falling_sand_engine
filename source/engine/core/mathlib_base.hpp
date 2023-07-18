@@ -203,7 +203,7 @@ typedef MEmat3 MEmat3;
 typedef MEmat4 MEmat4;
 typedef MEquaternion MEquaternion;
 
-typedef struct ME_rect {
+typedef struct MErect {
     float x, y;
     float w, h;
 } ME_rect;

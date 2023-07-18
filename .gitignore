@@ -20,6 +20,13 @@ Resources/
 source/generated
 source/tools/.antlr/
 
+# physics engine
+source/engine/physics/collision
+source/engine/physics/dynamics
+source/engine/physics/inc
+source/engine/physics/math
+source/engine/physics/other
+
 build.bat
 compile_commands.json
 imgui.ini

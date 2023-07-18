@@ -148,14 +148,14 @@ void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audi
     ME::phy::Rectangle *nothingShape = new ME::phy::Rectangle;
     // nothingShape.SetAsBox(0, 0);
     nothingShape->set(0.001f, 0.001f);
-    this->staticBody = makeRigidBody(ME::phy::Body::BodyType::Static, 0, 0, 0, nothingShape, 0, 0, global.game->GameIsolate_.texturepack->cloud->surface);
+    this->staticBody = makeRigidBody(PhyBodytype::Static, 0, 0, 0, nothingShape, 0, 0, global.game->Iso.texturepack->cloud->surface);
 
     updateWorldMesh();
 
     ME::phy::Rectangle *dynamicBox3 = new ME::phy::Rectangle;
     // dynamicBox3.SetAsBox(10.0f, 2.0f, {10, -10}, 0);
     dynamicBox3->set(10.0f, 2.0f);
-    RigidBody *rb = makeRigidBody(ME::phy::Body::BodyType::Dynamic, 300, 300, 0, dynamicBox3, 1, .3, LoadTexture("data/assets/objects/testObject3.png")->surface);
+    RigidBody *rb = makeRigidBody(PhyBodytype::Dynamic, 300, 300, 0, dynamicBox3, 1, .3, LoadTexture("data/assets/objects/testObject3.png")->surface);
 
     rigidBodies.push_back(rb);
     updateRigidBodyHitbox(rb);
@@ -169,7 +169,7 @@ void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audi
     // updateRigidBodyHitbox(rb2);
 }
 
-RigidBody *World::makeRigidBody(ME::phy::Body::BodyType type, f32 x, f32 y, f32 angle, ME::phy::Shape *shape, f32 density, f32 friction, C_Surface *texture) {
+RigidBody *World::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, ME::phy::Shape *shape, f32 density, f32 friction, C_Surface *texture) {
 
     // b2BodyDef bodyDef;
     // bodyDef.type = type;
@@ -230,7 +230,7 @@ RigidBody *World::makeRigidBody(ME::phy::Body::BodyType type, f32 x, f32 y, f32 
     return rb;
 }
 
-RigidBody *World::makeRigidBodyMulti(ME::phy::Body::BodyType type, f32 x, f32 y, f32 angle, std::vector<ME::phy::Shape *> shape, f32 density, f32 friction, C_Surface *texture) {
+RigidBody *World::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<ME::phy::Shape *> shape, f32 density, f32 friction, C_Surface *texture) {
 
     return this->makeRigidBody(type, x, y, angle, shape[0], density, friction, texture);
 
@@ -592,9 +592,8 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
                                     if (((ME::phy::Polygon *)polys2s[b][i])->vertices().size() != 3) continue;
 
                                     // 动态质心计算 需要考虑优化方案
-                                    auto centroid =
-                                            ME::phy::GeometryAlgorithm2D::triangleCentroid(((ME::phy::Polygon *)polys2s[b][i])->vertices()[0], ((ME::phy::Polygon *)polys2s[b][i])->vertices()[1],
-                                                                                             ((ME::phy::Polygon *)polys2s[b][i])->vertices()[2]);
+                                    auto centroid = ME::phy::GeometryAlgorithm2D::triangleCentroid(
+                                            ((ME::phy::Polygon *)polys2s[b][i])->vertices()[0], ((ME::phy::Polygon *)polys2s[b][i])->vertices()[1], ((ME::phy::Polygon *)polys2s[b][i])->vertices()[2]);
                                     int dst = abs(x - centroid.x) + abs(y - centroid.y);
                                     if (dst < nearestDist) {
                                         nearestDist = dst;
@@ -628,7 +627,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
 
                             // 动态质心计算 需要考虑优化方案
                             auto centroid = ME::phy::GeometryAlgorithm2D::triangleCentroid(((ME::phy::Polygon *)polys2s[b][i])->vertices()[0], ((ME::phy::Polygon *)polys2s[b][i])->vertices()[1],
-                                                                                             ((ME::phy::Polygon *)polys2s[b][i])->vertices()[2]);
+                                                                                           ((ME::phy::Polygon *)polys2s[b][i])->vertices()[2]);
                             int dst = abs(x - centroid.x) + abs(y - centroid.y);
                             if (dst < nearestDist) {
                                 nearestDist = dst;
@@ -652,7 +651,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
 
             C_Surface *sfc = polys2sSfcs[b];
 
-            RigidBody *rbn = makeRigidBodyMulti(ME::phy::Body::BodyType::Dynamic, 0, 0, rb->body->rotation(), polys2, /*rb->body->GetFixtureList()[0].GetDensity()*/ 0.1f,
+            RigidBody *rbn = makeRigidBodyMulti(PhyBodytype::Dynamic, 0, 0, rb->body->rotation(), polys2, /*rb->body->GetFixtureList()[0].GetDensity()*/ 0.1f,
                                                 /*rb->body->GetFixtureList()[0].GetFriction()*/ 0.1f, sfc);
             rbn->body->SetTransform({rb->body->position().x, rb->body->position().y}, rb->body->rotation());
 
@@ -1040,7 +1039,7 @@ void World::tick() {
 #endif
 
     // TODO: 尝试找到一种方法来优化这个循环，因为液体需要高迭代次数
-    for (int iter = 0; iter < 6; iter++) {
+    for (int iter = 0; iter < global.game->Iso.globaldef.cell_iter; iter++) {
 
 #ifdef DO_REVERSE
         bool reverseX = (tickCt + iter) % 2 == 0;
@@ -3377,7 +3376,7 @@ RigidBody *World::physicsCheck(int x, int y) {
             ME::phy::Rectangle *s = new ME::phy::Rectangle;
             // s.SetAsBox(1, 1);
             s->set(1.0f, 1.0f);
-            RigidBody *rb = makeRigidBody(ME::phy::Body::BodyType::Dynamic, (f32)minX, (f32)minY, 0, s, 1, (f32)0.3, tex);
+            RigidBody *rb = makeRigidBody(PhyBodytype::Dynamic, (f32)minX, (f32)minY, 0, s, 1, (f32)0.3, tex);
 
             // TODO:  23/7/17 物理相关性实现
 

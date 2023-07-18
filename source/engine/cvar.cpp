@@ -48,6 +48,8 @@ void InitGlobalDEF(GlobalDEF* s, bool openDebugUIs) {
         s->draw_console = GlobalDEF["draw_console"].get<decltype(s->draw_console)>();
         s->draw_pack_editor = GlobalDEF["draw_pack_editor"].get<decltype(s->draw_pack_editor)>();
 
+        s->cell_iter = GlobalDEF["cell_iter"].get<int>();
+
     } else {
         METADOT_ERROR("Load GlobalDEF failed");
     }

@@ -103,6 +103,8 @@ public:
 
     EventCallbackFn EventCallback;
 
+    BackgroundObject *bg = nullptr;
+
     struct {
         ME::ref<BackgroundSystem> backgrounds;
         ME::ref<GameplayScriptSystem> gameplayscript;
@@ -119,7 +121,7 @@ public:
 
         ME::thread_pool *updateDirtyPool = nullptr;
         ME::thread_pool *updateDirtyPool2 = nullptr;
-    } GameIsolate_;
+    } Iso;
 
     struct {
         R_Image *backgroundImage = nullptr;

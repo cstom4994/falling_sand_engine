@@ -53,7 +53,7 @@ std::deque<Memory> Bot::recallMemories(Memory &query, bool all) {
 
 inline void Bot::addMemory(State &state) {
     for (unsigned int i = 0; i < memories.size(); i++) {
-        if (memories[i].state.pos != state.pos) continue;
+        if (!ME_vec2_equals(memories[i].state.pos, state.pos)) continue;
 
         memories[i].state.task = state.task;
         return;
@@ -83,9 +83,9 @@ void Bot::setupSprite() {}
 
 void Bot::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
     if (heldItem != NULL) {
-        int scaleEnt = global.game->GameIsolate_.globaldef.hd_objects ? global.game->GameIsolate_.globaldef.hd_objects_size : 1;
+        int scaleEnt = global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1;
 
-        ME_rect *ir = new ME_rect{(f32)(int)(ofsX + we->x + we->hw / 2.0 - heldItem->surface->w), (f32)(int)(ofsY + we->y + we->hh / 2.0 - heldItem->surface->h / 2), (f32)heldItem->surface->w,
+        MErect *ir = new MErect{(f32)(int)(ofsX + we->x + we->hw / 2.0 - heldItem->surface->w), (f32)(int)(ofsY + we->y + we->hh / 2.0 - heldItem->surface->h / 2), (f32)heldItem->surface->w,
                                   (f32)heldItem->surface->h};
         f32 fx = (f32)(int)(-ir->x + ofsX + we->x + we->hw / 2.0);
         f32 fy = (f32)(int)(-ir->y + ofsY + we->y + we->hh / 2.0);
@@ -110,10 +110,10 @@ void Bot::renderLQ(WorldEntity *we, R_Target *target, int ofsX, int ofsY) { R_Re
 void NpcSystem::process(ME::ECS::registry &world, const move_player_event &evt) {
     world.for_joined_components<WorldEntity, Bot>(
             [&evt](ME::ECS::entity, WorldEntity &we, Bot &npc) {
-                npc.renderLQ(&we, evt.g->TexturePack_.textureEntitiesLQ->target, evt.g->GameIsolate_.world->loadZone.x + (int)(we.vx * evt.thruTick),
-                             evt.g->GameIsolate_.world->loadZone.y + (int)(we.vy * evt.thruTick));
-                npc.render(&we, evt.g->TexturePack_.textureEntities->target, evt.g->GameIsolate_.world->loadZone.x + (int)(we.vx * evt.thruTick),
-                           evt.g->GameIsolate_.world->loadZone.y + (int)(we.vy * evt.thruTick));
+                npc.renderLQ(&we, evt.g->TexturePack_.textureEntitiesLQ->target, evt.g->Iso.world->loadZone.x + (int)(we.vx * evt.thruTick),
+                             evt.g->Iso.world->loadZone.y + (int)(we.vy * evt.thruTick));
+                npc.render(&we, evt.g->TexturePack_.textureEntities->target, evt.g->Iso.world->loadZone.x + (int)(we.vx * evt.thruTick),
+                           evt.g->Iso.world->loadZone.y + (int)(we.vy * evt.thruTick));
             },
             ME::ECS::exists<Bot>{} && ME::ECS::exists<Controlable>{});
 }

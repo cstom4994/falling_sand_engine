@@ -205,7 +205,7 @@ void UISystem::UIRendererDraw() {
             if (Img) {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
-                ME_rect dest{.x = (float)(e.second->x + p_x), .y = (float)(e.second->y + p_y), .w = (float)e.second->w, .h = (float)e.second->h};
+                MErect dest{.x = (float)(e.second->x + p_x), .y = (float)(e.second->y + p_y), .w = (float)e.second->w, .h = (float)e.second->h};
                 R_BlitRect(Img, NULL, ENGINE()->target, &dest);
             }
         }
@@ -214,7 +214,7 @@ void UISystem::UIRendererDraw() {
             if (Img) {
                 R_SetImageFilter(Img, R_FILTER_NEAREST);
                 R_SetBlendMode(Img, R_BLEND_NORMAL);
-                ME_rect dest{.x = (float)(e.second->x), .y = (float)(e.second->y), .w = (float)(e.second->w), .h = (float)(e.second->h)};
+                MErect dest{.x = (float)(e.second->x), .y = (float)(e.second->y), .w = (float)(e.second->w), .h = (float)(e.second->h)};
                 R_BlitRect(Img, NULL, ENGINE()->target, &dest);
             }
         }
@@ -240,7 +240,7 @@ void UISystem::UIRendererDraw() {
 
         if (Img) R_FreeImage(Img);
 
-        if (global.game->GameIsolate_.globaldef.draw_ui_debug) {
+        if (global.game->Iso.globaldef.draw_ui_debug) {
             R_Rectangle(ENGINE()->target, p_x + e.second->x, p_y + e.second->y, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h, {255, 20, 147, 255});
             if (e.second->resizable.resizable) {
                 R_Rectangle(ENGINE()->target, p_x + e.second->x + e.second->w - 20.0f, p_y + e.second->y + e.second->h - 20.0f, p_x + e.second->x + e.second->w, p_y + e.second->y + e.second->h,
@@ -257,7 +257,7 @@ void UISystem::UIRendererDrawImGui() {
     uidata->imgui->Draw();
 }
 
-f32 BoxDistence(ME_rect box, MEvec2 A) {
+f32 BoxDistence(MErect box, MEvec2 A) {
     if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;
     return 0;
 }
@@ -293,7 +293,7 @@ void UISystem::UIRendererUpdate() {
             p_y = 0;
         }
 
-        ME_rect rect{.x = (float)e.second->x + p_x, .y = (float)e.second->y + p_y, .w = (float)e.second->w, .h = (float)e.second->h};
+        MErect rect{.x = (float)e.second->x + p_x, .y = (float)e.second->y + p_y, .w = (float)e.second->w, .h = (float)e.second->h};
         if (e.second->type == ElementType::windowElement) {
             // Focus window
             if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) {
@@ -416,7 +416,7 @@ bool UISystem::UIIsMouseOnControls() {
     int x = ControlSystem::mouse_x, y = ControlSystem::mouse_y;
 
     for (auto &&e : uidata->elementLists) {
-        ME_rect rect{.x = (float)e.second->x, .y = (float)e.second->y, .w = (float)e.second->w, .h = (float)e.second->h};
+        MErect rect{.x = (float)e.second->x, .y = (float)e.second->y, .w = (float)e.second->w, .h = (float)e.second->h};
         if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) return true;
     }
     return false;

@@ -707,8 +707,8 @@ void R_GetVirtualCoords(R_Target *target, float *x, float *y, float displayX, fl
     if (gpu_current_renderer->coordinate_mode) *y = target->h - *y;
 }
 
-ME_rect R_MakeRect(float x, float y, float w, float h) {
-    ME_rect r;
+MErect R_MakeRect(float x, float y, float w, float h) {
+    MErect r;
     r.x = x;
     r.y = y;
     r.w = w;
@@ -736,7 +736,7 @@ R_RendererID R_MakeRendererID(const char *name, int major_version, int minor_ver
     return r;
 }
 
-void R_SetViewport(R_Target *target, ME_rect viewport) {
+void R_SetViewport(R_Target *target, MErect viewport) {
     if (target != NULL) target->viewport = viewport;
 }
 
@@ -797,19 +797,19 @@ R_Image *R_CopyImage(R_Image *image) {
     return CopyImage(gpu_current_renderer, image);
 }
 
-void R_UpdateImage(R_Image *image, const ME_rect *image_rect, void *surface, const ME_rect *surface_rect) {
+void R_UpdateImage(R_Image *image, const MErect *image_rect, void *surface, const MErect *surface_rect) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
     UpdateImage(gpu_current_renderer, image, image_rect, surface, surface_rect);
 }
 
-void R_UpdateImageBytes(R_Image *image, const ME_rect *image_rect, const unsigned char *bytes, int bytes_per_row) {
+void R_UpdateImageBytes(R_Image *image, const MErect *image_rect, const unsigned char *bytes, int bytes_per_row) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return;
 
     UpdateImageBytes(gpu_current_renderer, image, image_rect, bytes, bytes_per_row);
 }
 
-bool R_ReplaceImage(R_Image *image, void *surface, const ME_rect *surface_rect) {
+bool R_ReplaceImage(R_Image *image, void *surface, const MErect *surface_rect) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return false;
 
     return ReplaceImage(gpu_current_renderer, image, surface, surface_rect);
@@ -906,7 +906,7 @@ R_Image *R_CopyImageFromSurface(void *surface) {
     return CopyImageFromSurface(gpu_current_renderer, surface, NULL);
 }
 
-R_Image *R_CopyImageFromSurfaceRect(void *surface, ME_rect *surface_rect) {
+R_Image *R_CopyImageFromSurfaceRect(void *surface, MErect *surface_rect) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return NULL;
 
     return CopyImageFromSurface(gpu_current_renderer, surface, surface_rect);
@@ -966,7 +966,7 @@ void R_FreeTarget(R_Target *target) {
     FreeTarget(gpu_current_renderer, target);
 }
 
-void R_Blit(R_Image *image, ME_rect *src_rect, R_Target *target, float x, float y) {
+void R_Blit(R_Image *image, MErect *src_rect, R_Target *target, float x, float y) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -977,7 +977,7 @@ void R_Blit(R_Image *image, ME_rect *src_rect, R_Target *target, float x, float 
     Blit(gpu_current_renderer, image, src_rect, target, x, y);
 }
 
-void R_BlitRotate(R_Image *image, ME_rect *src_rect, R_Target *target, float x, float y, float degrees) {
+void R_BlitRotate(R_Image *image, MErect *src_rect, R_Target *target, float x, float y, float degrees) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -988,7 +988,7 @@ void R_BlitRotate(R_Image *image, ME_rect *src_rect, R_Target *target, float x, 
     BlitRotate(gpu_current_renderer, image, src_rect, target, x, y, degrees);
 }
 
-void R_BlitScale(R_Image *image, ME_rect *src_rect, R_Target *target, float x, float y, float scaleX, float scaleY) {
+void R_BlitScale(R_Image *image, MErect *src_rect, R_Target *target, float x, float y, float scaleX, float scaleY) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -999,7 +999,7 @@ void R_BlitScale(R_Image *image, ME_rect *src_rect, R_Target *target, float x, f
     BlitScale(gpu_current_renderer, image, src_rect, target, x, y, scaleX, scaleY);
 }
 
-void R_BlitTransform(R_Image *image, ME_rect *src_rect, R_Target *target, float x, float y, float degrees, float scaleX, float scaleY) {
+void R_BlitTransform(R_Image *image, MErect *src_rect, R_Target *target, float x, float y, float degrees, float scaleX, float scaleY) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -1010,7 +1010,7 @@ void R_BlitTransform(R_Image *image, ME_rect *src_rect, R_Target *target, float 
     BlitTransform(gpu_current_renderer, image, src_rect, target, x, y, degrees, scaleX, scaleY);
 }
 
-void R_BlitTransformX(R_Image *image, ME_rect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY) {
+void R_BlitTransformX(R_Image *image, MErect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -1021,7 +1021,7 @@ void R_BlitTransformX(R_Image *image, ME_rect *src_rect, R_Target *target, float
     BlitTransformX(gpu_current_renderer, image, src_rect, target, x, y, pivot_x, pivot_y, degrees, scaleX, scaleY);
 }
 
-void R_BlitRect(R_Image *image, ME_rect *src_rect, R_Target *target, ME_rect *dest_rect) {
+void R_BlitRect(R_Image *image, MErect *src_rect, R_Target *target, MErect *dest_rect) {
     float w = 0.0f;
     float h = 0.0f;
 
@@ -1038,7 +1038,7 @@ void R_BlitRect(R_Image *image, ME_rect *src_rect, R_Target *target, ME_rect *de
     R_BlitRectX(image, src_rect, target, dest_rect, 0.0f, w * 0.5f, h * 0.5f, R_FLIP_NONE);
 }
 
-void R_BlitRectX(R_Image *image, ME_rect *src_rect, R_Target *target, ME_rect *dest_rect, float degrees, float pivot_x, float pivot_y, R_FlipEnum flip_direction) {
+void R_BlitRectX(R_Image *image, MErect *src_rect, R_Target *target, MErect *dest_rect, float degrees, float pivot_x, float pivot_y, R_FlipEnum flip_direction) {
     float w, h;
     float dx, dy;
     float dw, dh;
@@ -1115,18 +1115,18 @@ void R_GenerateMipmaps(R_Image *image) {
     GenerateMipmaps(gpu_current_renderer, image);
 }
 
-ME_rect R_SetClipRect(R_Target *target, ME_rect rect) {
+MErect R_SetClipRect(R_Target *target, MErect rect) {
     if (target == NULL || gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) {
-        ME_rect r = {0, 0, 0, 0};
+        MErect r = {0, 0, 0, 0};
         return r;
     }
 
     return SetClip(gpu_current_renderer, target, (i16)rect.x, (i16)rect.y, (Uint16)rect.w, (Uint16)rect.h);
 }
 
-ME_rect R_SetClip(R_Target *target, i16 x, i16 y, Uint16 w, Uint16 h) {
+MErect R_SetClip(R_Target *target, i16 x, i16 y, Uint16 w, Uint16 h) {
     if (target == NULL || gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) {
-        ME_rect r = {0, 0, 0, 0};
+        MErect r = {0, 0, 0, 0};
         return r;
     }
 
@@ -1140,10 +1140,10 @@ void R_UnsetClip(R_Target *target) {
 }
 
 /* Adapted from SDL_IntersectRect() */
-bool R_IntersectRect(ME_rect A, ME_rect B, ME_rect *result) {
+bool R_IntersectRect(MErect A, MErect B, MErect *result) {
     bool has_horiz_intersection = false;
     float Amin, Amax, Bmin, Bmax;
-    ME_rect intersection;
+    MErect intersection;
 
     // Special case for empty rects
     if (A.w <= 0.0f || A.h <= 0.0f || B.w <= 0.0f || B.h <= 0.0f) return false;
@@ -1179,11 +1179,11 @@ bool R_IntersectRect(ME_rect A, ME_rect B, ME_rect *result) {
         return false;
 }
 
-bool R_IntersectClipRect(R_Target *target, ME_rect B, ME_rect *result) {
+bool R_IntersectClipRect(R_Target *target, MErect B, MErect *result) {
     if (target == NULL) return false;
 
     if (!target->use_clip_rect) {
-        ME_rect A = {0, 0, (float)(target->w), (float)(target->h)};
+        MErect A = {0, 0, (float)(target->w), (float)(target->h)};
         return R_IntersectRect(A, B, result);
     }
 
@@ -2489,7 +2489,7 @@ void R_Rectangle(R_Target *target, float x1, float y1, float x2, float y2, ME_Co
     Rectangle(renderer, target, x1, y1, x2, y2, color);
 }
 
-void R_Rectangle2(R_Target *target, ME_rect rect, ME_Color color) {
+void R_Rectangle2(R_Target *target, MErect rect, ME_Color color) {
     CHECK_RENDERER();
     Rectangle(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 }
@@ -2499,7 +2499,7 @@ void R_RectangleFilled(R_Target *target, float x1, float y1, float x2, float y2,
     RectangleFilled(renderer, target, x1, y1, x2, y2, color);
 }
 
-void R_RectangleFilled2(R_Target *target, ME_rect rect, ME_Color color) {
+void R_RectangleFilled2(R_Target *target, MErect rect, ME_Color color) {
     CHECK_RENDERER();
     RectangleFilled(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 }
@@ -2509,7 +2509,7 @@ void R_RectangleRound(R_Target *target, float x1, float y1, float x2, float y2, 
     RectangleRound(renderer, target, x1, y1, x2, y2, radius, color);
 }
 
-void R_RectangleRound2(R_Target *target, ME_rect rect, float radius, ME_Color color) {
+void R_RectangleRound2(R_Target *target, MErect rect, float radius, ME_Color color) {
     CHECK_RENDERER();
     RectangleRound(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, radius, color);
 }
@@ -2519,7 +2519,7 @@ void R_RectangleRoundFilled(R_Target *target, float x1, float y1, float x2, floa
     RectangleRoundFilled(renderer, target, x1, y1, x2, y2, radius, color);
 }
 
-void R_RectangleRoundFilled2(R_Target *target, ME_rect rect, float radius, ME_Color color) {
+void R_RectangleRoundFilled2(R_Target *target, MErect rect, float radius, ME_Color color) {
     CHECK_RENDERER();
     RectangleRoundFilled(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, radius, color);
 }

@@ -43,3 +43,5 @@ global_def.draw_imgui_debug =false
 global_def.draw_profiler = false
 global_def.draw_console = false
 global_def.draw_pack_editor = false
+
+global_def.cell_iter = 3

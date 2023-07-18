@@ -9,12 +9,12 @@
 #include <unordered_map>
 #include <vector>
 
-#include "engine/core/core.hpp"
 #include "engine/core/base_memory.h"
+#include "engine/core/core.hpp"
 #include "engine/core/platform.h"
-#include "engine/utils/utility.hpp"
 #include "engine/renderer/gpu.hpp"
 #include "engine/ui/surface.h"
+#include "engine/utils/utility.hpp"
 #include "libs/lz4/lz4.h"
 
 u64 profiler_get_clock_frequency();
@@ -411,7 +411,7 @@ u64 profiler_get_clock_frequency() {
 
 f32 profiler_clock2ms(u64 _clock, u64 _frequency) { return (f32(_clock) / f32(_frequency)) * 1000.0f; }
 
-void ME_profiler_free_list_create(size_t _blockSize, u32 _maxBlocks, struct profiler_free_list_t *_freeList) {
+void ME_profiler_free_list_create(size_t _blockSize, u32 _maxBlocks, profiler_free_list_t *_freeList) {
     _freeList->m_maxBlocks = _maxBlocks;
     _freeList->m_blockSize = (u32)_blockSize;
     _freeList->m_blocksFree = _maxBlocks;
@@ -420,9 +420,9 @@ void ME_profiler_free_list_create(size_t _blockSize, u32 _maxBlocks, struct prof
     _freeList->m_next = _freeList->m_buffer;
 }
 
-void ME_profiler_free_list_destroy(struct profiler_free_list_t *_freeList) { ME_FREE(_freeList->m_buffer); }
+void ME_profiler_free_list_destroy(profiler_free_list_t *_freeList) { ME_FREE(_freeList->m_buffer); }
 
-void *ME_profiler_free_list_alloc(struct profiler_free_list_t *_freeList) {
+void *ME_profiler_free_list_alloc(profiler_free_list_t *_freeList) {
     if (_freeList->m_blocksAlllocated < _freeList->m_maxBlocks) {
         u32 *p = (u32 *)(_freeList->m_buffer + (_freeList->m_blocksAlllocated * _freeList->m_blockSize));
         *p = _freeList->m_blocksAlllocated + 1;
@@ -441,7 +441,7 @@ void *ME_profiler_free_list_alloc(struct profiler_free_list_t *_freeList) {
     return ret;
 }
 
-void ME_profiler_free_list_free(struct profiler_free_list_t *_freeList, void *_ptr) {
+void ME_profiler_free_list_free(profiler_free_list_t *_freeList, void *_ptr) {
     if (_freeList->m_next) {
         u32 index = ((u32)(_freeList->m_next - _freeList->m_buffer)) / _freeList->m_blockSize;
         *(u32 *)_ptr = index;
@@ -453,7 +453,7 @@ void ME_profiler_free_list_free(struct profiler_free_list_t *_freeList, void *_p
     ++_freeList->m_blocksFree;
 }
 
-int ME_profiler_free_list_check_ptr(struct profiler_free_list_t *_freeList, void *_ptr) {
+int ME_profiler_free_list_check_ptr(profiler_free_list_t *_freeList, void *_ptr) {
     return ((uintptr_t)_freeList->m_maxBlocks * (uintptr_t)_freeList->m_blockSize) > (uintptr_t)(((u8 *)_ptr) - _freeList->m_buffer) ? 1 : 0;
 }
 

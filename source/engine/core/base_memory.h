@@ -32,6 +32,19 @@ void* ME_mem_alloc_frame_alloc(ME_mem_alloc_frame_t* frame, size_t size);
 void ME_mem_alloc_frame_free(ME_mem_alloc_frame_t* frame);
 
 // define these to your own user definition as necessary
+
+#if 0
+
+#ifndef ME_MALLOC
+#define ME_MALLOC ME_MALLOC_FUNC
+#endif
+
+#ifndef ME_FREE
+#define ME_FREE ME_FREE_FUNC
+#endif
+
+#else
+
 #ifndef ME_MALLOC
 #define ME_MALLOC(size) ME_mem_alloc_leak_check_alloc((size), (char*)__FILE__, __LINE__)
 #endif
@@ -42,6 +55,8 @@ void ME_mem_alloc_frame_free(ME_mem_alloc_frame_t* frame);
 
 #ifndef ME_CALLOC
 #define ME_CALLOC(count, element_size) ME_mem_alloc_leak_check_calloc(count, element_size, (char*)__FILE__, __LINE__)
+#endif
+
 #endif
 
 #ifndef ME_NEW

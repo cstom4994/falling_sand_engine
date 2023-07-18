@@ -130,8 +130,8 @@ void draw_spinning_triangle(R_Target *screen) {
     gldata[19] = 1.0f;
     gldata[20] = 1.0f;
 
-    global.game->GameIsolate_.shaderworker->untexturedShader->Activate();
-    global.game->GameIsolate_.shaderworker->untexturedShader->Update(mvp, gldata);
+    global.game->Iso.shaderworker->untexturedShader->Activate();
+    global.game->Iso.shaderworker->untexturedShader->Update(mvp, gldata);
 }
 
 void draw_3d_stuff(R_Target *screen) {

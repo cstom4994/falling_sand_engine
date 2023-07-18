@@ -35,12 +35,12 @@ static void audio_play_event(std::string event) { global.audio.PlayEvent(event);
 
 static void textures_init() {
     // 贴图初始化
-    global.game->GameIsolate_.texturepack = (TexturePack *)ME_MALLOC(sizeof(TexturePack));
-    InitTexture(global.game->GameIsolate_.texturepack);
+    global.game->Iso.texturepack = (TexturePack *)ME_MALLOC(sizeof(TexturePack));
+    InitTexture(global.game->Iso.texturepack);
 }
 static void textures_end() {
-    EndTexture(global.game->GameIsolate_.texturepack);
-    ME_FREE(global.game->GameIsolate_.texturepack);
+    EndTexture(global.game->Iso.texturepack);
+    ME_FREE(global.game->Iso.texturepack);
 }
 static void textures_load(std::string name, std::string path) {}
 static void controls_init() { ControlSystem::InitKey(); }
@@ -68,7 +68,7 @@ void GameplayScriptSystem::Create() {
     Scripting::get_singleton_ptr()->FastCallFunc("OnGameLoad")(global.game);
 
     // GlobalDEF table initialization
-    InitGlobalDEF(&global.game->GameIsolate_.globaldef, false);
+    InitGlobalDEF(&global.game->Iso.globaldef, false);
 
     // I18N must be initialized after scripting system
     // It uses i18n.lua to function

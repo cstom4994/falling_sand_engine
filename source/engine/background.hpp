@@ -60,6 +60,9 @@ public:
     void Destory() override;
     void Reload() override;
     void RegisterLua(ME::LuaWrapper::State &s_lua) override;
+
+public:
+    void draw();
 };
 
 #endif

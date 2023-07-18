@@ -948,18 +948,18 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
 )markdown";
 
-    if (global.game->GameIsolate_.globaldef.draw_imgui_debug) {
+    if (global.game->Iso.globaldef.draw_imgui_debug) {
         ImGui::ShowDemoWindow();
     }
 
     bool interactingWithTextbox;
     console.draw_internal_display();
-    if (global.game->GameIsolate_.globaldef.draw_console) console.display_full(&interactingWithTextbox);
+    if (global.game->Iso.globaldef.draw_console) console.display_full(&interactingWithTextbox);
 
-    if (global.game->GameIsolate_.globaldef.draw_pack_editor) m_pack_editor.Draw();
+    if (global.game->Iso.globaldef.draw_pack_editor) m_pack_editor.Draw();
 
     auto cpos = editor.GetCursorPosition();
-    if (global.game->GameIsolate_.globaldef.ui_tweak) {
+    if (global.game->Iso.globaldef.ui_tweak) {
 
         ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
         ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
@@ -998,24 +998,24 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                     if (ImGui::Button("NPC")) {
 
-                        MEvec4 pl_transform{-global.game->GameIsolate_.world->loadZone.x + global.game->GameIsolate_.world->tickZone.x + global.game->GameIsolate_.world->tickZone.w / 2.0f,
-                                            -global.game->GameIsolate_.world->loadZone.y + global.game->GameIsolate_.world->tickZone.y + global.game->GameIsolate_.world->tickZone.h / 2.0f, 10, 20};
+                        MEvec4 pl_transform{-global.game->Iso.world->loadZone.x + global.game->Iso.world->tickZone.x + global.game->Iso.world->tickZone.w / 2.0f,
+                                            -global.game->Iso.world->loadZone.y + global.game->Iso.world->tickZone.y + global.game->Iso.world->tickZone.h / 2.0f, 10, 20};
 
                         b2PolygonShape sh;
                         sh.SetAsBox(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
-                        RigidBody *rb = global.game->GameIsolate_.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.x + pl_transform.z / 2.0f - 0.5,
+                        RigidBody *rb = global.game->Iso.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.x + pl_transform.z / 2.0f - 0.5,
                                                                                        pl_transform.y + pl_transform.w / 2.0f - 0.5, 0, sh, 1, 1, NULL);
                         rb->body->SetGravityScale(0);
                         rb->body->SetLinearDamping(0);
                         rb->body->SetAngularDamping(0);
 
-                        auto npc = global.game->GameIsolate_.world->Reg().create_entity();
+                        auto npc = global.game->Iso.world->Reg().create_entity();
                         ME::ECS::entity_filler(npc)
                                 .component<Controlable>()
                                 .component<WorldEntity>(true, pl_transform.x, pl_transform.y, 0.0f, 0.0f, (int)pl_transform.z, (int)pl_transform.w, rb, std::string("NPC"))
                                 .component<Bot>(1);
 
-                        auto npc_bot = global.game->GameIsolate_.world->Reg().find_component<Bot>(npc);
+                        auto npc_bot = global.game->Iso.world->Reg().find_component<Bot>(npc);
                         // npc_bot->setItemInHand(global.game->GameIsolate_.world->Reg().find_component<WorldEntity>(global.game->GameIsolate_.world->player), i3,
                         // global.game->GameIsolate_.world.get());
                     }
@@ -1040,7 +1040,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     ImGui::SameLine();
                     if (ImGui::Button("StaticRefl")) {
 
-                        if (global.game->GameIsolate_.world == nullptr || !global.game->GameIsolate_.world->isPlayerInWorld()) {
+                        if (global.game->Iso.world == nullptr || !global.game->Iso.world->isPlayerInWorld()) {
                         } else {
                             using namespace ME::meta::static_refl;
 
@@ -1079,7 +1079,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                             //     std::cout << field.name << " : " << var << std::endl;
                             // });
 
-                            auto p = global.game->GameIsolate_.world->Reg().find_component<Player>(global.game->GameIsolate_.world->player);
+                            auto p = global.game->Iso.world->Reg().find_component<Player>(global.game->Iso.world->player);
 
                             // Just for test
                             Item *i3 = new Item();
@@ -1093,8 +1093,8 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                                 if constexpr (field.is_func) {
                                     if (field.name != "setItemInHand") return;
                                     if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(WorldEntity * we, Item * item, World * world) /* const */>(&Player::setItemInHand)))
-                                        (p->*(field.value))(global.game->GameIsolate_.world->Reg().find_component<WorldEntity>(global.game->GameIsolate_.world->player), i3,
-                                                            global.game->GameIsolate_.world.get());
+                                        (p->*(field.value))(global.game->Iso.world->Reg().find_component<WorldEntity>(global.game->Iso.world->player), i3,
+                                                            global.game->Iso.world.get());
                                     // else if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(Item *item, World *world) /* const */>(&Player::setItemInHand)))
                                     //     std::cout << (p.*(field.value))(1.f) << std::endl;
                                     else
@@ -1131,10 +1131,10 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                             // });
                         }
                     }
-                    ImGui::Checkbox("Profiler", &global.game->GameIsolate_.globaldef.draw_profiler);
-                    ImGui::Checkbox("控制台", &global.game->GameIsolate_.globaldef.draw_console);
-                    ImGui::Checkbox("包编辑器", &global.game->GameIsolate_.globaldef.draw_pack_editor);
-                    ImGui::Checkbox("UI", &global.game->GameIsolate_.ui->uidata->elementLists["testElement1"]->visible);
+                    ImGui::Checkbox("Profiler", &global.game->Iso.globaldef.draw_profiler);
+                    ImGui::Checkbox("控制台", &global.game->Iso.globaldef.draw_console);
+                    ImGui::Checkbox("包编辑器", &global.game->Iso.globaldef.draw_pack_editor);
+                    ImGui::Checkbox("UI", &global.game->Iso.ui->uidata->elementLists["testElement1"]->visible);
                     if (ImGui::Button("Meo")) {
                     }
                     ImGui::SameLine();
@@ -1161,7 +1161,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                 if (CollapsingHeader(ICON_LANG(ICON_FA_VECTOR_SQUARE, "ui_telemetry"))) {
                     GameUI::DrawDebugUI(global.game);
                 }
-#define INSPECTSHADER(_c) ME::inspect_shader(#_c, global.game->GameIsolate_.shaderworker->_c->shader)
+#define INSPECTSHADER(_c) ME::inspect_shader(#_c, global.game->Iso.shaderworker->_c->shader)
                 if (CollapsingHeader(CC("GLSL"))) {
                     ImGui::Indent();
                     INSPECTSHADER(newLightingShader);
@@ -1193,7 +1193,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     static Chunk *check_chunk_ptr = nullptr;
 
                     if (ImGui::BeginCombo("ChunkList", CC("选择检视区块..."))) {
-                        for (auto &p1 : global.game->GameIsolate_.world->chunkCache)
+                        for (auto &p1 : global.game->Iso.world->chunkCache)
                             for (auto &p2 : p1.second) {
                                 if (ImGui::Selectable(p2.second->pack_filename.c_str())) {
                                     check_chunk.x = p2.second->x;
@@ -1226,12 +1226,12 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                 if (CollapsingHeader(LANG("ui_entities"))) {
 
                     ImGui::Indent();
-                    ImGui::Auto(global.game->GameIsolate_.world->rigidBodies, "刚体");
-                    ImGui::Auto(global.game->GameIsolate_.world->worldRigidBodies, "世界刚体");
+                    ImGui::Auto(global.game->Iso.world->rigidBodies, "刚体");
+                    ImGui::Auto(global.game->Iso.world->worldRigidBodies, "世界刚体");
 
-                    ImGui::Text("ECS: %lu %lu", global.game->GameIsolate_.world->Reg().memory_usage().entities, global.game->GameIsolate_.world->Reg().memory_usage().components);
+                    ImGui::Text("ECS: %lu %lu", global.game->Iso.world->Reg().memory_usage().entities, global.game->Iso.world->Reg().memory_usage().components);
 
-                    global.game->GameIsolate_.world->Reg().for_joined_components<WorldEntity, Player>([&](ME::ECS::entity, WorldEntity &we, Player &p) {
+                    global.game->Iso.world->Reg().for_joined_components<WorldEntity, Player>([&](ME::ECS::entity, WorldEntity &we, Player &p) {
                         ImGui::Auto(we, "实体");
                         ImGui::Auto(p, "玩家");
                     });
@@ -1268,7 +1268,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     // });
                     int i = 0;
 
-                    for (auto &s : global.game->GameIsolate_.systemList) {
+                    for (auto &s : global.game->Iso.systemList) {
 
                         ImGui::PushID(i++);
                         ImGui::TableNextRow(ImGuiTableRowFlags_None);
@@ -1479,7 +1479,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     }
                 };
 
-                ME::meta::dostruct::for_each(global.game->GameIsolate_.globaldef, ShowCVar);
+                ME::meta::dostruct::for_each(global.game->Iso.globaldef, ShowCVar);
 
                 ImGui::EndTable();
             }

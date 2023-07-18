@@ -50,7 +50,7 @@ int ControlSystem::mouse_y = 0;
 
 void ControlSystem::KeyEvent(C_KeyboardEvent event) {
 
-    if (global.game->GameIsolate_.ui->UIRendererInput(event)) return;
+    if (global.game->Iso.ui->UIRendererInput(event)) return;
 
     for (auto &v : keyControls) {
         if (v->key == event.keysym.sym) {

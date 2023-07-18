@@ -166,12 +166,12 @@ void DefaultGenerator::generateChunk(World *world, Chunk *ch) {
 
             if (b->id == BiomeGetID("DEFAULT")) {
                 if (py > surf) {
-                    int tx = (global.game->GameIsolate_.texturepack->caveBG->surface->w + (px % global.game->GameIsolate_.texturepack->caveBG->surface->w)) %
-                             global.game->GameIsolate_.texturepack->caveBG->surface->w;
-                    int ty = (global.game->GameIsolate_.texturepack->caveBG->surface->h + (py % global.game->GameIsolate_.texturepack->caveBG->surface->h)) %
-                             global.game->GameIsolate_.texturepack->caveBG->surface->h;
-                    background[x + y * CHUNK_W] = R_GET_PIXEL(global.game->GameIsolate_.texturepack->caveBG->surface, tx % global.game->GameIsolate_.texturepack->caveBG->surface->w,
-                                                              ty % global.game->GameIsolate_.texturepack->caveBG->surface->h);
+                    int tx = (global.game->Iso.texturepack->caveBG->surface->w + (px % global.game->Iso.texturepack->caveBG->surface->w)) %
+                             global.game->Iso.texturepack->caveBG->surface->w;
+                    int ty = (global.game->Iso.texturepack->caveBG->surface->h + (py % global.game->Iso.texturepack->caveBG->surface->h)) %
+                             global.game->Iso.texturepack->caveBG->surface->h;
+                    background[x + y * CHUNK_W] = R_GET_PIXEL(global.game->Iso.texturepack->caveBG->surface, tx % global.game->Iso.texturepack->caveBG->surface->w,
+                                                              ty % global.game->Iso.texturepack->caveBG->surface->h);
                     f64 thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
                     f64 n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;
@@ -189,13 +189,13 @@ void DefaultGenerator::generateChunk(World *world, Chunk *ch) {
                 layer2[x + y * CHUNK_W] = Tiles_NOTHING;
             } else if (b->id == BiomeGetID("PLAINS")) {
                 if (py > surf) {
-                    int tx = (global.game->GameIsolate_.texturepack->caveBG->surface->w + (px % global.game->GameIsolate_.texturepack->caveBG->surface->h)) %
-                             global.game->GameIsolate_.texturepack->caveBG->surface->h;
-                    int ty = (global.game->GameIsolate_.texturepack->caveBG->surface->h + (py % global.game->GameIsolate_.texturepack->caveBG->surface->h)) %
-                             global.game->GameIsolate_.texturepack->caveBG->surface->h;
-                    u8 *pixel = (u8 *)global.game->GameIsolate_.texturepack->caveBG->surface->pixels;
-                    pixel += ((ty % global.game->GameIsolate_.texturepack->caveBG->surface->h) * global.game->GameIsolate_.texturepack->caveBG->surface->pitch) +
-                             ((tx % global.game->GameIsolate_.texturepack->caveBG->surface->w) * sizeof(u32));
+                    int tx = (global.game->Iso.texturepack->caveBG->surface->w + (px % global.game->Iso.texturepack->caveBG->surface->h)) %
+                             global.game->Iso.texturepack->caveBG->surface->h;
+                    int ty = (global.game->Iso.texturepack->caveBG->surface->h + (py % global.game->Iso.texturepack->caveBG->surface->h)) %
+                             global.game->Iso.texturepack->caveBG->surface->h;
+                    u8 *pixel = (u8 *)global.game->Iso.texturepack->caveBG->surface->pixels;
+                    pixel += ((ty % global.game->Iso.texturepack->caveBG->surface->h) * global.game->Iso.texturepack->caveBG->surface->pitch) +
+                             ((tx % global.game->Iso.texturepack->caveBG->surface->w) * sizeof(u32));
                     background[x + y * CHUNK_W] = *((u32 *)pixel);
                     f64 thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
@@ -214,13 +214,13 @@ void DefaultGenerator::generateChunk(World *world, Chunk *ch) {
                 layer2[x + y * CHUNK_W] = Tiles_NOTHING;
             } else if (b->id == BiomeGetID("MOUNTAINS")) {
                 if (py > surf) {
-                    int tx = (global.game->GameIsolate_.texturepack->caveBG->surface->w + (px % global.game->GameIsolate_.texturepack->caveBG->surface->h)) %
-                             global.game->GameIsolate_.texturepack->caveBG->surface->h;
-                    int ty = (global.game->GameIsolate_.texturepack->caveBG->surface->h + (py % global.game->GameIsolate_.texturepack->caveBG->surface->h)) %
-                             global.game->GameIsolate_.texturepack->caveBG->surface->h;
-                    u8 *pixel = (u8 *)global.game->GameIsolate_.texturepack->caveBG->surface->pixels;
-                    pixel += ((ty % global.game->GameIsolate_.texturepack->caveBG->surface->h) * global.game->GameIsolate_.texturepack->caveBG->surface->pitch) +
-                             ((tx % global.game->GameIsolate_.texturepack->caveBG->surface->w) * sizeof(u32));
+                    int tx = (global.game->Iso.texturepack->caveBG->surface->w + (px % global.game->Iso.texturepack->caveBG->surface->h)) %
+                             global.game->Iso.texturepack->caveBG->surface->h;
+                    int ty = (global.game->Iso.texturepack->caveBG->surface->h + (py % global.game->Iso.texturepack->caveBG->surface->h)) %
+                             global.game->Iso.texturepack->caveBG->surface->h;
+                    u8 *pixel = (u8 *)global.game->Iso.texturepack->caveBG->surface->pixels;
+                    pixel += ((ty % global.game->Iso.texturepack->caveBG->surface->h) * global.game->Iso.texturepack->caveBG->surface->pitch) +
+                             ((tx % global.game->Iso.texturepack->caveBG->surface->w) * sizeof(u32));
                     background[x + y * CHUNK_W] = *((u32 *)pixel);
                     f64 thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
@@ -239,13 +239,13 @@ void DefaultGenerator::generateChunk(World *world, Chunk *ch) {
                 layer2[x + y * CHUNK_W] = Tiles_NOTHING;
             } else if (b->id == BiomeGetID("FOREST")) {
                 if (py > surf) {
-                    int tx = (global.game->GameIsolate_.texturepack->caveBG->surface->w + (px % global.game->GameIsolate_.texturepack->caveBG->surface->h)) %
-                             global.game->GameIsolate_.texturepack->caveBG->surface->h;
-                    int ty = (global.game->GameIsolate_.texturepack->caveBG->surface->h + (py % global.game->GameIsolate_.texturepack->caveBG->surface->h)) %
-                             global.game->GameIsolate_.texturepack->caveBG->surface->h;
-                    u8 *pixel = (u8 *)global.game->GameIsolate_.texturepack->caveBG->surface->pixels;
-                    pixel += ((ty % global.game->GameIsolate_.texturepack->caveBG->surface->h) * global.game->GameIsolate_.texturepack->caveBG->surface->pitch) +
-                             ((tx % global.game->GameIsolate_.texturepack->caveBG->surface->w) * sizeof(u32));
+                    int tx = (global.game->Iso.texturepack->caveBG->surface->w + (px % global.game->Iso.texturepack->caveBG->surface->h)) %
+                             global.game->Iso.texturepack->caveBG->surface->h;
+                    int ty = (global.game->Iso.texturepack->caveBG->surface->h + (py % global.game->Iso.texturepack->caveBG->surface->h)) %
+                             global.game->Iso.texturepack->caveBG->surface->h;
+                    u8 *pixel = (u8 *)global.game->Iso.texturepack->caveBG->surface->pixels;
+                    pixel += ((ty % global.game->Iso.texturepack->caveBG->surface->h) * global.game->Iso.texturepack->caveBG->surface->pitch) +
+                             ((tx % global.game->Iso.texturepack->caveBG->surface->w) * sizeof(u32));
                     background[x + y * CHUNK_W] = *((u32 *)pixel);
                     f64 thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 

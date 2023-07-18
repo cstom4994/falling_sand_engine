@@ -97,7 +97,7 @@ static void FreeFormat(SDL_PixelFormat *format);
 
 static char shader_message[256];
 
-static_inline void fast_upload_texture(const void *pixels, ME_rect update_rect, u32 format, int alignment, int row_length) {
+static_inline void fast_upload_texture(const void *pixels, MErect update_rect, u32 format, int alignment, int row_length) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, row_length);
 
@@ -107,7 +107,7 @@ static_inline void fast_upload_texture(const void *pixels, ME_rect update_rect, 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
 
-void row_upload_texture(const unsigned char *pixels, ME_rect update_rect, u32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
+void row_upload_texture(const unsigned char *pixels, MErect update_rect, u32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
     unsigned int i;
     unsigned int h = (unsigned int)update_rect.h;
     (void)bytes_per_pixel;
@@ -122,7 +122,7 @@ void row_upload_texture(const unsigned char *pixels, ME_rect update_rect, u32 fo
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 }
 
-void copy_upload_texture(const unsigned char *pixels, ME_rect update_rect, u32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
+void copy_upload_texture(const unsigned char *pixels, MErect update_rect, u32 format, int alignment, unsigned int pitch, int bytes_per_pixel) {
     unsigned int i;
     unsigned int h = (unsigned int)update_rect.h;
     unsigned int w = ((unsigned int)update_rect.w) * bytes_per_pixel;
@@ -145,15 +145,15 @@ void copy_upload_texture(const unsigned char *pixels, ME_rect update_rect, u32 f
     }
 }
 
-void (*slow_upload_texture)(const unsigned char *pixels, ME_rect update_rect, u32 format, int alignment, unsigned int pitch, int bytes_per_pixel) = NULL;
+void (*slow_upload_texture)(const unsigned char *pixels, MErect update_rect, u32 format, int alignment, unsigned int pitch, int bytes_per_pixel) = NULL;
 
-static_inline void upload_texture(const void *pixels, ME_rect update_rect, u32 format, int alignment, int row_length, unsigned int pitch, int bytes_per_pixel) {
+static_inline void upload_texture(const void *pixels, MErect update_rect, u32 format, int alignment, int row_length, unsigned int pitch, int bytes_per_pixel) {
     (void)pitch;
     (void)bytes_per_pixel;
     fast_upload_texture(pixels, update_rect, format, alignment, row_length);
 }
 
-static_inline void upload_new_texture(void *pixels, ME_rect update_rect, u32 format, int alignment, int row_length, int bytes_per_pixel) {
+static_inline void upload_new_texture(void *pixels, MErect update_rect, u32 format, int alignment, int row_length, int bytes_per_pixel) {
     (void)bytes_per_pixel;
     glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, row_length);
@@ -791,7 +791,7 @@ void prepareToRenderShapes(R_Renderer *renderer, unsigned int shape) {
     if (context->current_shader_program == context->default_textured_shader_program) ActivateShaderProgram(renderer, context->default_untextured_shader_program, NULL);
 }
 
-void forceChangeViewport(R_Target *target, ME_rect viewport) {
+void forceChangeViewport(R_Target *target, MErect viewport) {
     float y;
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)(R_GetContextTarget()->context->data);
 
@@ -2744,13 +2744,13 @@ R_Image *CopyImage(R_Renderer *renderer, R_Image *image) {
     return result;
 }
 
-void UpdateImage(R_Renderer *renderer, R_Image *image, const ME_rect *image_rect, void *surface, const ME_rect *surface_rect) {
+void UpdateImage(R_Renderer *renderer, R_Image *image, const MErect *image_rect, void *surface, const MErect *surface_rect) {
     R_IMAGE_DATA *data;
     GLenum original_format;
 
     SDL_Surface *newSurface;
-    ME_rect updateRect;
-    ME_rect sourceRect;
+    MErect updateRect;
+    MErect sourceRect;
     int alignment;
     u8 *pixels;
 
@@ -2833,11 +2833,11 @@ void UpdateImage(R_Renderer *renderer, R_Image *image, const ME_rect *image_rect
     if (surface != newSurface) SDL_FreeSurface(newSurface);
 }
 
-void UpdateImageBytes(R_Renderer *renderer, R_Image *image, const ME_rect *image_rect, const unsigned char *bytes, int bytes_per_row) {
+void UpdateImageBytes(R_Renderer *renderer, R_Image *image, const MErect *image_rect, const unsigned char *bytes, int bytes_per_row) {
     R_IMAGE_DATA *data;
     GLenum original_format;
 
-    ME_rect updateRect;
+    MErect updateRect;
     int alignment;
 
     if (image == NULL || bytes == NULL) return;
@@ -2880,9 +2880,9 @@ void UpdateImageBytes(R_Renderer *renderer, R_Image *image, const ME_rect *image
     upload_texture(bytes, updateRect, original_format, alignment, bytes_per_row / image->bytes_per_pixel, bytes_per_row, image->bytes_per_pixel);
 }
 
-bool ReplaceImage(R_Renderer *renderer, R_Image *image, void *surface, const ME_rect *surface_rect) {
+bool ReplaceImage(R_Renderer *renderer, R_Image *image, void *surface, const MErect *surface_rect) {
     R_IMAGE_DATA *data;
-    ME_rect sourceRect;
+    MErect sourceRect;
     SDL_Surface *newSurface;
     GLenum internal_format;
     u8 *pixels;
@@ -3062,7 +3062,7 @@ static_inline u32 getPixel(SDL_Surface *Surface, int x, int y) {
     return 0;  // FIXME: Handle errors better
 }
 
-R_Image *CopyImageFromSurface(R_Renderer *renderer, void *surface, const ME_rect *surface_rect) {
+R_Image *CopyImageFromSurface(R_Renderer *renderer, void *surface, const MErect *surface_rect) {
     R_FormatEnum format;
     R_Image *image;
     int sw, sh;
@@ -3406,7 +3406,7 @@ void FreeTarget(R_Renderer *renderer, R_Target *target) {
     SET_UNTEXTURED_VERTEX(x2, y2, r, g, b, a);              \
     SET_RELATIVE_INDEXED_VERTEX(-2);
 
-void Blit(R_Renderer *renderer, R_Image *image, ME_rect *src_rect, R_Target *target, float x, float y) {
+void Blit(R_Renderer *renderer, R_Image *image, MErect *src_rect, R_Target *target, float x, float y) {
     u32 tex_w, tex_h;
     float w;
     float h;
@@ -3556,7 +3556,7 @@ void Blit(R_Renderer *renderer, R_Image *image, ME_rect *src_rect, R_Target *tar
     cdata->blit_buffer_num_vertices += R_BLIT_BUFFER_VERTICES_PER_SPRITE;
 }
 
-void BlitRotate(R_Renderer *renderer, R_Image *image, ME_rect *src_rect, R_Target *target, float x, float y, float degrees) {
+void BlitRotate(R_Renderer *renderer, R_Image *image, MErect *src_rect, R_Target *target, float x, float y, float degrees) {
     float w, h;
     if (image == NULL) {
         R_PushErrorCode("R_BlitRotate", R_ERROR_NULL_ARGUMENT, "image");
@@ -3572,7 +3572,7 @@ void BlitRotate(R_Renderer *renderer, R_Image *image, ME_rect *src_rect, R_Targe
     BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x, h * image->anchor_y, degrees, 1.0f, 1.0f);
 }
 
-void BlitScale(R_Renderer *renderer, R_Image *image, ME_rect *src_rect, R_Target *target, float x, float y, float scaleX, float scaleY) {
+void BlitScale(R_Renderer *renderer, R_Image *image, MErect *src_rect, R_Target *target, float x, float y, float scaleX, float scaleY) {
     float w, h;
     if (image == NULL) {
         R_PushErrorCode("R_BlitScale", R_ERROR_NULL_ARGUMENT, "image");
@@ -3588,7 +3588,7 @@ void BlitScale(R_Renderer *renderer, R_Image *image, ME_rect *src_rect, R_Target
     BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x, h * image->anchor_y, 0.0f, scaleX, scaleY);
 }
 
-void BlitTransform(R_Renderer *renderer, R_Image *image, ME_rect *src_rect, R_Target *target, float x, float y, float degrees, float scaleX, float scaleY) {
+void BlitTransform(R_Renderer *renderer, R_Image *image, MErect *src_rect, R_Target *target, float x, float y, float degrees, float scaleX, float scaleY) {
     float w, h;
     if (image == NULL) {
         R_PushErrorCode("R_BlitTransform", R_ERROR_NULL_ARGUMENT, "image");
@@ -3604,7 +3604,7 @@ void BlitTransform(R_Renderer *renderer, R_Image *image, ME_rect *src_rect, R_Ta
     BlitTransformX(renderer, image, src_rect, target, x, y, w * image->anchor_x, h * image->anchor_y, degrees, scaleX, scaleY);
 }
 
-void BlitTransformX(R_Renderer *renderer, R_Image *image, ME_rect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY) {
+void BlitTransformX(R_Renderer *renderer, R_Image *image, MErect *src_rect, R_Target *target, float x, float y, float pivot_x, float pivot_y, float degrees, float scaleX, float scaleY) {
     u32 tex_w, tex_h;
     float x1, y1, x2, y2;
     float dx1, dy1, dx2, dy2, dx3, dy3, dx4, dy4;
@@ -4258,8 +4258,8 @@ void GenerateMipmaps(R_Renderer *renderer, R_Image *image) {
 #endif
 }
 
-ME_rect SetClip(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y, u16 w, u16 h) {
-    ME_rect r;
+MErect SetClip(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y, u16 w, u16 h) {
+    MErect r;
     if (target == NULL) {
         r.x = r.y = r.w = r.h = 0;
         return r;
