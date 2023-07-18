@@ -2,7 +2,7 @@
 #include <cstddef>
 #include <type_traits>
 
-namespace ME::ECS {
+namespace ME::ecs {
 class entity;
 class const_entity;
 
@@ -50,10 +50,10 @@ using entity_id = std::uint32_t;
 constexpr std::size_t entity_id_index_bits = 22u;
 constexpr std::size_t entity_id_version_bits = 10u;
 
-static_assert(std::is_unsigned_v<family_id>, "ME::ECS (family_id must be an unsigned integer)");
+static_assert(std::is_unsigned_v<family_id>, "ME::ecs (family_id must be an unsigned integer)");
 
-static_assert(std::is_unsigned_v<entity_id>, "ME::ECS (entity_id must be an unsigned integer)");
+static_assert(std::is_unsigned_v<entity_id>, "ME::ecs (entity_id must be an unsigned integer)");
 
 static_assert(entity_id_index_bits > 0u && entity_id_version_bits > 0u && sizeof(entity_id) == (entity_id_index_bits + entity_id_version_bits) / 8u,
-              "ME::ECS (invalid entity id index and version bits)");
-}  // namespace ME::ECS
+              "ME::ecs (invalid entity id index and version bits)");
+}  // namespace ME::ecs

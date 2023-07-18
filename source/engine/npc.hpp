@@ -163,9 +163,9 @@ inline Bot::Bot(int _ID) {
     pos = {0, 0};
 }
 
-class NpcSystem : public ME::ECS::system<move_player_event> {
+class NpcSystem : public ME::ecs::system<move_player_event> {
 public:
-    void process(ME::ECS::registry &world, const move_player_event &evt) override;
+    void process(ME::ecs::registry &world, const move_player_event &evt) override;
 };
 
 #endif

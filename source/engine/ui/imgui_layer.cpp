@@ -1010,7 +1010,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                         rb->body->SetAngularDamping(0);
 
                         auto npc = global.game->Iso.world->Reg().create_entity();
-                        ME::ECS::entity_filler(npc)
+                        ME::ecs::entity_filler(npc)
                                 .component<Controlable>()
                                 .component<WorldEntity>(true, pl_transform.x, pl_transform.y, 0.0f, 0.0f, (int)pl_transform.z, (int)pl_transform.w, rb, std::string("NPC"))
                                 .component<Bot>(1);
@@ -1084,17 +1084,16 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                             // Just for test
                             Item *i3 = new Item();
                             i3->setFlag(ItemFlags::ItemFlags_Hammer);
-                            i3->surface = LoadTexture("data/assets/objects/testHammer.png")->surface;
-                            i3->image = R_CopyImageFromSurface(i3->surface);
-                            R_SetImageFilter(i3->image, R_FILTER_NEAREST);
+                            i3->texture = global.game->Iso.texturepack.testHammer;
+                            // i3->image = R_CopyImageFromSurface(i3->surface);
+                            // R_SetImageFilter(i3->image, R_FILTER_NEAREST);
                             i3->pivotX = 2;
 
                             TypeInfo<Player>::fields.ForEach([&](auto field) {
                                 if constexpr (field.is_func) {
                                     if (field.name != "setItemInHand") return;
                                     if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(WorldEntity * we, Item * item, World * world) /* const */>(&Player::setItemInHand)))
-                                        (p->*(field.value))(global.game->Iso.world->Reg().find_component<WorldEntity>(global.game->Iso.world->player), i3,
-                                                            global.game->Iso.world.get());
+                                        (p->*(field.value))(global.game->Iso.world->Reg().find_component<WorldEntity>(global.game->Iso.world->player), i3, global.game->Iso.world.get());
                                     // else if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(Item *item, World *world) /* const */>(&Player::setItemInHand)))
                                     //     std::cout << (p.*(field.value))(1.f) << std::endl;
                                     else
@@ -1231,7 +1230,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                     ImGui::Text("ECS: %lu %lu", global.game->Iso.world->Reg().memory_usage().entities, global.game->Iso.world->Reg().memory_usage().components);
 
-                    global.game->Iso.world->Reg().for_joined_components<WorldEntity, Player>([&](ME::ECS::entity, WorldEntity &we, Player &p) {
+                    global.game->Iso.world->Reg().for_joined_components<WorldEntity, Player>([&](ME::ecs::entity, WorldEntity &we, Player &p) {
                         ImGui::Auto(we, "实体");
                         ImGui::Auto(p, "玩家");
                     });
@@ -1278,7 +1277,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                         if (ImGui::TableSetColumnIndex(2)) {
                             if (ImGui::SmallButton("Reload")) {
                                 METADOT_BUG("Reloading ", s->getName().c_str());
-                                s->Reload();
+                                s->reload();
                             }
                             ImGui::SameLine();
                             if (ImGui::SmallButton("Edit")) {

@@ -102,10 +102,10 @@ public:
 
     REGISTER_SYSTEM(ShaderWorkerSystem)
 
-    void Create() override;
-    void Destory() override;
-    void Reload() override;
-    void RegisterLua(ME::LuaWrapper::State &s_lua) override;
+    void create() override;
+    void destory() override;
+    void reload() override;
+    void registerLua(ME::LuaWrapper::State &s_lua) override;
 };
 
 #endif

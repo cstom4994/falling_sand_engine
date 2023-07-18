@@ -87,16 +87,16 @@ public:
         phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>> chunkCache;
         std::vector<Populator *> populators;
 
-        ME::ECS::entity_id player;
+        ME::ecs::entity_id player;
     };
 
     struct {
-        ME::ECS::registry registry;
+        ME::ecs::registry registry;
 
         WorldSystem world_sys;
     };
 
-    ME::ECS::registry &Reg() { return registry; }
+    ME::ecs::registry &Reg() { return registry; }
 
     bool *hasPopulator = nullptr;
     int highestPopulator = 0;
@@ -155,8 +155,8 @@ public:
     void tickChunkGeneration();
     void addCell(CellData *cell);
     void explosion(int x, int y, int radius);
-    RigidBody *makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, ME::phy::Shape *shape, f32 density, f32 friction, C_Surface *texture);
-    RigidBody *makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<ME::phy::Shape *> shape, f32 density, f32 friction, C_Surface *texture);
+    RigidBody *makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, ME::phy::Shape *shape, f32 density, f32 friction, TextureRef texture);
+    RigidBody *makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<ME::phy::Shape *> shape, f32 density, f32 friction, TextureRef texture);
     void updateRigidBodyHitbox(RigidBody *rb);
     void updateChunkMesh(Chunk *chunk);
     void updateWorldMesh();

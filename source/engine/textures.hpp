@@ -8,46 +8,59 @@
 #include "engine/engine.h"
 #include "engine/renderer/renderer_gpu.h"
 
-typedef struct Texture {
-    C_Surface *surface;
-} Texture;
+// 贴图类
+class Texture {
+private:
+    C_Surface *m_surface = nullptr;
+    R_Image *m_image = nullptr;
 
-typedef struct TexturePack {
-    Texture *testTexture;
-    Texture *dirt1Texture;
-    Texture *stone1Texture;
-    Texture *smoothStone;
-    Texture *cobbleStone;
-    Texture *flatCobbleStone;
-    Texture *smoothDirt;
-    Texture *cobbleDirt;
-    Texture *flatCobbleDirt;
-    Texture *softDirt;
-    Texture *cloud;
-    Texture *gold;
-    Texture *goldMolten;
-    Texture *goldSolid;
-    Texture *iron;
-    Texture *obsidian;
-    Texture *caveBG;
-    Texture *testAse;
+public:
+    Texture(const std::string &path);
+    Texture(C_Surface *sur) noexcept;
+    ~Texture();
 
-    Texture *testVacuum;
-    Texture *testHammer;
-    Texture *testPickaxe;
-    Texture *testBucket;
-} TexturePack;
+    C_Surface *surface() const { return m_surface; }
+    R_Image *image() const { return m_image; }
+};
 
-void InitTexture(TexturePack *tex);
-void EndTexture(TexturePack *tex);
+// 贴图引用
+using TextureRef = ME::ref<Texture>;
 
-Texture *CreateTexture(C_Surface *surface);
-void DestroyTexture(Texture *tex);
-Texture *LoadTexture(const char *path);
-Texture *LoadTextureInternal(const char *path, u32 pixelFormat);
+struct TexturePack {
+    TextureRef testTexture;
+    TextureRef dirt1Texture;
+    TextureRef stone1Texture;
+    TextureRef smoothStone;
+    TextureRef cobbleStone;
+    TextureRef flatCobbleStone;
+    TextureRef smoothDirt;
+    TextureRef cobbleDirt;
+    TextureRef flatCobbleDirt;
+    TextureRef softDirt;
+    TextureRef cloud;
+    TextureRef gold;
+    TextureRef goldMolten;
+    TextureRef goldSolid;
+    TextureRef iron;
+    TextureRef obsidian;
+    TextureRef caveBG;
+    TextureRef testAse;
+
+    TextureRef testVacuum;
+    TextureRef testHammer;
+    TextureRef testPickaxe;
+    TextureRef testBucket;
+    TextureRef testBucketFilled;
+};
+
+void InitTexture(TexturePack &tex);
+void EndTexture(TexturePack &tex);
+
+TextureRef LoadTexture(const std::string &path);
+TextureRef LoadTextureInternal(const std::string &path, u32 pixelFormat);
 C_Surface *ScaleSurface(C_Surface *src, f32 x, f32 y);
-Texture *LoadAsepriteTexture(const char *path);
-Texture *LoadTextureData(const char *path);
-void RenderTextureRect(Texture *tex, R_Target *target, int x, int y, MErect *clip = nullptr);
+TextureRef LoadAsepriteTexture(const std::string &path);
+TextureRef LoadTextureData(const std::string &path);
+void RenderTextureRect(TextureRef tex, R_Target *target, int x, int y, MErect *clip = nullptr);
 
 #endif

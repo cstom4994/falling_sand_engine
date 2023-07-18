@@ -17,35 +17,54 @@ RigidBody::~RigidBody() {
     // if (item) delete item;
 }
 
-bool RigidBody::set_surface(C_Surface *sur) {
-    this->surface = sur;
-    return true;
+// bool RigidBody::set_surface(C_Surface *sur) {
+//     this->tex = sur;
+//     return true;
+// }
+
+C_Surface *RigidBody::get_surface() const { return texture()->surface(); }
+
+void RigidBody::setTexture(TextureRef tex) {
+    ME_ASSERT(tex);
+    this->m_texture = tex;
 }
 
-C_Surface *RigidBody::get_surface() { return this->surface; }
+TextureRef RigidBody::texture() const { return this->m_texture; }
 
-bool RigidBody::set_texture(R_Image *tex) {
-    this->texture = tex;
-    return true;
+R_Image *RigidBody::image() const {
+    // TODO: 需不需要判断image为空?
+    return this->m_image;
 }
 
-R_Image *RigidBody::get_texture() { return this->texture; }
+void RigidBody::updateImage(std::optional<C_Surface *> image) {
+
+    // 先释放原有的Image
+    if (this->m_image) R_FreeImage(this->m_image);
+
+    if (image.has_value()) {
+        this->m_image = R_CopyImageFromSurface(image.value());
+    } else {
+        this->m_image = R_CopyImageFromSurface(this->get_surface());
+    }
+
+    R_SetImageFilter(this->m_image, R_FILTER_NEAREST);
+}
 
 void RigidBody::clean() {
 
     if (NULL != body->shape()) delete body->shape();
 
     if (NULL != this->tiles) delete[] this->tiles;
-    if (NULL != this->texture) R_FreeImage(this->get_texture());
-    if (NULL != this->surface) SDL_FreeSurface(this->get_surface());
+    // if (NULL != this->texture) R_FreeImage(this->get_texture());
+    // if (NULL != this->surface) SDL_FreeSurface(this->get_surface());
 }
 
 void Player::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
     if (heldItem != NULL) {
         int scaleEnt = global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1;
 
-        MErect *ir = new MErect{(f32)(int)(ofsX + we->x + we->hw / 2.0 - heldItem->surface->w), (f32)(int)(ofsY + we->y + we->hh / 2.0 - heldItem->surface->h / 2), (f32)heldItem->surface->w,
-                                  (f32)heldItem->surface->h};
+        MErect *ir = new MErect{(f32)(int)(ofsX + we->x + we->hw / 2.0 - heldItem->texture->surface()->w), (f32)(int)(ofsY + we->y + we->hh / 2.0 - heldItem->texture->surface()->h / 2),
+                                (f32)heldItem->texture->surface()->w, (f32)heldItem->texture->surface()->h};
         f32 fx = (f32)(int)(-ir->x + ofsX + we->x + we->hw / 2.0);
         f32 fy = (f32)(int)(-ir->y + ofsY + we->y + we->hh / 2.0);
         fx -= heldItem->pivotX;
@@ -79,10 +98,10 @@ void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
 
         f32 angle = holdAngle;
 
-        MEvec2 pt = rotate_point2(0, 0, angle * 3.1415 / 180.0, {(f32)(heldItem->surface->w / 2.0), (f32)(heldItem->surface->h / 2.0)});
+        MEvec2 pt = rotate_point2(0, 0, angle * 3.1415 / 180.0, {(f32)(heldItem->texture->surface()->w / 2.0), (f32)(heldItem->texture->surface()->h / 2.0)});
 
         r = world->makeRigidBody(ME::phy::Body::BodyType::Dynamic, we->x + we->hw / 2 + world->loadZone.x - pt.x + 16 * cos((holdAngle + 180) * 3.1415f / 180.0f),
-                                 we->y + we->hh / 2 + world->loadZone.y - pt.y + 16 * sin((holdAngle + 180) * 3.1415f / 180.0f), angle, ps, 1, 0.3, heldItem->surface);
+                                 we->y + we->hh / 2 + world->loadZone.y - pt.y + 16 * sin((holdAngle + 180) * 3.1415f / 180.0f), angle, ps, 1, 0.3, heldItem->texture);
 
         //  0 -> -w/2 -h/2
         // 90 ->  w/2 -h/2
@@ -137,18 +156,18 @@ MEvec2 rotate_point2(f32 cx, f32 cy, f32 angle, MEvec2 p) {
     return MEvec2(xn + cx, yn + cy);
 }
 
-void ControableSystem::process(ME::ECS::registry &world, const move_player_event &evt) {
+void ControableSystem::process(ME::ecs::registry &world, const move_player_event &evt) {
     world.for_joined_components<WorldEntity, Player>(
-            [&evt](ME::ECS::entity, WorldEntity &we, Player &pl) {
+            [&evt](ME::ecs::entity, WorldEntity &we, Player &pl) {
                 pl.renderLQ(&we, evt.g->TexturePack_.textureEntitiesLQ->target, evt.g->Iso.world->loadZone.x + (int)(we.vx * evt.thruTick), evt.g->Iso.world->loadZone.y + (int)(we.vy * evt.thruTick));
                 pl.render(&we, evt.g->TexturePack_.textureEntities->target, evt.g->Iso.world->loadZone.x + (int)(we.vx * evt.thruTick), evt.g->Iso.world->loadZone.y + (int)(we.vy * evt.thruTick));
             },
-            ME::ECS::exists<Player>{} && ME::ECS::exists<Controlable>{});
+            ME::ecs::exists<Player>{} && ME::ecs::exists<Controlable>{});
 }
 
-void WorldEntitySystem::process(ME::ECS::registry &world, const entity_update_event &evt) {
+void WorldEntitySystem::process(ME::ecs::registry &world, const entity_update_event &evt) {
     world.for_joined_components<WorldEntity>(
-            [&evt](ME::ECS::entity, WorldEntity &pl) {
+            [&evt](ME::ecs::entity, WorldEntity &pl) {
                 // entity fluid displacement & make solid
 
                 for (int tx = 0; tx < pl.hw; tx++) {
@@ -171,5 +190,5 @@ void WorldEntitySystem::process(ME::ECS::registry &world, const entity_update_ev
                     }
                 }
             },
-            ME::ECS::exists<WorldEntity>{});
+            ME::ecs::exists<WorldEntity>{});
 }

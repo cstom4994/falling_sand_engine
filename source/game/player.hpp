@@ -11,8 +11,10 @@
 
 class RigidBody {
 private:
-    C_Surface *surface = nullptr;
-    R_Image *texture = nullptr;
+    // C_Surface *surface = nullptr;
+    R_Image *m_image = nullptr;
+
+    TextureRef m_texture;
 
 public:
     std::string name;
@@ -42,11 +44,15 @@ public:
     RigidBody(ME::phy::Body *body, std::string name = "unknown");
     ~RigidBody();
 
-    bool set_surface(C_Surface *sur);
-    C_Surface *get_surface();
+    // bool set_surface(C_Surface *sur);
+    C_Surface *get_surface() const;
 
-    bool set_texture(R_Image *tex);
-    R_Image *get_texture();
+    void setTexture(TextureRef tex);
+    TextureRef texture() const;
+
+    R_Image *image() const;
+
+    void updateImage(std::optional<C_Surface *> image);
 
     void clean();
 };
@@ -219,14 +225,14 @@ struct entity_update_event {
     Game *g;
 };
 
-class ControableSystem : public ME::ECS::system<move_player_event> {
+class ControableSystem : public ME::ecs::system<move_player_event> {
 public:
-    void process(ME::ECS::registry &world, const move_player_event &evt) override;
+    void process(ME::ecs::registry &world, const move_player_event &evt) override;
 };
 
-class WorldEntitySystem : public ME::ECS::system<entity_update_event> {
+class WorldEntitySystem : public ME::ecs::system<entity_update_event> {
 public:
-    void process(ME::ECS::registry &world, const entity_update_event &evt) override;
+    void process(ME::ecs::registry &world, const entity_update_event &evt) override;
 };
 
 #pragma endregion Player

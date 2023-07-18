@@ -19,7 +19,7 @@
 #include "engine/core/mathlib.hpp"
 #include "ecs_impl.hpp"
 
-namespace ME::ECS {
+namespace ME::ecs {
 
 class entity final {
 public:
@@ -91,13 +91,13 @@ bool operator==(const entity& l, const const_entity& r) noexcept;
 
 bool operator!=(const entity& l, const entity& r) noexcept;
 bool operator!=(const entity& l, const const_entity& r) noexcept;
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 namespace std {
 template <>
-struct hash<ME::ECS::entity> final {
-    std::size_t operator()(const ME::ECS::entity& ent) const noexcept {
-        return NewMaths::hash_combine(std::hash<const ME::ECS::registry*>()(&ent.owner()), std::hash<ME::ECS::entity_id>()(ent.id()));
+struct hash<ME::ecs::entity> final {
+    std::size_t operator()(const ME::ecs::entity& ent) const noexcept {
+        return NewMaths::hash_combine(std::hash<const ME::ecs::registry*>()(&ent.owner()), std::hash<ME::ecs::entity_id>()(ent.id()));
     }
 };
 }  // namespace std
@@ -108,7 +108,7 @@ struct hash<ME::ECS::entity> final {
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 class const_entity final {
 public:
     const_entity(const entity& ent) noexcept;
@@ -156,13 +156,13 @@ bool operator==(const const_entity& l, const const_entity& r) noexcept;
 
 bool operator!=(const const_entity& l, const entity& r) noexcept;
 bool operator!=(const const_entity& l, const const_entity& r) noexcept;
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 namespace std {
 template <>
-struct hash<ME::ECS::const_entity> final {
-    std::size_t operator()(const ME::ECS::const_entity& ent) const noexcept {
-        return NewMaths::hash_combine(std::hash<const ME::ECS::registry*>()(&ent.owner()), std::hash<ME::ECS::entity_id>()(ent.id()));
+struct hash<ME::ecs::const_entity> final {
+    std::size_t operator()(const ME::ecs::const_entity& ent) const noexcept {
+        return NewMaths::hash_combine(std::hash<const ME::ecs::registry*>()(&ent.owner()), std::hash<ME::ecs::entity_id>()(ent.id()));
     }
 };
 }  // namespace std
@@ -173,7 +173,7 @@ struct hash<ME::ECS::const_entity> final {
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 template <typename T>
 class component final {
 public:
@@ -229,12 +229,12 @@ template <typename T>
 bool operator!=(const component<T>& l, const component<T>& r) noexcept;
 template <typename T>
 bool operator!=(const component<T>& l, const const_component<T>& r) noexcept;
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 namespace std {
 template <typename T>
-struct hash<ME::ECS::component<T>> {
-    std::size_t operator()(const ME::ECS::component<T>& comp) const noexcept { return std::hash<ME::ECS::entity>()(comp.owner()); }
+struct hash<ME::ecs::component<T>> {
+    std::size_t operator()(const ME::ecs::component<T>& comp) const noexcept { return std::hash<ME::ecs::entity>()(comp.owner()); }
 };
 }  // namespace std
 
@@ -244,7 +244,7 @@ struct hash<ME::ECS::component<T>> {
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 template <typename T>
 class const_component final {
 public:
@@ -285,12 +285,12 @@ template <typename T>
 bool operator!=(const const_component<T>& l, const component<T>& r) noexcept;
 template <typename T>
 bool operator!=(const const_component<T>& l, const const_component<T>& r) noexcept;
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 namespace std {
 template <typename T>
-struct hash<ME::ECS::const_component<T>> {
-    std::size_t operator()(const ME::ECS::const_component<T>& comp) const noexcept { return std::hash<ME::ECS::const_entity>()(comp.owner()); }
+struct hash<ME::ecs::const_component<T>> {
+    std::size_t operator()(const ME::ecs::const_component<T>& comp) const noexcept { return std::hash<ME::ecs::const_entity>()(comp.owner()); }
 };
 }  // namespace std
 
@@ -300,7 +300,7 @@ struct hash<ME::ECS::const_component<T>> {
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 
 class prototype final {
 public:
@@ -337,7 +337,7 @@ private:
 };
 
 void swap(prototype& l, prototype& r) noexcept;
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -345,7 +345,7 @@ void swap(prototype& l, prototype& r) noexcept;
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 template <typename E>
 class after {
 public:
@@ -357,7 +357,7 @@ class before {
 public:
     const E& event;
 };
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -365,7 +365,7 @@ public:
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 template <>
 class system<> {
 public:
@@ -380,7 +380,7 @@ public:
 
 template <typename E, typename... Es>
 class system<E, Es...> : public system<E>, public system<Es...> {};
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -388,7 +388,7 @@ class system<E, Es...> : public system<E>, public system<Es...> {};
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 class feature final {
 public:
     feature() = default;
@@ -421,7 +421,7 @@ private:
     std::vector<std::unique_ptr<system<>>> systems_;
     mutable detail::incremental_locker systems_locker_;
 };
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -429,7 +429,7 @@ private:
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 class registry final {
 private:
     class uentity {
@@ -631,7 +631,7 @@ private:
     mutable detail::incremental_locker features_locker_;
     detail::sparse_map<family_id, feature> features_;
 };
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -639,7 +639,7 @@ private:
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 
 //
 // options
@@ -735,7 +735,7 @@ template <typename A, typename B, typename = std::enable_if_t<detail::is_option_
 option_disj<std::decay_t<A>, std::decay_t<B>> operator||(A&& a, B&& b) {
     return {std::forward<A>(a), std::forward<B>(b)};
 }
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -743,7 +743,7 @@ option_disj<std::decay_t<A>, std::decay_t<B>> operator||(A&& a, B&& b) {
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 template <typename... Ts>
 class aspect {
 public:
@@ -771,7 +771,7 @@ public:
         owner.for_joined_components<Ts...>(std::forward<F>(f), std::forward<Opts>(opts)...);
     }
 };
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -779,7 +779,7 @@ public:
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 class entity_filler final {
 public:
     entity_filler(entity& entity) noexcept : entity_(entity) {}
@@ -807,7 +807,7 @@ public:
 private:
     registry& registry_;
 };
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -815,7 +815,7 @@ private:
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 inline entity::entity(registry& owner) noexcept : owner_(&owner) {}
 
 inline entity::entity(registry& owner, entity_id id) noexcept : owner_(&owner), id_(id) {}
@@ -905,7 +905,7 @@ inline bool operator==(const entity& l, const const_entity& r) noexcept { return
 inline bool operator!=(const entity& l, const entity& r) noexcept { return !(l == r); }
 
 inline bool operator!=(const entity& l, const const_entity& r) noexcept { return !(l == r); }
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -913,7 +913,7 @@ inline bool operator!=(const entity& l, const const_entity& r) noexcept { return
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 inline const_entity::const_entity(const entity& ent) noexcept : owner_(&ent.owner()), id_(ent.id()) {}
 
 inline const_entity::const_entity(const registry& owner) noexcept : owner_(&owner) {}
@@ -962,7 +962,7 @@ inline bool operator==(const const_entity& l, const const_entity& r) noexcept { 
 inline bool operator!=(const const_entity& l, const entity& r) noexcept { return !(l == r); }
 
 inline bool operator!=(const const_entity& l, const const_entity& r) noexcept { return !(l == r); }
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -970,7 +970,7 @@ inline bool operator!=(const const_entity& l, const const_entity& r) noexcept { 
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 template <typename T>
 component<T>::component(const entity& owner) noexcept : owner_(owner) {}
 
@@ -1080,7 +1080,7 @@ template <typename T>
 bool operator!=(const component<T>& l, const const_component<T>& r) noexcept {
     return !(l == r);
 }
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -1088,7 +1088,7 @@ bool operator!=(const component<T>& l, const const_component<T>& r) noexcept {
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 template <typename T>
 const_component<T>::const_component(const component<T>& comp) noexcept : owner_(comp.owner()) {}
 
@@ -1159,7 +1159,7 @@ template <typename T>
 bool operator!=(const const_component<T>& l, const const_component<T>& r) noexcept {
     return !(l == r);
 }
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -1167,7 +1167,7 @@ bool operator!=(const const_component<T>& l, const const_component<T>& r) noexce
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 namespace detail {
 template <typename T, typename... Args>
 typed_applier_with_args<T, Args...>::typed_applier_with_args(std::tuple<Args...>&& args) : args_(std::move(args)) {}
@@ -1285,7 +1285,7 @@ inline void prototype::apply_to_entity(entity& ent, bool override) const {
 }
 
 inline void swap(prototype& l, prototype& r) noexcept { l.swap(r); }
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -1293,7 +1293,7 @@ inline void swap(prototype& l, prototype& r) noexcept { l.swap(r); }
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 inline feature& feature::enable() & noexcept {
     disabled_ = false;
     return *this;
@@ -1350,7 +1350,7 @@ feature& feature::process_event(registry& owner, const Event& event) {
 
     return *this;
 }
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 // -----------------------------------------------------------------------------
 //
@@ -1358,7 +1358,7 @@ feature& feature::process_event(registry& owner, const Event& event) {
 //
 // -----------------------------------------------------------------------------
 
-namespace ME::ECS {
+namespace ME::ecs {
 //
 // registry::uentity
 //
@@ -1444,7 +1444,7 @@ inline entity registry::create_entity() {
         return wrap_entity(new_ent_id);
     }
     if (last_entity_id_ >= detail::entity_id_index_mask) {
-        throw std::logic_error("ME::ECS::registry (entity index overlow)");
+        throw std::logic_error("ME::ecs::registry (entity index overlow)");
     }
     if (free_entity_ids_.capacity() <= entity_ids_.size()) {
         // ensure free entity ids capacity for safe (noexcept) entity destroying
@@ -1543,7 +1543,7 @@ T& registry::get_component(const uentity& ent) {
     if (T* component = find_component<T>(ent)) {
         return *component;
     }
-    throw std::logic_error("ME::ECS::registry (component not found)");
+    throw std::logic_error("ME::ecs::registry (component not found)");
 }
 
 template <typename T>
@@ -1552,7 +1552,7 @@ const T& registry::get_component(const const_uentity& ent) const {
     if (const T* component = find_component<T>(ent)) {
         return *component;
     }
-    throw std::logic_error("ME::ECS::registry (component not found)");
+    throw std::logic_error("ME::ecs::registry (component not found)");
 }
 
 template <typename T>
@@ -1700,7 +1700,7 @@ feature& registry::get_feature() {
     if (feature* f = features_.find(feature_id)) {
         return *f;
     }
-    throw std::logic_error("ME::ECS::registry (feature not found)");
+    throw std::logic_error("ME::ecs::registry (feature not found)");
 }
 
 template <typename Tag>
@@ -1709,7 +1709,7 @@ const feature& registry::get_feature() const {
     if (const feature* f = features_.find(feature_id)) {
         return *f;
     }
-    throw std::logic_error("ME::ECS::registry (feature not found)");
+    throw std::logic_error("ME::ecs::registry (feature not found)");
 }
 
 template <typename Event>
@@ -1818,6 +1818,6 @@ void registry::for_joined_components_impl_(const const_uentity& e, const F& f, c
     (void)ss;
     f(e, cs...);
 }
-}  // namespace ME::ECS
+}  // namespace ME::ecs
 
 #endif

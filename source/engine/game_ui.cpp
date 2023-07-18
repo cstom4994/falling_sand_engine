@@ -177,22 +177,22 @@ void OptionsUI__DrawVideo(Game *game) {
         R_FreeTarget(game->TexturePack_.textureEntities->target);
         R_FreeImage(game->TexturePack_.textureEntities);
 
-        game->TexturePack_.textureObjects = R_CreateImage(game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
-                                                          game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
-                                                          R_FormatEnum::R_FORMAT_RGBA);
+        game->TexturePack_.textureObjects =
+                R_CreateImage(game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
+                              game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
         R_SetImageFilter(game->TexturePack_.textureObjects, R_FILTER_NEAREST);
 
-        game->TexturePack_.textureObjectsBack = R_CreateImage(
-                game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
-                game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+        game->TexturePack_.textureObjectsBack =
+                R_CreateImage(game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
+                              game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
         R_SetImageFilter(game->TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
 
         R_LoadTarget(game->TexturePack_.textureObjects);
         R_LoadTarget(game->TexturePack_.textureObjectsBack);
 
-        game->TexturePack_.textureEntities = R_CreateImage(
-                game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
-                game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+        game->TexturePack_.textureEntities =
+                R_CreateImage(game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
+                              game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
         R_SetImageFilter(game->TexturePack_.textureEntities, R_FILTER_NEAREST);
 
         R_LoadTarget(game->TexturePack_.textureEntities);
@@ -426,7 +426,7 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
 
         game->Iso.world = ME::create_scope<World>();
         game->Iso.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / 3 / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3,
-                                       ENGINE()->target, &global.audio, generator);
+                              ENGINE()->target, &global.audio, generator);
         game->Iso.world->metadata.worldName = std::string(gameUI.MainMenuUI__worldNameBuf);
         game->Iso.world->metadata.lastOpenedTime = ME_gettime() / 1000;
         game->Iso.world->metadata.lastOpenedVersion = std::to_string(ME_buildnum());
@@ -545,7 +545,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
 
                 game->Iso.world = ME::create_scope<World>();
                 game->Iso.world->init(METADOT_RESLOC(std::format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
-                                               (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, ENGINE()->target, &global.audio);
+                                      (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, ENGINE()->target, &global.audio);
                 game->Iso.world->metadata.lastOpenedTime = ME_gettime() / 1000;
                 game->Iso.world->metadata.lastOpenedVersion = std::to_string(ME_buildnum());
                 game->Iso.world->metadata.save(game->Iso.world->worldName);
@@ -596,7 +596,7 @@ void DrawDebugUI(Game *game) {
 
         if (ImGui::TreeNode(CC("GLSL方法"))) {
             if (ImGui::Button(CC("重新加载GLSL"))) {
-                global.game->Iso.shaderworker->Reload();
+                global.game->Iso.shaderworker->reload();
             }
             ImGui::Checkbox(CC("绘制GLSL"), &global.game->Iso.globaldef.draw_shaders);
 
@@ -663,22 +663,22 @@ void DrawDebugUI(Game *game) {
                 R_FreeTarget(game->TexturePack_.textureEntities->target);
                 R_FreeImage(game->TexturePack_.textureEntities);
 
-                game->TexturePack_.textureObjects = R_CreateImage(
-                        game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
-                        game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+                game->TexturePack_.textureObjects =
+                        R_CreateImage(game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
+                                      game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(game->TexturePack_.textureObjects, R_FILTER_NEAREST);
 
-                game->TexturePack_.textureObjectsBack = R_CreateImage(
-                        game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
-                        game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+                game->TexturePack_.textureObjectsBack =
+                        R_CreateImage(game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
+                                      game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(game->TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
 
                 R_LoadTarget(game->TexturePack_.textureObjects);
                 R_LoadTarget(game->TexturePack_.textureObjectsBack);
 
-                game->TexturePack_.textureEntities = R_CreateImage(
-                        game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
-                        game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+                game->TexturePack_.textureEntities =
+                        R_CreateImage(game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
+                                      game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(game->TexturePack_.textureEntities, R_FILTER_NEAREST);
 
                 R_LoadTarget(game->TexturePack_.textureEntities);
@@ -718,22 +718,18 @@ void DebugDrawUI__Setup() {
     }
 
     gameUI.DebugDrawUI__tools_images = {};
-    Texture *sfc = LoadTexture("data/assets/objects/testPickaxe.png");
-    gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
+    TextureRef sfc = global.game->Iso.texturepack.testPickaxe;
+    gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface()));
     R_SetImageFilter(gameUI.DebugDrawUI__tools_images[0], R_FILTER_NEAREST);
-    DestroyTexture(sfc);
-    sfc = LoadTexture("data/assets/objects/testHammer.png");
-    gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
+    sfc = global.game->Iso.texturepack.testHammer;
+    gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface()));
     R_SetImageFilter(gameUI.DebugDrawUI__tools_images[1], R_FILTER_NEAREST);
-    DestroyTexture(sfc);
-    sfc = LoadTexture("data/assets/objects/testVacuum.png");
-    gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
+    sfc = global.game->Iso.texturepack.testVacuum;
+    gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface()));
     R_SetImageFilter(gameUI.DebugDrawUI__tools_images[2], R_FILTER_NEAREST);
-    DestroyTexture(sfc);
-    sfc = LoadTexture("data/assets/objects/testBucket.png");
-    gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface));
+    sfc = global.game->Iso.texturepack.testBucket;
+    gameUI.DebugDrawUI__tools_images.push_back(R_CopyImageFromSurface(sfc->surface()));
     R_SetImageFilter(gameUI.DebugDrawUI__tools_images[3], R_FILTER_NEAREST);
-    DestroyTexture(sfc);
 }
 
 void DebugDrawUI__Draw(Game *game) {
@@ -841,9 +837,9 @@ void DebugDrawUI__Draw(Game *game) {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::ItemFlags_Tool);
-                    i3->surface = LoadTexture("data/assets/objects/testPickaxe.png")->surface;
-                    i3->image = R_CopyImageFromSurface(i3->surface);
-                    R_SetImageFilter(i3->image, R_FILTER_NEAREST);
+                    i3->texture = global.game->Iso.texturepack.testPickaxe;
+                    // i3->image = R_CopyImageFromSurface(i3->surface);
+                    // R_SetImageFilter(i3->image, R_FILTER_NEAREST);
                     i3->pivotX = 2;
 
                     auto pl = game->Iso.world->Reg().find_component<Player>(game->Iso.world->player);
@@ -864,9 +860,9 @@ void DebugDrawUI__Draw(Game *game) {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::ItemFlags_Hammer);
-                    i3->surface = LoadTexture("data/assets/objects/testHammer.png")->surface;
-                    i3->image = R_CopyImageFromSurface(i3->surface);
-                    R_SetImageFilter(i3->image, R_FILTER_NEAREST);
+                    i3->texture = global.game->Iso.texturepack.testHammer;
+                    // i3->image = R_CopyImageFromSurface(i3->surface);
+                    // R_SetImageFilter(i3->image, R_FILTER_NEAREST);
                     i3->pivotX = 2;
                     auto pl = game->Iso.world->Reg().find_component<Player>(game->Iso.world->player);
                     pl->setItemInHand(game->Iso.world->Reg().find_component<WorldEntity>(game->Iso.world->player), i3, game->Iso.world.get());
@@ -885,9 +881,9 @@ void DebugDrawUI__Draw(Game *game) {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::ItemFlags_Vacuum);
-                    i3->surface = LoadTexture("data/assets/objects/testVacuum.png")->surface;
-                    i3->image = R_CopyImageFromSurface(i3->surface);
-                    R_SetImageFilter(i3->image, R_FILTER_NEAREST);
+                    i3->texture = global.game->Iso.texturepack.testVacuum;
+                    // i3->image = R_CopyImageFromSurface(i3->surface);
+                    // R_SetImageFilter(i3->image, R_FILTER_NEAREST);
                     i3->pivotX = 6;
                     auto pl = game->Iso.world->Reg().find_component<Player>(game->Iso.world->player);
                     pl->setItemInHand(game->Iso.world->Reg().find_component<WorldEntity>(game->Iso.world->player), i3, game->Iso.world.get());
@@ -907,11 +903,11 @@ void DebugDrawUI__Draw(Game *game) {
                 if (ImGui::ImageButton(texId, size, uv0, uv1, frame_padding, bg_col, tint_col)) {
                     Item *i3 = new Item();
                     i3->setFlag(ItemFlags::ItemFlags_Fluid_Container);
-                    i3->surface = LoadTexture("data/assets/objects/testBucket.png")->surface;
+                    i3->texture = global.game->Iso.texturepack.testBucket;
                     i3->capacity = 100;
-                    i3->loadFillTexture(LoadTexture("data/assets/objects/testBucket_fill.png")->surface);
-                    i3->image = R_CopyImageFromSurface(i3->surface);
-                    R_SetImageFilter(i3->image, R_FILTER_NEAREST);
+                    i3->loadFillTexture(global.game->Iso.texturepack.testBucketFilled->surface());
+                    // i3->image = R_CopyImageFromSurface(i3->surface);
+                    // R_SetImageFilter(i3->image, R_FILTER_NEAREST);
                     i3->pivotX = 0;
                     auto pl = game->Iso.world->Reg().find_component<Player>(game->Iso.world->player);
                     pl->setItemInHand(game->Iso.world->Reg().find_component<WorldEntity>(game->Iso.world->player), i3, game->Iso.world.get());

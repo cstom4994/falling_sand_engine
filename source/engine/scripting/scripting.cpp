@@ -247,7 +247,7 @@ static void InitLua(LuaCore *lc) {
 #define REGISTER_LUAFUNC(_f) lc->s_lua[#_f] = ME::LuaWrapper::function(_f)
 
     lc->s_lua["METADOT_RESLOC"] = ME::LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
-    lc->s_lua["GetSurfaceFromTexture"] = ME::LuaWrapper::function([](Texture *tex) { return tex->surface; });
+    lc->s_lua["GetSurfaceFromTexture"] = ME::LuaWrapper::function([](TextureRef tex) { return tex->surface(); });
     lc->s_lua["GetWindowH"] = ME::LuaWrapper::function([]() { return ENGINE()->windowHeight; });
     lc->s_lua["GetWindowW"] = ME::LuaWrapper::function([]() { return ENGINE()->windowWidth; });
 
@@ -257,8 +257,8 @@ static void InitLua(LuaCore *lc) {
     lc->s_lua["R_GetTextureHandle"] = ME::LuaWrapper::function(R_GetTextureHandle);
     lc->s_lua["R_GetTextureAttr"] = ME::LuaWrapper::function(R_GetTextureAttr);
     lc->s_lua["LoadTextureData"] = ME::LuaWrapper::function(LoadTextureData);
-    lc->s_lua["DestroyTexture"] = ME::LuaWrapper::function(DestroyTexture);
-    lc->s_lua["CreateTexture"] = ME::LuaWrapper::function(CreateTexture);
+    // lc->s_lua["DestroyTexture"] = ME::LuaWrapper::function(DestroyTexture);
+    // lc->s_lua["CreateTexture"] = ME::LuaWrapper::function(CreateTexture);
     lc->s_lua["metadot_buildnum"] = ME::LuaWrapper::function(ME_buildnum);
     lc->s_lua["metadot_metadata"] = ME::LuaWrapper::function(ME_metadata);
     lc->s_lua["add_packagepath"] = ME::LuaWrapper::function(add_packagepath);

@@ -85,8 +85,8 @@ void Bot::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
     if (heldItem != NULL) {
         int scaleEnt = global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1;
 
-        MErect *ir = new MErect{(f32)(int)(ofsX + we->x + we->hw / 2.0 - heldItem->surface->w), (f32)(int)(ofsY + we->y + we->hh / 2.0 - heldItem->surface->h / 2), (f32)heldItem->surface->w,
-                                  (f32)heldItem->surface->h};
+        MErect *ir = new MErect{(f32)(int)(ofsX + we->x + we->hw / 2.0 - heldItem->texture->surface()->w), (f32)(int)(ofsY + we->y + we->hh / 2.0 - heldItem->texture->surface()->h / 2),
+                                (f32)heldItem->texture->surface()->w, (f32)heldItem->texture->surface()->h};
         f32 fx = (f32)(int)(-ir->x + ofsX + we->x + we->hw / 2.0);
         f32 fy = (f32)(int)(-ir->y + ofsY + we->y + we->hh / 2.0);
         fx -= heldItem->pivotX;
@@ -107,13 +107,12 @@ void Bot::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
 
 void Bot::renderLQ(WorldEntity *we, R_Target *target, int ofsX, int ofsY) { R_Rectangle(target, we->x + ofsX, we->y + ofsY, we->x + ofsX + we->hw, we->y + ofsY + we->hh, {0xff, 0x00, 0xff, 0xff}); }
 
-void NpcSystem::process(ME::ECS::registry &world, const move_player_event &evt) {
+void NpcSystem::process(ME::ecs::registry &world, const move_player_event &evt) {
     world.for_joined_components<WorldEntity, Bot>(
-            [&evt](ME::ECS::entity, WorldEntity &we, Bot &npc) {
+            [&evt](ME::ecs::entity, WorldEntity &we, Bot &npc) {
                 npc.renderLQ(&we, evt.g->TexturePack_.textureEntitiesLQ->target, evt.g->Iso.world->loadZone.x + (int)(we.vx * evt.thruTick),
                              evt.g->Iso.world->loadZone.y + (int)(we.vy * evt.thruTick));
-                npc.render(&we, evt.g->TexturePack_.textureEntities->target, evt.g->Iso.world->loadZone.x + (int)(we.vx * evt.thruTick),
-                           evt.g->Iso.world->loadZone.y + (int)(we.vy * evt.thruTick));
+                npc.render(&we, evt.g->TexturePack_.textureEntities->target, evt.g->Iso.world->loadZone.x + (int)(we.vx * evt.thruTick), evt.g->Iso.world->loadZone.y + (int)(we.vy * evt.thruTick));
             },
-            ME::ECS::exists<Bot>{} && ME::ECS::exists<Controlable>{});
+            ME::ecs::exists<Bot>{} && ME::ecs::exists<Controlable>{});
 }

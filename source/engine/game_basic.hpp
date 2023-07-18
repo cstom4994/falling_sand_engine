@@ -42,12 +42,12 @@ public:
 
     const std::string &getName() const { return name; }
 
-    virtual void Create() = 0;
-    virtual void Destory() = 0;
-    virtual void Reload() = 0;
+    virtual void create() = 0;
+    virtual void destory() = 0;
+    virtual void reload() = 0;
 
     // Register Lua always been called before Create()
-    virtual void RegisterLua(ME::LuaWrapper::State &s_lua) = 0;
+    virtual void registerLua(ME::LuaWrapper::State &s_lua) = 0;
 };
 
 template <>
@@ -66,10 +66,10 @@ class GameplayScriptSystem : public IGameSystem {
 public:
     REGISTER_SYSTEM(GameplayScriptSystem)
 
-    void Create() override;
-    void Destory() override;
-    void Reload() override;
-    void RegisterLua(ME::LuaWrapper::State &s_lua) override;
+    void create() override;
+    void destory() override;
+    void reload() override;
+    void registerLua(ME::LuaWrapper::State &s_lua) override;
 };
 
 #endif

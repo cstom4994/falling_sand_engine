@@ -11,6 +11,7 @@
 #include "engine/game_datastruct.hpp"
 #include "engine/meta/static_relfection.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
+#include "engine/textures.hpp"
 #include "engine/ui/imgui_helper.hpp"
 #include "engine/utils/enum.hpp"
 #include "engine/utils/type.hpp"
@@ -69,10 +70,11 @@ public:
     void setFlag(ItemFlags f) { flags |= f; }
     bool getFlag(ItemFlags f) { return static_cast<bool>(flags & f); }
 
-    C_Surface *surface = nullptr;
-    R_Image *image = nullptr;
+    // 默认贴图
+    TextureRef texture;
 
-    // Texture *texture = nullptr;
+    // 需要有个R_Image用来存储运行时动态的图像
+    R_Image *image = nullptr;
 
     int pivotX = 0;
     int pivotY = 0;

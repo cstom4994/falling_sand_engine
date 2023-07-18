@@ -148,14 +148,14 @@ void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audi
     ME::phy::Rectangle *nothingShape = new ME::phy::Rectangle;
     // nothingShape.SetAsBox(0, 0);
     nothingShape->set(0.001f, 0.001f);
-    this->staticBody = makeRigidBody(PhyBodytype::Static, 0, 0, 0, nothingShape, 0, 0, global.game->Iso.texturepack->cloud->surface);
+    this->staticBody = makeRigidBody(PhyBodytype::Static, 0, 0, 0, nothingShape, 0, 0, global.game->Iso.texturepack.cloud);
 
     updateWorldMesh();
 
     ME::phy::Rectangle *dynamicBox3 = new ME::phy::Rectangle;
     // dynamicBox3.SetAsBox(10.0f, 2.0f, {10, -10}, 0);
     dynamicBox3->set(10.0f, 2.0f);
-    RigidBody *rb = makeRigidBody(PhyBodytype::Dynamic, 300, 300, 0, dynamicBox3, 1, .3, LoadTexture("data/assets/objects/testObject3.png")->surface);
+    RigidBody *rb = makeRigidBody(PhyBodytype::Dynamic, 300, 300, 0, dynamicBox3, 1, .3, LoadTexture("data/assets/objects/testObject3.png"));
 
     rigidBodies.push_back(rb);
     updateRigidBodyHitbox(rb);
@@ -169,7 +169,7 @@ void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audi
     // updateRigidBodyHitbox(rb2);
 }
 
-RigidBody *World::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, ME::phy::Shape *shape, f32 density, f32 friction, C_Surface *texture) {
+RigidBody *World::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, ME::phy::Shape *shape, f32 density, f32 friction, TextureRef texture) {
 
     // b2BodyDef bodyDef;
     // bodyDef.type = type;
@@ -193,7 +193,7 @@ RigidBody *World::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, ME::p
     body->setFriction(friction);
 
     RigidBody *rb = new RigidBody(body);
-    rb->set_surface(texture);
+    rb->setTexture(texture);
     if (texture != NULL) {
         rb->matWidth = rb->get_surface()->w;
         rb->matHeight = rb->get_surface()->h;
@@ -223,14 +223,15 @@ RigidBody *World::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, ME::p
         //     }
         // }
 
-        rb->set_texture(R_CopyImageFromSurface(rb->get_surface()));
-        R_SetImageFilter(rb->get_texture(), R_FILTER_NEAREST);
+        // rb->set_texture(R_CopyImageFromSurface(rb->get_surface()));
+        // R_SetImageFilter(rb->get_texture(), R_FILTER_NEAREST);
+        rb->updateImage({});
     }
     // rigidBodies.push_back(rb);
     return rb;
 }
 
-RigidBody *World::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<ME::phy::Shape *> shape, f32 density, f32 friction, C_Surface *texture) {
+RigidBody *World::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<ME::phy::Shape *> shape, f32 density, f32 friction, TextureRef texture) {
 
     return this->makeRigidBody(type, x, y, angle, shape[0], density, friction, texture);
 
@@ -649,7 +650,8 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         for (int b = 0; b < polys2s.size(); b++) {
             std::vector<ME::phy::Shape *> polys2 = polys2s[b];
 
-            C_Surface *sfc = polys2sSfcs[b];
+            // TODO: 23/7/18 修改 polys2sSfcs 为 Texture
+            auto sfc = ME::create_ref<Texture>(polys2sSfcs[b]);
 
             RigidBody *rbn = makeRigidBodyMulti(PhyBodytype::Dynamic, 0, 0, rb->body->rotation(), polys2, /*rb->body->GetFixtureList()[0].GetDensity()*/ 0.1f,
                                                 /*rb->body->GetFixtureList()[0].GetFriction()*/ 0.1f, sfc);
@@ -2268,7 +2270,7 @@ void World::tickObjects() {
     i32 velocityIterations = 5;
     i32 positionIterations = 2;
 
-    registry.for_each_component<WorldEntity>([this](ME::ECS::entity, WorldEntity &we) {
+    registry.for_each_component<WorldEntity>([this](ME::ecs::entity, WorldEntity &we) {
         we.rb->body->SetTransform({we.x + loadZone.x + we.hw / 2.0f - 0.5f, we.y + loadZone.y + we.hh / 2.0f - 1.5f}, 0);
         // we.rb->body->SetLinearVelocity({(f32)(we.vx * 1.0), (f32)(we.vy * 1.0)});
         we.rb->body->velocity() = {(f32)(we.vx * 1.0), (f32)(we.vy * 1.0)};
@@ -2278,7 +2280,7 @@ void World::tickObjects() {
 
     // phy->step(240.0f);
 
-    registry.for_each_component<WorldEntity>([this](ME::ECS::entity, WorldEntity &we) {
+    registry.for_each_component<WorldEntity>([this](ME::ecs::entity, WorldEntity &we) {
         /*cur->x = cur->rb->body->position().x + 0.5 - cur->hw / 2 - loadZone.x;
         cur->y = cur->rb->body->position().y + 1.5 - cur->hh / 2 - loadZone.y;*/
         // cur->rb->body->SetTransform(b2Vec2(cur->x + loadZone.x + cur->hw / 2 - 0.5, cur->y + loadZone.y + cur->hh / 2 - 1.5), 0);
@@ -3243,10 +3245,10 @@ void World::tickEntities(R_Target *t) {
     };
 
     // worldEntities.erase(std::remove_if(worldEntities.begin(), worldEntities.end(), func), worldEntities.end());
-    registry.for_each_component<WorldEntity>([&](ME::ECS::entity e, WorldEntity &we) {
+    registry.for_each_component<WorldEntity>([&](ME::ecs::entity e, WorldEntity &we) {
         bool destroy = func(&we);
         if (destroy) {
-            if ((ME::ECS::exists<Player>{})(e)) this->player = 0;
+            if ((ME::ecs::exists<Player>{})(e)) this->player = 0;
             registry.destroy_entity(e);
         }
     });
@@ -3357,12 +3359,12 @@ RigidBody *World::physicsCheck(int x, int y) {
     if (count > 0 && count <= 1000) {
         if (count > 10) {
 
-            C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, maxX - minX + 1, maxY - minY + 1, 32, SDL_PIXELFORMAT_ARGB8888);
+            C_Surface *sfc = SDL_CreateRGBSurfaceWithFormat(0, maxX - minX + 1, maxY - minY + 1, 32, SDL_PIXELFORMAT_ARGB8888);
 
             for (int yy = minY; yy <= maxY; yy++) {
                 for (int xx = minX; xx <= maxX; xx++) {
                     if (visited[xx + yy * width]) {
-                        R_GET_PIXEL(tex, (unsigned long long)(xx)-minX, yy - minY) = cols[xx + yy * width];
+                        R_GET_PIXEL(sfc, (unsigned long long)(xx)-minX, yy - minY) = cols[xx + yy * width];
                         tiles[xx + yy * width] = Tiles_NOTHING;
                         dirty[xx + yy * width] = true;
                     }
@@ -3376,6 +3378,9 @@ RigidBody *World::physicsCheck(int x, int y) {
             ME::phy::Rectangle *s = new ME::phy::Rectangle;
             // s.SetAsBox(1, 1);
             s->set(1.0f, 1.0f);
+
+            auto tex = ME::create_ref<Texture>(sfc);
+
             RigidBody *rb = makeRigidBody(PhyBodytype::Dynamic, (f32)minX, (f32)minY, 0, s, 1, (f32)0.3, tex);
 
             // TODO:  23/7/17 物理相关性实现
@@ -3622,7 +3627,7 @@ World::~World() {
 
     delete[] hasPopulator;
 
-    registry.for_each_component<WorldEntity>([&](const ME::ECS::entity e, WorldEntity &we) {
+    registry.for_each_component<WorldEntity>([&](const ME::ecs::entity e, WorldEntity &we) {
         if (static_cast<bool>(we.rb)) delete we.rb;
     });
 }

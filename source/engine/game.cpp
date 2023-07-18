@@ -136,15 +136,12 @@ int Game::init(int argc, char *argv[]) {
     Scripting::get_singleton_ptr()->Init();
 
     for (auto &s : Iso.systemList) {
-        s->RegisterLua(Scripting::get_singleton_ptr()->Lua->s_lua);
-        s->Create();
+        s->registerLua(Scripting::get_singleton_ptr()->Lua->s_lua);
+        s->create();
         // if (!s->getFlag(SystemFlags::ImGui)) {
         //     s->Create();
         // }
     }
-
-    // Test aseprite
-    Iso.texturepack->testAse = LoadAsepriteTexture("data/assets/textures/Sprite-0003.ase");
 
     ME_pack_result pack_result = ME_create_file_pack_reader(METADOT_RESLOC("data/resources.pack"), 0, 0, &Iso.pack_reader);
 
@@ -178,7 +175,7 @@ int Game::init(int argc, char *argv[]) {
     Iso.world = ME::create_scope<World>();
     Iso.world->noSaveLoad = true;
     Iso.world->init(METADOT_RESLOC("saves/mainMenu"), (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
-                             (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, ENGINE()->target, &global.audio);
+                    (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, ENGINE()->target, &global.audio);
 
     timer.stop();
     METADOT_INFO(std::format("Initializing world done in {0:.4f} ms", timer.get()).c_str());
@@ -279,8 +276,7 @@ void Game::createTexture() {
             }),
             ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "worldTexture");
-                TexturePack_.worldTexture = R_CreateImage(Iso.world->width * Iso.globaldef.hd_objects_size, Iso.world->height * Iso.globaldef.hd_objects_size,
-                                                          R_FormatEnum::R_FORMAT_RGBA);
+                TexturePack_.worldTexture = R_CreateImage(Iso.world->width * Iso.globaldef.hd_objects_size, Iso.world->height * Iso.globaldef.hd_objects_size, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.worldTexture, R_FILTER_NEAREST);
 
@@ -344,9 +340,8 @@ void Game::createTexture() {
             }),
             ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsBack");
-                TexturePack_.textureObjectsBack =
-                        R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1),
-                                      Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+                TexturePack_.textureObjectsBack = R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1),
+                                                                Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjectsBack);
             }),
@@ -358,9 +353,8 @@ void Game::createTexture() {
             }),
             ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntities");
-                TexturePack_.textureEntities =
-                        R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1),
-                                      Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+                TexturePack_.textureEntities = R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1),
+                                                             Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
 
                 R_LoadTarget(TexturePack_.textureEntities);
 
@@ -619,10 +613,13 @@ int Game::run(int argc, char *argv[]) {
                             }
 
                             if (upd) {
-                                R_FreeImage(cur->get_texture());
-                                cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
-                                R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
-                                // GameIsolate_.world->updateRigidBodyHitbox(cur);
+
+                                // 更新rigidbody的image
+                                cur->updateImage({});
+                                // R_FreeImage(cur->get_texture());
+                                // cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
+                                // R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
+                                //  GameIsolate_.world->updateRigidBodyHitbox(cur);
                                 cur->needsUpdate = true;
                             }
                         }
@@ -725,7 +722,7 @@ int Game::run(int argc, char *argv[]) {
                                 int x = (int)(pl_we->x + pl_we->hw / 2.0f + Iso.world->loadZone.x + 10 * (f32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
                                 int y = (int)(pl_we->y + pl_we->hh / 2.0f + Iso.world->loadZone.y + 10 * (f32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f) - breakSize / 2);
 
-                                C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, (int)breakSize, (int)breakSize, 32, SDL_PIXELFORMAT_ARGB8888);
+                                C_Surface *sfc = SDL_CreateRGBSurfaceWithFormat(0, (int)breakSize, (int)breakSize, 32, SDL_PIXELFORMAT_ARGB8888);
 
                                 int n = 0;
                                 for (int xx = 0; xx < breakSize; xx++) {
@@ -736,7 +733,7 @@ int Game::run(int argc, char *argv[]) {
                                         if (cx * cx + cy * cy > 0.25f) continue;
 
                                         if (Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].mat->physicsType == PhysicsType::SOLID) {
-                                            R_GET_PIXEL(tex, xx, yy) = Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].color;
+                                            R_GET_PIXEL(sfc, xx, yy) = Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].color;
                                             Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width] = Tiles_NOTHING;
                                             Iso.world->dirty[(x + xx) + (y + yy) * Iso.world->width] = true;
 
@@ -750,6 +747,9 @@ int Game::run(int argc, char *argv[]) {
                                     ME::phy::Rectangle *s = new ME::phy::Rectangle;
                                     // s.SetAsBox(1, 1);
                                     s->set(1.0f, 1.0f);
+
+                                    auto tex = ME::create_ref<Texture>(sfc);
+
                                     RigidBody *rb = Iso.world->makeRigidBody(ME::phy::Body::BodyType::Dynamic, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
 
                                     // TODO:  23/7/17 物理相关性实现
@@ -843,8 +843,7 @@ int Game::run(int argc, char *argv[]) {
                                                 return false;
                                             }
                                             hitSolidYet = true;
-                                            Iso.world->tiles[index] =
-                                                    MaterialInstance(&GAME()->materials_list.GENERIC_SAND, ME_draw_darken_color(Iso.world->tiles[index].color, 0.5f));
+                                            Iso.world->tiles[index] = MaterialInstance(&GAME()->materials_list.GENERIC_SAND, ME_draw_darken_color(Iso.world->tiles[index].color, 0.5f));
                                             Iso.world->dirty[index] = true;
                                             endInd = index;
                                             nTilesChanged++;
@@ -925,13 +924,11 @@ int Game::run(int argc, char *argv[]) {
 
                                 auto [pl_we, pl] = Iso.world->getHostPlayer();
 
-                                pl->setItemInHand(Iso.world->Reg().find_component<WorldEntity>(Iso.world->player), Item::makeItem(ItemFlags::ItemFlags_Rigidbody, cur),
-                                                  Iso.world.get());
+                                pl->setItemInHand(Iso.world->Reg().find_component<WorldEntity>(Iso.world->player), Item::makeItem(ItemFlags::ItemFlags_Rigidbody, cur), Iso.world.get());
 
                                 // GameIsolate_.world->b2world->DestroyBody(cur->body);
                                 Iso.world->phy->world().removeBody(cur->body);
-                                Iso.world->rigidBodies.erase(std::remove(Iso.world->rigidBodies.begin(), Iso.world->rigidBodies.end(), cur),
-                                                                      Iso.world->rigidBodies.end());
+                                Iso.world->rigidBodies.erase(std::remove(Iso.world->rigidBodies.begin(), Iso.world->rigidBodies.end(), cur), Iso.world->rigidBodies.end());
 
                                 swapped = true;
                             }
@@ -1013,7 +1010,7 @@ int Game::run(int argc, char *argv[]) {
         // fontcache.ME_fontcache_push(test_text, {0.5, 0.5});
 
         // ME_rect rct{0, 0, 150, 150};
-        // ENGINE()->TextureRect(GameIsolate_.texturepack->testAse, ENGINE()->target, 200, 200, &rct);
+        // ENGINE()->TextureRect(GameIsolate_.texturepack.testAse, ENGINE()->target, 200, 200, &rct);
 
         // Update UI
         Iso.ui->UIRendererUpdate();
@@ -1227,7 +1224,7 @@ int Game::exit() {
     // release resources & shutdown
     std::vector<ME::ref<IGameSystem>>::reverse_iterator backwardIterator;
     for (backwardIterator = Iso.systemList.rbegin(); backwardIterator != Iso.systemList.rend(); backwardIterator++) {
-        backwardIterator->get()->Destory();
+        backwardIterator->get()->destory();
     }
 
     ME_surface_DeleteGL3(this->surface);
@@ -1344,10 +1341,13 @@ void Game::updateFrameEarly() {
                 }
 
                 if (upd) {
-                    R_FreeImage(cur->get_texture());
-                    cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
-                    R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
-                    // GameIsolate_.world->updateRigidBodyHitbox(cur);
+
+                    // 更新rigidbody的image
+                    cur->updateImage({});
+                    // R_FreeImage(cur->get_texture());
+                    // cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
+                    // R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
+                    //  GameIsolate_.world->updateRigidBodyHitbox(cur);
                     cur->needsUpdate = true;
                 }
             }
@@ -1374,14 +1374,14 @@ void Game::updateFrameEarly() {
         int x = (int)((mx - GAME()->ofsX - GAME()->camX) / ENGINE()->render_scale - 16);
         int y = (int)((my - GAME()->ofsY - GAME()->camY) / ENGINE()->render_scale - 16);
 
-        C_Surface *tex = SDL_CreateRGBSurfaceWithFormat(0, 32, 32, 32, SDL_PIXELFORMAT_ARGB8888);
+        C_Surface *sfc = SDL_CreateRGBSurfaceWithFormat(0, 32, 32, 32, SDL_PIXELFORMAT_ARGB8888);
 
         int n = 0;
         for (int xx = 0; xx < 32; xx++) {
             for (int yy = 0; yy < 32; yy++) {
 
                 if (Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].mat->physicsType == PhysicsType::SOLID) {
-                    R_GET_PIXEL(tex, xx, yy) = Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].color;
+                    R_GET_PIXEL(sfc, xx, yy) = Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].color;
                     Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width] = Tiles_NOTHING;
                     Iso.world->dirty[(x + xx) + (y + yy) * Iso.world->width] = true;
                     n++;
@@ -1392,8 +1392,11 @@ void Game::updateFrameEarly() {
             ME::phy::Rectangle *s = new ME::phy::Rectangle;
             // s.SetAsBox(1, 1);
             s->set(1.0f, 1.0f);
+
+            auto tex = ME::create_ref<Texture>(sfc);
+
             RigidBody *rb = Iso.world->makeRigidBody(ME::phy::Body::BodyType::Dynamic, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
-            for (int tx = 0; tx < tex->w; tx++) {
+            for (int tx = 0; tx < tex->surface()->w; tx++) {
 
                 // TODO:  23/7/17 物理相关性实现
 
@@ -1433,14 +1436,12 @@ void Game::updateFrameEarly() {
             Iso.world->player = 0;
         } else {
 
-            MEvec4 pl_transform{-Iso.world->loadZone.x + Iso.world->tickZone.x + Iso.world->tickZone.w / 2.0f,
-                                -Iso.world->loadZone.y + Iso.world->tickZone.y + Iso.world->tickZone.h / 2.0f, 10, 20};
+            MEvec4 pl_transform{-Iso.world->loadZone.x + Iso.world->tickZone.x + Iso.world->tickZone.w / 2.0f, -Iso.world->loadZone.y + Iso.world->tickZone.y + Iso.world->tickZone.h / 2.0f, 10, 20};
 
             ME::phy::Rectangle *sh = new ME::phy::Rectangle;
             // sh.SetAsBox(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
             sh->set(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
-            RigidBody *rb = Iso.world->makeRigidBody(ME::phy::Body::BodyType::Kinematic, pl_transform.x + pl_transform.z / 2.0f - 0.5, pl_transform.y + pl_transform.w / 2.0f - 0.5, 0, sh, 1,
-                                                              1, NULL);
+            RigidBody *rb = Iso.world->makeRigidBody(ME::phy::Body::BodyType::Kinematic, pl_transform.x + pl_transform.z / 2.0f - 0.5, pl_transform.y + pl_transform.w / 2.0f - 0.5, 0, sh, 1, 1, NULL);
 
             // 阻尼实现
 
@@ -1451,10 +1452,11 @@ void Game::updateFrameEarly() {
             Item *i3 = new Item();
             i3->setFlag(ItemFlags::ItemFlags_Vacuum);
             // i3->vacuumCells = {};
-            i3->surface = LoadTexture("data/assets/objects/testVacuum.png")->surface;
-            i3->image = R_CopyImageFromSurface(i3->surface);
+            // i3->surface = LoadTexture("data/assets/objects/testVacuum.png")->surface();
+            // i3->image = R_CopyImageFromSurface(i3->surface);
+            i3->texture = Iso.texturepack.testVacuum;
             i3->name = "初始物品";
-            R_SetImageFilter(i3->image, R_FILTER_NEAREST);
+            // R_SetImageFilter(i3->image, R_FILTER_NEAREST);
             i3->pivotX = 6;
 
             // TODO:  23/7/17 物理相关性实现
@@ -1465,7 +1467,7 @@ void Game::updateFrameEarly() {
             // rb->body->GetFixtureList()[0].SetFilterData(bf);
 
             auto player = Iso.world->Reg().create_entity();
-            ME::ECS::entity_filler(player)
+            ME::ecs::entity_filler(player)
                     .component<Controlable>()
                     .component<WorldEntity>(true, pl_transform.x, pl_transform.y, 0.0f, 0.0f, (int)pl_transform.z, (int)pl_transform.w, rb, std::string("玩家"))
                     .component<Player>();
@@ -1507,14 +1509,17 @@ void Game::updateFrameEarly() {
                     MaterialInstance mat = pl->heldItem->carry[pl->heldItem->carry.size() - 1];
                     pl->heldItem->carry.pop_back();
                     Iso.world->addCell(new CellData(mat, (f32)x, (f32)y, (f32)(pl_we->vx / 2 + (rand() % 10 - 5) / 10.0f + 1.5f * (f32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f)),
-                                                             (f32)(pl_we->vy / 2 + -(rand() % 5 + 5) / 10.0f + 1.5f * (f32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f)), 0, (f32)0.1));
+                                                    (f32)(pl_we->vy / 2 + -(rand() % 5 + 5) / 10.0f + 1.5f * (f32)sin((pl->holdAngle + 180) * 3.1415f / 180.0f)), 0, (f32)0.1));
 
                     int i = (int)pl->heldItem->carry.size();
                     i = (int)((i / (f32)pl->heldItem->capacity) * pl->heldItem->fill.size());
                     U16Point pt = pl->heldItem->fill[i];
-                    R_GET_PIXEL(pl->heldItem->surface, pt.x, pt.y) = 0x00;
 
-                    pl->heldItem->image = R_CopyImageFromSurface(pl->heldItem->surface);
+                    // TODO: 23/7/18 可能所有R_GET_PIXEL会导致修改surface的地方都得改
+                    //               因为现在TextureRef都指代着默认贴图 而不是运行时动态的
+                    R_GET_PIXEL(pl->heldItem->texture->surface(), pt.x, pt.y) = 0x00;
+
+                    pl->heldItem->image = R_CopyImageFromSurface(pl->heldItem->texture->surface());
                     R_SetImageFilter(pl->heldItem->image, R_FILTER_NEAREST);
 
                     global.audio.SetEventParameter("event:/World/Sand", "Sand", 1);
@@ -1544,9 +1549,9 @@ void Game::updateFrameEarly() {
                                     i = (int)((i / (f32)pl->heldItem->capacity) * pl->heldItem->fill.size());
                                     U16Point pt = pl->heldItem->fill[i];
                                     u32 c = Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].color;
-                                    R_GET_PIXEL(pl->heldItem->surface, pt.x, pt.y) = (Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].mat->alpha << 24) + c;
+                                    R_GET_PIXEL(pl->heldItem->texture->surface(), pt.x, pt.y) = (Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].mat->alpha << 24) + c;
 
-                                    pl->heldItem->image = R_CopyImageFromSurface(pl->heldItem->surface);
+                                    pl->heldItem->image = R_CopyImageFromSurface(pl->heldItem->texture->surface());
                                     R_SetImageFilter(pl->heldItem->image, R_FILTER_NEAREST);
 
                                     Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width] = Tiles_NOTHING;
@@ -1719,15 +1724,19 @@ void Game::tick() {
             MErect r = {x * scaleObjTex, y * scaleObjTex, (f32)cur->get_surface()->w * scaleObjTex, (f32)cur->get_surface()->h * scaleObjTex};
 
             if (cur->texNeedsUpdate) {
-                if (cur->get_texture() != nullptr) {
-                    R_FreeImage(cur->get_texture());
-                }
-                cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
-                R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
+
+                // 更新rigidbody的image
+                cur->updateImage({});
+
+                // if (cur->get_texture() != nullptr) {
+                //     R_FreeImage(cur->get_texture());
+                // }
+                // cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
+                // R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
                 cur->texNeedsUpdate = false;
             }
 
-            R_BlitRectX(cur->get_texture(), NULL, tgt, &r, cur->body->rotation() * 180 / (f32)M_PI, 0, 0, R_FLIP_NONE);
+            R_BlitRectX(cur->image(), NULL, tgt, &r, cur->body->rotation() * 180 / (f32)M_PI, 0, 0, R_FLIP_NONE);
 
             // draw outline
 
@@ -1774,7 +1783,7 @@ void Game::tick() {
                             break;
                         } else if (Iso.world->tiles[wxd + wyd * Iso.world->width].mat->physicsType == PhysicsType::SAND) {
                             Iso.world->addCell(new CellData(Iso.world->tiles[wxd + wyd * Iso.world->width], (f32)wxd, (f32)(wyd - 3), (f32)((rand() % 10 - 5) / 10.0f),
-                                                                     (f32)(-(rand() % 5 + 5) / 10.0f), 0, (f32)0.1));
+                                                            (f32)(-(rand() % 5 + 5) / 10.0f), 0, (f32)0.1));
                             Iso.world->tiles[wxd + wyd * Iso.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             Iso.world->dirty[wxd + wyd * Iso.world->width] = true;
@@ -1786,7 +1795,7 @@ void Game::tick() {
                             break;
                         } else if (Iso.world->tiles[wxd + wyd * Iso.world->width].mat->physicsType == PhysicsType::SOUP) {
                             Iso.world->addCell(new CellData(Iso.world->tiles[wxd + wyd * Iso.world->width], (f32)wxd, (f32)(wyd - 3), (f32)((rand() % 10 - 5) / 10.0f),
-                                                                     (f32)(-(rand() % 5 + 5) / 10.0f), 0, (f32)0.1));
+                                                            (f32)(-(rand() % 5 + 5) / 10.0f), 0, (f32)0.1));
                             Iso.world->tiles[wxd + wyd * Iso.world->width] = rmat;
                             // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
                             Iso.world->dirty[wxd + wyd * Iso.world->width] = true;
@@ -1929,9 +1938,9 @@ void Game::tick() {
 
                                         unsigned int offset = ((wxd + dxx) + (wyd + dyy) * Iso.world->width) * 4;
 
-                                        dpixels_ar[offset + 2] = ((color >> 0) & 0xff);                                                                        // b
-                                        dpixels_ar[offset + 1] = ((color >> 8) & 0xff);                                                                        // g
-                                        dpixels_ar[offset + 0] = ((color >> 16) & 0xff);                                                                       // r
+                                        dpixels_ar[offset + 2] = ((color >> 0) & 0xff);                                                      // b
+                                        dpixels_ar[offset + 1] = ((color >> 8) & 0xff);                                                      // g
+                                        dpixels_ar[offset + 0] = ((color >> 16) & 0xff);                                                     // r
                                         dpixels_ar[offset + 3] = Iso.world->tiles[(wxd + dxx) + (wyd + dyy) * Iso.world->width].mat->alpha;  // a
                                     }
                                 }
@@ -1970,9 +1979,12 @@ void Game::tick() {
                 }
             }
 
-            R_FreeImage(cur->get_texture());
-            cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
-            R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
+            // 更新rigidbody的image
+            cur->updateImage({});
+
+            // R_FreeImage(cur->get_texture());
+            // cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
+            // R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
 
             cur->needsUpdate = true;
         }
@@ -2015,9 +2027,9 @@ void Game::tick() {
                         u32 color = Iso.world->tiles[i].color;
                         u32 emit = Iso.world->tiles[i].mat->emitColor;
                         // f32 br = GameIsolate_.world->light[i];
-                        dpixels_ar[offset + 2] = ((color >> 0) & 0xff);                    // b
-                        dpixels_ar[offset + 1] = ((color >> 8) & 0xff);                    // g
-                        dpixels_ar[offset + 0] = ((color >> 16) & 0xff);                   // r
+                        dpixels_ar[offset + 2] = ((color >> 0) & 0xff);           // b
+                        dpixels_ar[offset + 1] = ((color >> 8) & 0xff);           // g
+                        dpixels_ar[offset + 0] = ((color >> 16) & 0xff);          // r
                         dpixels_ar[offset + 3] = Iso.world->tiles[i].mat->alpha;  // a
 
                         dpixelsEmission_ar[offset + 2] = ((emit >> 0) & 0xff);   // b
@@ -2026,9 +2038,9 @@ void Game::tick() {
                         dpixelsEmission_ar[offset + 3] = ((emit >> 24) & 0xff);  // a
 
                         if (Iso.world->tiles[i].mat->id == GAME()->materials_list.FIRE.id) {
-                            dpixelsFire_ar[offset + 2] = ((color >> 0) & 0xff);                    // b
-                            dpixelsFire_ar[offset + 1] = ((color >> 8) & 0xff);                    // g
-                            dpixelsFire_ar[offset + 0] = ((color >> 16) & 0xff);                   // r
+                            dpixelsFire_ar[offset + 2] = ((color >> 0) & 0xff);           // b
+                            dpixelsFire_ar[offset + 1] = ((color >> 8) & 0xff);           // g
+                            dpixelsFire_ar[offset + 0] = ((color >> 16) & 0xff);          // r
                             dpixelsFire_ar[offset + 3] = Iso.world->tiles[i].mat->alpha;  // a
                             hadFire = true;
                         }
@@ -2089,9 +2101,9 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
                         }
                     }
                     u32 color = Iso.world->layer2[i].color;
-                    dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff;                       // b
-                    dpixelsLayer2_ar[offset + 1] = (color >> 8) & 0xff;                       // g
-                    dpixelsLayer2_ar[offset + 0] = (color >> 16) & 0xff;                      // r
+                    dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff;              // b
+                    dpixelsLayer2_ar[offset + 1] = (color >> 8) & 0xff;              // g
+                    dpixelsLayer2_ar[offset + 0] = (color >> 16) & 0xff;             // r
                     dpixelsLayer2_ar[offset + 3] = Iso.world->layer2[i].mat->alpha;  // a
                 }
             }
@@ -2298,13 +2310,11 @@ void Game::tickChunkLoading() {
                     // rotate(pixels.begin(), pixels.begin() - delta, pixels.end());
                 }));
                 results.push_back(Iso.updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixelsLayer2_ar[0]), &(TexturePack_.pixelsLayer2_ar[0]) - delta,
-                                &(TexturePack_.pixelsLayer2_ar[Iso.world->width * Iso.world->height * 4]));
+                    std::rotate(&(TexturePack_.pixelsLayer2_ar[0]), &(TexturePack_.pixelsLayer2_ar[0]) - delta, &(TexturePack_.pixelsLayer2_ar[Iso.world->width * Iso.world->height * 4]));
                     // rotate(pixelsLayer2.begin(), pixelsLayer2.begin() - delta, pixelsLayer2.end());
                 }));
                 results.push_back(Iso.updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixelsBackground_ar[0]), &(TexturePack_.pixelsBackground_ar[0]) - delta,
-                                &(TexturePack_.pixelsBackground_ar[Iso.world->width * Iso.world->height * 4]));
+                    std::rotate(&(TexturePack_.pixelsBackground_ar[0]), &(TexturePack_.pixelsBackground_ar[0]) - delta, &(TexturePack_.pixelsBackground_ar[Iso.world->width * Iso.world->height * 4]));
                     // rotate(pixelsBackground.begin(), pixelsBackground.begin() - delta, pixelsBackground.end());
                 }));
                 results.push_back(Iso.updateDirtyPool->push([&](int id) {
@@ -2316,8 +2326,7 @@ void Game::tickChunkLoading() {
                     // rotate(pixelsFlow_ar.begin(), pixelsFlow_ar.begin() - delta, pixelsFlow_ar.end());
                 }));
                 results.push_back(Iso.updateDirtyPool->push([&](int id) {
-                    std::rotate(&(TexturePack_.pixelsEmission_ar[0]), &(TexturePack_.pixelsEmission_ar[0]) - delta,
-                                &(TexturePack_.pixelsEmission_ar[Iso.world->width * Iso.world->height * 4]));
+                    std::rotate(&(TexturePack_.pixelsEmission_ar[0]), &(TexturePack_.pixelsEmission_ar[0]) - delta, &(TexturePack_.pixelsEmission_ar[Iso.world->width * Iso.world->height * 4]));
                     // rotate(pixelsEmission_ar.begin(), pixelsEmission_ar.begin() - delta, pixelsEmission_ar.end());
                 }));
             }
@@ -2619,10 +2628,13 @@ void Game::tickPlayer() {
                                 }
 
                                 if (upd) {
-                                    R_FreeImage(cur->get_texture());
-                                    cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
-                                    R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
-                                    // GameIsolate_.world->updateRigidBodyHitbox(cur);
+
+                                    // 更新rigidbody的image
+                                    cur->updateImage({});
+                                    // R_FreeImage(cur->get_texture());
+                                    // cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
+                                    // R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
+                                    //  GameIsolate_.world->updateRigidBodyHitbox(cur);
                                     cur->needsUpdate = true;
                                 }
                             }
@@ -2891,8 +2903,7 @@ void Game::renderLate() {
         // 绘制背景贴图
         Iso.backgrounds->draw();
 
-        MErect r1 = MErect{(f32)(GAME()->ofsX + GAME()->camX), (f32)(GAME()->ofsY + GAME()->camY), (f32)(Iso.world->width * ENGINE()->render_scale),
-                             (f32)(Iso.world->height * ENGINE()->render_scale)};
+        MErect r1 = MErect{(f32)(GAME()->ofsX + GAME()->camX), (f32)(GAME()->ofsY + GAME()->camY), (f32)(Iso.world->width * ENGINE()->render_scale), (f32)(Iso.world->height * ENGINE()->render_scale)};
         R_SetBlendMode(TexturePack_.textureBackground, R_BLEND_NORMAL);
         R_BlitRect(TexturePack_.textureBackground, NULL, ENGINE()->target, &r1);
 
@@ -2918,8 +2929,7 @@ void Game::renderLate() {
             Iso.shaderworker->waterShader->Activate();
             f32 t = (ENGINE()->time.now - ENGINE()->time.startTime) / 1000.0;
             Iso.shaderworker->waterShader->Update(t, ENGINE()->target->w * ENGINE()->render_scale, ENGINE()->target->h * ENGINE()->render_scale, TexturePack_.texture, r1.x, r1.y, r1.w, r1.h,
-                                                           ENGINE()->render_scale, TexturePack_.textureFlowSpead, Iso.globaldef.water_overlay, Iso.globaldef.water_showFlow,
-                                                           Iso.globaldef.water_pixelated);
+                                                  ENGINE()->render_scale, TexturePack_.textureFlowSpead, Iso.globaldef.water_overlay, Iso.globaldef.water_showFlow, Iso.globaldef.water_pixelated);
         }
 
         ENGINE()->target = ENGINE()->realTarget;
@@ -2993,8 +3003,7 @@ void Game::renderLate() {
             int nBg = 0;
             int range = 64;
             for (int xx = std::max(0, (int)(lightTx * Iso.world->width) - range); xx <= std::min((int)(lightTx * Iso.world->width) + range, Iso.world->width - 1); xx++) {
-                for (int yy = std::max(0, (int)(lightTy * Iso.world->height) - range); yy <= std::min((int)(lightTy * Iso.world->height) + range, Iso.world->height - 1);
-                     yy++) {
+                for (int yy = std::max(0, (int)(lightTy * Iso.world->height) - range); yy <= std::min((int)(lightTy * Iso.world->height) + range, Iso.world->height - 1); yy++) {
                     if (Iso.world->background[xx + yy * Iso.world->width] != 0x00) {
                         nBg++;
                     }
@@ -3008,10 +3017,9 @@ void Game::renderLate() {
             f32 ins = Iso.shaderworker->newLightingShader->insideCur < 0.05 ? 0.0 : Iso.shaderworker->newLightingShader->insideCur;
             if (Iso.shaderworker->newLightingShader->lastInside != ins) needToRerenderLighting = true;
             Iso.shaderworker->newLightingShader->SetInside(ins);
-            Iso.shaderworker->newLightingShader->SetBounds(Iso.world->tickZone.x * Iso.globaldef.hd_objects_size,
-                                                                    Iso.world->tickZone.y * Iso.globaldef.hd_objects_size,
-                                                                    (Iso.world->tickZone.x + Iso.world->tickZone.w) * Iso.globaldef.hd_objects_size,
-                                                                    (Iso.world->tickZone.y + Iso.world->tickZone.h) * Iso.globaldef.hd_objects_size);
+            Iso.shaderworker->newLightingShader->SetBounds(Iso.world->tickZone.x * Iso.globaldef.hd_objects_size, Iso.world->tickZone.y * Iso.globaldef.hd_objects_size,
+                                                           (Iso.world->tickZone.x + Iso.world->tickZone.w) * Iso.globaldef.hd_objects_size,
+                                                           (Iso.world->tickZone.y + Iso.world->tickZone.h) * Iso.globaldef.hd_objects_size);
 
             if (Iso.shaderworker->newLightingShader->lastSimpleMode != Iso.globaldef.simpleLighting) needToRerenderLighting = true;
             Iso.shaderworker->newLightingShader->SetSimpleMode(Iso.globaldef.simpleLighting);
@@ -3062,11 +3070,9 @@ void Game::renderOverlays() {
     snprintf(fpsText, sizeof(fpsText), "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, ENGINE()->time.feelsLikeFps);
     ME_draw_text(fpsText, {255, 255, 255, 255}, ENGINE()->windowWidth - ImGui::CalcTextSize(fpsText).x, 0);
 
-    MErect r1 = MErect{(f32)(GAME()->ofsX + GAME()->camX), (f32)(GAME()->ofsY + GAME()->camY), (f32)(Iso.world->width * ENGINE()->render_scale),
-                         (f32)(Iso.world->height * ENGINE()->render_scale)};
-    MErect r2 = MErect{(f32)(GAME()->ofsX + GAME()->camX + Iso.world->tickZone.x * ENGINE()->render_scale),
-                         (f32)(GAME()->ofsY + GAME()->camY + Iso.world->tickZone.y * ENGINE()->render_scale), (f32)(Iso.world->tickZone.w * ENGINE()->render_scale),
-                         (f32)(Iso.world->tickZone.h * ENGINE()->render_scale)};
+    MErect r1 = MErect{(f32)(GAME()->ofsX + GAME()->camX), (f32)(GAME()->ofsY + GAME()->camY), (f32)(Iso.world->width * ENGINE()->render_scale), (f32)(Iso.world->height * ENGINE()->render_scale)};
+    MErect r2 = MErect{(f32)(GAME()->ofsX + GAME()->camX + Iso.world->tickZone.x * ENGINE()->render_scale), (f32)(GAME()->ofsY + GAME()->camY + Iso.world->tickZone.y * ENGINE()->render_scale),
+                       (f32)(Iso.world->tickZone.w * ENGINE()->render_scale), (f32)(Iso.world->tickZone.h * ENGINE()->render_scale)};
 
     if (Iso.globaldef.draw_temperature_map) {
         R_SetBlendMode(TexturePack_.temperatureMap, R_BLEND_NORMAL);
@@ -3074,9 +3080,8 @@ void Game::renderOverlays() {
     }
 
     if (Iso.globaldef.draw_load_zones) {
-        MErect r2m = MErect{(f32)(GAME()->ofsX + GAME()->camX + Iso.world->meshZone.x * ENGINE()->render_scale),
-                              (f32)(GAME()->ofsY + GAME()->camY + Iso.world->meshZone.y * ENGINE()->render_scale), (f32)(Iso.world->meshZone.w * ENGINE()->render_scale),
-                              (f32)(Iso.world->meshZone.h * ENGINE()->render_scale)};
+        MErect r2m = MErect{(f32)(GAME()->ofsX + GAME()->camX + Iso.world->meshZone.x * ENGINE()->render_scale), (f32)(GAME()->ofsY + GAME()->camY + Iso.world->meshZone.y * ENGINE()->render_scale),
+                            (f32)(Iso.world->meshZone.w * ENGINE()->render_scale), (f32)(Iso.world->meshZone.h * ENGINE()->render_scale)};
 
         R_Rectangle2(ENGINE()->target, r2m, {0x00, 0xff, 0xff, 0xff});
         ME_draw_text_plate(ENGINE()->target, CC("刚体物理更新区域"), {255, 255, 255, 255}, r2m.x + 4, r2m.y + 4);
@@ -3091,27 +3096,25 @@ void Game::renderOverlays() {
         MErect r3 = MErect{(f32)(0), (f32)(0), (f32)((GAME()->ofsX + GAME()->camX + Iso.world->tickZone.x * ENGINE()->render_scale)), (f32)(ENGINE()->windowHeight)};
         R_Rectangle2(ENGINE()->target, r3, col);
 
-        MErect r4 = MErect{
-                (f32)(GAME()->ofsX + GAME()->camX + Iso.world->tickZone.x * ENGINE()->render_scale + Iso.world->tickZone.w * ENGINE()->render_scale), (f32)(0),
-                (f32)((ENGINE()->windowWidth) - (GAME()->ofsX + GAME()->camX + Iso.world->tickZone.x * ENGINE()->render_scale + Iso.world->tickZone.w * ENGINE()->render_scale)),
-                (f32)(ENGINE()->windowHeight)};
+        MErect r4 = MErect{(f32)(GAME()->ofsX + GAME()->camX + Iso.world->tickZone.x * ENGINE()->render_scale + Iso.world->tickZone.w * ENGINE()->render_scale), (f32)(0),
+                           (f32)((ENGINE()->windowWidth) - (GAME()->ofsX + GAME()->camX + Iso.world->tickZone.x * ENGINE()->render_scale + Iso.world->tickZone.w * ENGINE()->render_scale)),
+                           (f32)(ENGINE()->windowHeight)};
         R_Rectangle2(ENGINE()->target, r4, col);
 
         MErect r5 = MErect{(f32)(GAME()->ofsX + GAME()->camX + Iso.world->tickZone.x * ENGINE()->render_scale), (f32)(0), (f32)(Iso.world->tickZone.w * ENGINE()->render_scale),
-                             (f32)(GAME()->ofsY + GAME()->camY + Iso.world->tickZone.y * ENGINE()->render_scale)};
+                           (f32)(GAME()->ofsY + GAME()->camY + Iso.world->tickZone.y * ENGINE()->render_scale)};
         R_Rectangle2(ENGINE()->target, r5, col);
 
-        MErect r6 = MErect{
-                (f32)(GAME()->ofsX + GAME()->camX + Iso.world->tickZone.x * ENGINE()->render_scale),
-                (f32)(GAME()->ofsY + GAME()->camY + Iso.world->tickZone.y * ENGINE()->render_scale + Iso.world->tickZone.h * ENGINE()->render_scale),
-                (f32)(Iso.world->tickZone.w * ENGINE()->render_scale),
-                (f32)(ENGINE()->windowHeight - (GAME()->ofsY + GAME()->camY + Iso.world->tickZone.y * ENGINE()->render_scale + Iso.world->tickZone.h * ENGINE()->render_scale))};
+        MErect r6 = MErect{(f32)(GAME()->ofsX + GAME()->camX + Iso.world->tickZone.x * ENGINE()->render_scale),
+                           (f32)(GAME()->ofsY + GAME()->camY + Iso.world->tickZone.y * ENGINE()->render_scale + Iso.world->tickZone.h * ENGINE()->render_scale),
+                           (f32)(Iso.world->tickZone.w * ENGINE()->render_scale),
+                           (f32)(ENGINE()->windowHeight - (GAME()->ofsY + GAME()->camY + Iso.world->tickZone.y * ENGINE()->render_scale + Iso.world->tickZone.h * ENGINE()->render_scale))};
         R_Rectangle2(ENGINE()->target, r6, col);
 
         col = {0x00, 0xff, 0x00, 0xff};
         MErect r7 = MErect{(f32)(GAME()->ofsX + GAME()->camX + Iso.world->width / 2 * ENGINE()->render_scale - (ENGINE()->windowWidth / 3 * ENGINE()->render_scale / 2)),
-                             (f32)(GAME()->ofsY + GAME()->camY + Iso.world->height / 2 * ENGINE()->render_scale - (ENGINE()->windowHeight / 3 * ENGINE()->render_scale / 2)),
-                             (f32)(ENGINE()->windowWidth / 3 * ENGINE()->render_scale), (f32)(ENGINE()->windowHeight / 3 * ENGINE()->render_scale)};
+                           (f32)(GAME()->ofsY + GAME()->camY + Iso.world->height / 2 * ENGINE()->render_scale - (ENGINE()->windowHeight / 3 * ENGINE()->render_scale / 2)),
+                           (f32)(ENGINE()->windowWidth / 3 * ENGINE()->render_scale), (f32)(ENGINE()->windowHeight / 3 * ENGINE()->render_scale)};
         R_Rectangle2(ENGINE()->target, r7, col);
     }
 
@@ -3413,9 +3416,9 @@ ReadyToMerge ({16})
             pl_vy = pl_we->vy;
         }
 
-        auto a = std::format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GAME()->plPosX, GAME()->plPosY, pl_vx, pl_vy, (int)Iso.world->cells.size(),
-                             (int)Iso.world->Reg().entity_count(), rbCt, (int)Iso.world->rigidBodies.size(), (int)Iso.world->worldRigidBodies.size(), rbTriACt, rbTriCt,
-                             rbTriWCt, chCt, (int)Iso.world->readyToReadyToMerge.size(), (int)Iso.world->readyToMerge.size());
+        auto a = std::format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GAME()->plPosX, GAME()->plPosY, pl_vx, pl_vy, (int)Iso.world->cells.size(), (int)Iso.world->Reg().entity_count(),
+                             rbCt, (int)Iso.world->rigidBodies.size(), (int)Iso.world->worldRigidBodies.size(), rbTriACt, rbTriCt, rbTriWCt, chCt, (int)Iso.world->readyToReadyToMerge.size(),
+                             (int)Iso.world->readyToMerge.size());
 
         ME_draw_text(a, {255, 255, 255, 255}, 10, 0, true);
 
@@ -3622,7 +3625,7 @@ void Game::quitToMainMenu() {
     Iso.world = ME::create_scope<World>();
     Iso.world->noSaveLoad = true;
     Iso.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
-                             (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, ENGINE()->target, &global.audio, generator);
+                    (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, ENGINE()->target, &global.audio, generator);
 
     METADOT_INFO("Queueing chunk loading...");
     for (int x = -CHUNK_W * 4; x < Iso.world->width + CHUNK_W * 4; x += CHUNK_W) {

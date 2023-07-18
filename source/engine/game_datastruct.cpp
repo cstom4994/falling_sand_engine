@@ -303,7 +303,7 @@ MaterialInstance TilesCreateTestSand() {
 }
 
 MaterialInstance TilesCreateTestTexturedSand(int x, int y) {
-    C_Surface *tex = global.game->Iso.texturepack->testTexture->surface;
+    C_Surface *tex = global.game->Iso.texturepack.testTexture->surface();
 
     int tx = x % tex->w;
     int ty = y % tex->h;
@@ -320,7 +320,7 @@ MaterialInstance TilesCreateTestLiquid() {
 }
 
 MaterialInstance TilesCreateStone(int x, int y) {
-    C_Surface *tex = global.game->Iso.texturepack->cobbleStone->surface;
+    C_Surface *tex = global.game->Iso.texturepack.cobbleStone->surface();
 
     int tx = x % tex->w;
     int ty = y % tex->h;
@@ -348,7 +348,7 @@ MaterialInstance TilesCreateDirt() {
 }
 
 MaterialInstance TilesCreateSmoothStone(int x, int y) {
-    C_Surface *tex = global.game->Iso.texturepack->smoothStone->surface;
+    C_Surface *tex = global.game->Iso.texturepack.smoothStone->surface();
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -359,7 +359,7 @@ MaterialInstance TilesCreateSmoothStone(int x, int y) {
 }
 
 MaterialInstance TilesCreateCobbleStone(int x, int y) {
-    C_Surface *tex = global.game->Iso.texturepack->cobbleStone->surface;
+    C_Surface *tex = global.game->Iso.texturepack.cobbleStone->surface();
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -370,7 +370,7 @@ MaterialInstance TilesCreateCobbleStone(int x, int y) {
 }
 
 MaterialInstance TilesCreateSmoothDirt(int x, int y) {
-    C_Surface *tex = global.game->Iso.texturepack->smoothDirt->surface;
+    C_Surface *tex = global.game->Iso.texturepack.smoothDirt->surface();
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -381,7 +381,7 @@ MaterialInstance TilesCreateSmoothDirt(int x, int y) {
 }
 
 MaterialInstance TilesCreateCobbleDirt(int x, int y) {
-    C_Surface *tex = global.game->Iso.texturepack->cobbleDirt->surface;
+    C_Surface *tex = global.game->Iso.texturepack.cobbleDirt->surface();
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -392,7 +392,7 @@ MaterialInstance TilesCreateCobbleDirt(int x, int y) {
 }
 
 MaterialInstance TilesCreateSoftDirt(int x, int y) {
-    C_Surface *tex = global.game->Iso.texturepack->softDirt->surface;
+    C_Surface *tex = global.game->Iso.texturepack.softDirt->surface();
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -415,7 +415,7 @@ MaterialInstance TilesCreateLava() {
 }
 
 MaterialInstance TilesCreateCloud(int x, int y) {
-    C_Surface *tex = global.game->Iso.texturepack->cloud->surface;
+    C_Surface *tex = global.game->Iso.texturepack.cloud->surface();
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -426,7 +426,7 @@ MaterialInstance TilesCreateCloud(int x, int y) {
 }
 
 MaterialInstance TilesCreateGold(int x, int y) {
-    C_Surface *tex = global.game->Iso.texturepack->gold->surface;
+    C_Surface *tex = global.game->Iso.texturepack.gold->surface();
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -437,7 +437,7 @@ MaterialInstance TilesCreateGold(int x, int y) {
 }
 
 MaterialInstance TilesCreateIron(int x, int y) {
-    C_Surface *tex = global.game->Iso.texturepack->iron->surface;
+    C_Surface *tex = global.game->Iso.texturepack.iron->surface();
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -448,7 +448,7 @@ MaterialInstance TilesCreateIron(int x, int y) {
 }
 
 MaterialInstance TilesCreateObsidian(int x, int y) {
-    C_Surface *tex = global.game->Iso.texturepack->obsidian->surface;
+    C_Surface *tex = global.game->Iso.texturepack.obsidian->surface();
 
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -501,7 +501,7 @@ MaterialInstance TilesCreate(Material *mat, int x, int y) {
     } else if (mat->id == GAME()->materials_list.GOLD_ORE.id) {
         return TilesCreateGold(x, y);
     } else if (mat->id == GAME()->materials_list.GOLD_MOLTEN.id) {
-        C_Surface *tex = global.game->Iso.texturepack->goldMolten->surface;
+        C_Surface *tex = global.game->Iso.texturepack.goldMolten->surface();
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -510,7 +510,7 @@ MaterialInstance TilesCreate(Material *mat, int x, int y) {
 
         return MaterialInstance(&GAME()->materials_list.GOLD_MOLTEN, rgb);
     } else if (mat->id == GAME()->materials_list.GOLD_SOLID.id) {
-        C_Surface *tex = global.game->Iso.texturepack->goldSolid->surface;
+        C_Surface *tex = global.game->Iso.texturepack.goldSolid->surface();
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -527,7 +527,7 @@ MaterialInstance TilesCreate(Material *mat, int x, int y) {
     } else if (mat->id == GAME()->materials_list.FIRE.id) {
         return TilesCreateFire();
     } else if (mat->id == GAME()->materials_list.FLAT_COBBLE_STONE.id) {
-        C_Surface *tex = global.game->Iso.texturepack->flatCobbleStone->surface;
+        C_Surface *tex = global.game->Iso.texturepack.flatCobbleStone->surface();
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -536,7 +536,7 @@ MaterialInstance TilesCreate(Material *mat, int x, int y) {
 
         return MaterialInstance(&GAME()->materials_list.FLAT_COBBLE_STONE, rgb);
     } else if (mat->id == GAME()->materials_list.FLAT_COBBLE_DIRT.id) {
-        C_Surface *tex = global.game->Iso.texturepack->flatCobbleDirt->surface;
+        C_Surface *tex = global.game->Iso.texturepack.flatCobbleDirt->surface();
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -552,7 +552,7 @@ MaterialInstance TilesCreate(Material *mat, int x, int y) {
 MaterialInstance TilesCreate(int id, int x, int y) {
     for (auto &[i, m] : GAME()->materials_list.ScriptableMaterials) {
         if (i == id) {
-            C_Surface *tex = global.game->Iso.texturepack->flatCobbleDirt->surface;
+            C_Surface *tex = global.game->Iso.texturepack.flatCobbleDirt->surface();
 
             int tx = (tex->w + (x % tex->w)) % tex->w;
             int ty = (tex->h + (y % tex->h)) % tex->h;
@@ -656,7 +656,7 @@ Structure Structures::makeTree1(World world, int x, int y) {
     char buff[30];
     snprintf(buff, sizeof(buff), "data/assets/objects/tree%d.png", rand() % 8 + 1);
     std::string buffAsStdStr = buff;
-    return Structure(LoadTexture(buffAsStdStr.c_str())->surface, GAME()->materials_list.GENERIC_PASSABLE);
+    return Structure(LoadTexture(buffAsStdStr.c_str())->surface(), GAME()->materials_list.GENERIC_PASSABLE);
 }
 
 PlacedStructure::PlacedStructure(Structure base, int x, int y) {
@@ -1053,17 +1053,16 @@ std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, Mater
 
             char buff[40];
             snprintf(buff, sizeof(buff), "data/assets/objects/tree%d.png", rand() % 8 + 1);
-            Texture *tree_tex = LoadTexture(buff);
-            C_Surface *tree_tex_surface = tree_tex->surface;
+            TextureRef tree_tex = LoadTexture(buff);
 
-            px -= tree_tex_surface->w / 2;
-            py -= tree_tex_surface->h - 2;
+            px -= tree_tex->surface()->w / 2;
+            py -= tree_tex->surface()->h - 2;
 
             ME::phy::Rectangle *s = new ME::phy::Rectangle;
             // s.SetAsBox(1, 1);
             s->set(1.0f, 1.0f);
-            RigidBody *rb = world->makeRigidBody(ME::phy::Body::BodyType::Dynamic, px, py, 0, s, 1, 0.3, tree_tex_surface);
-            for (int texX = 0; texX < tree_tex_surface->w; texX++) {
+            RigidBody *rb = world->makeRigidBody(ME::phy::Body::BodyType::Dynamic, px, py, 0, s, 1, 0.3, tree_tex);
+            for (int texX = 0; texX < tree_tex->surface()->w; texX++) {
 
                 // TODO:  23/7/17 物理相关性实现
 
@@ -1071,16 +1070,16 @@ std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, Mater
                 // bf.categoryBits = 0x0002;
                 // bf.maskBits = 0x0001;
                 // rb->body->GetFixtureList()[0].SetFilterData(bf);
-                if (((R_GET_PIXEL(tree_tex_surface, texX, tree_tex_surface->h - 1) >> 24) & 0xff) != 0x00) {
+                if (((R_GET_PIXEL(tree_tex->surface(), texX, tree_tex->surface()->h - 1) >> 24) & 0xff) != 0x00) {
                     rb->weldX = texX;
-                    rb->weldY = tree_tex_surface->h - 1;
+                    rb->weldY = tree_tex->surface()->h - 1;
                     break;
                 }
             }
             world->rigidBodies.push_back(rb);
             world->updateRigidBodyHitbox(rb);
 
-            DestroyTexture(tree_tex);
+            // tree_tex.reset();
 
             return {};
         }

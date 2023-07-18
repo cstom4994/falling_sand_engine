@@ -117,7 +117,7 @@ public:
 
         GlobalDEF globaldef;
         ME::scope<World> world;
-        TexturePack *texturepack = nullptr;
+        TexturePack texturepack;
 
         ME::thread_pool *updateDirtyPool = nullptr;
         ME::thread_pool *updateDirtyPool2 = nullptr;

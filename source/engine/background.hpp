@@ -16,25 +16,29 @@
 #include "game_datastruct.hpp"
 #include "textures.hpp"
 
-struct BackgroundLayer {
+class BackgroundLayer {
+public:
+    TextureRef tex;
+
     C_Surface *surface[3];
     R_Image *texture[3];
-    Texture *tex;
     f32 parralaxX;
     f32 parralaxY;
     f32 moveX;
     f32 moveY;
+
+public:
+    BackgroundLayer(TextureRef tex, f32 parralaxX, f32 parralaxY, f32 moveX, f32 moveY) noexcept;
+    ~BackgroundLayer();
 };
 
-BackgroundLayer *CreateBackgroundLayer(Texture *texture, f32 parallaxX, f32 parallaxY, f32 moveX, f32 moveY);
-void DestroyBackgroundLayer(BackgroundLayer *layer);
-void InitBackgroundLayer(BackgroundLayer *layer);
+using BackgroundLayerRef = ME::ref<BackgroundLayer>;
 
 class BackgroundObject {
 public:
     u32 solid;
-    std::vector<BackgroundLayer *> layers;
-    BackgroundObject(u32 solid, std::vector<BackgroundLayer *> layers) : solid(std::move(solid)), layers(std::move(layers)){};
+    std::vector<BackgroundLayerRef> layers;
+    BackgroundObject(u32 solid, std::vector<BackgroundLayerRef> layers) : solid(std::move(solid)), layers(std::move(layers)){};
     // BackgroundObject(u32 solid, std::vector<BackgroundLayer> layers) : solid(std::move(solid)) {
     //     for (auto layer : layers) {
     //         this->layers.push_back(ME::create_ref<BackgroundLayer>(layer));
@@ -56,10 +60,10 @@ public:
 
     REGISTER_SYSTEM(BackgroundSystem)
 
-    void Create() override;
-    void Destory() override;
-    void Reload() override;
-    void RegisterLua(ME::LuaWrapper::State &s_lua) override;
+    void create() override;
+    void destory() override;
+    void reload() override;
+    void registerLua(ME::LuaWrapper::State &s_lua) override;
 
 public:
     void draw();

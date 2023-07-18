@@ -4,9 +4,9 @@
 
 #include <string.h>
 
+#include "engine/core/base_memory.h"
 #include "engine/core/core.hpp"
 #include "engine/core/io/filesystem.h"
-#include "engine/core/base_memory.h"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/engine.h"
 #include "engine/renderer/renderer_gpu.h"
@@ -15,83 +15,98 @@
 #define CUTE_ASEPRITE_IMPLEMENTATION
 #include "libs/cute/cute_aseprite.h"
 
-void InitTexture(TexturePack *tex) {
-    ME_ASSERT(tex);
+Texture::Texture(const std::string &path) {
+    if (ME_fs_exists(METADOT_RESLOC(path))) {
 
-    tex->testTexture = LoadTexture("data/assets/textures/test.png");
-    tex->dirt1Texture = LoadTexture("data/assets/textures/testDirt.png");
-    tex->stone1Texture = LoadTexture("data/assets/textures/testStone.png");
-    tex->smoothStone = LoadTexture("data/assets/textures/smooth_stone.png");
-    tex->cobbleStone = LoadTexture("data/assets/textures/cobble_stone.png");
-    tex->flatCobbleStone = LoadTexture("data/assets/textures/flat_cobble_stone.png");
-    tex->smoothDirt = LoadTexture("data/assets/textures/smooth_dirt.png");
-    tex->cobbleDirt = LoadTexture("data/assets/textures/cobble_dirt.png");
-    tex->flatCobbleDirt = LoadTexture("data/assets/textures/flat_cobble_dirt.png");
-    tex->softDirt = LoadTexture("data/assets/textures/soft_dirt.png");
-    tex->cloud = LoadTexture("data/assets/textures/cloud.png");
-    tex->gold = LoadTexture("data/assets/textures/gold.png");
-    tex->goldMolten = LoadTexture("data/assets/textures/moltenGold.png");
-    tex->goldSolid = LoadTexture("data/assets/textures/solidGold.png");
-    tex->iron = LoadTexture("data/assets/textures/iron.png");
-    tex->obsidian = LoadTexture("data/assets/textures/obsidian.png");
-    tex->caveBG = LoadTexture("data/assets/backgrounds/testCave.png");
-
-    tex->testVacuum = LoadTexture("data/assets/objects/testVacuum.png");
-    tex->testBucket = LoadTexture("data/assets/objects/testBucket.png");
-    tex->testPickaxe = LoadTexture("data/assets/objects/testPickaxe.png");
-    tex->testHammer = LoadTexture("data/assets/objects/testHammer.png");
+    } else {
+        METADOT_ERROR("Unable to load texture ", path);
+    }
 }
 
-void EndTexture(TexturePack *tex) {
-    ME_ASSERT(tex);
+Texture::Texture(C_Surface *sur) noexcept {
+    ME_ASSERT(sur);
+    this->m_surface = sur;
 
-    DestroyTexture(tex->testTexture);
-    DestroyTexture(tex->dirt1Texture);
-    DestroyTexture(tex->stone1Texture);
-    DestroyTexture(tex->smoothStone);
-    DestroyTexture(tex->cobbleStone);
-    DestroyTexture(tex->flatCobbleStone);
-    DestroyTexture(tex->smoothDirt);
-    DestroyTexture(tex->cobbleDirt);
-    DestroyTexture(tex->flatCobbleDirt);
-    DestroyTexture(tex->softDirt);
-    DestroyTexture(tex->cloud);
-    DestroyTexture(tex->gold);
-    DestroyTexture(tex->goldMolten);
-    DestroyTexture(tex->goldSolid);
-    DestroyTexture(tex->iron);
-    DestroyTexture(tex->obsidian);
-    DestroyTexture(tex->caveBG);
-    DestroyTexture(tex->testAse);
+    // 复制surface到可渲染图像
+    this->m_image = R_CopyImageFromSurface(this->m_surface);
 
-    DestroyTexture(tex->testVacuum);
-    DestroyTexture(tex->testBucket);
-    DestroyTexture(tex->testPickaxe);
-    DestroyTexture(tex->testHammer);
+    // 设置默认过滤
+    R_SetImageFilter(this->m_image, R_FILTER_NEAREST);
 }
 
-Texture *CreateTexture(C_Surface *surface) {
-    Texture *tex = (Texture *)ME_MALLOC(sizeof(Texture));
-    tex->surface = surface;
-    return tex;
+Texture::~Texture() {
+    SDL_FreeSurface(this->m_surface);
+    R_FreeImage(this->m_image);
 }
 
-void DestroyTexture(Texture *tex) {
-    ME_ASSERT(tex);
-    if (tex->surface) SDL_FreeSurface(tex->surface);
-    ME_FREE(tex);
+void InitTexture(TexturePack &tex) {
+    tex.testTexture = LoadTexture("data/assets/textures/test.png");
+    tex.dirt1Texture = LoadTexture("data/assets/textures/testDirt.png");
+    tex.stone1Texture = LoadTexture("data/assets/textures/testStone.png");
+    tex.smoothStone = LoadTexture("data/assets/textures/smooth_stone.png");
+    tex.cobbleStone = LoadTexture("data/assets/textures/cobble_stone.png");
+    tex.flatCobbleStone = LoadTexture("data/assets/textures/flat_cobble_stone.png");
+    tex.smoothDirt = LoadTexture("data/assets/textures/smooth_dirt.png");
+    tex.cobbleDirt = LoadTexture("data/assets/textures/cobble_dirt.png");
+    tex.flatCobbleDirt = LoadTexture("data/assets/textures/flat_cobble_dirt.png");
+    tex.softDirt = LoadTexture("data/assets/textures/soft_dirt.png");
+    tex.cloud = LoadTexture("data/assets/textures/cloud.png");
+    tex.gold = LoadTexture("data/assets/textures/gold.png");
+    tex.goldMolten = LoadTexture("data/assets/textures/moltenGold.png");
+    tex.goldSolid = LoadTexture("data/assets/textures/solidGold.png");
+    tex.iron = LoadTexture("data/assets/textures/iron.png");
+    tex.obsidian = LoadTexture("data/assets/textures/obsidian.png");
+    tex.caveBG = LoadTexture("data/assets/backgrounds/testCave.png");
+
+    // Test aseprite
+    tex.testAse = LoadAsepriteTexture("data/assets/textures/Sprite-0003.ase");
+
+    tex.testVacuum = LoadTexture("data/assets/objects/testVacuum.png");
+    tex.testBucket = LoadTexture("data/assets/objects/testBucket.png");
+    tex.testBucketFilled = LoadTexture("data/assets/objects/testBucket_fill.png");
+    tex.testPickaxe = LoadTexture("data/assets/objects/testPickaxe.png");
+    tex.testHammer = LoadTexture("data/assets/objects/testHammer.png");
 }
 
-Texture *LoadTextureData(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
+void EndTexture(TexturePack &tex) {
+    tex.testTexture.reset();
+    tex.dirt1Texture.reset();
+    tex.stone1Texture.reset();
+    tex.smoothStone.reset();
+    tex.cobbleStone.reset();
+    tex.flatCobbleStone.reset();
+    tex.smoothDirt.reset();
+    tex.cobbleDirt.reset();
+    tex.flatCobbleDirt.reset();
+    tex.softDirt.reset();
+    tex.cloud.reset();
+    tex.gold.reset();
+    tex.goldMolten.reset();
+    tex.goldSolid.reset();
+    tex.iron.reset();
+    tex.obsidian.reset();
+    tex.caveBG.reset();
 
-Texture *LoadTexture(const char *path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
+    tex.testAse.reset();
 
-Texture *LoadTextureInternal(const char *path, u32 pixelFormat) {
+    tex.testVacuum.reset();
+    tex.testBucket.reset();
+    tex.testBucketFilled.reset();
+    tex.testPickaxe.reset();
+    tex.testHammer.reset();
+}
 
+TextureRef LoadTextureData(const std::string &path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
+
+TextureRef LoadTexture(const std::string &path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
+
+TextureRef LoadTextureInternal(const std::string &path, u32 pixelFormat) {
+
+    // 可以在这里找到SDL相关函数
     // https://wiki.libsdl.org/SDL_CreateRGBSurfaceFrom
 
-    // the color format you request stb_image to output,
-    // use STBI_rgb if you don't want/need the alpha channel
+    // 设置要求 stb_image 输出的颜色格式
+    // 如果不想/不需要 alpha 通道 则使用 STBI_rgb 而这里默认启用 alpha 通道
     int req_format = STBI_rgb_alpha;
     int width, height, orig_format;
     unsigned char *data = stbi_load(METADOT_RESLOC(path), &width, &height, &orig_format, req_format);
@@ -99,16 +114,17 @@ Texture *LoadTextureInternal(const char *path, u32 pixelFormat) {
         METADOT_ERROR("Loading image failed: %s %s", stbi_failure_reason(), METADOT_RESLOC(path));
     }
 
-    // Set up the pixel format color masks for RGB(A) byte arrays.
-    // Only STBI_rgb (3) and STBI_rgb_alpha (4) are supported here!
+    // 设置 RGB(A) 字节数组的像素格式颜色掩码
+    // 这里仅支持 STBI_rgb (3) 和 STBI_rgb_alpha (4)
     u32 rmask, gmask, bmask, amask;
+
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     int shift = (req_format == STBI_rgb) ? 8 : 0;
     rmask = 0xff000000 >> shift;
     gmask = 0x00ff0000 >> shift;
     bmask = 0x0000ff00 >> shift;
     amask = 0x000000ff >> shift;
-#else  // little endian, like x86
+#else  // 小端 x86
     rmask = 0x000000ff;
     gmask = 0x0000ff00;
     bmask = 0x00ff0000;
@@ -124,14 +140,14 @@ Texture *LoadTextureInternal(const char *path, u32 pixelFormat) {
         pitch = 4 * width;
     }
 
-    C_Surface *loadedSurface = nullptr;
+    C_Surface *loadedSurface = SDL_CreateRGBSurfaceFrom((void *)data, width, height, depth, pitch, rmask, gmask, bmask, amask);
+    C_Surface *loadedSurface_converted = SDL_ConvertSurfaceFormat(loadedSurface, pixelFormat, 0);
 
-    loadedSurface = SDL_CreateRGBSurfaceFrom((void *)data, width, height, depth, pitch, rmask, gmask, bmask, amask);
-    loadedSurface = SDL_ConvertSurfaceFormat(loadedSurface, pixelFormat, 0);
+    SDL_FreeSurface(loadedSurface);
 
-    ME_ASSERT(loadedSurface);
+    ME_ASSERT(loadedSurface_converted);
 
-    Texture *tex = CreateTexture(loadedSurface);
+    TextureRef tex = ME::create_ref<Texture>(loadedSurface_converted);
 
     stbi_image_free(data);
 
@@ -157,7 +173,7 @@ C_Surface *ScaleSurface(C_Surface *src, f32 x, f32 y) {
     return src;
 }
 
-Texture *LoadAsepriteTexture(const char *path) {
+TextureRef LoadAsepriteTexture(const std::string &path) {
 
     ase_t *ase = cute_aseprite_load_from_file(METADOT_RESLOC(path), NULL);
     if (NULL == ase) {
@@ -181,19 +197,26 @@ Texture *LoadAsepriteTexture(const char *path) {
     METADOT_BUG(std::format("Aseprite {0} {1}", ase->frame_count, ase->palette.entry_count).c_str());
 
     C_Surface *surface = SDL_CreateRGBSurfaceWithFormatFrom(frame->pixels, ase->w * ase->frame_count, ase->h, bpp * 8, bpp * ase->w * ase->frame_count, pixel_format);
-    surface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
-    if (!surface) METADOT_ERROR("Surface could not be created!, %s", SDL_GetError());
-    SDL_SetPaletteColors(surface->format->palette, (SDL_Color *)&ase->palette.entries, 0, ase->palette.entry_count);
+
+    C_Surface *surface_converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
+
+    SDL_FreeSurface(surface);
+
+    if (!surface_converted) METADOT_ERROR("Surface could not be created!, ", SDL_GetError());
+
+    SDL_SetPaletteColors(surface_converted->format->palette, (SDL_Color *)&ase->palette.entries, 0, ase->palette.entry_count);
     // SDL_SetColorKey(surface, SDL_TRUE, ase->color_profile);
 
-    Texture *tex = CreateTexture(surface);
+    ME_ASSERT(surface_converted);
+
+    TextureRef tex = ME::create_ref<Texture>(surface_converted);
 
     cute_aseprite_free(ase);
 
     return tex;
 }
 
-void RenderTextureRect(Texture *tex, R_Target *target, int x, int y, MErect *clip) {
+void RenderTextureRect(TextureRef tex, R_Target *target, int x, int y, MErect *clip) {
     MErect dst;
     dst.x = x;
     dst.y = y;
@@ -201,7 +224,7 @@ void RenderTextureRect(Texture *tex, R_Target *target, int x, int y, MErect *cli
         dst.w = clip->w;
         dst.h = clip->h;
     }
-    auto image = R_CopyImageFromSurfaceRect(tex->surface, clip);
+    auto image = R_CopyImageFromSurfaceRect(tex->surface(), clip);
     ME_ASSERT(image);
     R_BlitRect(image, NULL, target, &dst);
 }

@@ -6,7 +6,7 @@
 
 #include "ecs_fwd.hpp"
 
-namespace ME::ECS {
+namespace ME::ecs {
 namespace detail {
 
 //
@@ -61,7 +61,7 @@ bool tuple_contains(const std::tuple<Ts...>& t, const V& v) {
 
 inline std::size_t next_capacity_size(std::size_t cur_size, std::size_t min_size, std::size_t max_size) {
     if (min_size > max_size) {
-        throw std::length_error("ME::ECS::next_capacity_size");
+        throw std::length_error("ME::ecs::next_capacity_size");
     }
     if (cur_size >= max_size / 2u) {
         return max_size;
@@ -97,7 +97,7 @@ class type_family final : public type_family_base<> {
 public:
     static family_id id() noexcept {
         static family_id self_id = ++last_id_;
-        assert(self_id > 0u && "ME::ECS::family_id overflow");
+        assert(self_id > 0u && "ME::ecs::family_id overflow");
         return self_id;
     }
 };
@@ -235,7 +235,7 @@ public:
         if (p.second) {
             return p.first;
         }
-        throw std::logic_error("ME::ECS::sparse_set (value not found)");
+        throw std::logic_error("ME::ecs::sparse_set (value not found)");
     }
 
     std::pair<std::size_t, bool> find_dense_index(const T& v) const noexcept { return has(v) ? std::make_pair(sparse_[indexer_(v)], true) : std::make_pair(std::size_t(-1), false); }
@@ -600,4 +600,4 @@ template <typename T>
 inline constexpr bool is_option_v = is_option<T>::value;
 }  // namespace detail
 
-}  // namespace ME::ECS
+}  // namespace ME::ecs

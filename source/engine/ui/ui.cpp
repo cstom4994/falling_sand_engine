@@ -12,10 +12,10 @@
 #include "engine/engine.h"
 #include "engine/event/inputevent.hpp"
 #include "engine/game.hpp"
-#include "engine/textures.hpp"
 #include "engine/renderer/gpu.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/renderer_opengl.h"
+#include "engine/textures.hpp"
 
 // Color definitions
 ME_Color bgPanelColor = {0.02, 0.02, 0.05};
@@ -182,7 +182,7 @@ void UISystem::UIRendererDraw() {
         // Image cache
         R_Image *Img = nullptr;
         if (e.second->texture) {
-            Img = R_CopyImageFromSurface(e.second->texture->surface);
+            Img = R_CopyImageFromSurface(e.second->texture->surface());
         }
 
         if (e.second->type == ElementType::lineElement) {
@@ -385,7 +385,8 @@ void UISystem::UIRendererFree() {
     uidata->imgui.reset();
 
     for (auto &&e : uidata->elementLists) {
-        if (static_cast<bool>(e.second->texture)) DestroyTexture(e.second->texture);
+        // 目前这个UI系统的贴图不来自贴图包 这里直接释放
+        if (static_cast<bool>(e.second->texture)) e.second->texture.reset();
         // if (static_cast<bool>(e.second)) delete e.second;
         if (e.second.get()) e.second.reset();
     }
@@ -435,10 +436,10 @@ void UISystem::DrawPoint(MEvec3 pos, float size, Texture *texture, u8 r, u8 g, u
 
 void UISystem::DrawLine(MEvec3 min, MEvec3 max, float thickness, u8 r, u8 g, u8 b) { R_Line(ENGINE()->target, min.x, min.y, max.x, max.y, {r, g, b, 255}); }
 
-void UISystem::Create() { UIRendererInit(); }
+void UISystem::create() { UIRendererInit(); }
 
-void UISystem::Destory() { UIRendererFree(); }
+void UISystem::destory() { UIRendererFree(); }
 
-void UISystem::Reload() {}
+void UISystem::reload() {}
 
-void UISystem::RegisterLua(ME::LuaWrapper::State &s_lua) {}
+void UISystem::registerLua(ME::LuaWrapper::State &s_lua) {}

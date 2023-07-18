@@ -35,12 +35,10 @@ static void audio_play_event(std::string event) { global.audio.PlayEvent(event);
 
 static void textures_init() {
     // 贴图初始化
-    global.game->Iso.texturepack = (TexturePack *)ME_MALLOC(sizeof(TexturePack));
     InitTexture(global.game->Iso.texturepack);
 }
 static void textures_end() {
     EndTexture(global.game->Iso.texturepack);
-    ME_FREE(global.game->Iso.texturepack);
 }
 static void textures_load(std::string name, std::string path) {}
 static void controls_init() { ControlSystem::InitKey(); }
@@ -60,7 +58,7 @@ Biome *BiomeGet(std::string name) {
     return GAME()->biome_container[0];  // 没有找到指定生物群系则返回默认生物群系
 }
 
-void GameplayScriptSystem::Create() {
+void GameplayScriptSystem::create() {
     METADOT_BUG("GameplayScriptSystem created");
 
     Scripting::get_singleton_ptr()->FastLoadLua(METADOT_RESLOC("data/scripts/game.lua"));
@@ -75,11 +73,11 @@ void GameplayScriptSystem::Create() {
     global.I18N.Init();
 }
 
-void GameplayScriptSystem::Destory() { Scripting::get_singleton_ptr()->FastCallFunc("OnGameEngineUnLoad")(); }
+void GameplayScriptSystem::destory() { Scripting::get_singleton_ptr()->FastCallFunc("OnGameEngineUnLoad")(); }
 
-void GameplayScriptSystem::Reload() {}
+void GameplayScriptSystem::reload() {}
 
-void GameplayScriptSystem::RegisterLua(ME::LuaWrapper::State &s_lua) {
+void GameplayScriptSystem::registerLua(ME::LuaWrapper::State &s_lua) {
     s_lua["controls_init"] = ME::LuaWrapper::function(controls_init);
     s_lua["materials_init"] = ME::LuaWrapper::function(InitMaterials);
     s_lua["materials_register"] = ME::LuaWrapper::function(RegisterMaterial);

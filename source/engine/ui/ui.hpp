@@ -8,10 +8,10 @@
 
 #include "engine/core/core.hpp"
 #include "engine/game_basic.hpp"
-#include "engine/textures.hpp"
 #include "engine/meta/reflection.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/renderer_opengl.h"
+#include "engine/textures.hpp"
 #include "engine/ui/imgui_impl.hpp"
 #include "engine/ui/imgui_layer.hpp"
 #include "game/player.hpp"
@@ -64,7 +64,7 @@ typedef struct UIResizable {
     int mw = 0, mh = 0;
 } UIResizable;
 
-typedef struct UIElement {
+struct UIElement {
     ElementType type;
 
     bool visible = true;
@@ -78,7 +78,7 @@ typedef struct UIElement {
 
     u8 state;
     ME_Color color;
-    Texture* texture;
+    TextureRef texture;
     std::string text;
 
     UIElementClass cclass;
@@ -86,8 +86,7 @@ typedef struct UIElement {
     int textW, textH;
 
     float lineThickness;
-
-} UIElement;
+};
 
 // static_assert(sizeof(UIElement) == 176);
 
@@ -107,10 +106,10 @@ public:
 
     UIData* uidata = nullptr;
 
-    void Create() override;
-    void Destory() override;
-    void Reload() override;
-    void RegisterLua(ME::LuaWrapper::State& s_lua) override;
+    void create() override;
+    void destory() override;
+    void reload() override;
+    void registerLua(ME::LuaWrapper::State& s_lua) override;
 
     void UIRendererInit();
     void UIRendererPostUpdate();

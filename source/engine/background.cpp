@@ -15,25 +15,25 @@
 
 BackgroundObject::~BackgroundObject() {
     for (size_t i = 0; i < layers.size(); i++) {
-        DestroyBackgroundLayer(layers[i]);
+        layers[i].reset();
     }
 }
 
 void BackgroundObject::Init() {
-    for (size_t i = 0; i < layers.size(); i++) {
-        InitBackgroundLayer(layers[i]);
-    }
+    // for (size_t i = 0; i < layers.size(); i++) {
+    //     InitBackgroundLayer(layers[i]);
+    // }
 }
 
 void NewBackgroundObject(std::string name, u32 solid, ME::LuaWrapper::LuaRef table) {
     auto &L = Scripting::get_singleton_ptr()->Lua->s_lua;
     std::vector<ME::LuaWrapper::LuaRef> b = table;
-    std::vector<BackgroundLayer *> Layers;
+    std::vector<BackgroundLayerRef> Layers;
 
     for (auto &c : b) {
         METADOT_BUG(std::format("{0} {1}, [{2:.2} {3:.2} {4:.2} {5:.2}]", name, c["name"].get<std::string>().c_str(), c["p1"].get<f32>(), c["p2"].get<f32>(), c["x1"].get<f32>(), c["x2"].get<f32>())
                             .c_str());
-        auto l = CreateBackgroundLayer(LoadTexture(c["name"].get<std::string>().c_str()), c["p1"].get<f32>(), c["p2"].get<f32>(), c["x1"].get<f32>(), c["x2"].get<f32>());
+        BackgroundLayerRef l = ME::create_ref<BackgroundLayer>(LoadTexture(c["name"].get<std::string>().c_str()), c["p1"].get<f32>(), c["p2"].get<f32>(), c["x1"].get<f32>(), c["x2"].get<f32>());
         Layers.push_back(l);
     }
 
@@ -57,29 +57,30 @@ BackgroundObject *BackgroundSystem::Get(std::string name) {
 //
 // BackgroundObject BackgroundSystem::TEST_OVERWORLD = BackgroundObject(0x7EAFCB, testOverworldLayers);
 
-void BackgroundSystem::Create() {
+void BackgroundSystem::create() {
 
     // NewBackgroundObject("TEST_OVERWORLD");
     auto &L = Scripting::get_singleton_ptr()->Lua->s_lua;
 
-    this->RegisterLua(L);
+    this->registerLua(L);
 
     L["OnBackgroundLoad"]();
 }
 
-void BackgroundSystem::Destory() {
+void BackgroundSystem::destory() {
     for (auto &[name, bg] : m_backgrounds) {
         delete bg;
     }
 }
-void BackgroundSystem::Reload() {}
-void BackgroundSystem::RegisterLua(ME::LuaWrapper::State &s_lua) { s_lua["NewBackgroundObject"] = ME::LuaWrapper::function(NewBackgroundObject); }
+void BackgroundSystem::reload() {}
+
+void BackgroundSystem::registerLua(ME::LuaWrapper::State &s_lua) { s_lua["NewBackgroundObject"] = ME::LuaWrapper::function(NewBackgroundObject); }
 
 void BackgroundSystem::draw() {
     // 绘制背景贴图
     if (NULL == global.game->bg) global.game->bg = global.game->Iso.backgrounds->Get("TEST_OVERWORLD");
-    if (NULL != global.game->bg && !global.game->bg->layers.empty() && global.game->Iso.globaldef.draw_background &&
-        ENGINE()->render_scale <= ME_ARRAY_SIZE(global.game->bg->layers[0]->surface) && global.game->Iso.world->loadZone.y > -5 * CHUNK_H) {
+    if (NULL != global.game->bg && !global.game->bg->layers.empty() && global.game->Iso.globaldef.draw_background && ENGINE()->render_scale <= ME_ARRAY_SIZE(global.game->bg->layers[0]->surface) &&
+        global.game->Iso.world->loadZone.y > -5 * CHUNK_H) {
         R_SetShapeBlendMode(R_BLEND_SET);
         ME_Color col = {static_cast<u8>((global.game->bg->solid >> 16) & 0xff), static_cast<u8>((global.game->bg->solid >> 8) & 0xff), static_cast<u8>((global.game->bg->solid >> 0) & 0xff), 0xff};
         R_ClearColor(ENGINE()->target, col);
@@ -95,7 +96,7 @@ void BackgroundSystem::draw() {
         R_SetShapeBlendMode(R_BLEND_NORMAL);
 
         for (size_t i = 0; i < global.game->bg->layers.size(); i++) {
-            BackgroundLayer *bglayer = global.game->bg->layers[i];
+            BackgroundLayerRef bglayer = global.game->bg->layers[i];
 
             C_Surface *texture = bglayer->surface[(size_t)ENGINE()->render_scale - 1];
 
@@ -157,35 +158,27 @@ void BackgroundSystem::draw() {
     }
 }
 
-BackgroundLayer *CreateBackgroundLayer(Texture *texture, f32 parallaxX, f32 parallaxY, f32 moveX, f32 moveY) {
-    BackgroundLayer *layer = (BackgroundLayer *)ME_MALLOC(sizeof(BackgroundLayer));
-    layer->tex = texture;
-    // layer->surface = {ScaleSurface(texture->surface, 1, 1), ScaleSurface(texture->surface, 2, 2), ScaleSurface(texture->surface, 3, 3)};
+BackgroundLayer::BackgroundLayer(TextureRef tex, f32 parralaxX, f32 parralaxY, f32 moveX, f32 moveY) noexcept : tex(tex), parralaxX(parralaxX), parralaxY(parralaxY), moveX(moveX), moveY(moveY) {
+
+    ME_ASSERT(tex);
+
     for (int i = 1; i <= 3; i++) {
-        layer->surface[i - 1] = ScaleSurface(texture->surface, i, i);
+        this->surface[i - 1] = ScaleSurface(tex->surface(), i, i);
         // layer->surface[i - 1] = texture->surface;
     }
-    layer->parralaxX = parallaxX;
-    layer->parralaxY = parallaxY;
-    layer->moveX = moveX;
-    layer->moveY = moveY;
-    return layer;
-}
-
-void DestroyBackgroundLayer(BackgroundLayer *layer) {
-    for (auto &&image : layer->texture) R_FreeImage(image);
-    if (layer->tex) DestroyTexture(layer->tex);
-    ME_FREE(layer);
-}
-
-void InitBackgroundLayer(BackgroundLayer *layer) {
-    // layer->texture = {R_CopyImageFromSurface(layer->surface[0]), R_CopyImageFromSurface(layer->surface[1]), R_CopyImageFromSurface(layer->surface[2])};
 
     for (int i = 1; i <= 3; i++) {
-        layer->texture[i - 1] = R_CopyImageFromSurface(layer->surface[i - 1]);
+        this->texture[i - 1] = R_CopyImageFromSurface(this->surface[i - 1]);
     }
 
-    R_SetImageFilter(layer->texture[0], R_FILTER_NEAREST);
-    R_SetImageFilter(layer->texture[1], R_FILTER_NEAREST);
-    R_SetImageFilter(layer->texture[2], R_FILTER_NEAREST);
+    R_SetImageFilter(this->texture[0], R_FILTER_NEAREST);
+    R_SetImageFilter(this->texture[1], R_FILTER_NEAREST);
+    R_SetImageFilter(this->texture[2], R_FILTER_NEAREST);
+}
+
+BackgroundLayer::~BackgroundLayer() {
+    for (auto &&image : this->texture) R_FreeImage(image);
+
+    // 背景贴图不在贴图包中 这里将其释放
+    if (this->tex) this->tex.reset();
 }
