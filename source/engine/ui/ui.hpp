@@ -20,7 +20,7 @@ typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lin
 
 typedef union UIElementClass {
     struct UIElementState_Button {
-        ME_Color hot_color;
+        MEcolor hot_color;
         void (*func)(void);
     } button;
 
@@ -31,21 +31,21 @@ typedef union UIElementClass {
         u8 bar_type;
         f32 bar_current;
         f32 bar_limit;
-        ME_Color bar_color;
-        ME_Color bar_text_color;
+        MEcolor bar_color;
+        MEcolor bar_text_color;
     } progressbar;
 
     struct UIElementState_ListBox {
         u8 list_type;
         char** list;
-        ME_Color list_bg_color;
-        ME_Color list_hover_color;
-        ME_Color list_text_color;
+        MEcolor list_bg_color;
+        MEcolor list_hover_color;
+        MEcolor list_text_color;
     } listbox;
 
     struct UIElementState_InputBox {
-        ME_Color bg_color;
-        ME_Color text_color;
+        MEcolor bg_color;
+        MEcolor text_color;
     } inputbox;
 
 } UIElementClass;
@@ -77,7 +77,7 @@ struct UIElement {
     int x, y, w, h;
 
     u8 state;
-    ME_Color color;
+    MEcolor color;
     TextureRef texture;
     std::string text;
 

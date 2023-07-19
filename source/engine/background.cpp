@@ -82,7 +82,7 @@ void BackgroundSystem::draw() {
     if (NULL != global.game->bg && !global.game->bg->layers.empty() && global.game->Iso.globaldef.draw_background && ENGINE()->render_scale <= ME_ARRAY_SIZE(global.game->bg->layers[0]->surface) &&
         global.game->Iso.world->loadZone.y > -5 * CHUNK_H) {
         R_SetShapeBlendMode(R_BLEND_SET);
-        ME_Color col = {static_cast<u8>((global.game->bg->solid >> 16) & 0xff), static_cast<u8>((global.game->bg->solid >> 8) & 0xff), static_cast<u8>((global.game->bg->solid >> 0) & 0xff), 0xff};
+        MEcolor col = {static_cast<u8>((global.game->bg->solid >> 16) & 0xff), static_cast<u8>((global.game->bg->solid >> 8) & 0xff), static_cast<u8>((global.game->bg->solid >> 0) & 0xff), 0xff};
         R_ClearColor(ENGINE()->target, col);
 
         MErect dst;

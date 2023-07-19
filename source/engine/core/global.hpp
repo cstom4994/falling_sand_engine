@@ -63,10 +63,6 @@ typedef struct MEuvec4 {
     uint32_t x, y, z, w;
 } MEuvec4;
 
-typedef struct MEcolor {
-    uint8_t r, g, b;
-} MEcolor;
-
 // byte vec3
 typedef struct MEbvec3 {
     uint8_t x, y, z;

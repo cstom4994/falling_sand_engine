@@ -96,7 +96,7 @@ void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audi
             }
         }
 
-        distributedPoints.push_back({x, y});
+        distributedPoints.emplace_back(x, y);
     tooClose : {}
     }
 
@@ -239,7 +239,7 @@ RigidBody *World::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, 
 
     b2BodyDef bodyDef;
     bodyDef.type = type;
-    bodyDef.position.Set(x, y);
+    bodyDef.position.set(x, y);
     bodyDef.angle = angle * PI / 180;
     b2Body *body = b2world->CreateBody(&bodyDef);
 
@@ -485,7 +485,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
 
             lastX += (f32)r.directions[i].x;
             lastY -= (f32)r.directions[i].y;
-            worldMesh.push_back({lastX, lastY});
+            worldMesh.emplace_back(lastX, lastY);
         }
 
         worldMesh = simplify(worldMesh, 1);
@@ -865,7 +865,7 @@ found : {};
 
             lastX += (f32)r.directions[i].x;
             lastY -= (f32)r.directions[i].y;
-            worldMesh.push_back({lastX, lastY});
+            worldMesh.emplace_back(lastX, lastY);
         }
 
         worldMesh = simplify(worldMesh, 1);
@@ -2809,7 +2809,7 @@ void World::generateChunk(Chunk *ch) { gen->generateChunk(this, ch); }
 
 Biome *World::getBiomeAt(Chunk *ch, int x, int y) {
 
-    if (ch->biomes[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W]->id != BiomeGet("DEFAULT")->id) {
+    if (ch->biomes[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W]->id != Biome::biomeGet("DEFAULT")->id) {
         Biome *b = ch->biomes[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W];
         if (ch->pleaseDelete) delete ch;
         return b;
@@ -2826,7 +2826,7 @@ Biome *World::getBiomeAt(int x, int y) {
 
     Biome *ret = nullptr;
 
-    // ret = BiomeGet("DEFAULT");
+    // ret = Biome::biomeGet("DEFAULT");
     // return ret;
 
     if (abs(CHUNK_H * 3 - y) < CHUNK_H * 10) {
@@ -2834,11 +2834,11 @@ Biome *World::getBiomeAt(int x, int y) {
         int biomeCatNum = 3;
         int biomeCat = (int)(v * biomeCatNum);
         if (biomeCat == 0) {
-            ret = BiomeGet("PLAINS");
+            ret = Biome::biomeGet("PLAINS");
         } else if (biomeCat == 1) {
-            ret = BiomeGet("MOUNTAINS");
+            ret = Biome::biomeGet("MOUNTAINS");
         } else if (biomeCat == 2) {
-            ret = BiomeGet("FOREST");
+            ret = Biome::biomeGet("FOREST");
         }
     } else {
         noise.SetCellularDistanceFunction(FastNoise::CellularDistanceFunction::Natural);
@@ -2850,17 +2850,17 @@ Biome *World::getBiomeAt(int x, int y) {
         int biomeCat = (int)(v * biomeCatNum);
 
         if (biomeCat == 0) {
-            ret = v2 >= 0.5 ? BiomeGet("TEST_1_2") : BiomeGet("TEST_1");
+            ret = v2 >= 0.5 ? Biome::biomeGet("TEST_1_2") : Biome::biomeGet("TEST_1");
         } else if (biomeCat == 1) {
-            ret = v2 >= 0.5 ? BiomeGet("TEST_2_2") : BiomeGet("TEST_2");
+            ret = v2 >= 0.5 ? Biome::biomeGet("TEST_2_2") : Biome::biomeGet("TEST_2");
         } else if (biomeCat == 2) {
-            ret = v2 >= 0.5 ? BiomeGet("TEST_3_2") : BiomeGet("TEST_3");
+            ret = v2 >= 0.5 ? Biome::biomeGet("TEST_3_2") : Biome::biomeGet("TEST_3");
         } else if (biomeCat == 3) {
-            ret = v2 >= 0.5 ? BiomeGet("TEST_4_2") : BiomeGet("TEST_4");
+            ret = v2 >= 0.5 ? Biome::biomeGet("TEST_4_2") : Biome::biomeGet("TEST_4");
         }
     }
 
-    if (ret == nullptr) ret = BiomeGet("DEFAULT");
+    if (ret == nullptr) ret = Biome::biomeGet("DEFAULT");
 
     return ret;
 }
@@ -2934,7 +2934,7 @@ Chunk *World::getChunk(int cx, int cy) {
     c->ChunkInit(cx, cy, (char *)worldName.c_str());
     c->generationPhase = -1;
     c->pleaseDelete = true;
-    auto a = BiomeGet("DEFAULT");
+    auto a = Biome::biomeGet("DEFAULT");
     c->biomes.resize(CHUNK_W * CHUNK_H);
     std::fill(c->biomes.begin(), c->biomes.end(), a);
     return c;

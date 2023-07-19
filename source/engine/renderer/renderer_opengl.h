@@ -25,7 +25,7 @@
     SDL_Color { _c.r, _c.g, _c.b, _c.a }
 
 #define ToEngineColor(_c) \
-    ME_Color { _c.r, _c.g, _c.b, _c.a }
+    MEcolor { _c.r, _c.g, _c.b, _c.a }
 
 #define R_CONTEXT_DATA ContextData_OpenGL_3
 #define R_IMAGE_DATA ImageData_OpenGL_3
@@ -92,7 +92,7 @@ void main(void)\n\
 }"
 
 typedef struct ContextData_OpenGL_3 {
-    ME_Color last_color;
+    MEcolor last_color;
     bool last_use_texturing;
     unsigned int last_shape;
     bool last_use_blending;
@@ -240,7 +240,7 @@ void PrimitiveBatchV(R_Renderer *renderer, R_Image *image, R_Target *target, R_P
 void GenerateMipmaps(R_Renderer *renderer, R_Image *image);
 MErect SetClip(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y, Uint16 w, Uint16 h);
 void UnsetClip(R_Renderer *renderer, R_Target *target);
-ME_Color GetPixel(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y);
+MEcolor GetPixel(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y);
 void SetImageFilter(R_Renderer *renderer, R_Image *image, R_FilterEnum filter);
 void SetWrapMode(R_Renderer *renderer, R_Image *image, R_WrapEnum wrap_mode_x, R_WrapEnum wrap_mode_y);
 R_TextureHandle GetTextureHandle(R_Renderer *renderer, R_Image *image);
@@ -290,25 +290,25 @@ void SetAttributeuiv(R_Renderer *renderer, int location, int num_elements, unsig
 void SetAttributeSource(R_Renderer *renderer, int num_values, R_Attribute source);
 float SetLineThickness(R_Renderer *renderer, float thickness);
 float GetLineThickness(R_Renderer *renderer);
-void DrawPixel(R_Renderer *renderer, R_Target *target, float x, float y, ME_Color color);
-void Line(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, ME_Color color);
-void Arc(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color);
-void ArcFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color);
-void Circle(R_Renderer *renderer, R_Target *target, float x, float y, float radius, ME_Color color);
-void CircleFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, ME_Color color);
-void Ellipse(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color);
-void EllipseFilled(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color);
-void Sector(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color);
-void SectorFilled(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color);
-void Tri(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color);
-void TriFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color);
-void Rectangle(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, ME_Color color);
-void RectangleFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, ME_Color color);
-void RectangleRound(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color);
-void RectangleRoundFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color);
-void Polygon(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color);
-void Polyline(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color, bool close_loop);
-void PolygonFilled(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color);
+void DrawPixel(R_Renderer *renderer, R_Target *target, float x, float y, MEcolor color);
+void Line(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, MEcolor color);
+void Arc(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, MEcolor color);
+void ArcFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, MEcolor color);
+void Circle(R_Renderer *renderer, R_Target *target, float x, float y, float radius, MEcolor color);
+void CircleFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, MEcolor color);
+void Ellipse(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, MEcolor color);
+void EllipseFilled(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, MEcolor color);
+void Sector(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, MEcolor color);
+void SectorFilled(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, MEcolor color);
+void Tri(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, MEcolor color);
+void TriFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, MEcolor color);
+void Rectangle(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, MEcolor color);
+void RectangleFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, MEcolor color);
+void RectangleRound(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, MEcolor color);
+void RectangleRoundFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, MEcolor color);
+void Polygon(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color);
+void Polyline(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color, bool close_loop);
+void PolygonFilled(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color);
 
 #endif
 

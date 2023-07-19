@@ -2,9 +2,12 @@
 
 #include "pack_editor.h"
 
+#include "engine/core/io/filesystem.h"
+#include "engine/ui/imgui_helper.hpp"
+
 void PackEditor::Init() {
-    file_dialog.SetTitle("选择包");
-    file_dialog.SetTypeFilters({".pack"});
+    // file_dialog.SetTitle("选择包");
+    // file_dialog.SetTypeFilters({".pack"});
 }
 
 void PackEditor::End() {
@@ -16,7 +19,7 @@ void PackEditor::End() {
 void PackEditor::Draw() {
     if (ImGui::Begin("包编辑器")) {
 
-        if (ImGui::Button("打开包") && !pack_reader_is_loaded) file_dialog.Open();
+        if (ImGui::Button("打开包") && !pack_reader_is_loaded) filebrowser = true;
         ImGui::SameLine();
         if (ImGui::Button("关闭包")) {
             ME_destroy_pack_reader(pack_reader);
@@ -25,26 +28,28 @@ void PackEditor::Draw() {
         ImGui::SameLine();
         ImGui::Text("MetaDot Pack [%d.%d.%d]\n", PACK_VERSION_MAJOR, PACK_VERSION_MINOR, PACK_VERSION_PATCH);
 
-        file_dialog.Display();
+        // file_dialog.Display();
 
-        if (file_dialog.HasSelected()) {
+        if (filebrowser) {
+            auto file = ImGuiHelper::file_browser(ME_fs_get_path("data/scripts"));
 
-            std::string selected = file_dialog.GetSelected().string();
+            if (!file.empty()) {
 
-            file_dialog.ClearSelected();
+                if (pack_reader_is_loaded) {
 
-            if (pack_reader_is_loaded) {
+                } else {
+                    result = ME_get_pack_info(file.c_str(), &majorVersion, &minorVersion, &patchVersion, &isLittleEndian, &itemCount);
+                    if (result != SUCCESS_PACK_RESULT) return;
 
-            } else {
-                result = ME_get_pack_info(selected.c_str(), &majorVersion, &minorVersion, &patchVersion, &isLittleEndian, &itemCount);
-                if (result != SUCCESS_PACK_RESULT) return;
+                    result = ME_create_file_pack_reader(file.c_str(), 0, false, &pack_reader);
+                    if (result != SUCCESS_PACK_RESULT) return;
 
-                result = ME_create_file_pack_reader(selected.c_str(), 0, false, &pack_reader);
-                if (result != SUCCESS_PACK_RESULT) return;
+                    if (result == SUCCESS_PACK_RESULT) itemCount = ME_get_pack_item_count(pack_reader);
 
-                if (result == SUCCESS_PACK_RESULT) itemCount = ME_get_pack_item_count(pack_reader);
+                    pack_reader_is_loaded = true;
+                }
 
-                pack_reader_is_loaded = true;
+                filebrowser = false;
             }
         }
 

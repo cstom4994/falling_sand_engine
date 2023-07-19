@@ -8,7 +8,6 @@
 #include <filesystem>
 #include <fstream>
 
-#include "datapackage.h"
 #include "engine/core/base_memory.h"
 #include "engine/core/core.hpp"
 #include "engine/core/platform.h"

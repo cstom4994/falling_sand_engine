@@ -607,7 +607,7 @@ void R_Quit(void) {
 void R_PushErrorCode(const char *function, R_ErrorEnum error, const char *details, ...) {
     gpu_init_error_queue();
 
-#if defined(METADOT_DEBUG)
+#if defined(_DEBUG)
     // Print the message
     if (details != NULL) {
         char buf[R_ERROR_DETAILS_STRING_MAX];
@@ -717,8 +717,8 @@ MErect R_MakeRect(float x, float y, float w, float h) {
     return r;
 }
 
-ME_Color R_MakeColor(u8 r, u8 g, u8 b, u8 a) {
-    ME_Color c;
+MEcolor R_MakeColor(u8 r, u8 g, u8 b, u8 a) {
+    MEcolor c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -880,7 +880,7 @@ static SDL_Surface *gpu_copy_raw_surface_data(unsigned char *data, int width, in
         // SDL_CreateRGBSurface has no idea what palette to use, so it uses a blank one.
         // We'll at least create a grayscale one, but it's not ideal...
         // Better would be to get the palette from stbi, but stbi doesn't do that!
-        ME_Color colors[256];
+        MEcolor colors[256];
 
         for (i = 0; i < 256; i++) {
             colors[i].r = colors[i].g = colors[i].b = (u8)i;
@@ -1190,14 +1190,14 @@ bool R_IntersectClipRect(R_Target *target, MErect B, MErect *result) {
     return R_IntersectRect(target->clip_rect, B, result);
 }
 
-void R_SetColor(R_Image *image, ME_Color color) {
+void R_SetColor(R_Image *image, MEcolor color) {
     if (image == NULL) return;
 
     image->color = color;
 }
 
 void R_SetRGB(R_Image *image, u8 r, u8 g, u8 b) {
-    ME_Color c;
+    MEcolor c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -1209,7 +1209,7 @@ void R_SetRGB(R_Image *image, u8 r, u8 g, u8 b) {
 }
 
 void R_SetRGBA(R_Image *image, u8 r, u8 g, u8 b, u8 a) {
-    ME_Color c;
+    MEcolor c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -1221,13 +1221,13 @@ void R_SetRGBA(R_Image *image, u8 r, u8 g, u8 b, u8 a) {
 }
 
 void R_UnsetColor(R_Image *image) {
-    ME_Color c = {255, 255, 255, 255};
+    MEcolor c = {255, 255, 255, 255};
     if (image == NULL) return;
 
     image->color = c;
 }
 
-void R_SetTargetColor(R_Target *target, ME_Color color) {
+void R_SetTargetColor(R_Target *target, MEcolor color) {
     if (target == NULL) return;
 
     target->use_color = 1;
@@ -1235,7 +1235,7 @@ void R_SetTargetColor(R_Target *target, ME_Color color) {
 }
 
 void R_SetTargetRGB(R_Target *target, u8 r, u8 g, u8 b) {
-    ME_Color c;
+    MEcolor c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -1248,7 +1248,7 @@ void R_SetTargetRGB(R_Target *target, u8 r, u8 g, u8 b) {
 }
 
 void R_SetTargetRGBA(R_Target *target, u8 r, u8 g, u8 b, u8 a) {
-    ME_Color c;
+    MEcolor c;
     c.r = r;
     c.g = g;
     c.b = b;
@@ -1261,7 +1261,7 @@ void R_SetTargetRGBA(R_Target *target, u8 r, u8 g, u8 b, u8 a) {
 }
 
 void R_UnsetTargetColor(R_Target *target) {
-    ME_Color c = {255, 255, 255, 255};
+    MEcolor c = {255, 255, 255, 255};
     if (target == NULL) return;
 
     target->use_color = false;
@@ -1468,9 +1468,9 @@ R_TextureHandle R_GetTextureHandle(R_Image *image) {
     return GetTextureHandle(image->renderer, image);
 }
 
-ME_Color R_GetPixel(R_Target *target, i16 x, i16 y) {
+MEcolor R_GetPixel(R_Target *target, i16 x, i16 y) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) {
-        ME_Color c = {0, 0, 0, 0};
+        MEcolor c = {0, 0, 0, 0};
         return c;
     }
 
@@ -1485,7 +1485,7 @@ void R_Clear(R_Target *target) {
     ClearRGBA(gpu_current_renderer, target, 0, 0, 0, 0);
 }
 
-void R_ClearColor(R_Target *target, ME_Color color) {
+void R_ClearColor(R_Target *target, MEcolor color) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -2424,117 +2424,117 @@ float R_GetLineThickness(void) {
     return GetLineThickness(renderer);
 }
 
-void R_DrawPixel(R_Target *target, float x, float y, ME_Color color) {
+void R_DrawPixel(R_Target *target, float x, float y, MEcolor color) {
     CHECK_RENDERER();
     DrawPixel(renderer, target, x, y, color);
 }
 
-void R_Line(R_Target *target, float x1, float y1, float x2, float y2, ME_Color color) {
+void R_Line(R_Target *target, float x1, float y1, float x2, float y2, MEcolor color) {
     CHECK_RENDERER();
     Line(renderer, target, x1, y1, x2, y2, color);
 }
 
-void R_Arc(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color) {
+void R_Arc(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, MEcolor color) {
     CHECK_RENDERER();
     Arc(renderer, target, x, y, radius, start_angle, end_angle, color);
 }
 
-void R_ArcFilled(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color) {
+void R_ArcFilled(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, MEcolor color) {
     CHECK_RENDERER();
     ArcFilled(renderer, target, x, y, radius, start_angle, end_angle, color);
 }
 
-void R_Circle(R_Target *target, float x, float y, float radius, ME_Color color) {
+void R_Circle(R_Target *target, float x, float y, float radius, MEcolor color) {
     CHECK_RENDERER();
     Circle(renderer, target, x, y, radius, color);
 }
 
-void R_CircleFilled(R_Target *target, float x, float y, float radius, ME_Color color) {
+void R_CircleFilled(R_Target *target, float x, float y, float radius, MEcolor color) {
     CHECK_RENDERER();
     CircleFilled(renderer, target, x, y, radius, color);
 }
 
-void R_Ellipse(R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color) {
+void R_Ellipse(R_Target *target, float x, float y, float rx, float ry, float degrees, MEcolor color) {
     CHECK_RENDERER();
     Ellipse(renderer, target, x, y, rx, ry, degrees, color);
 }
 
-void R_EllipseFilled(R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color) {
+void R_EllipseFilled(R_Target *target, float x, float y, float rx, float ry, float degrees, MEcolor color) {
     CHECK_RENDERER();
     EllipseFilled(renderer, target, x, y, rx, ry, degrees, color);
 }
 
-void R_Sector(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color) {
+void R_Sector(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, MEcolor color) {
     CHECK_RENDERER();
     Sector(renderer, target, x, y, inner_radius, outer_radius, start_angle, end_angle, color);
 }
 
-void R_SectorFilled(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color) {
+void R_SectorFilled(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, MEcolor color) {
     CHECK_RENDERER();
     SectorFilled(renderer, target, x, y, inner_radius, outer_radius, start_angle, end_angle, color);
 }
 
-void R_Tri(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color) {
+void R_Tri(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, MEcolor color) {
     CHECK_RENDERER();
     Tri(renderer, target, x1, y1, x2, y2, x3, y3, color);
 }
 
-void R_TriFilled(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color) {
+void R_TriFilled(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, MEcolor color) {
     CHECK_RENDERER();
     TriFilled(renderer, target, x1, y1, x2, y2, x3, y3, color);
 }
 
-void R_Rectangle(R_Target *target, float x1, float y1, float x2, float y2, ME_Color color) {
+void R_Rectangle(R_Target *target, float x1, float y1, float x2, float y2, MEcolor color) {
     CHECK_RENDERER();
     Rectangle(renderer, target, x1, y1, x2, y2, color);
 }
 
-void R_Rectangle2(R_Target *target, MErect rect, ME_Color color) {
+void R_Rectangle2(R_Target *target, MErect rect, MEcolor color) {
     CHECK_RENDERER();
     Rectangle(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 }
 
-void R_RectangleFilled(R_Target *target, float x1, float y1, float x2, float y2, ME_Color color) {
+void R_RectangleFilled(R_Target *target, float x1, float y1, float x2, float y2, MEcolor color) {
     CHECK_RENDERER();
     RectangleFilled(renderer, target, x1, y1, x2, y2, color);
 }
 
-void R_RectangleFilled2(R_Target *target, MErect rect, ME_Color color) {
+void R_RectangleFilled2(R_Target *target, MErect rect, MEcolor color) {
     CHECK_RENDERER();
     RectangleFilled(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, color);
 }
 
-void R_RectangleRound(R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color) {
+void R_RectangleRound(R_Target *target, float x1, float y1, float x2, float y2, float radius, MEcolor color) {
     CHECK_RENDERER();
     RectangleRound(renderer, target, x1, y1, x2, y2, radius, color);
 }
 
-void R_RectangleRound2(R_Target *target, MErect rect, float radius, ME_Color color) {
+void R_RectangleRound2(R_Target *target, MErect rect, float radius, MEcolor color) {
     CHECK_RENDERER();
     RectangleRound(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, radius, color);
 }
 
-void R_RectangleRoundFilled(R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color) {
+void R_RectangleRoundFilled(R_Target *target, float x1, float y1, float x2, float y2, float radius, MEcolor color) {
     CHECK_RENDERER();
     RectangleRoundFilled(renderer, target, x1, y1, x2, y2, radius, color);
 }
 
-void R_RectangleRoundFilled2(R_Target *target, MErect rect, float radius, ME_Color color) {
+void R_RectangleRoundFilled2(R_Target *target, MErect rect, float radius, MEcolor color) {
     CHECK_RENDERER();
     RectangleRoundFilled(renderer, target, rect.x, rect.y, rect.x + rect.w, rect.y + rect.h, radius, color);
 }
 
-void R_Polygon(R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color) {
+void R_Polygon(R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color) {
     CHECK_RENDERER();
     Polygon(renderer, target, num_vertices, vertices, color);
 }
 
-void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color, bool close_loop) {
+void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color, bool close_loop) {
     CHECK_RENDERER();
     Polyline(renderer, target, num_vertices, vertices, color, close_loop);
 }
 
-void R_PolygonFilled(R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color) {
+void R_PolygonFilled(R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color) {
     CHECK_RENDERER();
     PolygonFilled(renderer, target, num_vertices, vertices, color);
 }

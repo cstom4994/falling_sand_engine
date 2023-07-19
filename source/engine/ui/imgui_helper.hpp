@@ -19,6 +19,10 @@
 #include <utility>
 #include <vector>
 
+#include "engine/core/basic_types.h"
+#include "engine/core/macros.hpp"
+#include "engine/core/mathlib.hpp"
+#include "engine/core/sdl_wrapper.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/utils/pfr.hpp"
 
@@ -33,21 +37,11 @@
 #define ME_IMM32
 #include <Windows.h>
 #include <tchar.h>
-// #define GLFW_EXPOSE_NATIVE_WIN32
-// #include <GLFW/glfw3.h>
-// #include <GLFW/glfw3native.h>
-#include "engine/core/sdl_wrapper.h"
 #else
 #include <sys/stat.h>
 #endif
 
-#include "engine/core/basic_types.h"
-#include "engine/core/macros.hpp"
-#include "engine/core/mathlib.hpp"
-
 #pragma region ImGuiAuto
-
-#include <string>
 
 #ifndef ME_GUI_TREE_MAX_ELEMENT_SIZE
 #define ME_GUI_TREE_MAX_ELEMENT_SIZE sizeof(std::string)  // larger values generate less tree nodes
@@ -648,28 +642,26 @@ ME_GUI_DEFINE_INLINE(template <>, const std::add_pointer_t<void()>, if (ImGui::B
 
 #pragma endregion ImGuiAuto
 
-bool ColorPicker3U32(const char *label, ImU32 *color, ImGuiColorEditFlags flags = 0);
-
 #pragma region ImString
 
-class ME_imstr {
+class MEimstr {
 
 public:
-    ME_imstr();
-    ME_imstr(size_t len);
-    ME_imstr(char *string);
-    explicit ME_imstr(const char *string);
-    ME_imstr(const ME_imstr &other);
-    ~ME_imstr();
+    MEimstr();
+    MEimstr(size_t len);
+    MEimstr(char *string);
+    explicit MEimstr(const char *string);
+    MEimstr(const MEimstr &other);
+    ~MEimstr();
 
     char &operator[](size_t pos);
     operator char *();
     bool operator==(const char *string);
     bool operator!=(const char *string);
-    bool operator==(ME_imstr &string);
-    bool operator!=(const ME_imstr &string);
-    ME_imstr &operator=(const char *string);
-    ME_imstr &operator=(const ME_imstr &other);
+    bool operator==(MEimstr &string);
+    bool operator!=(const MEimstr &string);
+    MEimstr &operator=(const char *string);
+    MEimstr &operator=(const MEimstr &other);
 
     inline size_t size() const { return m_data ? strlen(m_data) + 1 : 0; }
     void reserve(size_t len);
@@ -695,12 +687,12 @@ ME_INLINE ImVec4 ME_rgba2imvec(int r, int g, int b, int a = 255) {
     return ImVec4(newr, newg, newb, newa);
 }
 
-ME_INLINE ME_Color ME_imvec2rgba(ImVec4 iv) {
+ME_INLINE MEcolor ME_imvec2rgba(ImVec4 iv) {
     u8 newr = iv.x * 255;
     u8 newg = iv.y * 255;
     u8 newb = iv.z * 255;
     u8 newa = iv.w * 255;
-    return ME_Color(newr, newg, newb, newa);
+    return MEcolor(newr, newg, newb, newa);
 }
 
 namespace ImGui {
@@ -1353,6 +1345,10 @@ inline void defaultMarkdownFormatCallback(const MarkdownFormatInfo &markdownForm
 }  // namespace ImGui
 
 namespace ImGuiHelper {
+
+bool color_picker_3U32(const char *label, ImU32 *color, ImGuiColorEditFlags flags = 0);
+
+std::string file_browser(const std::string &path);
 
 enum class Alignment : unsigned char {
     kHorizontalCenter = 1 << 0,

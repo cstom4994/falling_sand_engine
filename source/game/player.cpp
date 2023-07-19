@@ -25,7 +25,7 @@ RigidBody::~RigidBody() {
 C_Surface *RigidBody::get_surface() const { return texture()->surface(); }
 
 void RigidBody::setTexture(TextureRef tex) {
-    ME_ASSERT(tex);
+    if (NULL == tex) METADOT_WARN(std::format("RigidBody {0} be set to NULL texture", name).c_str());
     this->m_texture = tex;
 }
 

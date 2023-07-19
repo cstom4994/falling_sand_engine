@@ -19,7 +19,6 @@
 #include "engine/core/sdl_wrapper.h"
 #include "engine/game_datastruct.hpp"
 #include "engine/ui/console.h"
-#include "engine/ui/file_browser.h"
 #include "engine/ui/imgui_impl.hpp"
 #include "engine/ui/pack_editor.h"
 #include "libs/imgui/font_awesome.h"
@@ -129,7 +128,6 @@ ME_INLINE struct sort_inclusive {
     ME_INLINE bool operator()(const profiler_scope& a, const profiler_scope& b) const { return (a.m_stats->m_inclusiveTimeTotal > b.m_stats->m_inclusiveTimeTotal); }
 } customLessInc;
 
-void profiler_draw_frame_navigation(frame_info* _infos, u32 _numInfos);
 int profiler_draw_frame(profiler_frame* _data, void* _buffer = 0, size_t _bufferSize = 0, bool _inGame = true, bool _multi = false);
 void profiler_draw_stats(profiler_frame* _data, bool _multi = false);
 
@@ -205,7 +203,9 @@ private:
     std::vector<EditorView> view_contents;
     TextEditor editor;
     EditorView* view_editing = nullptr;
-    ImGui::FileBrowser fileDialog;
+
+    bool filebrowser = false;
+
     ImGuiID dockspace_id;
 
     // console

@@ -812,9 +812,9 @@ void ImGuiLayer::Init() {
 
 #endif
 
-    fileDialog.SetPwd(METADOT_RESLOC("data/scripts"));
-    fileDialog.SetTitle("选择文件");
-    fileDialog.SetTypeFilters({".lua"});
+    // fileDialog.SetPwd(METADOT_RESLOC("data/scripts"));
+    // fileDialog.SetTitle("选择文件");
+    // fileDialog.SetTypeFilters({".lua"});
 
     // auto create_console = [&]() {
     //     METADOT_NEW(C, console_imgui, ImGuiConsole, global.I18N.Get("ui_console"));
@@ -1194,7 +1194,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     if (ImGui::BeginCombo("ChunkList", CC("选择检视区块..."))) {
                         for (auto &p1 : global.game->Iso.world->chunkCache)
                             for (auto &p2 : p1.second) {
-                                if (ImGui::Selectable(p2.second->pack_filename.c_str())) {
+                                if (ImGui::Selectable(ME_fs_get_filename(p2.second->pack_filename.c_str()))) {
                                     check_chunk.x = p2.second->x;
                                     check_chunk.y = p2.second->y;
                                     check_chunk_ptr = p2.second;
@@ -1304,7 +1304,8 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             if (ImGui::BeginMenuBar()) {
                 if (ImGui::BeginMenu(LANG("ui_file"))) {
                     if (ImGui::MenuItem(LANG("ui_open"))) {
-                        fileDialog.Open();
+                        // fileDialog.Open();
+                        filebrowser = true;
                     }
                     if (ImGui::MenuItem(LANG("ui_save"))) {
                         if (view_editing && view_contents.size()) {
@@ -1353,21 +1354,29 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                 ImGui::EndMenuBar();
             }
 
-            fileDialog.Display();
+            if (filebrowser) {
+                if (ImGui::Begin("File Browser", NULL)) {
 
-            if (fileDialog.HasSelected()) {
-                bool shouldopen = true;
-                auto fileopen = fileDialog.GetSelected().string();
-                for (auto code : view_contents)
-                    if (code.file == fileopen) shouldopen = false;
-                if (shouldopen) {
-                    std::ifstream i(fileopen);
-                    if (i.good()) {
-                        std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
-                        view_contents.push_back(EditorView{.tags = EditorTags::Editor_Code, .file = fileopen, .content = str});
+                    auto file = ImGuiHelper::file_browser(ME_fs_get_path("data/scripts"));
+
+                    if (!file.empty()) {
+
+                        METADOT_INFO(file.c_str());
+
+                        bool shouldopen = true;
+                        for (auto code : view_contents)
+                            if (code.file == file) shouldopen = false;
+                        if (shouldopen) {
+                            std::ifstream i(file);
+                            if (i.good()) {
+                                std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
+                                view_contents.push_back(EditorView{.tags = EditorTags::Editor_Code, .file = file, .content = str});
+                            }
+                        }
+                        filebrowser = false;
                     }
                 }
-                fileDialog.ClearSelected();
+                ImGui::End();
             }
 
             ImGui::BeginTabBar("ViewContents");

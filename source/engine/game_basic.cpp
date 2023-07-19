@@ -5,10 +5,10 @@
 #include <string>
 #include <string_view>
 
+#include "engine/core/base_memory.h"
 #include "engine/core/core.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
-#include "engine/core/base_memory.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/scripting.hpp"
 #include "game.hpp"
@@ -19,12 +19,6 @@
 #include "textures.hpp"
 
 #pragma region GameScriptingBind_1
-
-static void create_biome(std::string name, int id) {
-    METADOT_BUG("[LUA] create_biome ", name, " = ", id);
-    Biome *b = alloc<Biome>::safe_malloc(name, id);
-    GAME()->biome_container.push_back(b);
-}
 
 static void audio_init() { global.audio.Init(); }
 
@@ -37,9 +31,7 @@ static void textures_init() {
     // 贴图初始化
     InitTexture(global.game->Iso.texturepack);
 }
-static void textures_end() {
-    EndTexture(global.game->Iso.texturepack);
-}
+static void textures_end() { EndTexture(global.game->Iso.texturepack); }
 static void textures_load(std::string name, std::string path) {}
 static void controls_init() { ControlSystem::InitKey(); }
 
@@ -52,10 +44,16 @@ static void load_lua(std::string luafile) {}
 
 #pragma endregion GameScriptingBind_1
 
-Biome *BiomeGet(std::string name) {
+Biome *Biome::biomeGet(std::string name) {
     for (auto t : GAME()->biome_container)
         if (t->name == name) return t;
     return GAME()->biome_container[0];  // 没有找到指定生物群系则返回默认生物群系
+}
+
+void Biome::createBiome(std::string name, int id) {
+    METADOT_BUG("[LUA] create_biome ", name, " = ", id);
+    Biome *b = alloc<Biome>::safe_malloc(name, id);
+    GAME()->biome_container.push_back(b);
 }
 
 void GameplayScriptSystem::create() {
@@ -89,7 +87,7 @@ void GameplayScriptSystem::registerLua(ME::LuaWrapper::State &s_lua) {
     s_lua["audio_play_event"] = ME::LuaWrapper::function(audio_play_event);
     s_lua["audio_load_bank"] = ME::LuaWrapper::function(audio_load_bank);
     s_lua["audio_init"] = ME::LuaWrapper::function(audio_init);
-    s_lua["create_biome"] = ME::LuaWrapper::function(create_biome);
+    s_lua["create_biome"] = ME::LuaWrapper::function(Biome::createBiome);
     s_lua["init_ecs"] = ME::LuaWrapper::function(init_ecs);
 
     s_lua["DrawMainMenuUI"] = ME::LuaWrapper::function(GameUI::MainMenuUI__Draw);

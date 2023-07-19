@@ -173,10 +173,10 @@ ME_PRIVATE(void) ME_check_gl_error(const char *file, const int line) {
     glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3])
 
 MEvec2 ME_draw_rotate_point(float cx, float cy, float angle, MEvec2 p);
-void ME_draw_polygon(R_Target *renderer, ME_Color col, MEvec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
+void ME_draw_polygon(R_Target *renderer, MEcolor col, MEvec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy);
 u32 ME_draw_darken_color(u32 col, float brightness);
-void ME_draw_text(std::string text, ME_Color col, int x, int y, bool outline = false, ME_Color outline_col = {0, 0, 0, 180});
-void ME_draw_text_plate(R_Target *target, std::string text, ME_Color col, int x, int y, ME_Color backcolor = {77, 77, 77, 140});
+void ME_draw_text(std::string text, MEcolor col, int x, int y, bool outline = false, MEcolor outline_col = {0, 0, 0, 180});
+void ME_draw_text_plate(R_Target *target, std::string text, MEcolor col, int x, int y, MEcolor backcolor = {77, 77, 77, 140});
 
 namespace ME {
 
@@ -320,16 +320,16 @@ public:
 
     PVec2 transform(const PVec2 &pt);
 
-    void DrawPolygon(const PVec2 *vertices, i32 vertexCount, const ME_Color &color);
-    void DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, const ME_Color &color);
-    void DrawCircle(const PVec2 &center, float radius, const ME_Color &color);
-    void DrawSolidCircle(const PVec2 &center, float radius, const PVec2 &axis, const ME_Color &color);
-    void DrawSegment(const PVec2 &p1, const PVec2 &p2, const ME_Color &color);
+    void DrawPolygon(const PVec2 *vertices, i32 vertexCount, const MEcolor &color);
+    void DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, const MEcolor &color);
+    void DrawCircle(const PVec2 &center, float radius, const MEcolor &color);
+    void DrawSolidCircle(const PVec2 &center, float radius, const PVec2 &axis, const MEcolor &color);
+    void DrawSegment(const PVec2 &p1, const PVec2 &p2, const MEcolor &color);
     void DrawTransform(const PTransform &xf);
-    void DrawPoint(const PVec2 &p, float size, const ME_Color &color);
+    void DrawPoint(const PVec2 &p, float size, const MEcolor &color);
     void DrawString(int x, int y, const char *string, ...);
     void DrawString(const PVec2 &p, const char *string, ...);
-    void DrawAABB(b2AABB *aabb, const ME_Color &color);
+    void DrawAABB(b2AABB *aabb, const MEcolor &color);
 };
 #endif
 

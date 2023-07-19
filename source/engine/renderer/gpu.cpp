@@ -179,7 +179,7 @@ MEvec2 ME_draw_rotate_point(float cx, float cy, float angle, MEvec2 p) {
     return MEvec2(xnew + cx, ynew + cy);
 }
 
-void ME_draw_polygon(R_Target *target, ME_Color col, MEvec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy) {
+void ME_draw_polygon(R_Target *target, MEcolor col, MEvec2 *verts, int x, int y, float scale, int count, float angle, float cx, float cy) {
     if (count < 2) return;
     MEvec2 last = ME_draw_rotate_point(cx, cy, angle, verts[count - 1]);
     for (int i = 0; i < count; i++) {
@@ -198,7 +198,7 @@ u32 ME_draw_darken_color(u32 color, float brightness) {
     return (a << 24) | (r << 16) | (g << 8) | b;
 }
 
-void ME_draw_text(std::string text, ME_Color col, int x, int y, bool outline, ME_Color outline_col) {
+void ME_draw_text(std::string text, MEcolor col, int x, int y, bool outline, MEcolor outline_col) {
     ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
 
     if (outline) {
@@ -220,7 +220,7 @@ void ME_draw_text(std::string text, ME_Color col, int x, int y, bool outline, ME
     draw_list->AddText(ImVec2(x, y), ImColor(col.r, col.g, col.b, col.a), text.c_str());  // base
 }
 
-void ME_draw_text_plate(R_Target *target, std::string text, ME_Color col, int x, int y, ME_Color backcolor) {
+void ME_draw_text_plate(R_Target *target, std::string text, MEcolor col, int x, int y, MEcolor backcolor) {
     auto text_size = ImGui::CalcTextSize(text.c_str());
     R_RectangleFilled(target, x - 4, y - 4, x + text_size.x + 4, y + text_size.y + 4, backcolor);
     ME_draw_text(text, col, x, y);
@@ -761,7 +761,7 @@ PVec2 ME_debugdraw::transform(const PVec2 &pt) {
     return PVec2(x, y);
 }
 
-void ME_debugdraw::DrawPolygon(const PVec2 *vertices, i32 vertexCount, const ME_Color &color) {
+void ME_debugdraw::DrawPolygon(const PVec2 *vertices, i32 vertexCount, const MEcolor &color) {
     PVec2 *verts = new PVec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) {
@@ -774,7 +774,7 @@ void ME_debugdraw::DrawPolygon(const PVec2 *vertices, i32 vertexCount, const ME_
     delete[] verts;
 }
 
-void ME_debugdraw::DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, const ME_Color &color) {
+void ME_debugdraw::DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, const MEcolor &color) {
     PVec2 *verts = new PVec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) {
@@ -782,7 +782,7 @@ void ME_debugdraw::DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, cons
     }
 
     // the "(float*)verts" assumes a b2Vec2 is equal to two floats (which it is)
-    ME_Color c2 = color;
+    MEcolor c2 = color;
     c2.a *= 0.25;
     R_PolygonFilled(target, vertexCount, (float *)verts, c2);
     R_Polygon(target, vertexCount, (float *)verts, color);
@@ -790,17 +790,17 @@ void ME_debugdraw::DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, cons
     delete[] verts;
 }
 
-void ME_debugdraw::DrawCircle(const PVec2 &center, float radius, const ME_Color &color) {
+void ME_debugdraw::DrawCircle(const PVec2 &center, float radius, const MEcolor &color) {
     PVec2 tr = transform(center);
     R_Circle(target, tr.x, tr.y, radius * scale, color);
 }
 
-void ME_debugdraw::DrawSolidCircle(const PVec2 &center, float radius, const PVec2 &axis, const ME_Color &color) {
+void ME_debugdraw::DrawSolidCircle(const PVec2 &center, float radius, const PVec2 &axis, const MEcolor &color) {
     PVec2 tr = transform(center);
     R_CircleFilled(target, tr.x, tr.y, radius * scale, color);
 }
 
-void ME_debugdraw::DrawSegment(const PVec2 &p1, const PVec2 &p2, const ME_Color &color) {
+void ME_debugdraw::DrawSegment(const PVec2 &p1, const PVec2 &p2, const MEcolor &color) {
     PVec2 tr1 = transform(p1);
     PVec2 tr2 = transform(p2);
     R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, color);
@@ -820,7 +820,7 @@ void ME_debugdraw::DrawTransform(const PTransform &xf) {
     R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, {0x00, 0xff, 0x00, 0xcc});
 }
 
-void ME_debugdraw::DrawPoint(const PVec2 &p, float size, const ME_Color &color) {
+void ME_debugdraw::DrawPoint(const PVec2 &p, float size, const MEcolor &color) {
     PVec2 tr = transform(p);
     R_CircleFilled(target, tr.x, tr.y, 2, color);
 }
@@ -829,7 +829,7 @@ void ME_debugdraw::DrawString(int x, int y, const char *string, ...) {}
 
 void ME_debugdraw::DrawString(const PVec2 &p, const char *string, ...) {}
 
-void ME_debugdraw::DrawAABB(b2AABB *aabb, const ME_Color &color) {
+void ME_debugdraw::DrawAABB(b2AABB *aabb, const MEcolor &color) {
     PVec2 tr1 = transform(aabb->lowerBound);
     PVec2 tr2 = transform(aabb->upperBound);
     R_Line(target, tr1.x, tr1.y, tr2.x, tr1.y, color);

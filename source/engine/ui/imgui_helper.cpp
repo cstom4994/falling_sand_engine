@@ -1,9 +1,16 @@
 #include "imgui_helper.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cassert>
+#include <deque>
+#include <list>
+#include <map>
+#include <set>
+#include <tuple>
+#include <vector>
 
-bool ColorPicker3U32(const char *label, ImU32 *color, ImGuiColorEditFlags flags) {
+bool ImGuiHelper::color_picker_3U32(const char *label, ImU32 *color, ImGuiColorEditFlags flags) {
     float col[3];
     col[0] = (float)((*color >> 0) & 0xFF) / 255.0f;
     col[1] = (float)((*color >> 8) & 0xFF) / 255.0f;
@@ -16,47 +23,72 @@ bool ColorPicker3U32(const char *label, ImU32 *color, ImGuiColorEditFlags flags)
     return result;
 }
 
-#pragma region ImString
+std::string ImGuiHelper::file_browser(const std::string &path) {
 
-ME_imstr::ME_imstr() : m_data(0), m_ref_count(0) {}
-ME_imstr::ME_imstr(size_t len) : m_data(0), m_ref_count(0) { reserve(len); }
-ME_imstr::ME_imstr(char *string) : m_data(string), m_ref_count(0) { ref(); }
+    ImGui::Text("Current Path: %s", path.c_str());
+    ImGui::Separator();
 
-ME_imstr::ME_imstr(const char *string) : m_data(0), m_ref_count(0) {
+    if (ImGui::Button("Parent Directory")) {
+        std::filesystem::path currentPath(path);
+        if (!currentPath.empty()) {
+            currentPath = currentPath.parent_path();
+            return file_browser(currentPath.string());
+        }
+    }
+
+    for (const auto &entry : std::filesystem::directory_iterator(path)) {
+        const auto &entryPath = entry.path();
+        const auto &entryFilename = entryPath.filename().string();
+        if (entry.is_directory()) {
+            if (ImGui::Selectable((entryFilename + "/").c_str())) return file_browser(entryPath.string());
+
+        } else {
+            if (ImGui::Selectable(entryFilename.c_str())) return entryFilename;
+        }
+    }
+
+    return {};
+}
+
+MEimstr::MEimstr() : m_data(0), m_ref_count(0) {}
+MEimstr::MEimstr(size_t len) : m_data(0), m_ref_count(0) { reserve(len); }
+MEimstr::MEimstr(char *string) : m_data(string), m_ref_count(0) { ref(); }
+
+MEimstr::MEimstr(const char *string) : m_data(0), m_ref_count(0) {
     if (string) {
         m_data = ImStrdup(string);
         ref();
     }
 }
 
-ME_imstr::ME_imstr(const ME_imstr &other) {
+MEimstr::MEimstr(const MEimstr &other) {
     m_ref_count = other.m_ref_count;
     m_data = other.m_data;
     ref();
 }
 
-ME_imstr::~ME_imstr() { unref(); }
+MEimstr::~MEimstr() { unref(); }
 
-char &ME_imstr::operator[](size_t pos) { return m_data[pos]; }
+char &MEimstr::operator[](size_t pos) { return m_data[pos]; }
 
-ME_imstr::operator char *() { return m_data; }
+MEimstr::operator char *() { return m_data; }
 
-bool ME_imstr::operator==(const char *string) { return strcmp(string, m_data) == 0; }
+bool MEimstr::operator==(const char *string) { return strcmp(string, m_data) == 0; }
 
-bool ME_imstr::operator!=(const char *string) { return strcmp(string, m_data) != 0; }
+bool MEimstr::operator!=(const char *string) { return strcmp(string, m_data) != 0; }
 
-bool ME_imstr::operator==(ME_imstr &string) { return strcmp(string.c_str(), m_data) == 0; }
+bool MEimstr::operator==(MEimstr &string) { return strcmp(string.c_str(), m_data) == 0; }
 
-bool ME_imstr::operator!=(const ME_imstr &string) { return strcmp(string.c_str(), m_data) != 0; }
+bool MEimstr::operator!=(const MEimstr &string) { return strcmp(string.c_str(), m_data) != 0; }
 
-ME_imstr &ME_imstr::operator=(const char *string) {
+MEimstr &MEimstr::operator=(const char *string) {
     if (m_data) unref();
     m_data = ImStrdup(string);
     ref();
     return *this;
 }
 
-ME_imstr &ME_imstr::operator=(const ME_imstr &other) {
+MEimstr &MEimstr::operator=(const MEimstr &other) {
     if (m_data && m_data != other.m_data) unref();
     m_ref_count = other.m_ref_count;
     m_data = other.m_data;
@@ -64,22 +96,22 @@ ME_imstr &ME_imstr::operator=(const ME_imstr &other) {
     return *this;
 }
 
-void ME_imstr::reserve(size_t len) {
+void MEimstr::reserve(size_t len) {
     if (m_data) unref();
     m_data = (char *)ImGui::MemAlloc(len + 1);
     m_data[len] = '\0';
     ref();
 }
 
-char *ME_imstr::get() { return m_data; }
+char *MEimstr::get() { return m_data; }
 
-const char *ME_imstr::c_str() const { return m_data; }
+const char *MEimstr::c_str() const { return m_data; }
 
-bool ME_imstr::empty() const { return m_data == 0 || m_data[0] == '\0'; }
+bool MEimstr::empty() const { return m_data == 0 || m_data[0] == '\0'; }
 
-int ME_imstr::refcount() const { return *m_ref_count; }
+int MEimstr::refcount() const { return *m_ref_count; }
 
-void ME_imstr::ref() {
+void MEimstr::ref() {
     if (!m_ref_count) {
         m_ref_count = new int();
         (*m_ref_count) = 0;
@@ -87,7 +119,7 @@ void ME_imstr::ref() {
     (*m_ref_count)++;
 }
 
-void ME_imstr::unref() {
+void MEimstr::unref() {
     if (m_ref_count) {
         (*m_ref_count)--;
         if (*m_ref_count == 0) {
@@ -98,8 +130,6 @@ void ME_imstr::unref() {
         m_ref_count = 0;
     }
 }
-
-#pragma endregion ImString
 
 #if defined(ME_IMM32)
 
@@ -747,16 +777,6 @@ int common_control_initialize() {
     return 1;
 }
 
-#endif
-
-#ifndef ME_GUI_DISABLE_TEST_WINDOW
-#include <array>
-#include <deque>
-#include <list>
-#include <map>
-#include <set>
-#include <tuple>
-#include <vector>
 #endif
 
 #if 1

@@ -38,8 +38,8 @@ struct ME::meta::static_refl::TypeInfo<MaterialInstanceData> : TypeInfoBase<Mate
 struct Chunk {
     std::string pack_filename;
 
-    int x;
-    int y;
+    int x = 0;
+    int y = 0;
     bool hasMeta = false;
 
     // in order for a chunk to execute phase generationPhase+1, all surrounding chunks must be at least generationPhase

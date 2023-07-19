@@ -5,7 +5,6 @@
 
 #include "engine/core/basic_types.h"
 #include "engine/core/io/packer.hpp"
-#include "engine/ui/file_browser.h"
 #include "engine/ui/imgui_helper.hpp"
 
 class PackEditor {
@@ -21,7 +20,7 @@ private:
     ME_pack_result result;
 
     // file
-    ImGui::FileBrowser file_dialog;
+    bool filebrowser = false;
 
 public:
     void Init();

@@ -361,6 +361,11 @@ public:
     int id = -1;
     std::string name;
     explicit Biome(std::string name, int id) : name(std::move(name)), id(std::move(id)){};
+
+public:
+    static Biome *biomeGet(std::string name);
+    static ME_INLINE int biomeGetID(std::string name) { return biomeGet(name)->id; }
+    static void createBiome(std::string name, int id);
 };
 
 template <>
@@ -376,9 +381,6 @@ ME_GUI_DEFINE_BEGIN(template <>, Biome)
 ImGui::Text("Name: %s", var.name.c_str());
 ImGui::Text("ID: %d", var.id);
 ME_GUI_DEFINE_END
-
-Biome *BiomeGet(std::string name);
-ME_INLINE int BiomeGetID(std::string name) { return BiomeGet(name)->id; }
 
 struct WorldGenerator {
     virtual void generateChunk(World *world, Chunk *ch) = 0;

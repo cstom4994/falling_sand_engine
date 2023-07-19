@@ -93,26 +93,25 @@
 #define R_PAD_7_TO_64 char _padding[7];
 #endif
 
-typedef struct ME_Color {
+struct MEcolor {
     u8 r;
     u8 g;
     u8 b;
     u8 a;
 
-    ME_Color() : r(255), g(255), b(255), a(255) {}
-    ME_Color(u8 R, u8 G, u8 B, u8 A) : r(R), g(G), b(B), a(A) {}
-    ME_Color(float R, float G, float B) : r(R * 255), g(G * 255), b(B * 255), a(255) {}
-    ME_Color(MEvec3 &v3) : r(v3.r), g(v3.g), b(v3.b), a(255) {}
-    ME_Color(MEvec3 &v3, u8 A) : r(v3.r), g(v3.g), b(v3.b), a(A) {}
+    MEcolor() : r(255), g(255), b(255), a(255) {}
+    MEcolor(u8 R, u8 G, u8 B, u8 A) : r(R), g(G), b(B), a(A) {}
+    MEcolor(float R, float G, float B) : r(R * 255), g(G * 255), b(B * 255), a(255) {}
+    MEcolor(MEvec3 &v3) : r(v3.r), g(v3.g), b(v3.b), a(255) {}
+    MEcolor(MEvec3 &v3, u8 A) : r(v3.r), g(v3.g), b(v3.b), a(A) {}
     // ME_Color(ImVec4 &v4) : r((u8)v4.x), g((u8)v4.y), b((u8)v4.z), a((u8)v4.w) {}
 
-    void Set(float R, float G, float B) {
+    void set(float R, float G, float B) {
         r = R * 255;
         g = G * 255;
         b = B * 255;
     }
-
-} ME_Color;
+};
 
 typedef struct R_Renderer R_Renderer;
 typedef struct R_Target R_Target;
@@ -250,7 +249,7 @@ typedef struct R_Image {
     float anchor_x;  // Normalized coords for the point at which the image is blitted.  Default is (0.5, 0.5), that is, the image is drawn centered.
     float anchor_y;  // These are interpreted according to R_SetCoordinateMode() and range from (0.0 - 1.0) normally.
 
-    ME_Color color;
+    MEcolor color;
     R_BlendMode blend_mode;
     R_FilterEnum filter_mode;
     R_SnapEnum snap_mode;
@@ -385,7 +384,7 @@ struct R_Target {
     u16 w, h;
     u16 base_w, base_h;  // The true dimensions of the underlying image or window
     MErect clip_rect;
-    ME_Color color;
+    MEcolor color;
 
     MErect viewport;
 
@@ -865,7 +864,7 @@ void R_UnsetVirtualResolution(R_Target *target);
 MErect R_MakeRect(float x, float y, float w, float h);
 
 /*! \return An ME_Color with the given values. */
-ME_Color R_MakeColor(u8 r, u8 g, u8 b, u8 a);
+MEcolor R_MakeColor(u8 r, u8 g, u8 b, u8 a);
 
 /*! Sets the given target's viewport. */
 void R_SetViewport(R_Target *target, MErect viewport);
@@ -908,7 +907,7 @@ void R_SetDepthWrite(R_Target *target, bool enable);
 void R_SetDepthFunction(R_Target *target, R_ComparisonEnum compare_operation);
 
 /*! \return The RGBA color of a pixel. */
-ME_Color R_GetPixel(R_Target *target, i16 x, i16 y);
+MEcolor R_GetPixel(R_Target *target, i16 x, i16 y);
 
 /*! Sets the clipping rect for the given render target. */
 MErect R_SetClipRect(R_Target *target, MErect rect);
@@ -932,7 +931,7 @@ bool R_IntersectClipRect(R_Target *target, MErect B, MErect *result);
  *  e.g. R_SetRGB(image, 255, 128, 0); R_SetTargetRGB(target, 128, 128, 128);
  *  Would make the image draw with color of roughly (128, 64, 0).
  */
-void R_SetTargetColor(R_Target *target, ME_Color color);
+void R_SetTargetColor(R_Target *target, MEcolor color);
 
 /*! Sets the modulation color for subsequent drawing of images and shapes on the given target.
  *  This has a cumulative effect with the image coloring functions.
@@ -998,7 +997,7 @@ bool R_ReplaceImage(R_Image *image, void *surface, const MErect *surface_rect);
 void R_GenerateMipmaps(R_Image *image);
 
 /*! Sets the modulation color for subsequent drawing of the given image. */
-void R_SetColor(R_Image *image, ME_Color color);
+void R_SetColor(R_Image *image, MEcolor color);
 
 /*! Sets the modulation color for subsequent drawing of the given image. */
 void R_SetRGB(R_Image *image, u8 r, u8 g, u8 b);
@@ -1244,7 +1243,7 @@ void R_MultMatrix(const float *matrix4x4);
 void R_Clear(R_Target *target);
 
 /*! Fills the given render target with a color. */
-void R_ClearColor(R_Target *target, ME_Color color);
+void R_ClearColor(R_Target *target, MEcolor color);
 
 /*! Fills the given render target with a color (alpha is 255, fully opaque). */
 void R_ClearRGB(R_Target *target, u8 r, u8 g, u8 b);
@@ -1359,7 +1358,7 @@ void R_Flip(R_Target *target);
  * \param y y-coord of the point
  * \param color The color of the shape to render
  */
-void R_Pixel(R_Target *target, float x, float y, ME_Color color);
+void R_Pixel(R_Target *target, float x, float y, MEcolor color);
 
 /*! ENGINE()->s a colored line.
  * \param target The destination render target
@@ -1369,7 +1368,7 @@ void R_Pixel(R_Target *target, float x, float y, ME_Color color);
  * \param y2 y-coord of ending point
  * \param color The color of the shape to render
  */
-void R_Line(R_Target *target, float x1, float y1, float x2, float y2, ME_Color color);
+void R_Line(R_Target *target, float x1, float y1, float x2, float y2, MEcolor color);
 
 /*! ENGINE()->s a colored arc curve (circle segment).
  * \param target The destination render target
@@ -1380,7 +1379,7 @@ void R_Line(R_Target *target, float x1, float y1, float x2, float y2, ME_Color c
  * \param end_angle The angle to end at, in degrees.  Measured clockwise from the positive x-axis.
  * \param color The color of the shape to render
  */
-void R_Arc(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color);
+void R_Arc(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, MEcolor color);
 
 /*! ENGINE()->s a colored filled arc (circle segment / pie piece).
  * \param target The destination render target
@@ -1391,7 +1390,7 @@ void R_Arc(R_Target *target, float x, float y, float radius, float start_angle, 
  * \param end_angle The angle to end at, in degrees.  Measured clockwise from the positive x-axis.
  * \param color The color of the shape to render
  */
-void R_ArcFilled(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color);
+void R_ArcFilled(R_Target *target, float x, float y, float radius, float start_angle, float end_angle, MEcolor color);
 
 /*! ENGINE()->s a colored circle outline.
  * \param target The destination render target
@@ -1400,7 +1399,7 @@ void R_ArcFilled(R_Target *target, float x, float y, float radius, float start_a
  * \param radius The radius of the circle / distance from the center point that rendering will occur
  * \param color The color of the shape to render
  */
-void R_Circle(R_Target *target, float x, float y, float radius, ME_Color color);
+void R_Circle(R_Target *target, float x, float y, float radius, MEcolor color);
 
 /*! ENGINE()->s a colored filled circle.
  * \param target The destination render target
@@ -1409,7 +1408,7 @@ void R_Circle(R_Target *target, float x, float y, float radius, ME_Color color);
  * \param radius The radius of the circle / distance from the center point that rendering will occur
  * \param color The color of the shape to render
  */
-void R_CircleFilled(R_Target *target, float x, float y, float radius, ME_Color color);
+void R_CircleFilled(R_Target *target, float x, float y, float radius, MEcolor color);
 
 /*! ENGINE()->s a colored ellipse outline.
  * \param target The destination render target
@@ -1420,7 +1419,7 @@ void R_CircleFilled(R_Target *target, float x, float y, float radius, ME_Color c
  * \param degrees The angle to rotate the ellipse
  * \param color The color of the shape to render
  */
-void R_Ellipse(R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color);
+void R_Ellipse(R_Target *target, float x, float y, float rx, float ry, float degrees, MEcolor color);
 
 /*! ENGINE()->s a colored filled ellipse.
  * \param target The destination render target
@@ -1431,7 +1430,7 @@ void R_Ellipse(R_Target *target, float x, float y, float rx, float ry, float deg
  * \param degrees The angle to rotate the ellipse
  * \param color The color of the shape to render
  */
-void R_EllipseFilled(R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color);
+void R_EllipseFilled(R_Target *target, float x, float y, float rx, float ry, float degrees, MEcolor color);
 
 /*! ENGINE()->s a colored annular sector outline (ring segment).
  * \param target The destination render target
@@ -1443,7 +1442,7 @@ void R_EllipseFilled(R_Target *target, float x, float y, float rx, float ry, flo
  * \param end_angle The angle to end at, in degrees.  Measured clockwise from the positive x-axis.
  * \param color The color of the shape to render
  */
-void R_Sector(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color);
+void R_Sector(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, MEcolor color);
 
 /*! ENGINE()->s a colored filled annular sector (ring segment).
  * \param target The destination render target
@@ -1455,7 +1454,7 @@ void R_Sector(R_Target *target, float x, float y, float inner_radius, float oute
  * \param end_angle The angle to end at, in degrees.  Measured clockwise from the positive x-axis.
  * \param color The color of the shape to render
  */
-void R_SectorFilled(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color);
+void R_SectorFilled(R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, MEcolor color);
 
 /*! ENGINE()->s a colored triangle outline.
  * \param target The destination render target
@@ -1467,7 +1466,7 @@ void R_SectorFilled(R_Target *target, float x, float y, float inner_radius, floa
  * \param y3 y-coord of third point
  * \param color The color of the shape to render
  */
-void R_Tri(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color);
+void R_Tri(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, MEcolor color);
 
 /*! ENGINE()->s a colored filled triangle.
  * \param target The destination render target
@@ -1479,7 +1478,7 @@ void R_Tri(R_Target *target, float x1, float y1, float x2, float y2, float x3, f
  * \param y3 y-coord of third point
  * \param color The color of the shape to render
  */
-void R_TriFilled(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color);
+void R_TriFilled(R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, MEcolor color);
 
 /*! ENGINE()->s a colored rectangle outline.
  * \param target The destination render target
@@ -1489,14 +1488,14 @@ void R_TriFilled(R_Target *target, float x1, float y1, float x2, float y2, float
  * \param y2 y-coord of bottom-right corner
  * \param color The color of the shape to render
  */
-void R_Rectangle(R_Target *target, float x1, float y1, float x2, float y2, ME_Color color);
+void R_Rectangle(R_Target *target, float x1, float y1, float x2, float y2, MEcolor color);
 
 /*! ENGINE()->s a colored rectangle outline.
  * \param target The destination render target
  * \param rect The rectangular area to draw
  * \param color The color of the shape to render
  */
-void R_Rectangle2(R_Target *target, MErect rect, ME_Color color);
+void R_Rectangle2(R_Target *target, MErect rect, MEcolor color);
 
 /*! ENGINE()->s a colored filled rectangle.
  * \param target The destination render target
@@ -1506,14 +1505,14 @@ void R_Rectangle2(R_Target *target, MErect rect, ME_Color color);
  * \param y2 y-coord of bottom-right corner
  * \param color The color of the shape to render
  */
-void R_RectangleFilled(R_Target *target, float x1, float y1, float x2, float y2, ME_Color color);
+void R_RectangleFilled(R_Target *target, float x1, float y1, float x2, float y2, MEcolor color);
 
 /*! ENGINE()->s a colored filled rectangle.
  * \param target The destination render target
  * \param rect The rectangular area to draw
  * \param color The color of the shape to render
  */
-void R_RectangleFilled2(R_Target *target, MErect rect, ME_Color color);
+void R_RectangleFilled2(R_Target *target, MErect rect, MEcolor color);
 
 /*! ENGINE()->s a colored rounded (filleted) rectangle outline.
  * \param target The destination render target
@@ -1524,7 +1523,7 @@ void R_RectangleFilled2(R_Target *target, MErect rect, ME_Color color);
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void R_RectangleRound(R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color);
+void R_RectangleRound(R_Target *target, float x1, float y1, float x2, float y2, float radius, MEcolor color);
 
 /*! ENGINE()->s a colored rounded (filleted) rectangle outline.
  * \param target The destination render target
@@ -1532,7 +1531,7 @@ void R_RectangleRound(R_Target *target, float x1, float y1, float x2, float y2, 
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void R_RectangleRound2(R_Target *target, MErect rect, float radius, ME_Color color);
+void R_RectangleRound2(R_Target *target, MErect rect, float radius, MEcolor color);
 
 /*! ENGINE()->s a colored filled rounded (filleted) rectangle.
  * \param target The destination render target
@@ -1543,7 +1542,7 @@ void R_RectangleRound2(R_Target *target, MErect rect, float radius, ME_Color col
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void R_RectangleRoundFilled(R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color);
+void R_RectangleRoundFilled(R_Target *target, float x1, float y1, float x2, float y2, float radius, MEcolor color);
 
 /*! ENGINE()->s a colored filled rounded (filleted) rectangle.
  * \param target The destination render target
@@ -1551,7 +1550,7 @@ void R_RectangleRoundFilled(R_Target *target, float x1, float y1, float x2, floa
  * \param radius The radius of the corners
  * \param color The color of the shape to render
  */
-void R_RectangleRoundFilled2(R_Target *target, MErect rect, float radius, ME_Color color);
+void R_RectangleRoundFilled2(R_Target *target, MErect rect, float radius, MEcolor color);
 
 /*! ENGINE()->s a colored polygon outline.  The vertices are expected to define a convex polygon.
  * \param target The destination render target
@@ -1559,7 +1558,7 @@ void R_RectangleRoundFilled2(R_Target *target, MErect rect, float radius, ME_Col
  * \param vertices An array of vertex positions stored as interlaced x and y coords, e.g. {x1, y1, x2, y2, ...}
  * \param color The color of the shape to render
  */
-void R_Polygon(R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color);
+void R_Polygon(R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color);
 
 /*! ENGINE()->s a colored sequence of line segments.
  * \param target The destination render target
@@ -1568,7 +1567,7 @@ void R_Polygon(R_Target *target, unsigned int num_vertices, float *vertices, ME_
  * \param color The color of the shape to render
  * \param close_loop Make a closed polygon by drawing a line at the end back to the start point
  */
-void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color, bool close_loop);
+void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color, bool close_loop);
 
 /*! ENGINE()->s a colored filled polygon.  The vertices are expected to define a convex polygon.
  * \param target The destination render target
@@ -1576,7 +1575,7 @@ void R_Polyline(R_Target *target, unsigned int num_vertices, float *vertices, ME
  * \param vertices An array of vertex positions stored as interlaced x and y coords, e.g. {x1, y1, x2, y2, ...}
  * \param color The color of the shape to render
  */
-void R_PolygonFilled(R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color);
+void R_PolygonFilled(R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color);
 
 // End of Shapes
 /*! @} */
@@ -1842,7 +1841,7 @@ typedef struct R_RendererImpl {
     void (*UnsetClip)(R_Renderer *renderer, R_Target *target);
 
     /*! \see R_GetPixel() */
-    ME_Color (*GetPixel)(R_Renderer *renderer, R_Target *target, i16 x, i16 y);
+    MEcolor (*GetPixel)(R_Renderer *renderer, R_Target *target, i16 x, i16 y);
 
     /*! \see R_SetImageFilter() */
     void (*SetImageFilter)(R_Renderer *renderer, R_Image *image, R_FilterEnum filter);
@@ -1969,61 +1968,61 @@ typedef struct R_RendererImpl {
     float (*GetLineThickness)(R_Renderer *renderer);
 
     /*! \see R_DrawPixel() */
-    void (*DrawPixel)(R_Renderer *renderer, R_Target *target, float x, float y, ME_Color color);
+    void (*DrawPixel)(R_Renderer *renderer, R_Target *target, float x, float y, MEcolor color);
 
     /*! \see R_Line() */
-    void (*Line)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, ME_Color color);
+    void (*Line)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, MEcolor color);
 
     /*! \see R_Arc() */
-    void (*Arc)(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color);
+    void (*Arc)(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, MEcolor color);
 
     /*! \see R_ArcFilled() */
-    void (*ArcFilled)(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color);
+    void (*ArcFilled)(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, MEcolor color);
 
     /*! \see R_Circle() */
-    void (*Circle)(R_Renderer *renderer, R_Target *target, float x, float y, float radius, ME_Color color);
+    void (*Circle)(R_Renderer *renderer, R_Target *target, float x, float y, float radius, MEcolor color);
 
     /*! \see R_CircleFilled() */
-    void (*CircleFilled)(R_Renderer *renderer, R_Target *target, float x, float y, float radius, ME_Color color);
+    void (*CircleFilled)(R_Renderer *renderer, R_Target *target, float x, float y, float radius, MEcolor color);
 
     /*! \see R_Ellipse() */
-    void (*Ellipse)(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color);
+    void (*Ellipse)(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, MEcolor color);
 
     /*! \see R_EllipseFilled() */
-    void (*EllipseFilled)(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color);
+    void (*EllipseFilled)(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, MEcolor color);
 
     /*! \see R_Sector() */
-    void (*Sector)(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color);
+    void (*Sector)(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, MEcolor color);
 
     /*! \see R_SectorFilled() */
-    void (*SectorFilled)(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color);
+    void (*SectorFilled)(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, MEcolor color);
 
     /*! \see R_Tri() */
-    void (*Tri)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color);
+    void (*Tri)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, MEcolor color);
 
     /*! \see R_TriFilled() */
-    void (*TriFilled)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color);
+    void (*TriFilled)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, MEcolor color);
 
     /*! \see R_Rectangle() */
-    void (*Rectangle)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, ME_Color color);
+    void (*Rectangle)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, MEcolor color);
 
     /*! \see R_RectangleFilled() */
-    void (*RectangleFilled)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, ME_Color color);
+    void (*RectangleFilled)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, MEcolor color);
 
     /*! \see R_RectangleRound() */
-    void (*RectangleRound)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color);
+    void (*RectangleRound)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, MEcolor color);
 
     /*! \see R_RectangleRoundFilled() */
-    void (*RectangleRoundFilled)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color);
+    void (*RectangleRoundFilled)(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, MEcolor color);
 
     /*! \see R_Polygon() */
-    void (*Polygon)(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color);
+    void (*Polygon)(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color);
 
     /*! \see R_Polyline() */
-    void (*Polyline)(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color, bool close_loop);
+    void (*Polyline)(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color, bool close_loop);
 
     /*! \see R_PolygonFilled() */
-    void (*PolygonFilled)(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color);
+    void (*PolygonFilled)(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color);
 
 } R_RendererImpl;
 #endif

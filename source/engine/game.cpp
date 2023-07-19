@@ -1742,7 +1742,7 @@ void Game::tick() {
 
             u8 outlineAlpha = (u8)(cur->hover * 255);
             if (outlineAlpha > 0) {
-                ME_Color col = {0xff, 0xff, 0x80, outlineAlpha};
+                MEcolor col = {0xff, 0xff, 0x80, outlineAlpha};
                 R_SetShapeBlendMode(R_BLEND_NORMAL_FACTOR_ALPHA);
                 for (auto &l : cur->outline) {
                     MEvec2 *vec = new MEvec2[l.GetNumPoints()];
@@ -3090,7 +3090,7 @@ void Game::renderOverlays() {
 
     if (Iso.globaldef.draw_load_zones) {
 
-        ME_Color col = {0xff, 0x00, 0x00, 0x20};
+        MEcolor col = {0xff, 0x00, 0x00, 0x20};
         R_SetShapeBlendMode(R_BLEND_NORMAL);
 
         MErect r3 = MErect{(f32)(0), (f32)(0), (f32)((GAME()->ofsX + GAME()->camX + Iso.world->tickZone.x * ENGINE()->render_scale)), (f32)(ENGINE()->windowHeight)};
@@ -3287,7 +3287,7 @@ void Game::renderOverlays() {
                 Chunk *m = p2.second;
                 r.x = centerX + m->x * chSize - pchx;
                 r.y = centerY + m->y * chSize - pchy;
-                ME_Color col;
+                MEcolor col;
                 if (m->generationPhase == -1) {
                     col = {0x60, 0x60, 0x60, 0xff};
                 } else if (m->generationPhase == 0) {
@@ -3455,7 +3455,7 @@ ReadyToMerge ({16})
         for (int i = 0; i < TraceTimeNum; i++) {
             int h = ENGINE()->time.frameTimesTrace[i];
 
-            ME_Color col;
+            MEcolor col;
             if (h <= (int)(1000 / 144.0)) {
                 col = {0x00, 0xff, 0x00, 0xff};
             } else if (h <= (int)(1000 / 60.0)) {

@@ -10,7 +10,6 @@
 #include "renderer_gpu.h"  // For poor, dumb Intellisense
 
 // Most of the code pulled in from here...
-#define R_USE_OPENGL
 #define R_USE_BUFFER_PIPELINE
 #define R_ASSUME_CORE_FBO
 #define R_ASSUME_SHADERS
@@ -79,12 +78,6 @@ static_inline void get_target_drawable_dimensions(R_Target *target, int *w, int 
     window = get_window(target->context->windowID);
     get_drawable_dimensions(window, w, h);
 }
-
-#ifndef GL_VERTEX_SHADER
-#ifndef R_DISABLE_SHADERS
-#define R_DISABLE_SHADERS
-#endif
-#endif
 
 // Workaround for Intel HD glVertexAttrib() bug.
 
@@ -217,7 +210,6 @@ void init_features(R_Renderer *renderer) {
     renderer->enabled_features = 0;
 
     // NPOT textures
-#ifdef R_USE_OPENGL
 #if R_GL_MAJOR_VERSION >= 2
     // Core in GL 2+
     renderer->enabled_features |= R_FEATURE_NON_POWER_OF_TWO;
@@ -227,63 +219,12 @@ void init_features(R_Renderer *renderer) {
     else
         renderer->enabled_features &= ~R_FEATURE_NON_POWER_OF_TWO;
 #endif
-#elif defined(R_USE_GLES)
-#if R_GLES_MAJOR_VERSION >= 3
-    // Core in GLES 3+
-    renderer->enabled_features |= R_FEATURE_NON_POWER_OF_TWO;
-#else
-    if (isExtensionSupported("GL_OES_texture_npot") || isExtensionSupported("GL_IMG_texture_npot") || isExtensionSupported("GL_APPLE_texture_2D_limited_npot") ||
-        isExtensionSupported("GL_ARB_texture_non_power_of_two"))
-        renderer->enabled_features |= R_FEATURE_NON_POWER_OF_TWO;
-    else
-        renderer->enabled_features &= ~R_FEATURE_NON_POWER_OF_TWO;
-
-#if R_GLES_MAJOR_VERSION >= 2
-    // Assume limited NPOT support for GLES 2+
-    renderer->enabled_features |= R_FEATURE_NON_POWER_OF_TWO;
-#endif
-#endif
-#endif
 
     // FBO support
-#ifdef R_ASSUME_CORE_FBO
     renderer->enabled_features |= R_FEATURE_RENDER_TARGETS;
     renderer->enabled_features |= R_FEATURE_CORE_FRAMEBUFFER_OBJECTS;
-#elif defined(R_USE_OPENGL)
-    if (isExtensionSupported("GL_ARB_framebuffer_object")) {
-        renderer->enabled_features |= R_FEATURE_RENDER_TARGETS;
-        renderer->enabled_features |= R_FEATURE_CORE_FRAMEBUFFER_OBJECTS;
-        glBindFramebufferPROC = glBindFramebuffer;
-        glCheckFramebufferStatusPROC = glCheckFramebufferStatus;
-        glDeleteFramebuffersPROC = glDeleteFramebuffers;
-        glFramebufferTexture2DPROC = glFramebufferTexture2D;
-        glGenFramebuffersPROC = glGenFramebuffers;
-        glGenerateMipmapPROC = glGenerateMipmap;
-    } else if (isExtensionSupported("GL_EXT_framebuffer_object")) {
-        renderer->enabled_features |= R_FEATURE_RENDER_TARGETS;
-        glBindFramebufferPROC = glBindFramebufferEXT;
-        glCheckFramebufferStatusPROC = glCheckFramebufferStatusEXT;
-        glDeleteFramebuffersPROC = glDeleteFramebuffersEXT;
-        glFramebufferTexture2DPROC = glFramebufferTexture2DEXT;
-        glGenFramebuffersPROC = glGenFramebuffersEXT;
-        glGenerateMipmapPROC = glGenerateMipmapEXT;
-    } else
-        renderer->enabled_features &= ~R_FEATURE_RENDER_TARGETS;
-#elif defined(R_USE_GLES)
-    if (isExtensionSupported("GL_OES_framebuffer_object")) {
-        renderer->enabled_features |= R_FEATURE_RENDER_TARGETS;
-        glBindFramebufferPROC = glBindFramebufferOES;
-        glCheckFramebufferStatusPROC = glCheckFramebufferStatusOES;
-        glDeleteFramebuffersPROC = glDeleteFramebuffersOES;
-        glFramebufferTexture2DPROC = glFramebufferTexture2DOES;
-        glGenFramebuffersPROC = glGenFramebuffersOES;
-        glGenerateMipmapPROC = glGenerateMipmapOES;
-    } else
-        renderer->enabled_features &= ~R_FEATURE_RENDER_TARGETS;
-#endif
 
     // Blending
-#ifdef R_USE_OPENGL
     renderer->enabled_features |= R_FEATURE_BLEND_EQUATIONS;
     renderer->enabled_features |= R_FEATURE_BLEND_FUNC_SEPARATE;
 
@@ -297,33 +238,7 @@ void init_features(R_Renderer *renderer) {
         renderer->enabled_features &= ~R_FEATURE_BLEND_EQUATIONS_SEPARATE;
 #endif
 
-#elif defined(R_USE_GLES)
-
-#if R_GLES_MAJOR_VERSION >= 2
-    // Core in GLES 2+
-    renderer->enabled_features |= R_FEATURE_BLEND_EQUATIONS;
-    renderer->enabled_features |= R_FEATURE_BLEND_FUNC_SEPARATE;
-    renderer->enabled_features |= R_FEATURE_BLEND_EQUATIONS_SEPARATE;
-#else
-    if (isExtensionSupported("GL_OES_blend_subtract"))
-        renderer->enabled_features |= R_FEATURE_BLEND_EQUATIONS;
-    else
-        renderer->enabled_features &= ~R_FEATURE_BLEND_EQUATIONS;
-
-    if (isExtensionSupported("GL_OES_blend_func_separate"))
-        renderer->enabled_features |= R_FEATURE_BLEND_FUNC_SEPARATE;
-    else
-        renderer->enabled_features &= ~R_FEATURE_BLEND_FUNC_SEPARATE;
-
-    if (isExtensionSupported("GL_OES_blend_equation_separate"))
-        renderer->enabled_features |= R_FEATURE_BLEND_EQUATIONS_SEPARATE;
-    else
-        renderer->enabled_features &= ~R_FEATURE_BLEND_EQUATIONS_SEPARATE;
-#endif
-#endif
-
     // Wrap modes
-#ifdef R_USE_OPENGL
 #if R_GL_MAJOR_VERSION >= 2
     renderer->enabled_features |= R_FEATURE_WRAP_REPEAT_MIRRORED;
 #else
@@ -331,16 +246,6 @@ void init_features(R_Renderer *renderer) {
         renderer->enabled_features |= R_FEATURE_WRAP_REPEAT_MIRRORED;
     else
         renderer->enabled_features &= ~R_FEATURE_WRAP_REPEAT_MIRRORED;
-#endif
-#elif defined(R_USE_GLES)
-#if R_GLES_MAJOR_VERSION >= 2
-    renderer->enabled_features |= R_FEATURE_WRAP_REPEAT_MIRRORED;
-#else
-    if (isExtensionSupported("GL_OES_texture_mirrored_repeat"))
-        renderer->enabled_features |= R_FEATURE_WRAP_REPEAT_MIRRORED;
-    else
-        renderer->enabled_features &= ~R_FEATURE_WRAP_REPEAT_MIRRORED;
-#endif
 #endif
 
     // GL texture formats
@@ -351,20 +256,11 @@ void init_features(R_Renderer *renderer) {
     // if (isExtensionSupported("GL_EXT_abgr"))
     //     renderer->enabled_features |= R_FEATURE_GL_ABGR;
 
-// Disable other texture formats for GLES.
-// TODO: Add better (static) checking for format support.  Some GL versions do not report previously non-core features as extensions.
-#ifdef R_USE_GLES
-    renderer->enabled_features &= ~R_FEATURE_GL_BGR;
-    renderer->enabled_features &= ~R_FEATURE_GL_BGRA;
-    renderer->enabled_features &= ~R_FEATURE_GL_ABGR;
-#endif
-
-// Shader support
-#ifndef R_DISABLE_SHADERS
+    // Shader support
     renderer->enabled_features |= R_FEATURE_FRAGMENT_SHADER;
     renderer->enabled_features |= R_FEATURE_VERTEX_SHADER;
     renderer->enabled_features |= R_FEATURE_GEOMETRY_SHADER;
-#endif
+
 #ifdef R_ASSUME_SHADERS
     renderer->enabled_features |= R_FEATURE_BASIC_SHADERS;
 #endif
@@ -855,38 +751,11 @@ void get_camera_matrix(R_Target *target, float *result) {
     if (target->camera.use_centered_origin) R_MatrixTranslate(result, -offsetX, -offsetY, 0);
 }
 
-#ifdef R_APPLY_TRANSFORMS_TO_GL_STACK
-void applyTransforms(R_Target *target) {
-    float *p = R_GetTopMatrix(&target->projection_matrix);
-    float *m = R_GetTopMatrix(&target->model_matrix);
-    float mv[16];
-    R_MatrixIdentity(mv);
-
-    if (target->use_camera) {
-        float cam_matrix[16];
-        get_camera_matrix(target, cam_matrix);
-
-        R_MultiplyAndAssign(mv, cam_matrix);
-    } else {
-        R_MultiplyAndAssign(mv, R_GetTopMatrix(&target->view_matrix));
-    }
-
-    R_MultiplyAndAssign(mv, m);
-
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf(p);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(mv);
-}
-#endif
-
 R_Target *Init(R_Renderer *renderer, R_RendererID renderer_request, u16 w, u16 h, R_WindowFlagEnum SDL_flags) {
     R_InitFlagEnum R_flags;
     SDL_Window *window;
 
-#ifdef R_USE_OPENGL
     const char *vendor_string;
-#endif
 
     if (renderer_request.major_version < 1) {
         renderer_request.major_version = 1;
@@ -905,9 +774,7 @@ R_Target *Init(R_Renderer *renderer, R_RendererID renderer_request, u16 w, u16 h
     // GL profile
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
                         0);  // Disable in case this is a fallback renderer
-#ifdef R_USE_GLES
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-#endif
+
 // GL 3.2 and 3.3 have two profile modes
 // ARB_compatibility brings support for this to GL 3.1, but glGetStringi() via GLEW has chicken and egg problems.
 #if R_GL_MAJOR_VERSION == 3
@@ -976,14 +843,12 @@ R_Target *Init(R_Renderer *renderer, R_RendererID renderer_request, u16 w, u16 h
         SetVirtualResolution(renderer, renderer->current_context_target, w, h);
     }
 
-// Init glVertexAttrib workaround
-#ifdef R_USE_OPENGL
+    // Init glVertexAttrib workaround
     vendor_string = (const char *)glGetString(GL_VENDOR);
     if (strstr(vendor_string, "Intel") != NULL) {
         vendor_is_Intel = 1;
         apply_Intel_attrib_workaround = 1;
     }
-#endif
 
     return renderer->current_context_target;
 }
@@ -992,7 +857,7 @@ bool IsFeatureEnabled(R_Renderer *renderer, R_FeatureEnum feature) { return ((re
 
 bool get_GL_version(int *major, int *minor) {
     const char *version_string;
-#ifdef R_USE_OPENGL
+
     // OpenGL < 3.0 doesn't have GL_MAJOR_VERSION.  Check via version string instead.
     version_string = (const char *)glGetString(GL_VERSION);
     if (version_string == NULL || sscanf(version_string, "%d.%d", major, minor) <= 0) {
@@ -1008,34 +873,11 @@ bool get_GL_version(int *major, int *minor) {
         return false;
     }
     return true;
-#else
-    // GLES doesn't have GL_MAJOR_VERSION.  Check via version string instead.
-    version_string = (const char *)glGetString(GL_VERSION);
-    // OpenGL ES 2.0?
-    if (version_string == NULL || sscanf(version_string, "OpenGL ES %d.%d", major, minor) <= 0) {
-        // OpenGL ES-CM 1.1?  OpenGL ES-CL 1.1?
-        if (version_string == NULL || sscanf(version_string, "OpenGL ES-C%*c %d.%d", major, minor) <= 0) {
-            // Failure
-            *major = R_GLES_MAJOR_VERSION;
-#if R_GLES_MAJOR_VERSION == 1
-            *minor = 1;
-#else
-            *minor = 0;
-#endif
-
-            R_PushErrorCode(__func__, R_ERROR_BACKEND_ERROR, "Failed to parse OpenGL ES version string: \"%s\"", version_string);
-            return false;
-        }
-    }
-    return true;
-#endif
 }
 
 bool get_GLSL_version(int *version) {
-#ifndef R_DISABLE_SHADERS
     const char *version_string;
     int major, minor;
-#ifdef R_USE_OPENGL
     {
         version_string = (const char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
         if (version_string == NULL || sscanf(version_string, "%d.%d", &major, &minor) <= 0) {
@@ -1045,20 +887,6 @@ bool get_GLSL_version(int *version) {
         } else
             *version = major * 100 + minor;
     }
-#else
-    {
-        version_string = (const char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
-        if (version_string == NULL || sscanf(version_string, "OpenGL ES GLSL ES %d.%d", &major, &minor) <= 0) {
-            R_PushErrorCode(__func__, R_ERROR_BACKEND_ERROR, "Failed to parse GLSL ES version string: \"%s\"", version_string);
-            *version = R_GLSL_VERSION;
-            return false;
-        } else
-            *version = major * 100 + minor;
-    }
-#endif
-#else
-    (void)version;
-#endif
     return true;
 }
 
@@ -1215,14 +1043,12 @@ R_Target *CreateTargetFromWindow(R_Renderer *renderer, u32 windowID, R_Target *t
     cdata->last_depth_test = false;
     cdata->last_depth_write = true;
 
-#ifdef R_USE_OPENGL
     if (!gladLoadGL()) {
         // Probably don't have the right GL version for this renderer
         R_PushErrorCode("R_CreateTargetFromWindow", R_ERROR_BACKEND_ERROR, "Failed to initialize extensions for renderer %s.", renderer->id.name);
         target->context->failed = true;
         return NULL;
     }
-#endif
 
     MakeCurrent(renderer, target, target->context->windowID);
 
@@ -1281,9 +1107,6 @@ R_Target *CreateTargetFromWindow(R_Renderer *renderer, u32 windowID, R_Target *t
     glViewport(0, 0, (GLsizei)target->viewport.w, (GLsizei)target->viewport.h);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-#if defined(R_USE_FIXED_FUNCTION_PIPELINE) || defined(R_USE_ARRAY_PIPELINE)
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-#endif
 
     // Set up camera
     applyTargetCamera(target);
@@ -1305,7 +1128,6 @@ R_Target *CreateTargetFromWindow(R_Renderer *renderer, u32 windowID, R_Target *t
     target->context->default_untextured_shader_program = 0;
     target->context->current_shader_program = 0;
 
-#ifndef R_DISABLE_SHADERS
     // Load default shaders
 
     if (IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) {
@@ -1413,7 +1235,6 @@ R_Target *CreateTargetFromWindow(R_Renderer *renderer, u32 windowID, R_Target *t
     // Init 16 attributes to 0 / NULL.
     memset(cdata->shader_attributes, 0, 16 * sizeof(R_AttributeSource));
 #endif
-#endif
 
     return target;
 }
@@ -1502,9 +1323,7 @@ void ResetRendererState(R_Renderer *renderer) {
     target = renderer->current_context_target;
     cdata = (R_CONTEXT_DATA *)target->context->data;
 
-#ifndef R_DISABLE_SHADERS
     if (IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) glUseProgram(target->context->current_shader_program);
-#endif
 
     SDL_GL_MakeCurrent(SDL_GetWindowFromID(target->context->windowID), target->context->context);
 
@@ -1543,10 +1362,7 @@ void ResetRendererState(R_Renderer *renderer) {
 }
 
 bool AddDepthBuffer(R_Renderer *renderer, R_Target *target) {
-#if defined(R_USE_GLES) && R_GLES_MAJOR_VERSION == 1
-    R_PushErrorCode("R_AddDepthBuffer", R_ERROR_USER_ERROR, "Not supported in GL ES 1.1.");
-    return false;
-#else
+
     GLuint depth_buffer;
     GLenum status;
     R_CONTEXT_DATA *cdata;
@@ -1581,7 +1397,6 @@ bool AddDepthBuffer(R_Renderer *renderer, R_Target *target) {
     R_SetDepthTest(target, 1);
 
     return true;
-#endif
 }
 
 bool SetWindowResolution(R_Renderer *renderer, u16 w, u16 h) {
@@ -1782,11 +1597,6 @@ GLuint CreateUninitializedTexture(R_Renderer *renderer) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-#if defined(R_USE_GLES) && (R_GLES_MAJOR_VERSION == 1)
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-#endif
 
     return handle;
 }
@@ -1845,13 +1655,11 @@ R_Image *CreateUninitializedImage(R_Renderer *renderer, u16 w, u16 h, R_FormatEn
             num_layers = 1;
             bytes_per_pixel = 1;
             break;
-#ifndef R_USE_GLES
         case R_FORMAT_RG:
             gl_format = GL_RG;
             num_layers = 1;
             bytes_per_pixel = 2;
             break;
-#endif
         case R_FORMAT_YCbCr420P:
             gl_format = GL_LUMINANCE;
             num_layers = 3;
@@ -1987,13 +1795,6 @@ R_Image *CreateImageUsingTexture(R_Renderer *renderer, R_TextureHandle handle, b
     R_Image *result;
     R_IMAGE_DATA *data;
 
-#ifdef R_USE_GLES
-    if (renderer->id.major_version == 3 && renderer->id.minor_version == 0) {
-        R_PushErrorCode("R_CreateImageUsingTexture", R_ERROR_UNSUPPORTED_FUNCTION, "Renderer %s's runtime version on this device (3.0) does not support this function", renderer->id.name);
-        return NULL;
-    }
-#endif
-
     flushAndBindTexture(renderer, handle);
 
     glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &gl_format);
@@ -2045,13 +1846,11 @@ R_Image *CreateImageUsingTexture(R_Renderer *renderer, R_TextureHandle handle, b
             num_layers = 1;
             bytes_per_pixel = 1;
             break;
-#ifndef R_USE_GLES
         case GL_RG:
             format = R_FORMAT_RG;
             num_layers = 1;
             bytes_per_pixel = 2;
             break;
-#endif
         default:
             R_PushErrorCode("R_CreateImageUsingTexture", R_ERROR_DATA_ERROR, "Unsupported GL image format (0x%x)", gl_format);
             return NULL;
@@ -2193,29 +1992,9 @@ bool readTargetPixels(R_Renderer *renderer, R_Target *source, GLint format, GLub
 }
 
 bool readImagePixels(R_Renderer *renderer, R_Image *source, GLint format, GLubyte *pixels) {
-#ifdef R_USE_GLES
-    bool created_target;
-    bool result;
-#endif
 
     if (source == NULL) return false;
 
-// No glGetTexImage() in OpenGLES
-#ifdef R_USE_GLES
-    // Load up the target
-    created_target = false;
-    if (source->target == NULL) {
-        GetTarget(renderer, source);
-        created_target = true;
-    }
-    // Get the data
-    // FIXME: This may use different dimensions than the OpenGL code... (base_w vs texture_w)
-    // FIXME: I should force it to use the texture dims.
-    result = readTargetPixels(renderer, source->target, format, pixels);
-    // Free the target
-    if (created_target) FreeTarget(renderer, source->target);
-    return result;
-#else
     // Bind the texture temporarily
     glBindTexture(GL_TEXTURE_2D, ((R_IMAGE_DATA *)source->data)->handle);
     // Get the data
@@ -2224,7 +2003,6 @@ bool readImagePixels(R_Renderer *renderer, R_Image *source, GLint format, GLubyt
     if (((R_CONTEXT_DATA *)renderer->current_context_target->context->data)->last_image != NULL)
         glBindTexture(GL_TEXTURE_2D, ((R_IMAGE_DATA *)(((R_CONTEXT_DATA *)renderer->current_context_target->context->data)->last_image)->data)->handle);
     return true;
-#endif
 }
 
 unsigned char *getRawTargetData(R_Renderer *renderer, R_Target *target) {
@@ -2379,61 +2157,6 @@ void *CopySurfaceFromImage(R_Renderer *renderer, R_Image *image) {
     return result;
 }
 
-// Returns 0 if a direct conversion (asking OpenGL to do it) is safe.  Returns 1 if a copy is needed.  Returns -1 on error.
-// The surfaceFormatResult is used to specify what direct conversion format the surface pixels are in (source format).
-#ifdef R_USE_GLES
-// OpenGLES does not do direct conversion.  Internal format (glFormat) and original format (surfaceFormatResult) must be the same.
-int compareFormats(R_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, GLenum *surfaceFormatResult) {
-    SDL_PixelFormat *format = surface->format;
-    switch (glFormat) {
-            // 3-channel formats
-        case GL_RGB:
-            if (format->BytesPerPixel != 3) return 1;
-
-            if (format->Rmask == 0x0000FF && format->Gmask == 0x00FF00 && format->Bmask == 0xFF0000) {
-                if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_RGB;
-                return 0;
-            }
-#ifdef GL_BGR
-            if (format->Rmask == 0xFF0000 && format->Gmask == 0x00FF00 && format->Bmask == 0x0000FF) {
-                if (renderer->enabled_features & R_FEATURE_GL_BGR) {
-                    if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_BGR;
-                    return 0;
-                }
-            }
-#endif
-            return 1;
-            // 4-channel formats
-        case GL_RGBA:
-            if (format->BytesPerPixel != 4) return 1;
-
-            if (format->Rmask == 0x000000FF && format->Gmask == 0x0000FF00 && format->Bmask == 0x00FF0000) {
-                if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_RGBA;
-                return 0;
-            }
-#ifdef GL_BGRA
-            if (format->Rmask == 0x00FF0000 && format->Gmask == 0x0000FF00 && format->Bmask == 0x000000FF) {
-                if (renderer->enabled_features & R_FEATURE_GL_BGRA) {
-                    if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_BGRA;
-                    return 0;
-                }
-            }
-#endif
-#ifdef GL_ABGR
-            if (format->Rmask == 0xFF000000 && format->Gmask == 0x00FF0000 && format->Bmask == 0x0000FF00) {
-                if (renderer->enabled_features & R_FEATURE_GL_ABGR) {
-                    if (surfaceFormatResult != NULL) *surfaceFormatResult = GL_ABGR;
-                    return 0;
-                }
-            }
-#endif
-            return 1;
-        default:
-            R_PushErrorCode("R_CompareFormats", R_ERROR_DATA_ERROR, "Invalid texture format (0x%x)", glFormat);
-            return -1;
-    }
-}
-#else
 // GL_RGB/GL_RGBA and Surface format
 int compareFormats(R_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, GLenum *surfaceFormatResult) {
     SDL_PixelFormat *format = surface->format;
@@ -2493,7 +2216,6 @@ int compareFormats(R_Renderer *renderer, GLenum glFormat, SDL_Surface *surface, 
             return -1;
     }
 }
-#endif
 
 // Adapted from SDL_AllocFormat()
 SDL_PixelFormat *AllocFormat(GLenum glFormat) {
@@ -4011,10 +3733,6 @@ void PrimitiveBatchV(R_Renderer *renderer, R_Image *image, R_Target *target, R_P
 
     setClipRect(renderer, target);
 
-#ifdef R_APPLY_TRANSFORMS_TO_GL_STACK
-    if (!IsFeatureEnabled(renderer, R_FEATURE_VERTEX_SHADER)) applyTransforms(target);
-#endif
-
     context = renderer->current_context_target->context;
     cdata = (R_CONTEXT_DATA *)context->data;
 
@@ -4100,74 +3818,6 @@ void PrimitiveBatchV(R_Renderer *renderer, R_Image *image, R_Target *target, R_P
     if (use_colors && use_byte_colors) {
         stride += size_colors;
     }
-
-#ifdef R_USE_ARRAY_PIPELINE
-
-    {
-        // Enable
-        if (use_vertices) glEnableClientState(GL_VERTEX_ARRAY);
-        if (use_texcoords) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-        if (use_colors) glEnableClientState(GL_COLOR_ARRAY);
-
-        // Set pointers
-        if (use_vertices) glVertexPointer(size_vertices, GL_FLOAT, stride, values);
-        if (use_texcoords) glTexCoordPointer(size_texcoords, GL_FLOAT, stride, (GLubyte *)values + offset_texcoords);
-        if (use_colors) {
-            if (use_byte_colors)
-                glColorPointer(size_colors, GL_UNSIGNED_BYTE, stride, (GLubyte *)values + offset_colors);
-            else
-                glColorPointer(size_colors, GL_FLOAT, stride, (GLubyte *)values + offset_colors);
-        }
-
-        // Upload
-        if (indices == NULL)
-            glDrawArrays(primitive_type, 0, num_indices);
-        else
-            glDrawElements(primitive_type, num_indices, GL_UNSIGNED_SHORT, indices);
-
-        // Disable
-        if (use_colors) glDisableClientState(GL_COLOR_ARRAY);
-        if (use_texcoords) glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-        if (use_vertices) glDisableClientState(GL_VERTEX_ARRAY);
-    }
-#endif
-
-#ifdef R_USE_BUFFER_PIPELINE_FALLBACK
-    if (!IsFeatureEnabled(renderer, R_FEATURE_VERTEX_SHADER))
-#endif
-#ifdef R_USE_FIXED_FUNCTION_PIPELINE
-    {
-        if (values != NULL) {
-            unsigned int i;
-            unsigned int index;
-            float *vertex_pointer = (float *)(values);
-            float *texcoord_pointer = (float *)((char *)values + offset_texcoords);
-
-            glBegin(primitive_type);
-            for (i = 0; i < num_indices; i++) {
-                if (indices == NULL)
-                    index = i * R_BLIT_BUFFER_FLOATS_PER_VERTEX;
-                else
-                    index = indices[i] * R_BLIT_BUFFER_FLOATS_PER_VERTEX;
-                if (use_colors) {
-                    if (use_byte_colors) {
-                        u8 *color_pointer = (u8 *)((char *)values + offset_colors);
-                        glColor4ub(color_pointer[index], color_pointer[index + 1], color_pointer[index + 2], (use_a ? color_pointer[index + 3] : 255));
-                    } else {
-                        float *color_pointer = (float *)((char *)values + offset_colors);
-                        glColor4f(color_pointer[index], color_pointer[index + 1], color_pointer[index + 2], (use_a ? color_pointer[index + 3] : 1.0f));
-                    }
-                }
-                if (use_texcoords) glTexCoord2f(texcoord_pointer[index], texcoord_pointer[index + 1]);
-                if (use_vertices) glVertex3f(vertex_pointer[index], vertex_pointer[index + 1], (use_z ? vertex_pointer[index + 2] : 0.0f));
-            }
-            glEnd();
-        }
-    }
-#endif
-#ifdef R_USE_BUFFER_PIPELINE_FALLBACK
-    else
-#endif
 
 #ifdef R_USE_BUFFER_PIPELINE
     {
@@ -4322,14 +3972,12 @@ void swizzle_for_format(SDL_Color *color, GLenum format, unsigned char pixel[4])
 #endif
         case GL_ALPHA:
             break;
-#ifndef R_USE_GLES
         case GL_RG:
             color->r = pixel[0];
             color->g = pixel[1];
             color->b = 0;
             GET_ALPHA(*color) = 255;
             break;
-#endif
         case GL_RGB:
             color->r = pixel[0];
             color->g = pixel[1];
@@ -4347,7 +3995,7 @@ void swizzle_for_format(SDL_Color *color, GLenum format, unsigned char pixel[4])
     }
 }
 
-ME_Color GetPixel(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y) {
+MEcolor GetPixel(R_Renderer *renderer, R_Target *target, Sint16 x, Sint16 y) {
     SDL_Color result = {0, 0, 0, 0};
     if (target == NULL) return ToEngineColor(result);
     if (renderer != target->renderer) return ToEngineColor(result);
@@ -4498,47 +4146,6 @@ void ClearRGBA(R_Renderer *renderer, R_Target *target, u8 r, u8 g, u8 b, u8 a) {
 
 void DoPartialFlush(R_Renderer *renderer, R_Target *dest, R_Context *context, unsigned short num_vertices, float *blit_buffer, unsigned int num_indices, unsigned short *index_buffer) {
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)context->data;
-    (void)renderer;
-    (void)num_vertices;
-#ifdef R_USE_ARRAY_PIPELINE
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-
-    glVertexPointer(2, GL_FLOAT, R_BLIT_BUFFER_STRIDE, blit_buffer + R_BLIT_BUFFER_VERTEX_OFFSET);
-    glTexCoordPointer(2, GL_FLOAT, R_BLIT_BUFFER_STRIDE, blit_buffer + R_BLIT_BUFFER_TEX_COORD_OFFSET);
-    glColorPointer(4, GL_FLOAT, R_BLIT_BUFFER_STRIDE, blit_buffer + R_BLIT_BUFFER_COLOR_OFFSET);
-
-    glDrawElements(cdata->last_shape, num_indices, GL_UNSIGNED_SHORT, index_buffer);
-
-    glDisableClientState(GL_COLOR_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisableClientState(GL_VERTEX_ARRAY);
-#endif
-
-#ifdef R_USE_BUFFER_PIPELINE_FALLBACK
-    if (!IsFeatureEnabled(renderer, R_FEATURE_VERTEX_SHADER))
-#endif
-#ifdef R_USE_FIXED_FUNCTION_PIPELINE
-    {
-        unsigned short i;
-        unsigned int index;
-        float *vertex_pointer = blit_buffer + R_BLIT_BUFFER_VERTEX_OFFSET;
-        float *texcoord_pointer = blit_buffer + R_BLIT_BUFFER_TEX_COORD_OFFSET;
-        float *color_pointer = blit_buffer + R_BLIT_BUFFER_COLOR_OFFSET;
-
-        glBegin(cdata->last_shape);
-        for (i = 0; i < num_indices; i++) {
-            index = index_buffer[i] * R_BLIT_BUFFER_FLOATS_PER_VERTEX;
-            glColor4f(color_pointer[index], color_pointer[index + 1], color_pointer[index + 2], color_pointer[index + 3]);
-            glTexCoord2f(texcoord_pointer[index], texcoord_pointer[index + 1]);
-            glVertex3f(vertex_pointer[index], vertex_pointer[index + 1], 0.0f);
-        }
-        glEnd();
-
-        return;
-    }
-#endif
 
 #ifdef R_USE_BUFFER_PIPELINE
     {
@@ -4593,42 +4200,6 @@ void DoPartialFlush(R_Renderer *renderer, R_Target *dest, R_Context *context, un
 
 void DoUntexturedFlush(R_Renderer *renderer, R_Target *dest, R_Context *context, unsigned short num_vertices, float *blit_buffer, unsigned int num_indices, unsigned short *index_buffer) {
     R_CONTEXT_DATA *cdata = (R_CONTEXT_DATA *)context->data;
-    (void)renderer;
-    (void)num_vertices;
-#ifdef R_USE_ARRAY_PIPELINE
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
-
-    glVertexPointer(2, GL_FLOAT, R_BLIT_BUFFER_STRIDE, blit_buffer + R_BLIT_BUFFER_VERTEX_OFFSET);
-    glColorPointer(4, GL_FLOAT, R_BLIT_BUFFER_STRIDE, blit_buffer + R_BLIT_BUFFER_COLOR_OFFSET);
-
-    glDrawElements(cdata->last_shape, num_indices, GL_UNSIGNED_SHORT, index_buffer);
-
-    glDisableClientState(GL_COLOR_ARRAY);
-    glDisableClientState(GL_VERTEX_ARRAY);
-#endif
-
-#ifdef R_USE_BUFFER_PIPELINE_FALLBACK
-    if (!IsFeatureEnabled(renderer, R_FEATURE_VERTEX_SHADER))
-#endif
-#ifdef R_USE_FIXED_FUNCTION_PIPELINE
-    {
-        unsigned short i;
-        unsigned int index;
-        float *vertex_pointer = blit_buffer + R_BLIT_BUFFER_VERTEX_OFFSET;
-        float *color_pointer = blit_buffer + R_BLIT_BUFFER_COLOR_OFFSET;
-
-        glBegin(cdata->last_shape);
-        for (i = 0; i < num_indices; i++) {
-            index = index_buffer[i] * R_BLIT_BUFFER_FLOATS_PER_VERTEX;
-            glColor4f(color_pointer[index], color_pointer[index + 1], color_pointer[index + 2], color_pointer[index + 3]);
-            glVertex3f(vertex_pointer[index], vertex_pointer[index + 1], 0.0f);
-        }
-        glEnd();
-
-        return;
-    }
-#endif
 
 #ifdef R_USE_BUFFER_PIPELINE
     {
@@ -4696,10 +4267,6 @@ void FlushBlitBuffer(R_Renderer *renderer) {
         changeCamera(dest);
 
         applyTexturing(renderer);
-
-#ifdef R_APPLY_TRANSFORMS_TO_GL_STACK
-        if (!IsFeatureEnabled(renderer, R_FEATURE_VERTEX_SHADER)) applyTransforms(dest);
-#endif
 
         setClipRect(renderer, dest);
 
@@ -4938,7 +4505,6 @@ u32 compile_shader_source(R_ShaderEnum shader_type, const char *shader_source) {
     (void)shader_type;
     (void)shader_source;
 
-#ifndef R_DISABLE_SHADERS
     GLint compiled;
 
     switch (shader_type) {
@@ -4979,8 +4545,6 @@ u32 compile_shader_source(R_ShaderEnum shader_type, const char *shader_source) {
         return 0;
     }
 
-#endif
-
     return shader_object;
 }
 
@@ -4993,7 +4557,6 @@ u32 CompileShader(R_Renderer *renderer, R_ShaderEnum shader_type, const char *sh
 }
 
 u32 CreateShaderProgram(R_Renderer *renderer) {
-#ifndef R_DISABLE_SHADERS
     GLuint p;
 
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return 0;
@@ -5001,14 +4564,9 @@ u32 CreateShaderProgram(R_Renderer *renderer) {
     p = glCreateProgram();
 
     return p;
-#else
-    (void)renderer;
-    return 0;
-#endif
 }
 
 bool LinkShaderProgram(R_Renderer *renderer, u32 program_object) {
-#ifndef R_DISABLE_SHADERS
     int linked;
 
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return false;
@@ -5029,53 +4587,28 @@ bool LinkShaderProgram(R_Renderer *renderer, u32 program_object) {
     }
 
     return true;
-
-#else
-    (void)renderer;
-    (void)program_object;
-    return false;
-
-#endif
 }
 
 void FreeShader(R_Renderer *renderer, u32 shader_object) {
-    (void)renderer;
-    (void)shader_object;
-#ifndef R_DISABLE_SHADERS
     if (IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) glDeleteShader(shader_object);
-#endif
 }
 
 void FreeShaderProgram(R_Renderer *renderer, u32 program_object) {
-    (void)renderer;
-    (void)program_object;
-#ifndef R_DISABLE_SHADERS
     if (IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) glDeleteProgram(program_object);
-#endif
 }
 
 void AttachShader(R_Renderer *renderer, u32 program_object, u32 shader_object) {
-    (void)renderer;
-    (void)program_object;
-    (void)shader_object;
-#ifndef R_DISABLE_SHADERS
     if (IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) glAttachShader(program_object, shader_object);
-#endif
 }
 
 void DetachShader(R_Renderer *renderer, u32 program_object, u32 shader_object) {
-    (void)renderer;
-    (void)program_object;
-    (void)shader_object;
-#ifndef R_DISABLE_SHADERS
     if (IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) glDetachShader(program_object, shader_object);
-#endif
 }
 
 void ActivateShaderProgram(R_Renderer *renderer, u32 program_object, R_ShaderBlock *block) {
     R_Target *target = renderer->current_context_target;
     (void)block;
-#ifndef R_DISABLE_SHADERS
+
     if (IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) {
         if (program_object == 0)  // Implies default shader
         {
@@ -5109,7 +4642,6 @@ void ActivateShaderProgram(R_Renderer *renderer, u32 program_object, R_ShaderBlo
                 target->context->current_shader_block = *block;
         }
     }
-#endif
 
     target->context->current_shader_program = program_object;
 }
@@ -5122,31 +4654,17 @@ const char *GetShaderMessage(R_Renderer *renderer) {
 }
 
 int GetAttributeLocation(R_Renderer *renderer, u32 program_object, const char *attrib_name) {
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return -1;
     program_object = get_proper_program_id(renderer, program_object);
     if (program_object == 0) return -1;
     return glGetAttribLocation(program_object, attrib_name);
-#else
-    (void)renderer;
-    (void)program_object;
-    (void)attrib_name;
-    return -1;
-#endif
 }
 
 int GetUniformLocation(R_Renderer *renderer, u32 program_object, const char *uniform_name) {
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return -1;
     program_object = get_proper_program_id(renderer, program_object);
     if (program_object == 0) return -1;
     return glGetUniformLocation(program_object, uniform_name);
-#else
-    (void)renderer;
-    (void)program_object;
-    (void)uniform_name;
-    return -1;
-#endif
 }
 
 R_ShaderBlock LoadShaderBlock(R_Renderer *renderer, u32 program_object, const char *position_name, const char *texcoord_name, const char *color_name, const char *modelViewMatrix_name) {
@@ -5184,8 +4702,7 @@ R_ShaderBlock LoadShaderBlock(R_Renderer *renderer, u32 program_object, const ch
 }
 
 void SetShaderImage(R_Renderer *renderer, R_Image *image, int location, int image_unit) {
-// TODO: OpenGL 1 needs to check for ARB_multitexture to use glActiveTexture().
-#ifndef R_DISABLE_SHADERS
+    // TODO: OpenGL 1 needs to check for ARB_multitexture to use glActiveTexture().
     u32 new_texture;
 
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
@@ -5203,8 +4720,6 @@ void SetShaderImage(R_Renderer *renderer, R_Image *image, int location, int imag
 
     if (image_unit != 0) glActiveTexture(GL_TEXTURE0);
 
-#endif
-
     (void)renderer;
     (void)image;
     (void)location;
@@ -5212,39 +4727,19 @@ void SetShaderImage(R_Renderer *renderer, R_Image *image, int location, int imag
 }
 
 void GetUniformiv(R_Renderer *renderer, u32 program_object, int location, int *values) {
-    (void)renderer;
-    (void)program_object;
-    (void)location;
-    (void)values;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     program_object = get_proper_program_id(renderer, program_object);
     if (program_object != 0) glGetUniformiv(program_object, location, values);
-#endif
 }
 
 void SetUniformi(R_Renderer *renderer, int location, int value) {
-    (void)renderer;
-    (void)location;
-    (void)value;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
     glUniform1i(location, value);
-#endif
 }
 
 void SetUniformiv(R_Renderer *renderer, int location, int num_elements_per_value, int num_values, int *values) {
-    (void)renderer;
-    (void)location;
-    (void)num_elements_per_value;
-    (void)num_values;
-    (void)values;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
@@ -5262,71 +4757,25 @@ void SetUniformiv(R_Renderer *renderer, int location, int num_elements_per_value
             glUniform4iv(location, num_values, values);
             break;
     }
-#endif
 }
 
 void GetUniformuiv(R_Renderer *renderer, u32 program_object, int location, unsigned int *values) {
-    (void)renderer;
-    (void)program_object;
-    (void)location;
-    (void)values;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     program_object = get_proper_program_id(renderer, program_object);
-    if (program_object != 0)
-#if defined(R_USE_GLES) && R_GLES_MAJOR_VERSION < 3
-        glGetUniformiv(program_object, location, (int *)values);
-#else
-        glGetUniformuiv(program_object, location, values);
-#endif
-#endif
+    if (program_object != 0) glGetUniformuiv(program_object, location, values);
 }
 
 void SetUniformui(R_Renderer *renderer, int location, unsigned int value) {
-    (void)renderer;
-    (void)location;
-    (void)value;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
-#if defined(R_USE_GLES) && R_GLES_MAJOR_VERSION < 3
-    glUniform1i(location, (int)value);
-#else
     glUniform1ui(location, value);
-#endif
-#endif
 }
 
 void SetUniformuiv(R_Renderer *renderer, int location, int num_elements_per_value, int num_values, unsigned int *values) {
-    (void)renderer;
-    (void)location;
-    (void)num_elements_per_value;
-    (void)num_values;
-    (void)values;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
-#if defined(R_USE_GLES) && R_GLES_MAJOR_VERSION < 3
-    switch (num_elements_per_value) {
-        case 1:
-            glUniform1iv(location, num_values, (int *)values);
-            break;
-        case 2:
-            glUniform2iv(location, num_values, (int *)values);
-            break;
-        case 3:
-            glUniform3iv(location, num_values, (int *)values);
-            break;
-        case 4:
-            glUniform4iv(location, num_values, (int *)values);
-            break;
-    }
-#else
     switch (num_elements_per_value) {
         case 1:
             glUniform1uiv(location, num_values, values);
@@ -5341,44 +4790,22 @@ void SetUniformuiv(R_Renderer *renderer, int location, int num_elements_per_valu
             glUniform4uiv(location, num_values, values);
             break;
     }
-#endif
-#endif
 }
 
 void GetUniformfv(R_Renderer *renderer, u32 program_object, int location, float *values) {
-    (void)renderer;
-    (void)program_object;
-    (void)location;
-    (void)values;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     program_object = get_proper_program_id(renderer, program_object);
     if (program_object != 0) glGetUniformfv(program_object, location, values);
-#endif
 }
 
 void SetUniformf(R_Renderer *renderer, int location, float value) {
-    (void)renderer;
-    (void)location;
-    (void)value;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
     glUniform1f(location, value);
-#endif
 }
 
 void SetUniformfv(R_Renderer *renderer, int location, int num_elements_per_value, int num_values, float *values) {
-    (void)renderer;
-    (void)location;
-    (void)num_elements_per_value;
-    (void)num_values;
-    (void)values;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
@@ -5396,19 +4823,9 @@ void SetUniformfv(R_Renderer *renderer, int location, int num_elements_per_value
             glUniform4fv(location, num_values, values);
             break;
     }
-#endif
 }
 
 void SetUniformMatrixfv(R_Renderer *renderer, int location, int num_matrices, int num_rows, int num_columns, bool transpose, float *values) {
-    (void)renderer;
-    (void)location;
-    (void)num_matrices;
-    (void)num_rows;
-    (void)num_columns;
-    (void)transpose;
-    (void)values;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
@@ -5416,19 +4833,6 @@ void SetUniformMatrixfv(R_Renderer *renderer, int location, int num_matrices, in
         R_PushErrorCode("R_SetUniformMatrixfv", R_ERROR_DATA_ERROR, "Given invalid dimensions (%dx%d)", num_rows, num_columns);
         return;
     }
-#if defined(R_USE_GLES)
-// Hide these symbols so it compiles, but make sure they never get called because GLES only supports square matrices.
-#define glUniformMatrix2x3fv glUniformMatrix2fv
-#define glUniformMatrix2x4fv glUniformMatrix2fv
-#define glUniformMatrix3x2fv glUniformMatrix2fv
-#define glUniformMatrix3x4fv glUniformMatrix2fv
-#define glUniformMatrix4x2fv glUniformMatrix2fv
-#define glUniformMatrix4x3fv glUniformMatrix2fv
-    if (num_rows != num_columns) {
-        R_PushErrorCode("R_SetUniformMatrixfv", R_ERROR_DATA_ERROR, "GLES renderers do not accept non-square matrices (given %dx%d)", num_rows, num_columns);
-        return;
-    }
-#endif
 
     switch (num_rows) {
         case 2:
@@ -5456,7 +4860,6 @@ void SetUniformMatrixfv(R_Renderer *renderer, int location, int num_matrices, in
                 glUniformMatrix4fv(location, num_matrices, transpose, values);
             break;
     }
-#endif
 }
 
 void SetAttributef(R_Renderer *renderer, int location, float value) {
@@ -5464,88 +4867,57 @@ void SetAttributef(R_Renderer *renderer, int location, float value) {
     (void)location;
     (void)value;
 
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 
-#ifdef R_USE_OPENGL
     if (apply_Intel_attrib_workaround && location == 0) {
         apply_Intel_attrib_workaround = false;
         glBegin(GL_TRIANGLES);
         glEnd();
     }
-#endif
 
     glVertexAttrib1f(location, value);
-
-#endif
 }
 
 void SetAttributei(R_Renderer *renderer, int location, int value) {
-    (void)renderer;
-    (void)location;
-    (void)value;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 
-#ifdef R_USE_OPENGL
     if (apply_Intel_attrib_workaround && location == 0) {
         apply_Intel_attrib_workaround = false;
         glBegin(GL_TRIANGLES);
         glEnd();
     }
-#endif
 
     glVertexAttribI1i(location, value);
-
-#endif
 }
 
 void SetAttributeui(R_Renderer *renderer, int location, unsigned int value) {
-    (void)renderer;
-    (void)location;
-    (void)value;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 
-#ifdef R_USE_OPENGL
     if (apply_Intel_attrib_workaround && location == 0) {
         apply_Intel_attrib_workaround = false;
         glBegin(GL_TRIANGLES);
         glEnd();
     }
-#endif
 
     glVertexAttribI1ui(location, value);
-
-#endif
 }
 
 void SetAttributefv(R_Renderer *renderer, int location, int num_elements, float *value) {
-    (void)renderer;
-    (void)location;
-    (void)num_elements;
-    (void)value;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 
-#ifdef R_USE_OPENGL
     if (apply_Intel_attrib_workaround && location == 0) {
         apply_Intel_attrib_workaround = false;
         glBegin(GL_TRIANGLES);
         glEnd();
     }
-#endif
 
     switch (num_elements) {
         case 1:
@@ -5561,27 +4933,18 @@ void SetAttributefv(R_Renderer *renderer, int location, int num_elements, float 
             glVertexAttrib4f(location, value[0], value[1], value[2], value[3]);
             break;
     }
-
-#endif
 }
 
 void SetAttributeiv(R_Renderer *renderer, int location, int num_elements, int *value) {
-    (void)renderer;
-    (void)location;
-    (void)num_elements;
-    (void)value;
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 
-#ifdef R_USE_OPENGL
     if (apply_Intel_attrib_workaround && location == 0) {
         apply_Intel_attrib_workaround = false;
         glBegin(GL_TRIANGLES);
         glEnd();
     }
-#endif
 
     switch (num_elements) {
         case 1:
@@ -5597,28 +4960,18 @@ void SetAttributeiv(R_Renderer *renderer, int location, int num_elements, int *v
             glVertexAttribI4i(location, value[0], value[1], value[2], value[3]);
             break;
     }
-
-#endif
 }
 
 void SetAttributeuiv(R_Renderer *renderer, int location, int num_elements, unsigned int *value) {
-    (void)renderer;
-    (void)location;
-    (void)num_elements;
-    (void)value;
-
-#ifndef R_DISABLE_SHADERS
     if (!IsFeatureEnabled(renderer, R_FEATURE_BASIC_SHADERS)) return;
     FlushBlitBuffer(renderer);
     if (renderer->current_context_target->context->current_shader_program == 0) return;
 
-#ifdef R_USE_OPENGL
     if (apply_Intel_attrib_workaround && location == 0) {
         apply_Intel_attrib_workaround = false;
         glBegin(GL_TRIANGLES);
         glEnd();
     }
-#endif
 
     switch (num_elements) {
         case 1:
@@ -5634,12 +4987,9 @@ void SetAttributeuiv(R_Renderer *renderer, int location, int num_elements, unsig
             glVertexAttribI4ui(location, value[0], value[1], value[2], value[3]);
             break;
     }
-
-#endif
 }
 
 void SetAttributeSource(R_Renderer *renderer, int num_values, R_Attribute source) {
-#ifndef R_DISABLE_SHADERS
     R_CONTEXT_DATA *cdata;
     R_AttributeSource *a;
 
@@ -5680,12 +5030,6 @@ void SetAttributeSource(R_Renderer *renderer, int num_values, R_Attribute source
     }
 
     a->next_value = a->per_vertex_storage;
-
-#endif
-
-    (void)renderer;
-    (void)num_values;
-    (void)source;
 }
 
 #if 0
@@ -5891,13 +5235,13 @@ float SetLineThickness(R_Renderer *renderer, float thickness) {
 
 float GetLineThickness(R_Renderer *renderer) { return renderer->current_context_target->context->line_thickness; }
 
-void DrawPixel(R_Renderer *renderer, R_Target *target, float x, float y, ME_Color color) {
+void DrawPixel(R_Renderer *renderer, R_Target *target, float x, float y, MEcolor color) {
     BEGIN_UNTEXTURED("R_DrawPixel", GL_POINTS, 1, 1);
 
     SET_UNTEXTURED_VERTEX(x, y, r, g, b, a);
 }
 
-void Line(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, ME_Color color) {
+void Line(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, MEcolor color) {
     float thickness = GetLineThickness(renderer);
 
     float t = thickness / 2;
@@ -5917,9 +5261,9 @@ void Line(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, 
 }
 
 // Arc() might call Circle()
-void Circle(R_Renderer *renderer, R_Target *target, float x, float y, float radius, ME_Color color);
+void Circle(R_Renderer *renderer, R_Target *target, float x, float y, float radius, MEcolor color);
 
-void Arc(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color) {
+void Arc(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, MEcolor color) {
     float dx, dy;
     int i;
 
@@ -5992,9 +5336,9 @@ void Arc(R_Renderer *renderer, R_Target *target, float x, float y, float radius,
 }
 
 // ArcFilled() might call CircleFilled()
-void CircleFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, ME_Color color);
+void CircleFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, MEcolor color);
 
-void ArcFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, ME_Color color) {
+void ArcFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, float start_angle, float end_angle, MEcolor color) {
     float dx, dy;
     int i;
 
@@ -6075,7 +5419,7 @@ void ArcFilled(R_Renderer *renderer, R_Target *target, float x, float y, float r
 Incremental rotation circle algorithm
 */
 
-void Circle(R_Renderer *renderer, R_Target *target, float x, float y, float radius, ME_Color color) {
+void Circle(R_Renderer *renderer, R_Target *target, float x, float y, float radius, MEcolor color) {
     float thickness = GetLineThickness(renderer);
     float dx, dy;
     int i;
@@ -6111,7 +5455,7 @@ void Circle(R_Renderer *renderer, R_Target *target, float x, float y, float radi
     LOOP_UNTEXTURED_SEGMENTS();  // back to the beginning
 }
 
-void CircleFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, ME_Color color) {
+void CircleFilled(R_Renderer *renderer, R_Target *target, float x, float y, float radius, MEcolor color) {
     float dt;
     float dx, dy;
     int numSegments;
@@ -6151,7 +5495,7 @@ void CircleFilled(R_Renderer *renderer, R_Target *target, float x, float y, floa
     SET_INDEXED_VERTEX(1);  // first point
 }
 
-void Ellipse(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color) {
+void Ellipse(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, MEcolor color) {
     float thickness = GetLineThickness(renderer);
     float dx, dy;
     int i;
@@ -6202,7 +5546,7 @@ void Ellipse(R_Renderer *renderer, R_Target *target, float x, float y, float rx,
     LOOP_UNTEXTURED_SEGMENTS();  // back to the beginning
 }
 
-void EllipseFilled(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, ME_Color color) {
+void EllipseFilled(R_Renderer *renderer, R_Target *target, float x, float y, float rx, float ry, float degrees, MEcolor color) {
     float dx, dy;
     int i;
     float rot_x = cosf(degrees * RAD_PER_DEG);
@@ -6253,7 +5597,7 @@ void EllipseFilled(R_Renderer *renderer, R_Target *target, float x, float y, flo
     SET_INDEXED_VERTEX(1);  // first point
 }
 
-void Sector(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color) {
+void Sector(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, MEcolor color) {
     bool circled;
     float dx1, dy1, dx2, dy2, dx3, dy3, dx4, dy4;
 
@@ -6301,7 +5645,7 @@ void Sector(R_Renderer *renderer, R_Target *target, float x, float y, float inne
     }
 }
 
-void SectorFilled(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, ME_Color color) {
+void SectorFilled(R_Renderer *renderer, R_Target *target, float x, float y, float inner_radius, float outer_radius, float start_angle, float end_angle, MEcolor color) {
     float t;
     float dt;
     float dx, dy;
@@ -6401,7 +5745,7 @@ void SectorFilled(R_Renderer *renderer, R_Target *target, float x, float y, floa
     }
 }
 
-void Tri(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color) {
+void Tri(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, MEcolor color) {
     BEGIN_UNTEXTURED("R_Tri", GL_LINES, 3, 6);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -6414,7 +5758,7 @@ void Tri(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, f
     SET_INDEXED_VERTEX(0);
 }
 
-void TriFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, ME_Color color) {
+void TriFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float x3, float y3, MEcolor color) {
     BEGIN_UNTEXTURED("R_TriFilled", GL_TRIANGLES, 3, 3);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -6422,7 +5766,7 @@ void TriFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float
     SET_UNTEXTURED_VERTEX(x3, y3, r, g, b, a);
 }
 
-void Rectangle(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, ME_Color color) {
+void Rectangle(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, MEcolor color) {
     if (y2 < y1) {
         float y = y1;
         y1 = y2;
@@ -6485,7 +5829,7 @@ void Rectangle(R_Renderer *renderer, R_Target *target, float x1, float y1, float
     }
 }
 
-void RectangleFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, ME_Color color) {
+void RectangleFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, MEcolor color) {
     BEGIN_UNTEXTURED("R_RectangleFilled", GL_TRIANGLES, 4, 6);
 
     SET_UNTEXTURED_VERTEX(x1, y1, r, g, b, a);
@@ -6503,7 +5847,7 @@ void RectangleFilled(R_Renderer *renderer, R_Target *target, float x1, float y1,
     dx = tempx;              \
     ++i;
 
-void RectangleRound(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color) {
+void RectangleRound(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, MEcolor color) {
     if (y2 < y1) {
         float temp = y2;
         y2 = y1;
@@ -6605,7 +5949,7 @@ void RectangleRound(R_Renderer *renderer, R_Target *target, float x1, float y1, 
     }
 }
 
-void RectangleRoundFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, ME_Color color) {
+void RectangleRoundFilled(R_Renderer *renderer, R_Target *target, float x1, float y1, float x2, float y2, float radius, MEcolor color) {
     if (y2 < y1) {
         float temp = y2;
         y2 = y1;
@@ -6684,7 +6028,7 @@ void RectangleRoundFilled(R_Renderer *renderer, R_Target *target, float x1, floa
     }
 }
 
-void Polygon(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color) {
+void Polygon(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color) {
     if (num_vertices < 3) return;
 
     {
@@ -6704,7 +6048,7 @@ void Polygon(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, 
     }
 }
 
-void Polyline(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color, bool close_loop) {
+void Polyline(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color, bool close_loop) {
     if (num_vertices < 2) return;
 
     float t = GetLineThickness(renderer) * 0.5f;
@@ -6753,7 +6097,7 @@ void Polyline(R_Renderer *renderer, R_Target *target, unsigned int num_vertices,
     }
 }
 
-void PolygonFilled(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, ME_Color color) {
+void PolygonFilled(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color) {
     if (num_vertices < 3) return;
 
     {
