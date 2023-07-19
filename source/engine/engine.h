@@ -19,6 +19,8 @@
 #include "engine/utils/utility.hpp"
 #include "engine/utils/utils.hpp"
 
+namespace ME {
+
 // Engine functions called from main
 int InitEngine(void (*InitCppReflection)());
 void EngineUpdate();
@@ -87,5 +89,7 @@ void WaitUntilNextFrame();
 void InitFPS();
 void ProcessTickTime();
 f32 GetFPS();
+
+}  // namespace ME
 
 #endif

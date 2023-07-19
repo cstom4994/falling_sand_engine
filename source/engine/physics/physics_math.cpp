@@ -3,6 +3,8 @@
 
 #include <cstdio>
 
+namespace ME {
+
 MEvec2 subtract(MEvec2 a, MEvec2 b) {
     a.x -= b.x;
     a.y -= b.y;
@@ -2000,3 +2002,5 @@ Direction FindEdge(int width, int height, unsigned char *data, int lookX, int lo
 }
 
 }  // namespace MarchingSquares
+
+}  // namespace ME

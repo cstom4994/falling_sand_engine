@@ -4,6 +4,8 @@
 
 #include "engine/core/core.hpp"
 
+namespace ME {
+
 static const char *date = __DATE__;
 static const char *mon[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 static const char mond[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -68,3 +70,5 @@ AppMetaData ME_metadata() {
 #endif
     return dinfo;
 }
+
+}  // namespace ME

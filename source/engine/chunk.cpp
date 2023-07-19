@@ -13,6 +13,8 @@
 #include "engine/utils/utils.hpp"
 #include "libs/lz4/lz4.h"
 
+namespace ME {
+
 void Chunk::ChunkInit(int x, int y, char *worldName) {
     this->x = x;
     this->y = y;
@@ -331,3 +333,5 @@ bool Chunk::ChunkHasFile() {
     struct stat buffer;
     return (stat(this->pack_filename.c_str(), &buffer) == 0);
 }
+
+}  // namespace ME

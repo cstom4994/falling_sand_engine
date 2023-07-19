@@ -7,6 +7,8 @@
 #include "engine/physics/physics_math.hpp"
 #include "game/items.hpp"
 
+namespace ME {
+
 #pragma region Rigidbody
 
 class RigidBody {
@@ -19,7 +21,7 @@ private:
 public:
     std::string name;
 
-    ME::phy::Body *body = nullptr;
+    phy::Body *body = nullptr;
 
     int matWidth = 0;
     int matHeight = 0;
@@ -41,7 +43,7 @@ public:
     Item *item = nullptr;
 
 public:
-    RigidBody(ME::phy::Body *body, std::string name = "unknown");
+    RigidBody(phy::Body *body, std::string name = "unknown");
     ~RigidBody();
 
     // bool set_surface(C_Surface *sur);
@@ -58,7 +60,7 @@ public:
 };
 
 template <>
-struct ME::meta::static_refl::TypeInfo<RigidBody> : TypeInfoBase<RigidBody> {
+struct meta::static_refl::TypeInfo<RigidBody> : TypeInfoBase<RigidBody> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("matWidth"), &Type::matWidth},
@@ -73,19 +75,9 @@ struct ME::meta::static_refl::TypeInfo<RigidBody> : TypeInfoBase<RigidBody> {
     };
 };
 
-ME_GUI_DEFINE_BEGIN(template <>, RigidBody)
-ImGui::Text("RigidBody: %s", var.name.c_str());
-ImGui::Text("matWidth: %d", var.matWidth);
-ImGui::Text("matHeight: %d", var.matHeight);
-ImGui::Text("weldX: %d", var.weldX);
-ImGui::Text("weldY: %d", var.weldY);
-ImGui::Text("needsUpdate: %s", BOOL_STRING(var.needsUpdate));
-ImGui::Text("texNeedsUpdate: %s", BOOL_STRING(var.texNeedsUpdate));
-ME_GUI_DEFINE_END
+using RigidBodyPtr = ref<RigidBody>;
 
-using RigidBodyPtr = ME::ref<RigidBody>;
-
-struct RigidBodyBinding : public ME::LuaWrapper::PodBind::Binding<RigidBodyBinding, RigidBody> {
+struct RigidBodyBinding : public LuaWrapper::PodBind::Binding<RigidBodyBinding, RigidBody> {
     static constexpr const char *class_name = "RigidBody";
 
     static luaL_Reg *members() {
@@ -93,18 +85,18 @@ struct RigidBodyBinding : public ME::LuaWrapper::PodBind::Binding<RigidBodyBindi
         return members;
     }
 
-    static ME::LuaWrapper::PodBind::bind_properties *properties() {
-        static ME::LuaWrapper::PodBind::bind_properties properties[] = {{"name", get_name, set_name}, {nullptr, nullptr, nullptr}};
+    static LuaWrapper::PodBind::bind_properties *properties() {
+        static LuaWrapper::PodBind::bind_properties properties[] = {{"name", get_name, set_name}, {nullptr, nullptr, nullptr}};
         return properties;
     }
 
     // Lua constructor
     static int create(lua_State *L) {
-        ME::println("Create called");
-        ME::LuaWrapper::PodBind::CheckArgCount(L, 2);
+        println("Create called");
+        LuaWrapper::PodBind::CheckArgCount(L, 2);
         // b2Body *body = (b2Body *)lua_touserdata(L, 1);
         const char *name = luaL_checkstring(L, 2);
-        RigidBodyPtr sp = ME::create_ref<RigidBody>(nullptr, name);
+        RigidBodyPtr sp = create_ref<RigidBody>(nullptr, name);
         push(L, sp);
         return 1;
     }
@@ -132,7 +124,7 @@ struct RigidBodyBinding : public ME::LuaWrapper::PodBind::Binding<RigidBodyBindi
     // 1 - class metatable
     // 2 - key
     static int get_name(lua_State *L) {
-        ME::LuaWrapper::PodBind::CheckArgCount(L, 2);
+        LuaWrapper::PodBind::CheckArgCount(L, 2);
         RigidBodyPtr a = fromStack(L, 1);
         lua_pushstring(L, a->name.c_str());
         return 1;
@@ -142,7 +134,7 @@ struct RigidBodyBinding : public ME::LuaWrapper::PodBind::Binding<RigidBodyBindi
     // 2 - key
     // 3 - value
     static int set_name(lua_State *L) {
-        ME::LuaWrapper::PodBind::CheckArgCount(L, 3);
+        LuaWrapper::PodBind::CheckArgCount(L, 3);
         RigidBodyPtr a = fromStack(L, 1);
         a->name = lua_tostring(L, 3);
         return 0;
@@ -154,24 +146,20 @@ struct RigidBodyBinding : public ME::LuaWrapper::PodBind::Binding<RigidBodyBindi
 #pragma region Player
 
 typedef enum EnumPlayerHoldType {
-    None = 0,
+    HoldTypeNone = 0,
     Hammer = 1,
     Vacuum,
 } EnumPlayerHoldType;
 
 template <>
-struct ME::meta::static_refl::TypeInfo<EnumPlayerHoldType> : TypeInfoBase<EnumPlayerHoldType> {
+struct meta::static_refl::TypeInfo<EnumPlayerHoldType> : TypeInfoBase<EnumPlayerHoldType> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
-            Field{TSTR("None"), Type::None},
+            Field{TSTR("HoldTypeNone"), Type::HoldTypeNone},
             Field{TSTR("Hammer"), Type::Hammer},
             Field{TSTR("Vacuum"), Type::Vacuum},
     };
 };
-
-ME_GUI_DEFINE_BEGIN(template <>, EnumPlayerHoldType)
-ImGui::Text("EnumPlayerHoldType: %s", ME::meta::static_refl::TypeInfo<EnumPlayerHoldType>::fields.NameOfValue(var).data());
-ME_GUI_DEFINE_END
 
 struct Controlable {};
 
@@ -180,7 +168,7 @@ public:
     Item *heldItem = nullptr;
     f32 holdAngle = 0;
     i64 startThrow = 0;
-    EnumPlayerHoldType holdtype = None;
+    EnumPlayerHoldType holdtype = EnumPlayerHoldType::HoldTypeNone;
     int hammerX = 0;
     int hammerY = 0;
 
@@ -195,7 +183,7 @@ public:
 };
 
 template <>
-struct ME::meta::static_refl::TypeInfo<Player> : TypeInfoBase<Player> {
+struct meta::static_refl::TypeInfo<Player> : TypeInfoBase<Player> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("heldItem"), &Type::heldItem},
@@ -211,10 +199,6 @@ struct ME::meta::static_refl::TypeInfo<Player> : TypeInfoBase<Player> {
     };
 };
 
-ME_GUI_DEFINE_BEGIN(template <>, Player)
-ME::meta::static_refl::TypeInfo<Player>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
-ME_GUI_DEFINE_END
-
 struct move_player_event {
     f32 dt;
     f32 thruTick;
@@ -225,16 +209,36 @@ struct entity_update_event {
     Game *g;
 };
 
-class ControableSystem : public ME::ecs::system<move_player_event> {
+class ControableSystem : public ecs::system<move_player_event> {
 public:
-    void process(ME::ecs::registry &world, const move_player_event &evt) override;
+    void process(ecs::registry &world, const move_player_event &evt) override;
 };
 
-class WorldEntitySystem : public ME::ecs::system<entity_update_event> {
+class WorldEntitySystem : public ecs::system<entity_update_event> {
 public:
-    void process(ME::ecs::registry &world, const entity_update_event &evt) override;
+    void process(ecs::registry &world, const entity_update_event &evt) override;
 };
 
 #pragma endregion Player
+
+}  // namespace ME
+
+ME_GUI_DEFINE_BEGIN(template <>, ME::RigidBody)
+ImGui::Text("RigidBody: %s", var.name.c_str());
+ImGui::Text("matWidth: %d", var.matWidth);
+ImGui::Text("matHeight: %d", var.matHeight);
+ImGui::Text("weldX: %d", var.weldX);
+ImGui::Text("weldY: %d", var.weldY);
+ImGui::Text("needsUpdate: %s", BOOL_STRING(var.needsUpdate));
+ImGui::Text("texNeedsUpdate: %s", BOOL_STRING(var.texNeedsUpdate));
+ME_GUI_DEFINE_END
+
+ME_GUI_DEFINE_BEGIN(template <>, ME::EnumPlayerHoldType)
+ImGui::Text("EnumPlayerHoldType: %s", ME::meta::static_refl::TypeInfo<ME::EnumPlayerHoldType>::fields.NameOfValue(var).data());
+ME_GUI_DEFINE_END
+
+ME_GUI_DEFINE_BEGIN(template <>, ME::Player)
+ME::meta::static_refl::TypeInfo<ME::Player>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
+ME_GUI_DEFINE_END
 
 #endif

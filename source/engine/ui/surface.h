@@ -5,6 +5,8 @@
 
 #define ME_SURFACE_PI 3.14159265358979323846264338327f
 
+namespace ME {
+
 typedef struct MEsurface_context MEsurface_context;
 
 struct MEsurface_color {
@@ -652,5 +654,7 @@ MEsurface_funcs* ME_surface_InternalParams(MEsurface_context* ctx);
 
 // Debug function to dump cached path data.
 void ME_surface_DebugDumpPathCache(MEsurface_context* ctx);
+
+}  // namespace ME
 
 #endif

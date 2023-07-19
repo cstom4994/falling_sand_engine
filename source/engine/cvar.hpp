@@ -28,6 +28,8 @@
 #include "engine/utils/type.hpp"
 #include "libs/parallel_hashmap/phmap.h"
 
+namespace ME {
+
 enum CommandType { CVAR_VAR = 0, CVAR_FUNC = 1 };
 
 struct GlobalDEF {
@@ -76,16 +78,16 @@ struct GlobalDEF {
 
     int cell_iter;
 };
-METADOT_STRUCT(GlobalDEF, draw_frame_graph, draw_background, draw_background_grid, draw_load_zones, draw_physics_debug, draw_b2d_shape, draw_b2d_joint, draw_b2d_aabb, draw_b2d_pair,
-               draw_b2d_centerMass, draw_chunk_state, draw_debug_stats, draw_material_info, draw_detailed_material_info, draw_uinode_bounds, draw_temperature_map, draw_cursor, ui_tweak, draw_shaders,
-               water_overlay, water_showFlow, water_pixelated, lightingQuality, draw_light_overlay, simpleLighting, lightingEmission, lightingDithering, tick_world, tick_box2d, tick_temperature,
-               hd_objects, hd_objects_size, draw_ui_debug, draw_imgui_debug, draw_profiler, draw_console, draw_pack_editor, cell_iter);
+// METADOT_STRUCT(GlobalDEF, draw_frame_graph, draw_background, draw_background_grid, draw_load_zones, draw_physics_debug, draw_b2d_shape, draw_b2d_joint, draw_b2d_aabb, draw_b2d_pair,
+//                draw_b2d_centerMass, draw_chunk_state, draw_debug_stats, draw_material_info, draw_detailed_material_info, draw_uinode_bounds, draw_temperature_map, draw_cursor, ui_tweak,
+//                draw_shaders, water_overlay, water_showFlow, water_pixelated, lightingQuality, draw_light_overlay, simpleLighting, lightingEmission, lightingDithering, tick_world, tick_box2d,
+//                tick_temperature, hd_objects, hd_objects_size, draw_ui_debug, draw_imgui_debug, draw_profiler, draw_console, draw_pack_editor, cell_iter);
 
 void InitGlobalDEF(GlobalDEF* s, bool openDebugUIs);
 void LoadGlobalDEF(std::string globaldef_src);
 void SaveGlobalDEF(std::string globaldef_src);
 
-namespace ME::cvar {
+namespace cvar {
 
 template <typename T>
 T Cast(std::string) {
@@ -93,10 +95,10 @@ T Cast(std::string) {
     return T{};
 }
 
-#define CVAR_CAST_DEF(_type, _func)              \
-    template <>                                  \
-    _type ME::cvar::Cast<_type>(std::string s) { \
-        return _func(s);                         \
+#define CVAR_CAST_DEF(_type, _func)          \
+    template <>                              \
+    _type cvar::Cast<_type>(std::string s) { \
+        return _func(s);                     \
     }
 
 #define CVAR_CAST_DECL(_type) \
@@ -116,12 +118,12 @@ CVAR_CAST_DECL(const char*);
 
 template <typename T>
 std::string NameOFType() {
-    std::string_view name_of_type = ME::cpp::type_name<T>().View();
+    std::string_view name_of_type = cpp::type_name<T>().View();
     std::string name_of_type_str = std::string(name_of_type.data(), name_of_type.size());
     return name_of_type_str;
 }
 
-using Json = ME::Json::Json;
+using Json = ::ME::Json::Json;
 
 template <typename T>
 struct Translator {
@@ -370,22 +372,22 @@ public:
 };
 
 template <typename T>
-ME::cvar::CommandParameter ME::cvar::CommandParameter::Make(std::string name) {
+cvar::CommandParameter cvar::CommandParameter::Make(std::string name) {
     return CommandParameter(Translator<T>::Name(), name);
 }
 
 template <typename R, typename... FA>
 template <typename... T>
-ME::cvar::FunctionCommand<R, FA...>::ArgsConverter<T...>::ArgsConverter(int n) {}
+cvar::FunctionCommand<R, FA...>::ArgsConverter<T...>::ArgsConverter(int n) {}
 
 template <typename R, typename... FA>
 template <typename... T>
-void ME::cvar::FunctionCommand<R, FA...>::ArgsConverter<T...>::for_each(std::function<void(const CommandParameter&)> f) {}
+void cvar::FunctionCommand<R, FA...>::ArgsConverter<T...>::for_each(std::function<void(const CommandParameter&)> f) {}
 
 template <typename R, typename... FA>
 template <typename... T>
 template <typename... A>
-std::string ME::cvar::FunctionCommand<R, FA...>::ArgsConverter<T...>::Call(std::queue<std::string> s, std::function<R(FA...)> func, A... args) const {
+std::string cvar::FunctionCommand<R, FA...>::ArgsConverter<T...>::Call(std::queue<std::string> s, std::function<R(FA...)> func, A... args) const {
     try {
         return CallToString<R, FA...>(func, args...);
     } catch (std::exception& e) {
@@ -395,11 +397,11 @@ std::string ME::cvar::FunctionCommand<R, FA...>::ArgsConverter<T...>::Call(std::
 
 template <typename R, typename... FA>
 template <typename C, typename... Next>
-ME::cvar::FunctionCommand<R, FA...>::ArgsConverter<C, Next...>::ArgsConverter(int n) : N(n), next(n + 1) {}
+cvar::FunctionCommand<R, FA...>::ArgsConverter<C, Next...>::ArgsConverter(int n) : N(n), next(n + 1) {}
 
 template <typename R, typename... FA>
 template <typename C, typename... Next>
-void ME::cvar::FunctionCommand<R, FA...>::ArgsConverter<C, Next...>::for_each(std::function<void(const CommandParameter&)> f) {
+void cvar::FunctionCommand<R, FA...>::ArgsConverter<C, Next...>::for_each(std::function<void(const CommandParameter&)> f) {
     CommandParameter p = CommandParameter::Make<C>();
     f(p);
     next.for_each(f);
@@ -408,7 +410,7 @@ void ME::cvar::FunctionCommand<R, FA...>::ArgsConverter<C, Next...>::for_each(st
 template <typename R, typename... FA>
 template <typename C, typename... Next>
 template <typename... A>
-std::string ME::cvar::FunctionCommand<R, FA...>::ArgsConverter<C, Next...>::Call(std::queue<std::string> stack, std::function<R(FA...)> func, A... args) const {
+std::string cvar::FunctionCommand<R, FA...>::ArgsConverter<C, Next...>::Call(std::queue<std::string> stack, std::function<R(FA...)> func, A... args) const {
     std::string arg = stack.front();
     stack.pop();
 
@@ -421,22 +423,22 @@ std::string ME::cvar::FunctionCommand<R, FA...>::ArgsConverter<C, Next...>::Call
 }
 
 template <typename R, typename... FA>
-ME::cvar::FunctionCommand<R, FA...>::FunctionCommand(std::string name, std::function<R(FA...)> func) : BaseCommand(name), func(func), converter(1) {
+cvar::FunctionCommand<R, FA...>::FunctionCommand(std::string name, std::function<R(FA...)> func) : BaseCommand(name), func(func), converter(1) {
     converter.for_each([this](const CommandParameter& p) { this->AddParameter(p); });
 }
 
 template <typename R, typename... FA>
-CommandType ME::cvar::FunctionCommand<R, FA...>::GetCmdType() const {
+CommandType cvar::FunctionCommand<R, FA...>::GetCmdType() const {
     return CommandType::CVAR_FUNC;
 }
 
 template <typename R, typename... FA>
-std::string ME::cvar::FunctionCommand<R, FA...>::GetReturnType() const {
+std::string cvar::FunctionCommand<R, FA...>::GetReturnType() const {
     return Translator<R>::Name();
 }
 
 template <typename R, typename... FA>
-std::string ME::cvar::FunctionCommand<R, FA...>::Call(std::queue<std::string> cmd) const {
+std::string cvar::FunctionCommand<R, FA...>::Call(std::queue<std::string> cmd) const {
     if (cmd.size() != sizeof...(FA)) {
         // throw std::exception(GetName(), sizeof...(FA), cmd.size());
     }
@@ -444,25 +446,25 @@ std::string ME::cvar::FunctionCommand<R, FA...>::Call(std::queue<std::string> cm
 }
 
 template <template <typename...> class F, typename R, typename... T>
-ME::cvar::FunctionCommand<R, T...>* MakeFunctionCommand(std::string name, F<R(T...)> func) {
-    return new ME::cvar::FunctionCommand<R, T...>(name, func);
+cvar::FunctionCommand<R, T...>* MakeFunctionCommand(std::string name, F<R(T...)> func) {
+    return new cvar::FunctionCommand<R, T...>(name, func);
 }
 
 template <typename T>
-ME::cvar::VariableCommand<T>::VariableCommand(std::string name, T& var) : BaseCommand(name), variable(var) {}
+cvar::VariableCommand<T>::VariableCommand(std::string name, T& var) : BaseCommand(name), variable(var) {}
 
 template <typename T>
-CommandType ME::cvar::VariableCommand<T>::GetCmdType() const {
+CommandType cvar::VariableCommand<T>::GetCmdType() const {
     return CommandType::CVAR_VAR;
 }
 
 template <typename T>
-std::string ME::cvar::VariableCommand<T>::GetReturnType() const {
+std::string cvar::VariableCommand<T>::GetReturnType() const {
     return Translator<T>::Name();
 }
 
 template <typename T>
-std::string ME::cvar::VariableCommand<T>::Call(std::queue<std::string> cmd) const {
+std::string cvar::VariableCommand<T>::Call(std::queue<std::string> cmd) const {
     if (cmd.empty())
         return Translator<T>::to_str(variable);
     else if (cmd.size() > 1) {
@@ -479,48 +481,50 @@ std::string ME::cvar::VariableCommand<T>::Call(std::queue<std::string> cmd) cons
 }
 
 template <typename T>
-ME::cvar::VariableCommand<const T>::VariableCommand(std::string name, const T& var) : BaseCommand(name), variable(var) {}
+cvar::VariableCommand<const T>::VariableCommand(std::string name, const T& var) : BaseCommand(name), variable(var) {}
 
 template <typename T>
-CommandType ME::cvar::VariableCommand<const T>::GetCmdType() const {
+CommandType cvar::VariableCommand<const T>::GetCmdType() const {
     return CommandType::CVAR_VAR;
 }
 
 template <typename T>
-std::string ME::cvar::VariableCommand<const T>::GetReturnType() const {
+std::string cvar::VariableCommand<const T>::GetReturnType() const {
     return Translator<const T>::name();
 }
 
 template <typename T>
-std::string ME::cvar::VariableCommand<const T>::Call(std::queue<std::string> cmd) const {
-    if (cmd.empty()) return ME::cvar::to_string<T>(variable);
+std::string cvar::VariableCommand<const T>::Call(std::queue<std::string> cmd) const {
+    if (cmd.empty()) return cvar::to_string<T>(variable);
 
     throw read_only_variable();
 }
 
 template <typename R, typename... T>
-void ME::cvar::ConVar::Command(std::string name, R (*funcPtr)(T...)) {
+void cvar::ConVar::Command(std::string name, R (*funcPtr)(T...)) {
     std::function<R(T...)> func(funcPtr);
     convars[name] = new FunctionCommand<R, T...>(name, func);
 }
 
 template <typename C, typename R, typename... T>
-void ME::cvar::ConVar::Command(std::string name, R (C::*funcPtr)(T...), C* object) {
+void cvar::ConVar::Command(std::string name, R (C::*funcPtr)(T...), C* object) {
     std::function<R(T...)> func([=](T... args) -> R { return ((*object).*funcPtr)(args...); });
     convars[name] = new FunctionCommand<R, T...>(name, func);
 }
 
 template <typename L>
-void ME::cvar::ConVar::Command(std::string name, L lambda) {
+void cvar::ConVar::Command(std::string name, L lambda) {
     auto func = to_function(lambda);
     convars[name] = MakeFunctionCommand(name, func);
 }
 
 template <typename T>
-void ME::cvar::ConVar::Value(std::string name, T& var) {
+void cvar::ConVar::Value(std::string name, T& var) {
     convars[name] = new VariableCommand<T>(name, var);
 }
 
-}  // namespace ME::cvar
+}  // namespace cvar
+
+}  // namespace ME
 
 #endif

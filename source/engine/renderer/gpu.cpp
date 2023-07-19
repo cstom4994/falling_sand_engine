@@ -10,6 +10,8 @@
 #include "engine/ui/surface.h"
 #include "engine/ui/surface_gl.h"
 
+namespace ME {
+
 void ME_cam_push_matrix(Camera &cam, GLprogram shader, const char *uniform) {
     GLint camera_unif = glGetUniformLocation(shader, uniform);
     glUniformMatrix4fv(camera_unif, 1, GL_FALSE, ME_value_ptr(cam.cameraMatrix));
@@ -377,7 +379,7 @@ const char *ME_gpu_glenum_string(GLenum e) {
     return buffer;
 }
 
-void ME::render_uniform_variable(GLuint program, GLenum type, const char *name, GLint location) {
+void render_uniform_variable(GLuint program, GLenum type, const char *name, GLint location) {
     static bool is_color = false;
     switch (type) {
         case GL_FLOAT:
@@ -506,9 +508,9 @@ void ME::render_uniform_variable(GLuint program, GLenum type, const char *name, 
     }
 }
 
-float ME::get_scrollable_height() { return ImGui::GetTextLineHeight() * 16; }
+float get_scrollable_height() { return ImGui::GetTextLineHeight() * 16; }
 
-void ME::inspect_shader(const char *label, GLuint program) {
+void inspect_shader(const char *label, GLuint program) {
     ME_ASSERT(label != nullptr, ("The label supplied with program: {} is nullptr", program));
     ME_ASSERT(glIsProgram(program), ("The program: {} is not a valid shader program", program));
 
@@ -580,7 +582,7 @@ void ME::inspect_shader(const char *label, GLuint program) {
     ImGui::PopID();
 }
 
-void ME::inspect_vertex_array(const char *label, GLuint vao) {
+void inspect_vertex_array(const char *label, GLuint vao) {
     ME_ASSERT(label != nullptr, ("The label supplied with VAO: %u is nullptr", vao));
     ME_ASSERT(glIsVertexArray(vao), ("The VAO: %u is not a valid vertex array object", vao));
 
@@ -839,3 +841,5 @@ void ME_debugdraw::DrawAABB(b2AABB *aabb, const MEcolor &color) {
 }
 
 #endif
+
+}  // namespace ME

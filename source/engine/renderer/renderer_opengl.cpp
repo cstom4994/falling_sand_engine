@@ -20,6 +20,8 @@
 #define R_GL_MAJOR_VERSION 3
 #define R_ENABLE_CORE_SHADERS
 
+namespace ME {
+
 int gpu_strcasecmp(const char *s1, const char *s2);
 
 // Default to buffer reset VBO upload method
@@ -6154,3 +6156,5 @@ void R_FreeRenderer_OpenGL_3(R_Renderer *renderer) {
     // ME_FREE(renderer->impl);
     ME_FREE(renderer);
 }
+
+}  // namespace ME

@@ -34,12 +34,14 @@
 #include "textures.hpp"
 #include "world_generator.h"
 
+namespace ME {
+
 std::mutex g_mutex_loadchunk;
 std::mutex g_mutex_updatechunkmesh;
 
-void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audio *audioEngine) { init(worldPath, w, h, target, audioEngine, new MaterialTestGenerator()); }
+void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *audioEngine) { init(worldPath, w, h, target, audioEngine, new MaterialTestGenerator()); }
 
-void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audio *audioEngine, WorldGenerator *generator) {
+void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *audioEngine, WorldGenerator *generator) {
 
     this->worldName = worldPath;
 
@@ -53,9 +55,9 @@ void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audi
     width = w;
     height = h;
 
-    world_sys.tickPool = ME::create_scope<ME::thread_pool>(16);
-    world_sys.tickVisitedPool = ME::create_scope<ME::thread_pool>(16);
-    world_sys.updateRigidBodyHitboxPool = ME::create_scope<ME::thread_pool>(16);
+    world_sys.tickPool = create_scope<thread_pool>(16);
+    world_sys.tickVisitedPool = create_scope<thread_pool>(16);
+    world_sys.updateRigidBodyHitboxPool = create_scope<thread_pool>(16);
 
     this->audioEngine = audioEngine;
 
@@ -140,19 +142,19 @@ void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audi
     }
 
     gravity = MEvec2(0, 20);
-    phy = ME::create_scope<ME::phy::PhysicsSystem>();
+    phy = create_scope<phy::PhysicsSystem>();
 
     struct gameplay_feature {};
     registry.assign_feature<gameplay_feature>().add_system<ControableSystem>().add_system<NpcSystem>().add_system<WorldEntitySystem>();
 
-    ME::phy::Rectangle *nothingShape = new ME::phy::Rectangle;
+    phy::Rectangle *nothingShape = new phy::Rectangle;
     // nothingShape.SetAsBox(0, 0);
     nothingShape->set(0.001f, 0.001f);
     this->staticBody = makeRigidBody(PhyBodytype::Static, 0, 0, 0, nothingShape, 0, 0, global.game->Iso.texturepack.cloud);
 
     updateWorldMesh();
 
-    ME::phy::Rectangle *dynamicBox3 = new ME::phy::Rectangle;
+    phy::Rectangle *dynamicBox3 = new phy::Rectangle;
     // dynamicBox3.SetAsBox(10.0f, 2.0f, {10, -10}, 0);
     dynamicBox3->set(10.0f, 2.0f);
     RigidBody *rb = makeRigidBody(PhyBodytype::Dynamic, 300, 300, 0, dynamicBox3, 1, .3, LoadTexture("data/assets/objects/testObject3.png"));
@@ -169,7 +171,7 @@ void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audi
     // updateRigidBodyHitbox(rb2);
 }
 
-RigidBody *World::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, ME::phy::Shape *shape, f32 density, f32 friction, TextureRef texture) {
+RigidBody *World::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, phy::Shape *shape, f32 density, f32 friction, TextureRef texture) {
 
     // b2BodyDef bodyDef;
     // bodyDef.type = type;
@@ -177,7 +179,7 @@ RigidBody *World::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, ME::p
     // bodyDef.angle = angle * PI / 180;
     // b2Body *body = b2world->CreateBody(&bodyDef);
 
-    ME::phy::Body *body = phy->world().createBody();
+    phy::Body *body = phy->world().createBody();
     body->setType(type);
     body->position() = {x, y};
     body->rotation() = angle * PI / 180;
@@ -231,7 +233,7 @@ RigidBody *World::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, ME::p
     return rb;
 }
 
-RigidBody *World::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<ME::phy::Shape *> shape, f32 density, f32 friction, TextureRef texture) {
+RigidBody *World::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<phy::Shape *> shape, f32 density, f32 friction, TextureRef texture) {
 
     return this->makeRigidBody(type, x, y, angle, shape[0], density, friction, texture);
 
@@ -520,7 +522,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
 
     part.RemoveHoles(&shapes, &result2);
 
-    std::vector<std::vector<ME::phy::Shape *>> polys2s = {};
+    std::vector<std::vector<phy::Shape *>> polys2s = {};
     std::vector<C_Surface *> polys2sSfcs = {};
     std::vector<bool> polys2sWeld = {};
     for (auto it = result2.begin(); it != result2.end(); it++) {
@@ -541,13 +543,13 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         // Ps::MarchingSquares ms = Ps::MarchingSquares(texture);
         // worldMesh = ms.extract_simple(2);
 
-        std::vector<ME::phy::Shape *> polys2;
+        std::vector<phy::Shape *> polys2;
 
         int n = 0;
         std::for_each(result.begin(), result.end(), [&](TPPLPoly cur) {
             if ((cur[0].x == cur[1].x && cur[1].x == cur[2].x) || (cur[0].y == cur[1].y && cur[1].y == cur[2].y)) return;
 
-            ME::phy::Polygon *sh = new ME::phy::Polygon;
+            phy::Polygon *sh = new phy::Polygon;
             // sh.Set(vec, 3);
             sh->append({{(f32)cur[0].x, (f32)cur[0].y}, {(f32)cur[1].x, (f32)cur[1].y}, {(f32)cur[2].x, (f32)cur[2].y}});
             polys2.push_back(sh);
@@ -590,11 +592,11 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
                                 for (int i = 0; i < polys2s[b].size(); i++) {
 
                                     // 确保是计算对象为三角形
-                                    if (((ME::phy::Polygon *)polys2s[b][i])->vertices().size() != 3) continue;
+                                    if (((phy::Polygon *)polys2s[b][i])->vertices().size() != 3) continue;
 
                                     // 动态质心计算 需要考虑优化方案
-                                    auto centroid = ME::phy::GeometryAlgorithm2D::triangleCentroid(
-                                            ((ME::phy::Polygon *)polys2s[b][i])->vertices()[0], ((ME::phy::Polygon *)polys2s[b][i])->vertices()[1], ((ME::phy::Polygon *)polys2s[b][i])->vertices()[2]);
+                                    auto centroid = phy::GeometryAlgorithm2D::triangleCentroid(((phy::Polygon *)polys2s[b][i])->vertices()[0], ((phy::Polygon *)polys2s[b][i])->vertices()[1],
+                                                                                               ((phy::Polygon *)polys2s[b][i])->vertices()[2]);
                                     int dst = abs(x - centroid.x) + abs(y - centroid.y);
                                     if (dst < nearestDist) {
                                         nearestDist = dst;
@@ -624,11 +626,11 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
                         // for each triangle in the mesh
                         for (int i = 0; i < polys2s[b].size(); i++) {
                             // 确保是计算对象为三角形
-                            if (((ME::phy::Polygon *)polys2s[b][i])->vertices().size() != 3) continue;
+                            if (((phy::Polygon *)polys2s[b][i])->vertices().size() != 3) continue;
 
                             // 动态质心计算 需要考虑优化方案
-                            auto centroid = ME::phy::GeometryAlgorithm2D::triangleCentroid(((ME::phy::Polygon *)polys2s[b][i])->vertices()[0], ((ME::phy::Polygon *)polys2s[b][i])->vertices()[1],
-                                                                                           ((ME::phy::Polygon *)polys2s[b][i])->vertices()[2]);
+                            auto centroid = phy::GeometryAlgorithm2D::triangleCentroid(((phy::Polygon *)polys2s[b][i])->vertices()[0], ((phy::Polygon *)polys2s[b][i])->vertices()[1],
+                                                                                       ((phy::Polygon *)polys2s[b][i])->vertices()[2]);
                             int dst = abs(x - centroid.x) + abs(y - centroid.y);
                             if (dst < nearestDist) {
                                 nearestDist = dst;
@@ -648,10 +650,10 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
         }
 
         for (int b = 0; b < polys2s.size(); b++) {
-            std::vector<ME::phy::Shape *> polys2 = polys2s[b];
+            std::vector<phy::Shape *> polys2 = polys2s[b];
 
             // TODO: 23/7/18 修改 polys2sSfcs 为 Texture
-            auto sfc = ME::create_ref<Texture>(polys2sSfcs[b]);
+            auto sfc = create_ref<Texture>(polys2sSfcs[b]);
 
             RigidBody *rbn = makeRigidBodyMulti(PhyBodytype::Dynamic, 0, 0, rb->body->rotation(), polys2, /*rb->body->GetFixtureList()[0].GetDensity()*/ 0.1f,
                                                 /*rb->body->GetFixtureList()[0].GetFriction()*/ 0.1f, sfc);
@@ -928,7 +930,7 @@ found : {};
         }
 
         // worldTris.push_back(vec);
-        ME::phy::Polygon *sh = new ME::phy::Polygon;
+        phy::Polygon *sh = new phy::Polygon;
         // sh.Set(&vec[0], 3);
         sh->append({{(f32)cur[0].x, (f32)cur[0].y}, {(f32)cur[1].x, (f32)cur[1].y}, {(f32)cur[2].x, (f32)cur[2].y}});
         chunk->polys.push_back(sh);
@@ -2270,7 +2272,7 @@ void World::tickObjects() {
     i32 velocityIterations = 5;
     i32 positionIterations = 2;
 
-    registry.for_each_component<WorldEntity>([this](ME::ecs::entity, WorldEntity &we) {
+    registry.for_each_component<WorldEntity>([this](ecs::entity, WorldEntity &we) {
         we.rb->body->SetTransform({we.x + loadZone.x + we.hw / 2.0f - 0.5f, we.y + loadZone.y + we.hh / 2.0f - 1.5f}, 0);
         // we.rb->body->SetLinearVelocity({(f32)(we.vx * 1.0), (f32)(we.vy * 1.0)});
         we.rb->body->velocity() = {(f32)(we.vx * 1.0), (f32)(we.vy * 1.0)};
@@ -2280,7 +2282,7 @@ void World::tickObjects() {
 
     // phy->step(240.0f);
 
-    registry.for_each_component<WorldEntity>([this](ME::ecs::entity, WorldEntity &we) {
+    registry.for_each_component<WorldEntity>([this](ecs::entity, WorldEntity &we) {
         /*cur->x = cur->rb->body->position().x + 0.5 - cur->hw / 2 - loadZone.x;
         cur->y = cur->rb->body->position().y + 1.5 - cur->hh / 2 - loadZone.y;*/
         // cur->rb->body->SetTransform(b2Vec2(cur->x + loadZone.x + cur->hw / 2 - 0.5, cur->y + loadZone.y + cur->hh / 2 - 1.5), 0);
@@ -2355,7 +2357,7 @@ void World::frame() {
     }
 
     for (int i = 0; i < readyToReadyToMerge.size(); i++) {
-        if (ME::future_is_ready(readyToReadyToMerge[i])) {
+        if (future_is_ready(readyToReadyToMerge[i])) {
             Chunk *merge = readyToReadyToMerge[i].get();
 
             for (int j = 0; j < readyToMerge.size(); j++) {
@@ -3245,10 +3247,10 @@ void World::tickEntities(R_Target *t) {
     };
 
     // worldEntities.erase(std::remove_if(worldEntities.begin(), worldEntities.end(), func), worldEntities.end());
-    registry.for_each_component<WorldEntity>([&](ME::ecs::entity e, WorldEntity &we) {
+    registry.for_each_component<WorldEntity>([&](ecs::entity e, WorldEntity &we) {
         bool destroy = func(&we);
         if (destroy) {
-            if ((ME::ecs::exists<Player>{})(e)) this->player = 0;
+            if ((ecs::exists<Player>{})(e)) this->player = 0;
             registry.destroy_entity(e);
         }
     });
@@ -3375,11 +3377,11 @@ RigidBody *World::physicsCheck(int x, int y) {
             if (static_cast<bool>(cols)) delete[] cols;
 
             // audioEngine.PlayEvent("event:/Player/Impact");
-            ME::phy::Rectangle *s = new ME::phy::Rectangle;
+            phy::Rectangle *s = new phy::Rectangle;
             // s.SetAsBox(1, 1);
             s->set(1.0f, 1.0f);
 
-            auto tex = ME::create_ref<Texture>(sfc);
+            auto tex = create_ref<Texture>(sfc);
 
             RigidBody *rb = makeRigidBody(PhyBodytype::Dynamic, (f32)minX, (f32)minY, 0, s, 1, (f32)0.3, tex);
 
@@ -3470,7 +3472,7 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName, bool noSaveLoad) {
 
     WorldMeta meta = WorldMeta();
 
-    using json = ME::Json::Json;
+    using json = Json::Json;
 
     if (!noSaveLoad) {
 
@@ -3517,12 +3519,12 @@ bool WorldMeta::save(std::string worldFileName) {
     if (this->worldName.empty()) this->worldName = "WorldName";
     if (this->lastOpenedVersion.empty()) this->lastOpenedVersion = std::to_string(ME_buildnum());
 
-    using json = ME::Json::Json;
+    using json = Json::Json;
 
     json metafile = json::object();
     json root = json::object();
 
-    ME::meta::dostruct::for_each(*this, [&](const char *name, const auto &value) { root.add(name, value); });
+    // meta::dostruct::for_each(*this, [&](const char *name, const auto &value) { root.add(name, value); });
 
     // for (auto it = root.begin(); it != root.end(); ++it) {
     //     std::cout << it.key() << ":" << (*it).dump() << std::endl;
@@ -3627,7 +3629,9 @@ World::~World() {
 
     delete[] hasPopulator;
 
-    registry.for_each_component<WorldEntity>([&](const ME::ecs::entity e, WorldEntity &we) {
+    registry.for_each_component<WorldEntity>([&](const ecs::entity e, WorldEntity &we) {
         if (static_cast<bool>(we.rb)) delete we.rb;
     });
 }
+
+}  // namespace ME

@@ -25,7 +25,7 @@
 #include "textures.hpp"
 #include "world_generator.h"
 
-using namespace ME;
+namespace ME {
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
 
@@ -53,7 +53,7 @@ void OptionsUI__Draw(Game *game) {
     int tab = 0;
 
     if (ImGui::Button("返回")) {
-        ME::LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->Lua->s_lua["game_datastruct"]["ui"];
+        LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->Lua->s_lua["game_datastruct"]["ui"];
         s["state"] = 0;
     }
     if (ImGui::Button("保存")) {
@@ -296,7 +296,7 @@ void MainMenuUI__Draw(Game *game) {
         return;
     }
 
-    ME::LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->Lua->s_lua["game_datastruct"]["ui"];
+    LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->Lua->s_lua["game_datastruct"]["ui"];
 
     if (s["state"] == 0) {
         MainMenuUI__DrawMainMenu(game);
@@ -424,7 +424,7 @@ void MainMenuUI__DrawCreateWorldUI(Game *game) {
 
         std::string wpStr = METADOT_RESLOC(std::format("saves/{0}", wn).c_str());
 
-        game->Iso.world = ME::create_scope<World>();
+        game->Iso.world = create_scope<World>();
         game->Iso.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / 3 / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3,
                               ENGINE()->target, &global.audio, generator);
         game->Iso.world->metadata.worldName = std::string(gameUI.MainMenuUI__worldNameBuf);
@@ -543,7 +543,7 @@ void MainMenuUI__DrawWorldLists(Game *game) {
 
                 game->Iso.world.reset();
 
-                game->Iso.world = ME::create_scope<World>();
+                game->Iso.world = create_scope<World>();
                 game->Iso.world->init(METADOT_RESLOC(std::format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
                                       (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, ENGINE()->target, &global.audio);
                 game->Iso.world->metadata.lastOpenedTime = ME_gettime() / 1000;
@@ -930,3 +930,4 @@ void DebugDrawUI__Draw(Game *game) {
 }
 
 }  // namespace GameUI
+}  // namespace ME

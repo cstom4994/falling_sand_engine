@@ -84,6 +84,8 @@
 
 /*--------------------------------------------------------------------------*/
 
+namespace ME {
+
 typedef void* (*ME_gl_loader_fn)(const char* name);
 
 static inline uint64_t ME_get_thread_id() {
@@ -126,8 +128,6 @@ static inline void *ME_tls_get_value(pthread_key_t _handle) { return pthread_get
 static inline void ME_tls_free(pthread_key_t _handle) { pthread_key_delete(_handle); }
 
 #endif
-
-namespace ME {
 
 #if defined(ME_PLATFORM_WINDOWS)
 typedef CRITICAL_SECTION ME_mutex;
@@ -184,8 +184,6 @@ public:
     inline scoped_mutex_locker(pthread_mutex& _mutex) : m_mutex(_mutex) { m_mutex.lock(); }
     inline ~scoped_mutex_locker() { m_mutex.unlock(); }
 };
-
-}  // namespace ME
 
 typedef enum E_DisplayMode { WINDOWED, BORDERLESS, FULLSCREEN } E_DisplayMode;
 typedef enum E_WindowFlashaction { START, START_COUNT, START_UNTIL_FG, STOP } E_WindowFlashaction;
@@ -349,5 +347,7 @@ inline static FILE *openFile(const char *filePath, const char *mode) {
 #define S_ISREG(m) (((m)&0170000) == (0100000))
 #define S_ISDIR(m) (((m)&0170000) == (0040000))
 #endif
+
+}  // namespace ME
 
 #endif  // ME_PLATFORM_H

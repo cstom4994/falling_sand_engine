@@ -41,6 +41,8 @@
 #define f_mkdir(a, b) _mkdir(a)
 #endif
 
+namespace ME {
+
 #define FS_LINE_INCR 256
 
 namespace TestData {
@@ -2943,3 +2945,5 @@ int metadot_bind_cstructtest(lua_State *L) {
 }
 
 #pragma endregion BindCStruct
+
+}  // namespace ME

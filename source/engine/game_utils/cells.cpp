@@ -8,6 +8,8 @@
 #include "engine/textures.hpp"
 #include "game/player.hpp"
 
+namespace ME {
+
 inline float Deg2Rad(float a) { return a * 0.01745329252f; }
 
 inline float Rad2Deg(float a) { return a * 57.29577951f; }
@@ -49,3 +51,5 @@ inline static float RANDOM_M11(unsigned int* seed) {
     u.d = (((uint32_t)(*seed) & 0x7fff) << 8) | 0x40000000;
     return u.f - 3.0f;
 }
+
+}  // namespace ME

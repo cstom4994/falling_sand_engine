@@ -75,10 +75,10 @@ template <auto c>
 using TStr_of_a = TStr<fixed_cstring<decltype(c), 1>(c)>;
 }  // namespace ME::cpp
 
-#define TSTR(s)                                                                                                    \
-    ([] {                                                                                                          \
-        constexpr std::basic_string_view str{s};                                                                   \
-        return ME::cpp::TStr<ME::cpp::fixed_cstring<typename decltype(str)::value_type, str.size()>{str}>{}; \
+#define TSTR(s)                                                                                                  \
+    ([] {                                                                                                        \
+        constexpr std::basic_string_view str{s};                                                                 \
+        return ::ME::cpp::TStr<::ME::cpp::fixed_cstring<typename decltype(str)::value_type, str.size()>{str}>{}; \
     }())
 
 #else
@@ -107,7 +107,7 @@ constexpr auto TSTRHelper(T) {
         struct tmp {                                                          \
             static constexpr auto get() { return std::basic_string_view{s}; } \
         };                                                                    \
-        return ME::cpp::details::TSTRHelper(tmp{});                        \
+        return ME::cpp::details::TSTRHelper(tmp{});                           \
     }())
 
 namespace ME::cpp {
@@ -392,4 +392,3 @@ constexpr auto int_to_TSTR() {
 }  // namespace ME::cpp
 
 #endif  // !METADOT_TSTR_UTIL
-

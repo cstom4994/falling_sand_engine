@@ -2,9 +2,7 @@
 #ifndef ME_DBGTOOLS_H
 #define ME_DBGTOOLS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif  // __cplusplus
+namespace ME {
 
 typedef struct {
     const char* function;  ///< name of function containing address of function.
@@ -51,8 +49,6 @@ int callstack_symbols(void** addresses, callstack_symbol_t* out_syms, int num_ad
 
 void print_callstack();
 
-#ifdef __cplusplus
-}
-#endif  // __cplusplus
+}  // namespace ME
 
-#endif  // DEBUG_CALLSTACK_H_INCLUDED
+#endif

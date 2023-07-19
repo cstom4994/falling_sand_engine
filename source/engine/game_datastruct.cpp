@@ -23,6 +23,8 @@
 #include "textures.hpp"
 #include "world.hpp"
 
+namespace ME {
+
 void ReleaseGameData() {
     for (auto b : GAME()->biome_container)
         if (static_cast<bool>(b)) {
@@ -263,7 +265,7 @@ void InitMaterials() {
     REGISTER(GAME()->materials_list.ScriptableMaterials[1003]);
 
     // Just test
-    // ME::meta::static_refl::TypeInfo<Material>::fields.ForEach([](const auto &field) { METADOT_BUG("", field.name); });
+    // meta::static_refl::TypeInfo<Material>::fields.ForEach([](const auto &field) { METADOT_BUG("", field.name); });
 }
 
 void RegisterMaterial(int s_id, std::string name, std::string index_name, int physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor, u32 color) {
@@ -1058,10 +1060,10 @@ std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, Mater
             px -= tree_tex->surface()->w / 2;
             py -= tree_tex->surface()->h - 2;
 
-            ME::phy::Rectangle *s = new ME::phy::Rectangle;
+            phy::Rectangle *s = new phy::Rectangle;
             // s.SetAsBox(1, 1);
             s->set(1.0f, 1.0f);
-            RigidBody *rb = world->makeRigidBody(ME::phy::Body::BodyType::Dynamic, px, py, 0, s, 1, 0.3, tree_tex);
+            RigidBody *rb = world->makeRigidBody(phy::Body::BodyType::Dynamic, px, py, 0, s, 1, 0.3, tree_tex);
             for (int texX = 0; texX < tree_tex->surface()->w; texX++) {
 
                 // TODO:  23/7/17 物理相关性实现
@@ -1086,3 +1088,4 @@ std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, Mater
     }
     return {};
 }
+}  // namespace ME

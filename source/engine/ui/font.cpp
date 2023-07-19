@@ -18,6 +18,8 @@
 
 // ----------------------------------- GPU Backend ----------------------------------
 
+namespace ME {
+
 static GLint fontcache_shader_render_glyph;
 static GLint fontcache_shader_blit_atlas;
 static GLint fontcache_shader_draw_text;
@@ -734,3 +736,5 @@ int ME_fontcache::ME_fontcache_end() {
     ve_fontcache_shutdown(&cache);
     return 0;
 }
+
+}  // namespace ME

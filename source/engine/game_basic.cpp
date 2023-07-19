@@ -18,6 +18,8 @@
 #include "reflectionflat.hpp"
 #include "textures.hpp"
 
+namespace ME {
+
 #pragma region GameScriptingBind_1
 
 static void audio_init() { global.audio.Init(); }
@@ -75,23 +77,23 @@ void GameplayScriptSystem::destory() { Scripting::get_singleton_ptr()->FastCallF
 
 void GameplayScriptSystem::reload() {}
 
-void GameplayScriptSystem::registerLua(ME::LuaWrapper::State &s_lua) {
-    s_lua["controls_init"] = ME::LuaWrapper::function(controls_init);
-    s_lua["materials_init"] = ME::LuaWrapper::function(InitMaterials);
-    s_lua["materials_register"] = ME::LuaWrapper::function(RegisterMaterial);
-    s_lua["materials_push"] = ME::LuaWrapper::function(PushMaterials);
-    s_lua["textures_load"] = ME::LuaWrapper::function(textures_load);
-    s_lua["textures_init"] = ME::LuaWrapper::function(textures_init);
-    s_lua["textures_end"] = ME::LuaWrapper::function(textures_end);
-    s_lua["audio_load_event"] = ME::LuaWrapper::function(audio_load_event);
-    s_lua["audio_play_event"] = ME::LuaWrapper::function(audio_play_event);
-    s_lua["audio_load_bank"] = ME::LuaWrapper::function(audio_load_bank);
-    s_lua["audio_init"] = ME::LuaWrapper::function(audio_init);
-    s_lua["create_biome"] = ME::LuaWrapper::function(Biome::createBiome);
-    s_lua["init_ecs"] = ME::LuaWrapper::function(init_ecs);
+void GameplayScriptSystem::registerLua(LuaWrapper::State &s_lua) {
+    s_lua["controls_init"] = LuaWrapper::function(controls_init);
+    s_lua["materials_init"] = LuaWrapper::function(InitMaterials);
+    s_lua["materials_register"] = LuaWrapper::function(RegisterMaterial);
+    s_lua["materials_push"] = LuaWrapper::function(PushMaterials);
+    s_lua["textures_load"] = LuaWrapper::function(textures_load);
+    s_lua["textures_init"] = LuaWrapper::function(textures_init);
+    s_lua["textures_end"] = LuaWrapper::function(textures_end);
+    s_lua["audio_load_event"] = LuaWrapper::function(audio_load_event);
+    s_lua["audio_play_event"] = LuaWrapper::function(audio_play_event);
+    s_lua["audio_load_bank"] = LuaWrapper::function(audio_load_bank);
+    s_lua["audio_init"] = LuaWrapper::function(audio_init);
+    s_lua["create_biome"] = LuaWrapper::function(Biome::createBiome);
+    s_lua["init_ecs"] = LuaWrapper::function(init_ecs);
 
-    s_lua["DrawMainMenuUI"] = ME::LuaWrapper::function(GameUI::MainMenuUI__Draw);
-    s_lua["DrawDebugUI"] = ME::LuaWrapper::function(GameUI::DebugDrawUI__Draw);
+    s_lua["DrawMainMenuUI"] = LuaWrapper::function(GameUI::MainMenuUI__Draw);
+    s_lua["DrawDebugUI"] = LuaWrapper::function(GameUI::DebugDrawUI__Draw);
 
     // ItemBinding::register_class(s_lua.state());
     RigidBodyBinding::register_class(s_lua.state());
@@ -124,3 +126,5 @@ a = RigidBody(1, "hello")
     //     s_lua("print( a.extra, actor.extra )");
     // }
 }
+
+}  // namespace ME

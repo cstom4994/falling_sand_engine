@@ -11,6 +11,8 @@
 #include "engine/utils/utility.hpp"
 #include "memory.h"
 
+namespace ME {
+
 allocation_metrics g_allocation_metrics = {.total_allocated = 0, .total_free = 0};
 
 u64 ME_mem_current_usage_bytes() { return g_allocation_metrics.total_allocated - g_allocation_metrics.total_free; }
@@ -18,105 +20,6 @@ f32 ME_mem_current_usage_mb() {
     u64 bytes = ME_mem_current_usage_bytes();
     return (f32)(bytes / 1048576.0f);
 }
-
-// // https://open-std.org/jtc1/sc22/wg21/docs/papers/2013/n3536.html
-
-// void *operator new(size_t size) {
-//     // ME_BUG("Alloc %d memory", size);
-//     g_allocation_metrics.TotalAllocated += size;
-
-//     return std::malloc(size);
-// }
-// void operator delete(void *ptr, size_t size) throw() {
-//     // ME_BUG("Free %d memory", size);
-//     g_allocation_metrics.TotalFree += size;
-
-//     return std::free(ptr);
-// }
-
-// void *operator new(size_t size, const std::nothrow_t &) throw() {
-//     g_allocation_metrics.TotalAllocated += size;
-
-//     return std::malloc(size);
-// }
-
-// void operator delete(void *ptr, size_t size, const std::nothrow_t &) throw() {
-//     g_allocation_metrics.TotalFree += size;
-
-//     return std::free(ptr);
-// }
-
-// // void *operator new(size_t size, size_t alignment) noexcept(false) {
-// //     g_allocation_metrics.TotalAllocated += size;
-// //
-// //     return std::aligned_alloc(alignment, size);
-// // }
-
-// void operator delete(void *ptr, size_t size, size_t alignment) throw() {
-//     g_allocation_metrics.TotalFree += size;
-
-//     return std::free(ptr);
-// }
-
-// // void *operator new(size_t size, size_t alignment, const std::nothrow_t &) throw() {
-// //     g_allocation_metrics.TotalAllocated += size;
-// //
-// //     return std::aligned_alloc(alignment, size);
-// // }
-
-// void operator delete(void *ptr, size_t size, size_t alignment, const std::nothrow_t &) throw() {
-//     g_allocation_metrics.TotalFree += size;
-
-//     return std::free(ptr);
-// }
-
-// void *operator new[](size_t size) noexcept(false) {
-//     g_allocation_metrics.TotalAllocated += size;
-
-//     return std::malloc(size);
-// }
-
-// void operator delete[](void *ptr, size_t size) throw() {
-//     g_allocation_metrics.TotalFree += size;
-
-//     return std::free(ptr);
-// }
-
-// void *operator new[](size_t size, const std::nothrow_t &) throw() {
-//     g_allocation_metrics.TotalAllocated += size;
-
-//     return std::malloc(size);
-// }
-
-// void operator delete[](void *ptr, size_t size, const std::nothrow_t &) throw() {
-//     g_allocation_metrics.TotalFree += size;
-
-//     return std::free(ptr);
-// }
-
-// // void *operator new[](size_t size, size_t alignment) noexcept(false) {
-// //     g_allocation_metrics.TotalAllocated += size;
-// //
-// //     return std::aligned_alloc(alignment, size);
-// // }
-
-// void operator delete[](void *ptr, size_t size, size_t alignment) throw() {
-//     g_allocation_metrics.TotalFree += size;
-
-//     return std::free(ptr);
-// }
-
-// // void *operator new[](size_t size, size_t alignment, const std::nothrow_t &) throw() {
-// //     g_allocation_metrics.TotalAllocated += size;
-// //
-// //     return std::aligned_alloc(alignment, size);
-// // }
-
-// void operator delete[](void *ptr, size_t size, size_t alignment, const std::nothrow_t &) throw() {
-//     g_allocation_metrics.TotalFree += size;
-
-//     return std::free(ptr);
-// }
 
 struct ME_mem_alloc_stack_t {
     void* memory;
@@ -263,7 +166,7 @@ int ME_mem_check_leaks(bool detailed) {
 
     while (next != head) {
         if (detailed) {
-            METADOT_WARN(std::format("[Mem] LEAKED {0} bytes from file \"{1}\" at line {2} from address {3}.", next->size, ME_fs_get_filename(next->file), next->line, (void*)(next + 1)).c_str());
+            METADOT_WARN(std::format("[Mem] LEAKED {0} bytes from file \"{1}\" at line {2} from address {3}.", next->size, ME::ME_fs_get_filename(next->file), next->line, (void*)(next + 1)).c_str());
         }
         leaks_size += next->size;
         next = next->next;
@@ -349,3 +252,5 @@ void ME_mem_end() {
 }
 
 void ME_mem_rungc() {}
+
+}  // namespace ME

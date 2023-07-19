@@ -31,6 +31,8 @@
 #include "engine/utils/utility.hpp"
 #include "engine/utils/utils.hpp"
 
+namespace ME {
+
 void func1(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 void func2(std::string a) { std::cout << __FUNCTION__ << " :: " << a << std::endl; }
 
@@ -54,7 +56,7 @@ auto f = [](auto &...args) { (..., As(args)); };
 static void bindBasic() {
 
     MyStruct myStruct;
-    ME::meta::struct_apply(myStruct, f);
+    meta::struct_apply(myStruct, f);
 }
 
 static std::string proxy_print(lua_State *L) {
@@ -220,13 +222,13 @@ static void InitLua(LuaCore *lc) {
     lc->s_lua.dostring(std::format("package.path = "
                                    "'{1}/?.lua;{0}/?.lua;{0}/libs/?.lua;{0}/libs/?/init.lua;{0}/libs/"
                                    "?/?.lua;' .. package.path",
-                                   METADOT_RESLOC("data/scripts"), normalizePath(std::filesystem::current_path().string()).c_str()),
+                                   METADOT_RESLOC("data/scripts"), ME_fs_normalize_path_s(std::filesystem::current_path().string()).c_str()),
                        lc->s_lua.globalTable());
 
     lc->s_lua.dostring(std::format("package.cpath = "
                                    "'{1}/?.{2};{0}/?.{2};{0}/libs/?.{2};{0}/libs/?/init.{2};{0}/libs/"
                                    "?/?.{2};' .. package.cpath",
-                                   METADOT_RESLOC("data/scripts"), normalizePath(std::filesystem::current_path().string()).c_str(), "dll"),
+                                   METADOT_RESLOC("data/scripts"), ME_fs_normalize_path_s(std::filesystem::current_path().string()).c_str(), "dll"),
                        lc->s_lua.globalTable());
 
     ME_debug_setup(lc->L, "debugger", "dbg", NULL, NULL);
@@ -244,24 +246,24 @@ static void InitLua(LuaCore *lc) {
     ME_preload_auto(lc->L, ffi_module_open, "ffi");
     ME_preload_auto(lc->L, luaopen_lbind, "lbind");
 
-#define REGISTER_LUAFUNC(_f) lc->s_lua[#_f] = ME::LuaWrapper::function(_f)
+#define REGISTER_LUAFUNC(_f) lc->s_lua[#_f] = LuaWrapper::function(_f)
 
-    lc->s_lua["METADOT_RESLOC"] = ME::LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
-    lc->s_lua["GetSurfaceFromTexture"] = ME::LuaWrapper::function([](TextureRef tex) { return tex->surface(); });
-    lc->s_lua["GetWindowH"] = ME::LuaWrapper::function([]() { return ENGINE()->windowHeight; });
-    lc->s_lua["GetWindowW"] = ME::LuaWrapper::function([]() { return ENGINE()->windowWidth; });
+    lc->s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
+    lc->s_lua["GetSurfaceFromTexture"] = LuaWrapper::function([](TextureRef tex) { return tex->surface(); });
+    lc->s_lua["GetWindowH"] = LuaWrapper::function([]() { return ENGINE()->windowHeight; });
+    lc->s_lua["GetWindowW"] = LuaWrapper::function([]() { return ENGINE()->windowWidth; });
 
-    lc->s_lua["SDL_FreeSurface"] = ME::LuaWrapper::function(SDL_FreeSurface);
-    lc->s_lua["R_SetImageFilter"] = ME::LuaWrapper::function(R_SetImageFilter);
-    lc->s_lua["R_CopyImageFromSurface"] = ME::LuaWrapper::function(R_CopyImageFromSurface);
-    lc->s_lua["R_GetTextureHandle"] = ME::LuaWrapper::function(R_GetTextureHandle);
-    lc->s_lua["R_GetTextureAttr"] = ME::LuaWrapper::function(R_GetTextureAttr);
-    lc->s_lua["LoadTextureData"] = ME::LuaWrapper::function(LoadTextureData);
-    // lc->s_lua["DestroyTexture"] = ME::LuaWrapper::function(DestroyTexture);
-    // lc->s_lua["CreateTexture"] = ME::LuaWrapper::function(CreateTexture);
-    lc->s_lua["metadot_buildnum"] = ME::LuaWrapper::function(ME_buildnum);
-    lc->s_lua["metadot_metadata"] = ME::LuaWrapper::function(ME_metadata);
-    lc->s_lua["add_packagepath"] = ME::LuaWrapper::function(add_packagepath);
+    lc->s_lua["SDL_FreeSurface"] = LuaWrapper::function(SDL_FreeSurface);
+    lc->s_lua["R_SetImageFilter"] = LuaWrapper::function(R_SetImageFilter);
+    lc->s_lua["R_CopyImageFromSurface"] = LuaWrapper::function(R_CopyImageFromSurface);
+    lc->s_lua["R_GetTextureHandle"] = LuaWrapper::function(R_GetTextureHandle);
+    lc->s_lua["R_GetTextureAttr"] = LuaWrapper::function(R_GetTextureAttr);
+    lc->s_lua["LoadTextureData"] = LuaWrapper::function(LoadTextureData);
+    // lc->s_lua["DestroyTexture"] = LuaWrapper::function(DestroyTexture);
+    // lc->s_lua["CreateTexture"] = LuaWrapper::function(CreateTexture);
+    lc->s_lua["metadot_buildnum"] = LuaWrapper::function(ME_buildnum);
+    lc->s_lua["metadot_metadata"] = LuaWrapper::function(ME_metadata);
+    lc->s_lua["add_packagepath"] = LuaWrapper::function(add_packagepath);
 
 #undef REGISTER_LUAFUNC
 
@@ -532,9 +534,9 @@ bool MonoLayer::isMonoLoaded() { return happyLoad; }
 #endif
 
 void Scripting::Init() {
-    ME::Timer timer;
+    Timer timer;
     timer.start();
-    Lua = new LuaCore;
+    this->Lua = new LuaCore;
     InitLua(Lua);
     timer.stop();
     METADOT_INFO(std::format("LuaLayer loading done in {0:.4f} ms", timer.get()).c_str());
@@ -569,3 +571,5 @@ void Scripting::Update() {
 void Scripting::UpdateRender() { this->FastCallFunc("OnRender"); }
 
 void Scripting::UpdateTick() { this->FastCallFunc("OnGameTickUpdate"); }
+
+}  // namespace ME

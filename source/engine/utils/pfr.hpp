@@ -296,7 +296,7 @@ constexpr std::size_t fields_count() noexcept {
 }  // namespace detail
 
 template <class T>
-using tuple_size = detail::size_t_<ME::cpp::pfr::detail::fields_count<T>()>;
+using tuple_size = detail::size_t_<::ME::cpp::pfr::detail::fields_count<T>()>;
 
 template <class T>
 constexpr std::size_t tuple_size_v = tuple_size<T>::value;

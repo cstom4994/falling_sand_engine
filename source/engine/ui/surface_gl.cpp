@@ -8,6 +8,8 @@
 
 #include "surface.h"
 
+namespace ME {
+
 enum ME_SURFACE_GLuniformLoc { ME_SURFACE_GL_LOC_VIEWSIZE, ME_SURFACE_GL_LOC_TEX, ME_SURFACE_GL_LOC_FRAG, ME_SURFACE_GL_MAX_LOCS };
 
 enum ME_SURFACE_GLshaderType { ME_SURFACE_SVG_SHADER_FILLGRAD, ME_SURFACE_SVG_SHADER_FILLIMG, ME_SURFACE_SVG_SHADER_SIMPLE, ME_SURFACE_SVG_SHADER_IMG };
@@ -1339,3 +1341,5 @@ void ME_surface_gl_DeleteFramebuffer(MEsurface_GLframebuffer* fb) {
     fb->image = -1;
     free(fb);
 }
+
+}  // namespace ME

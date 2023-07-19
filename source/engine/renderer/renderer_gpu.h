@@ -93,6 +93,8 @@
 #define R_PAD_7_TO_64 char _padding[7];
 #endif
 
+namespace ME {
+
 struct MEcolor {
     u8 r;
     u8 g;
@@ -2026,5 +2028,7 @@ typedef struct R_RendererImpl {
 
 } R_RendererImpl;
 #endif
+
+}  // namespace ME
 
 #endif

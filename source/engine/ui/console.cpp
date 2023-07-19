@@ -343,10 +343,10 @@ void ME::MEconsole::Init() {
         }
     });
 
-    ME::meta::dostruct::for_each(global.game->Iso.globaldef, [&](const char *name, auto &value) {
-        // console_imgui->System().RegisterVariable(name, value, Command::Arg<int>(""));
-        convar.Value(name, value);
-    });
+    // dostruct::for_each(global.game->Iso.globaldef, [&](const char *name, auto &value) {
+    //     // console_imgui->System().RegisterVariable(name, value, Command::Arg<int>(""));
+    //     convar.Value(name, value);
+    // });
 
     convar.Value("game_scale", ENGINE()->render_scale);
 }

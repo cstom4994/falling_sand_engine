@@ -17,6 +17,8 @@
 
 struct lua_State;
 
+namespace ME {
+
 #pragma region struct_as
 
 template <typename T>
@@ -65,11 +67,11 @@ void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
 // }
 
 struct LuaCore {
-    ME::LuaWrapper::State s_lua;
+    LuaWrapper::State s_lua;
     lua_State *L;
 
     struct {
-        ME::LuaWrapper::LuaTable Biome;
+        LuaWrapper::LuaTable Biome;
     } Data_;
 };
 
@@ -90,7 +92,7 @@ public:
 void print_error(lua_State *state, int result = 0);
 void script_runfile(const char *filePath);
 
-class Scripting : public ME::singleton<Scripting> {
+class Scripting : public singleton<Scripting> {
 public:
     LuaCore *Lua;
     MonoLayer Mono;
@@ -118,7 +120,9 @@ public:
     }
 
 private:
-    friend class ME::singleton<Scripting>;
+    friend class singleton<Scripting>;
 };
+
+}  // namespace ME
 
 #endif

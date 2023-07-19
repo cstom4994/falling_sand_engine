@@ -12,6 +12,8 @@
 #include "game_datastruct.hpp"
 #include "world.hpp"
 
+namespace ME {
+
 class Game;
 
 namespace GameUI {
@@ -72,5 +74,7 @@ void OptionsUI__DrawInput(Game *game);
 }  // namespace GameUI
 
 extern GameUI::GameUI gameUI;
+
+}  // namespace ME
 
 #endif

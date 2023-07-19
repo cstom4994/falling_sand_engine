@@ -206,11 +206,11 @@ std::vector<index_t> triangulate(const std::vector<vec2_t> &polygon) {
 
 }  // namespace ME
 
-ME_GUI_DEFINE_BEGIN(template <>, MEvec3)
+ME_GUI_DEFINE_BEGIN(template <>, ME::MEvec3)
 ImGui::InputFloat3(name.c_str(), var.v);
 ME_GUI_DEFINE_END
 
-ME_GUI_DEFINE_BEGIN(template <>, MEuvec3)
+ME_GUI_DEFINE_BEGIN(template <>, ME::MEuvec3)
 ImGui::InputScalar(std::string(name + ".x").c_str(), ImGuiDataType_U32, &var.x);
 ImGui::InputScalar(std::string(name + ".y").c_str(), ImGuiDataType_U32, &var.y);
 ImGui::InputScalar(std::string(name + ".z").c_str(), ImGuiDataType_U32, &var.z);

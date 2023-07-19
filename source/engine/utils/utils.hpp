@@ -186,101 +186,101 @@ private:
 
 template <typename T, typename... Ts>
 TempArray(T, Ts...) -> TempArray<T, sizeof...(Ts) + 1>;
-}  // namespace ME::cpp
+}  // namespace ::ME::cpp
 
 // To Typename Template Type
 
 // 1
 template <template <auto> class T, auto Int>
-struct ME::cpp::to_typename_template_type<T<Int>> : std::type_identity<typename_template_type<IValue_of<Int>>> {};
+struct ::ME::cpp::to_typename_template_type<T<Int>> : std::type_identity<typename_template_type<IValue_of<Int>>> {};
 
 // 1...
 // template<template<auto...>class T, auto... Ints>
-// struct ME::cpp::to_typename_template_type<T<Ints...>>
+// struct ::ME::cpp::to_typename_template_type<T<Ints...>>
 //  : std::type_identity<typename_template_type<IValue_of<Ints>...>> {};
 
 // 1 0
 template <template <auto, typename> class T, auto Int, typename U>
-struct ME::cpp::to_typename_template_type<T<Int, U>> : std::type_identity<typename_template_type<IValue_of<Int>, U>> {};
+struct ::ME::cpp::to_typename_template_type<T<Int, U>> : std::type_identity<typename_template_type<IValue_of<Int>, U>> {};
 
 // 1 0...
 // template<template<auto, typename...>class T, auto Int, typename... Us>
-// struct ME::cpp::to_typename_template_type<T<Int, Us...>>
+// struct ::ME::cpp::to_typename_template_type<T<Int, Us...>>
 //  : std::type_identity<typename_template_type<IValue_of<Int>, Us...>> {};
 
 // 0 1
 template <template <typename, auto> class T, typename U, auto Int>
-struct ME::cpp::to_typename_template_type<T<U, Int>> : std::type_identity<typename_template_type<U, IValue_of<Int>>> {};
+struct ::ME::cpp::to_typename_template_type<T<U, Int>> : std::type_identity<typename_template_type<U, IValue_of<Int>>> {};
 
 // 0 1...
 // template<template<typename, auto...>class T, typename U, auto... Ints>
-// struct ME::cpp::to_typename_template_type<T<U, Ints...>>
+// struct ::ME::cpp::to_typename_template_type<T<U, Ints...>>
 //  : std::type_identity<typename_template_type<U, IValue_of<Ints>...>> {};
 
 // 1 1
 template <template <auto, auto> class T, auto Int0, auto Int1>
-struct ME::cpp::to_typename_template_type<T<Int0, Int1>> : std::type_identity<typename_template_type<IValue_of<Int0>, IValue_of<Int1>>> {};
+struct ::ME::cpp::to_typename_template_type<T<Int0, Int1>> : std::type_identity<typename_template_type<IValue_of<Int0>, IValue_of<Int1>>> {};
 
 // 1 1...
 // template<template<auto, auto, typename...>class T, auto Int, auto... Ints>
-// struct ME::cpp::to_typename_template_type<T<Int, Ints...>>
+// struct ::ME::cpp::to_typename_template_type<T<Int, Ints...>>
 //  : std::type_identity<typename_template_type<IValue_of<Int>, IValue_of<Ints>...>> {};
 
 // 1 0 0
 template <template <auto, typename, typename> class T, auto Int, typename U0, typename U1>
-struct ME::cpp::to_typename_template_type<T<Int, U0, U1>> : std::type_identity<typename_template_type<IValue_of<Int>, U0, U1>> {};
+struct ::ME::cpp::to_typename_template_type<T<Int, U0, U1>> : std::type_identity<typename_template_type<IValue_of<Int>, U0, U1>> {};
 
 // 1 0 0 0...
 template <template <auto, typename, typename, typename...> class T, auto Int, typename U0, typename U1, typename... Us>
-struct ME::cpp::to_typename_template_type<T<Int, U0, U1, Us...>> : std::type_identity<typename_template_type<IValue_of<Int>, U0, U1, Us...>> {};
+struct ::ME::cpp::to_typename_template_type<T<Int, U0, U1, Us...>> : std::type_identity<typename_template_type<IValue_of<Int>, U0, U1, Us...>> {};
 
 // 0 1 0
 template <template <typename, auto, typename> class T, typename U0, auto Int, typename U1>
-struct ME::cpp::to_typename_template_type<T<U0, Int, U1>> : std::type_identity<typename_template_type<U0, IValue_of<Int>, U1>> {};
+struct ::ME::cpp::to_typename_template_type<T<U0, Int, U1>> : std::type_identity<typename_template_type<U0, IValue_of<Int>, U1>> {};
 
 // 0 1 0 0...
 template <template <typename, auto, typename, typename...> class T, typename U0, auto Int, typename U1, typename... Us>
-struct ME::cpp::to_typename_template_type<T<U0, Int, U1, Us...>> : std::type_identity<typename_template_type<U0, IValue_of<Int>, U1, Us...>> {};
+struct ::ME::cpp::to_typename_template_type<T<U0, Int, U1, Us...>> : std::type_identity<typename_template_type<U0, IValue_of<Int>, U1, Us...>> {};
 
 // 0 0 1
 template <template <typename, typename, auto> class T, typename U0, typename U1, auto Int>
-struct ME::cpp::to_typename_template_type<T<U0, U1, Int>> : std::type_identity<typename_template_type<U0, U1, IValue_of<Int>>> {};
+struct ::ME::cpp::to_typename_template_type<T<U0, U1, Int>> : std::type_identity<typename_template_type<U0, U1, IValue_of<Int>>> {};
 
 // 0 0 1 1...
 template <template <typename, typename, auto, auto...> class T, typename U0, typename U1, auto Int, auto... Ints>
-struct ME::cpp::to_typename_template_type<T<U0, U1, Int, Ints...>> : std::type_identity<typename_template_type<U0, U1, IValue_of<Int>, IValue_of<Ints>...>> {};
+struct ::ME::cpp::to_typename_template_type<T<U0, U1, Int, Ints...>> : std::type_identity<typename_template_type<U0, U1, IValue_of<Int>, IValue_of<Ints>...>> {};
 
 // 1 1 0
 template <template <auto, auto, typename> class T, auto Int0, auto Int1, typename U>
-struct ME::cpp::to_typename_template_type<T<Int0, Int1, U>> : std::type_identity<typename_template_type<IValue_of<Int0>, IValue_of<Int1>, U>> {};
+struct ::ME::cpp::to_typename_template_type<T<Int0, Int1, U>> : std::type_identity<typename_template_type<IValue_of<Int0>, IValue_of<Int1>, U>> {};
 
 // 1 1 0 0...
 template <template <auto, auto, typename, typename...> class T, auto Int0, auto Int1, typename U, typename... Us>
-struct ME::cpp::to_typename_template_type<T<Int0, Int1, U, Us...>> : std::type_identity<typename_template_type<IValue_of<Int0>, IValue_of<Int1>, U, Us...>> {};
+struct ::ME::cpp::to_typename_template_type<T<Int0, Int1, U, Us...>> : std::type_identity<typename_template_type<IValue_of<Int0>, IValue_of<Int1>, U, Us...>> {};
 
 // 1 0 1
 template <template <auto, typename, auto> class T, auto Int0, typename U, auto Int1>
-struct ME::cpp::to_typename_template_type<T<Int0, U, Int1>> : std::type_identity<typename_template_type<IValue_of<Int0>, U, IValue_of<Int1>>> {};
+struct ::ME::cpp::to_typename_template_type<T<Int0, U, Int1>> : std::type_identity<typename_template_type<IValue_of<Int0>, U, IValue_of<Int1>>> {};
 
 // 1 0 1 1...
 template <template <auto, typename, auto, auto...> class T, auto Int0, typename U, auto Int1, auto... Ints>
-struct ME::cpp::to_typename_template_type<T<Int0, U, Int1, Ints...>> : std::type_identity<typename_template_type<IValue_of<Int0>, U, IValue_of<Int1>, IValue_of<Ints>...>> {};
+struct ::ME::cpp::to_typename_template_type<T<Int0, U, Int1, Ints...>> : std::type_identity<typename_template_type<IValue_of<Int0>, U, IValue_of<Int1>, IValue_of<Ints>...>> {};
 
 // 0 1 1
 template <template <typename, auto, auto> class T, typename U, auto Int0, auto Int1>
-struct ME::cpp::to_typename_template_type<T<U, Int0, Int1>> : std::type_identity<typename_template_type<U, IValue_of<Int0>, IValue_of<Int1>>> {};
+struct ::ME::cpp::to_typename_template_type<T<U, Int0, Int1>> : std::type_identity<typename_template_type<U, IValue_of<Int0>, IValue_of<Int1>>> {};
 
 // 0 1 1 1...
 template <template <typename, auto, auto, auto...> class T, typename U, auto Int0, auto Int1, auto... Ints>
-struct ME::cpp::to_typename_template_type<T<U, Int0, Int1, Ints...>> : std::type_identity<typename_template_type<U, IValue_of<Int0>, IValue_of<Int1>, IValue_of<Ints>...>> {};
+struct ::ME::cpp::to_typename_template_type<T<U, Int0, Int1, Ints...>> : std::type_identity<typename_template_type<U, IValue_of<Int0>, IValue_of<Int1>, IValue_of<Ints>...>> {};
 
 // 1 1 1
 template <template <auto, auto, auto> class T, auto Int0, auto Int1, auto Int2>
-struct ME::cpp::to_typename_template_type<T<Int0, Int1, Int2>> : std::type_identity<typename_template_type<IValue_of<Int0>, IValue_of<Int1>, IValue_of<Int2>>> {};
+struct ::ME::cpp::to_typename_template_type<T<Int0, Int1, Int2>> : std::type_identity<typename_template_type<IValue_of<Int0>, IValue_of<Int1>, IValue_of<Int2>>> {};
 
 // 1 1 1 1...
 template <template <auto, auto, auto, auto...> class T, auto Int0, auto Int1, auto Int2, auto... Ints>
-struct ME::cpp::to_typename_template_type<T<Int0, Int1, Int2, Ints...>> : std::type_identity<typename_template_type<IValue_of<Int0>, IValue_of<Int1>, IValue_of<Int2>, IValue_of<Ints>...>> {};
+struct ::ME::cpp::to_typename_template_type<T<Int0, Int1, Int2, Ints...>> : std::type_identity<typename_template_type<IValue_of<Int0>, IValue_of<Int1>, IValue_of<Int2>, IValue_of<Ints>...>> {};
 
 namespace ME::cpp::details {
 template <typename Void, template <typename...> typename T, typename... Ts>
@@ -338,45 +338,45 @@ template <class Void, template <class...> class Op, class... Args>
 struct is_valid : std::false_type {};
 template <template <class...> class Op, class... Args>
 struct is_valid<std::void_t<Op<Args...>>, Op, Args...> : std::true_type {};
-}  // namespace ME::cpp::details
+}  // namespace ::ME::cpp::details
 
 template <template <typename...> typename T, typename... Ts>
-struct ME::cpp::is_instantiable : details::is_instantiable<void, T, Ts...> {};
+struct ::ME::cpp::is_instantiable : details::is_instantiable<void, T, Ts...> {};
 
 template <typename Instance, template <typename...> class T>
-struct ME::cpp::is_instance_of : std::false_type {};
+struct ::ME::cpp::is_instance_of : std::false_type {};
 
 template <typename... Args, template <typename...> class T>
-struct ME::cpp::is_instance_of<T<Args...>, T> : std::true_type {};
+struct ::ME::cpp::is_instance_of<T<Args...>, T> : std::true_type {};
 
 template <typename T, typename... Args>
-struct ME::cpp::is_list_initializable : details::is_list_initializable<void, T, Args...> {};
+struct ::ME::cpp::is_list_initializable : details::is_list_initializable<void, T, Args...> {};
 
 template <template <typename...> class TA, template <typename...> class TB>
-struct ME::cpp::is_same_typename_template : std::false_type {};
+struct ::ME::cpp::is_same_typename_template : std::false_type {};
 
 template <template <typename...> class T>
-struct ME::cpp::is_same_typename_template<T, T> : std::true_type {};
+struct ::ME::cpp::is_same_typename_template<T, T> : std::true_type {};
 
 template <typename T>
-struct ME::cpp::is_defined : details::is_defined_helper<void, T> {};
+struct ::ME::cpp::is_defined : details::is_defined_helper<void, T> {};
 
 template <typename T, typename U>
-struct ME::cpp::member_pointer_traits<T U::*> {
+struct ::ME::cpp::member_pointer_traits<T U::*> {
     using object = U;
     using value = T;
 };
 
 template <typename T>
-struct ME::cpp::is_typename_template_type : std::false_type {};
+struct ::ME::cpp::is_typename_template_type : std::false_type {};
 
 template <template <typename...> class T, typename... Ts>
-struct ME::cpp::is_typename_template_type<T<Ts...>> : std::true_type {};
+struct ::ME::cpp::is_typename_template_type<T<Ts...>> : std::true_type {};
 
 template <typename T>
-struct ME::cpp::IsIValue : std::false_type {};
+struct ::ME::cpp::IsIValue : std::false_type {};
 template <typename T, T v>
-struct ME::cpp::IsIValue<ME::cpp::IValue<T, v>> : std::true_type {};
+struct ::ME::cpp::IsIValue<::ME::cpp::IValue<T, v>> : std::true_type {};
 
 template <size_t N>
 constexpr std::size_t ME::cpp::lengthof(const char (&str)[N]) noexcept {
@@ -416,19 +416,19 @@ constexpr std::size_t ME::cpp::string_hash(const char* str) noexcept {
 }
 
 template <typename T>
-struct ME::cpp::is_function_pointer : ME::cpp::details::is_function_pointer<void, T> {};
+struct ::ME::cpp::is_function_pointer : ::ME::cpp::details::is_function_pointer<void, T> {};
 
 template <typename T>
-struct ME::cpp::has_virtual_base : ME::cpp::details::has_virtual_base_helper<void, T> {};
+struct ::ME::cpp::has_virtual_base : ::ME::cpp::details::has_virtual_base_helper<void, T> {};
 
 template <typename Base, typename Derived>
-struct ME::cpp::is_virtual_base_of : ME::cpp::details::is_virtual_base_of_helper<void, Base, Derived> {};
+struct ::ME::cpp::is_virtual_base_of : ::ME::cpp::details::is_virtual_base_of_helper<void, Base, Derived> {};
 
 template <template <class...> class Op, class... Args>
-struct ME::cpp::is_valid : ME::cpp::details::is_valid<void, Op, Args...> {};
+struct ::ME::cpp::is_valid : ::ME::cpp::details::is_valid<void, Op, Args...> {};
 
 template <typename V1, typename Obj1, typename V2, typename Obj2>
-constexpr bool ME::cpp::member_pointer_equal(V1 Obj1::*p1, V2 Obj2::*p2) noexcept {
+constexpr bool ::ME::cpp::member_pointer_equal(V1 Obj1::*p1, V2 Obj2::*p2) noexcept {
     if constexpr (std::is_same_v<Obj1, Obj2> && std::is_same_v<V1, V2>)
         return p1 == p2;
     else

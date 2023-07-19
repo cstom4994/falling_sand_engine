@@ -26,6 +26,8 @@
 #include <xmmintrin.h>
 #endif
 
+namespace ME {
+
 #ifdef ME_PLATFORM_WIN32
 #undef far
 #undef near
@@ -1634,5 +1636,7 @@ MATH_INLINE MEmat4 MATH_PREFIX(quaternion_to_mat4)(MEquaternion q) {
 #define far
 #define near
 #endif
+
+}  // namespace ME
 
 #endif

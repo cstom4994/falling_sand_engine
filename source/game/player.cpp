@@ -8,7 +8,9 @@
 #include "engine/game_utils/cells.h"
 #include "engine/world.hpp"
 
-RigidBody::RigidBody(ME::phy::Body *body, std::string name) {
+namespace ME {
+
+RigidBody::RigidBody(phy::Body *body, std::string name) {
     this->name = std::string(name);
     this->body = body;
 }
@@ -92,7 +94,7 @@ MEvec2 rotate_point2(f32 cx, f32 cy, f32 angle, MEvec2 p);
 void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
     RigidBody *r;
     if (heldItem != NULL) {
-        ME::phy::Rectangle *ps = new ME::phy::Rectangle;
+        phy::Rectangle *ps = new phy::Rectangle;
         // ps.SetAsBox(1, 1);
         ps->set(1.0f, 1.0f);
 
@@ -100,7 +102,7 @@ void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
 
         MEvec2 pt = rotate_point2(0, 0, angle * 3.1415 / 180.0, {(f32)(heldItem->texture->surface()->w / 2.0), (f32)(heldItem->texture->surface()->h / 2.0)});
 
-        r = world->makeRigidBody(ME::phy::Body::BodyType::Dynamic, we->x + we->hw / 2 + world->loadZone.x - pt.x + 16 * cos((holdAngle + 180) * 3.1415f / 180.0f),
+        r = world->makeRigidBody(phy::Body::BodyType::Dynamic, we->x + we->hw / 2 + world->loadZone.x - pt.x + 16 * cos((holdAngle + 180) * 3.1415f / 180.0f),
                                  we->y + we->hh / 2 + world->loadZone.y - pt.y + 16 * sin((holdAngle + 180) * 3.1415f / 180.0f), angle, ps, 1, 0.3, heldItem->texture);
 
         //  0 -> -w/2 -h/2
@@ -156,18 +158,18 @@ MEvec2 rotate_point2(f32 cx, f32 cy, f32 angle, MEvec2 p) {
     return MEvec2(xn + cx, yn + cy);
 }
 
-void ControableSystem::process(ME::ecs::registry &world, const move_player_event &evt) {
+void ControableSystem::process(ecs::registry &world, const move_player_event &evt) {
     world.for_joined_components<WorldEntity, Player>(
-            [&evt](ME::ecs::entity, WorldEntity &we, Player &pl) {
+            [&evt](ecs::entity, WorldEntity &we, Player &pl) {
                 pl.renderLQ(&we, evt.g->TexturePack_.textureEntitiesLQ->target, evt.g->Iso.world->loadZone.x + (int)(we.vx * evt.thruTick), evt.g->Iso.world->loadZone.y + (int)(we.vy * evt.thruTick));
                 pl.render(&we, evt.g->TexturePack_.textureEntities->target, evt.g->Iso.world->loadZone.x + (int)(we.vx * evt.thruTick), evt.g->Iso.world->loadZone.y + (int)(we.vy * evt.thruTick));
             },
-            ME::ecs::exists<Player>{} && ME::ecs::exists<Controlable>{});
+            ecs::exists<Player>{} && ecs::exists<Controlable>{});
 }
 
-void WorldEntitySystem::process(ME::ecs::registry &world, const entity_update_event &evt) {
+void WorldEntitySystem::process(ecs::registry &world, const entity_update_event &evt) {
     world.for_joined_components<WorldEntity>(
-            [&evt](ME::ecs::entity, WorldEntity &pl) {
+            [&evt](ecs::entity, WorldEntity &pl) {
                 // entity fluid displacement & make solid
 
                 for (int tx = 0; tx < pl.hw; tx++) {
@@ -190,5 +192,7 @@ void WorldEntitySystem::process(ME::ecs::registry &world, const entity_update_ev
                     }
                 }
             },
-            ME::ecs::exists<WorldEntity>{});
+            ecs::exists<WorldEntity>{});
 }
+
+}  // namespace ME

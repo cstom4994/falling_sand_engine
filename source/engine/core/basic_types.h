@@ -80,7 +80,7 @@ constexpr typename ME_remove_reference<T>::type &&ME_move(T &&arg) noexcept {
 }
 
 template <typename T>
-using ME_InitializerList = std::initializer_list<T>;
+using initializer_list = std::initializer_list<T>;
 
 template <typename T>
 using function = std::function<T>;

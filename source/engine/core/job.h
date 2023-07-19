@@ -4,6 +4,8 @@
 
 #include <functional>
 
+namespace ME {
+
 // https://turanszkij.wordpress.com/2018/11/24/simple-job-system-using-standard-c/
 
 // A Dispatched job will receive this as function argument:
@@ -12,7 +14,7 @@ struct job_dispatch_args {
     uint32_t groupIndex;
 };
 
-class ME_job {
+class job {
 public:
     // Create the internal resources such as worker threads, etc. Call it once when initializing the application.
     static void init();
@@ -32,5 +34,7 @@ public:
     // Wait until all threads become idle
     static void wait();
 };
+
+}  // namespace ME
 
 #endif  // !ME_JOB_H

@@ -19,13 +19,16 @@
 
 #define CHUNK_DATABASE_FORMAT "ssiiiiiiiBB"
 
+namespace ME {
+
 typedef struct {
     u16 index;
     u32 color;
     i32 temperature;
 } MaterialInstanceData;
+
 template <>
-struct ME::meta::static_refl::TypeInfo<MaterialInstanceData> : TypeInfoBase<MaterialInstanceData> {
+struct meta::static_refl::TypeInfo<MaterialInstanceData> : TypeInfoBase<MaterialInstanceData> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("index"), &Type::index},
@@ -51,7 +54,7 @@ struct Chunk {
     MaterialInstance *layer2 = nullptr;
     u32 *background = nullptr;
     std::vector<Biome *> biomes = {nullptr};
-    std::vector<ME::phy::Shape *> polys = {};
+    std::vector<phy::Shape *> polys = {};
     RigidBody *rb = nullptr;
 
     Chunk() = default;
@@ -72,8 +75,23 @@ struct Chunk {
     bool ChunkHasFile();
 };
 
+class ChunkReadyToMerge {
+public:
+    int cx;
+    int cy;
+    MaterialInstance *tiles;
+    ChunkReadyToMerge(int cx, int cy, MaterialInstance *tiles) {
+        this->cx = cx;
+        this->cy = cy;
+        this->tiles = tiles;
+    }
+    ChunkReadyToMerge() : ChunkReadyToMerge(0, 0, nullptr){};
+};
+
+}  // namespace ME
+
 template <>
-struct ME::meta::static_refl::TypeInfo<Chunk> : TypeInfoBase<Chunk> {
+struct ME::meta::static_refl::TypeInfo<ME::Chunk> : TypeInfoBase<Chunk> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("pack_filename"), &Type::pack_filename},
@@ -100,18 +118,5 @@ ME_GUI_DEFINE_END
 ME_GUI_DEFINE_BEGIN(template <>, ME::phy::Polygon)
 ImGui::Auto("ME::phy::Polygon");
 ME_GUI_DEFINE_END
-
-class ChunkReadyToMerge {
-public:
-    int cx;
-    int cy;
-    MaterialInstance *tiles;
-    ChunkReadyToMerge(int cx, int cy, MaterialInstance *tiles) {
-        this->cx = cx;
-        this->cy = cy;
-        this->tiles = tiles;
-    }
-    ChunkReadyToMerge() : ChunkReadyToMerge(0, 0, nullptr){};
-};
 
 #endif

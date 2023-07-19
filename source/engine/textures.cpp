@@ -15,6 +15,8 @@
 #define CUTE_ASEPRITE_IMPLEMENTATION
 #include "libs/cute/cute_aseprite.h"
 
+namespace ME {
+
 Texture::Texture(const std::string &path) {
     if (ME_fs_exists(METADOT_RESLOC(path))) {
 
@@ -147,7 +149,7 @@ TextureRef LoadTextureInternal(const std::string &path, u32 pixelFormat) {
 
     ME_ASSERT(loadedSurface_converted);
 
-    TextureRef tex = ME::create_ref<Texture>(loadedSurface_converted);
+    TextureRef tex = create_ref<Texture>(loadedSurface_converted);
 
     stbi_image_free(data);
 
@@ -209,7 +211,7 @@ TextureRef LoadAsepriteTexture(const std::string &path) {
 
     ME_ASSERT(surface_converted);
 
-    TextureRef tex = ME::create_ref<Texture>(surface_converted);
+    TextureRef tex = create_ref<Texture>(surface_converted);
 
     cute_aseprite_free(ase);
 
@@ -228,3 +230,4 @@ void RenderTextureRect(TextureRef tex, R_Target *target, int x, int y, MErect *c
     ME_ASSERT(image);
     R_BlitRect(image, NULL, target, &dst);
 }
+}  // namespace ME

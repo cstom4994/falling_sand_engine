@@ -51,36 +51,38 @@
 #include "textures.hpp"
 #include "world_generator.h"
 
+namespace ME {
+
 GameData g_game_data;
 
 Global global;
 
-// Prints any ME message to the console
-void (*g_engine_message_callback)(MEmessageType, MEmessageSeverity, const char *);
-
-void ME_message_callback(MEmessageType type, MEmessageSeverity severity, const char *message) {
-    switch (severity) {
-        case ME_MESSAGE_NOTE:
-            METADOT_INFO(std::format("[Global] {0}, {1}", ME::meta::static_refl::TypeInfo<MEmessageType>::fields.NameOfValue(type), message).c_str());
-            break;
-        case ME_MESSAGE_ERROR:
-            METADOT_ERROR(std::format("[Global] {0}, {1}", ME::meta::static_refl::TypeInfo<MEmessageType>::fields.NameOfValue(type), message).c_str());
-            break;
-        case ME_MESSAGE_FATAL:
-            METADOT_WARN(std::format("[Global] {0}, {1}", ME::meta::static_refl::TypeInfo<MEmessageType>::fields.NameOfValue(type), message).c_str());
-            break;
-    }
-}
+//// Prints any ME message to the console
+// void (*g_engine_message_callback)(MEmessageType, MEmessageSeverity, const char *);
+//
+// void ME_message_callback(MEmessageType type, MEmessageSeverity severity, const char *message) {
+//     switch (severity) {
+//         case ME_MESSAGE_NOTE:
+//             METADOT_INFO(std::format("[Global] {0}, {1}", meta::static_refl::TypeInfo<MEmessageType>::fields.NameOfValue(type), message).c_str());
+//             break;
+//         case ME_MESSAGE_ERROR:
+//             METADOT_ERROR(std::format("[Global] {0}, {1}", meta::static_refl::TypeInfo<MEmessageType>::fields.NameOfValue(type), message).c_str());
+//             break;
+//         case ME_MESSAGE_FATAL:
+//             METADOT_WARN(std::format("[Global] {0}, {1}", meta::static_refl::TypeInfo<MEmessageType>::fields.NameOfValue(type), message).c_str());
+//             break;
+//     }
+// }
 
 Game::Game(int argc, char *argv[]) {
     // Initialize promise handle
-    ME::cpp::promise::handleUncaughtException(
-            [](ME::cpp::promise::Promise &d) { d.fail([](long n, int m) { METADOT_BUG("UncaughtException parameters = %d %d", (int)n, m); }).fail([]() { METADOT_ERROR("UncaughtException"); }); });
+    cpp::promise::handleUncaughtException(
+            [](cpp::promise::Promise &d) { d.fail([](long n, int m) { METADOT_BUG("UncaughtException parameters = %d %d", (int)n, m); }).fail([]() { METADOT_ERROR("UncaughtException"); }); });
 
     // Start memory management including GC
     ME_mem_init(argc, argv);
 
-    ME_job::init();
+    job::init();
 
     ME_profiler_init();
     ME_profiler_register_thread("Application thread");
@@ -114,21 +116,19 @@ int Game::init(int argc, char *argv[]) {
 
     setEventCallback(ME_BIND_EVENT_FN(onEvent));
 
-    g_engine_message_callback = ME_message_callback;
-
     // Initialize Gameplay script system before scripting system initialization
     METADOT_INFO("Loading gameplay script...");
 
-    Iso.gameplayscript = ME::create_ref<GameplayScriptSystem>(2);
+    Iso.gameplayscript = create_ref<GameplayScriptSystem>(2);
     Iso.systemList.push_back(Iso.gameplayscript);
 
-    Iso.ui = ME::create_ref<UISystem>(4);
+    Iso.ui = create_ref<UISystem>(4);
     Iso.systemList.push_back(Iso.ui);
 
-    Iso.shaderworker = ME::create_ref<ShaderWorkerSystem>(6, SystemFlags::Render);
+    Iso.shaderworker = create_ref<ShaderWorkerSystem>(6, SystemFlags::Render);
     Iso.systemList.push_back(Iso.shaderworker);
 
-    Iso.backgrounds = ME::create_ref<BackgroundSystem>(8);
+    Iso.backgrounds = create_ref<BackgroundSystem>(8);
     Iso.systemList.push_back(Iso.backgrounds);
 
     // Initialize scripting system
@@ -143,7 +143,7 @@ int Game::init(int argc, char *argv[]) {
         // }
     }
 
-    ME_pack_result pack_result = ME_create_file_pack_reader(METADOT_RESLOC("data/resources.pack"), 0, 0, &Iso.pack_reader);
+    ME_pack_result pack_result = ME_create_file_pack_reader(METADOT_RESLOC("data/resources.pack"), 0, 0, &this->Iso.pack_reader);
 
     if (pack_result != SUCCESS_PACK_RESULT) {
         METADOT_ERROR("%d", pack_result);
@@ -169,10 +169,10 @@ int Game::init(int argc, char *argv[]) {
     // Initialize the world
     METADOT_INFO("Initializing world...");
 
-    ME::Timer timer;
+    Timer timer;
     timer.start();
 
-    Iso.world = ME::create_scope<World>();
+    Iso.world = create_scope<World>();
     Iso.world->noSaveLoad = true;
     Iso.world->init(METADOT_RESLOC("saves/mainMenu"), (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
                     (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, ENGINE()->target, &global.audio);
@@ -221,8 +221,8 @@ int Game::init(int argc, char *argv[]) {
     }
 
     // init threadpools
-    Iso.updateDirtyPool = alloc<ME::thread_pool>::safe_malloc(4);
-    Iso.updateDirtyPool2 = alloc<ME::thread_pool>::safe_malloc(4);
+    Iso.updateDirtyPool = alloc<thread_pool>::safe_malloc(4);
+    Iso.updateDirtyPool2 = alloc<thread_pool>::safe_malloc(4);
 
     return this->run(argc, argv);
 }
@@ -232,10 +232,10 @@ void Game::createTexture() {
     METADOT_LOG_SCOPE_FUNCTION(INFO);
     METADOT_INFO("Creating world textures...");
 
-    ME::Timer timer;
+    Timer timer;
     timer.start();
 
-    if (TexturePack_.loadingTexture) {
+    if (this->TexturePack_.loadingTexture) {
         R_FreeImage(TexturePack_.loadingTexture);
         R_FreeImage(TexturePack_.texture);
         R_FreeImage(TexturePack_.worldTexture);
@@ -260,21 +260,21 @@ void Game::createTexture() {
     loadingOnColor = 0xFFFFFFFF;
     loadingOffColor = 0x000000FF;
 
-    std::vector<ME::cpp::promise::Promise> Funcs = {
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+    std::vector<cpp::promise::Promise> Funcs = {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "loadingTexture");
                 TexturePack_.loadingTexture =
                         R_CreateImage(TexturePack_.loadingScreenW = (ENGINE()->windowWidth / 20), TexturePack_.loadingScreenH = (ENGINE()->windowHeight / 20), R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.loadingTexture, R_FILTER_NEAREST);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "texture");
                 TexturePack_.texture = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.texture, R_FILTER_NEAREST);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "worldTexture");
                 TexturePack_.worldTexture = R_CreateImage(Iso.world->width * Iso.globaldef.hd_objects_size, Iso.world->height * Iso.globaldef.hd_objects_size, R_FormatEnum::R_FORMAT_RGBA);
 
@@ -282,76 +282,76 @@ void Game::createTexture() {
 
                 R_LoadTarget(TexturePack_.worldTexture);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "lightingTexture");
                 TexturePack_.lightingTexture = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.lightingTexture, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.lightingTexture);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "emissionTexture");
                 TexturePack_.emissionTexture = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.emissionTexture, R_FILTER_NEAREST);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlow");
                 TexturePack_.textureFlow = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureFlow, R_FILTER_NEAREST);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlowSpead");
                 TexturePack_.textureFlowSpead = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureFlowSpead, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureFlowSpead);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureFire");
                 TexturePack_.textureFire = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureFire, R_FILTER_NEAREST);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "texture2Fire");
                 TexturePack_.texture2Fire = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.texture2Fire, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.texture2Fire);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureLayer2");
                 TexturePack_.textureLayer2 = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureLayer2, R_FILTER_NEAREST);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureBackground");
                 TexturePack_.textureBackground = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureBackground, R_FILTER_NEAREST);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjects");
                 TexturePack_.textureObjects = R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1),
                                                             Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjects, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjects);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsLQ");
                 TexturePack_.textureObjectsLQ = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjectsLQ, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjectsLQ);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsBack");
                 TexturePack_.textureObjectsBack = R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1),
                                                                 Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjectsBack);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureCells");
                 TexturePack_.textureCells = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.textureCells, R_FILTER_NEAREST);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntities");
                 TexturePack_.textureEntities = R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1),
                                                              Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
@@ -360,7 +360,7 @@ void Game::createTexture() {
 
                 R_SetImageFilter(TexturePack_.textureEntities, R_FILTER_NEAREST);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntitiesLQ");
                 TexturePack_.textureEntitiesLQ = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
@@ -368,13 +368,13 @@ void Game::createTexture() {
 
                 R_SetImageFilter(TexturePack_.textureEntitiesLQ, R_FILTER_NEAREST);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "temperatureMap");
                 TexturePack_.temperatureMap = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.temperatureMap, R_FILTER_NEAREST);
             }),
-            ME::cpp::promise::newPromise([&](ME::cpp::promise::Defer d) {
+            cpp::promise::newPromise([&](cpp::promise::Defer d) {
                 METADOT_LOG_SCOPE_F(INFO, "backgroundImage");
                 TexturePack_.backgroundImage = R_CreateImage(ENGINE()->windowWidth, ENGINE()->windowHeight, R_FormatEnum::R_FORMAT_RGBA);
 
@@ -383,7 +383,7 @@ void Game::createTexture() {
                 R_LoadTarget(TexturePack_.backgroundImage);
             })};
 
-    ME::cpp::promise::all(Funcs);
+    cpp::promise::all(Funcs);
 
     auto init_pixels = [&]() {
         // create texture pixel buffers
@@ -489,7 +489,7 @@ int Game::run(int argc, char *argv[]) {
 
             if (windowEvent.type == SDL_WINDOWEVENT) {
                 if (windowEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
-                    ME::WindowResizeEvent event(windowEvent.window.data1, windowEvent.window.data2);
+                    WindowResizeEvent event(windowEvent.window.data1, windowEvent.window.data2);
                     EventCallback(event);
                 }
             }
@@ -744,13 +744,13 @@ int Game::run(int argc, char *argv[]) {
 
                                 if (n > 0) {
                                     global.audio.PlayEvent("event:/Player/Impact");
-                                    ME::phy::Rectangle *s = new ME::phy::Rectangle;
+                                    phy::Rectangle *s = new phy::Rectangle;
                                     // s.SetAsBox(1, 1);
                                     s->set(1.0f, 1.0f);
 
-                                    auto tex = ME::create_ref<Texture>(sfc);
+                                    auto tex = create_ref<Texture>(sfc);
 
-                                    RigidBody *rb = Iso.world->makeRigidBody(ME::phy::Body::BodyType::Dynamic, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
+                                    RigidBody *rb = Iso.world->makeRigidBody(phy::Body::BodyType::Dynamic, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
 
                                     // TODO:  23/7/17 物理相关性实现
 
@@ -797,7 +797,7 @@ int Game::run(int argc, char *argv[]) {
                         if (pl->heldItem) {
                             if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
                                 if (pl->holdtype == Vacuum) {
-                                    pl->holdtype = None;
+                                    pl->holdtype = HoldTypeNone;
                                 }
                             } else if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
                                 if (pl->holdtype == Hammer) {
@@ -875,7 +875,7 @@ int Game::run(int argc, char *argv[]) {
                                     // GameIsolate_.world->setTile((int)(hx + udy * 6), (int)(hy - udx * 6), MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xffff00ff));
                                     // GameIsolate_.world->setTile((int)(hx - udy * 6), (int)(hy + udx * 6), MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0x00ffffff));
                                 }
-                                pl->holdtype = None;
+                                pl->holdtype = HoldTypeNone;
                             }
                         }
                     }
@@ -1222,7 +1222,7 @@ int Game::exit() {
     running = false;
 
     // release resources & shutdown
-    std::vector<ME::ref<IGameSystem>>::reverse_iterator backwardIterator;
+    std::vector<ref<IGameSystem>>::reverse_iterator backwardIterator;
     for (backwardIterator = Iso.systemList.rbegin(); backwardIterator != Iso.systemList.rend(); backwardIterator++) {
         backwardIterator->get()->destory();
     }
@@ -1389,13 +1389,13 @@ void Game::updateFrameEarly() {
             }
         }
         if (n > 0) {
-            ME::phy::Rectangle *s = new ME::phy::Rectangle;
+            phy::Rectangle *s = new phy::Rectangle;
             // s.SetAsBox(1, 1);
             s->set(1.0f, 1.0f);
 
-            auto tex = ME::create_ref<Texture>(sfc);
+            auto tex = create_ref<Texture>(sfc);
 
-            RigidBody *rb = Iso.world->makeRigidBody(ME::phy::Body::BodyType::Dynamic, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
+            RigidBody *rb = Iso.world->makeRigidBody(phy::Body::BodyType::Dynamic, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
             for (int tx = 0; tx < tex->surface()->w; tx++) {
 
                 // TODO:  23/7/17 物理相关性实现
@@ -1438,10 +1438,10 @@ void Game::updateFrameEarly() {
 
             MEvec4 pl_transform{-Iso.world->loadZone.x + Iso.world->tickZone.x + Iso.world->tickZone.w / 2.0f, -Iso.world->loadZone.y + Iso.world->tickZone.y + Iso.world->tickZone.h / 2.0f, 10, 20};
 
-            ME::phy::Rectangle *sh = new ME::phy::Rectangle;
+            phy::Rectangle *sh = new phy::Rectangle;
             // sh.SetAsBox(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
             sh->set(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
-            RigidBody *rb = Iso.world->makeRigidBody(ME::phy::Body::BodyType::Kinematic, pl_transform.x + pl_transform.z / 2.0f - 0.5, pl_transform.y + pl_transform.w / 2.0f - 0.5, 0, sh, 1, 1, NULL);
+            RigidBody *rb = Iso.world->makeRigidBody(phy::Body::BodyType::Kinematic, pl_transform.x + pl_transform.z / 2.0f - 0.5, pl_transform.y + pl_transform.w / 2.0f - 0.5, 0, sh, 1, 1, NULL);
 
             // 阻尼实现
 
@@ -1467,7 +1467,7 @@ void Game::updateFrameEarly() {
             // rb->body->GetFixtureList()[0].SetFilterData(bf);
 
             auto player = Iso.world->Reg().create_entity();
-            ME::ecs::entity_filler(player)
+            ecs::entity_filler(player)
                     .component<Controlable>()
                     .component<WorldEntity>(true, pl_transform.x, pl_transform.y, 0.0f, 0.0f, (int)pl_transform.z, (int)pl_transform.w, rb, std::string("玩家"))
                     .component<Player>();
@@ -1640,15 +1640,15 @@ void Game::updateFrameEarly() {
     }
 }
 
-void Game::onEvent(ME::Event &e) {
-    ME::EventDispatcher dispatcher(e);
-    dispatcher.Dispatch<ME::WindowCloseEvent>(ME_BIND_EVENT_FN(onWindowClose));
-    dispatcher.Dispatch<ME::WindowResizeEvent>(ME_BIND_EVENT_FN(onWindowResize));
+void Game::onEvent(Event &e) {
+    EventDispatcher dispatcher(e);
+    dispatcher.Dispatch<WindowCloseEvent>(ME_BIND_EVENT_FN(onWindowClose));
+    dispatcher.Dispatch<WindowResizeEvent>(ME_BIND_EVENT_FN(onWindowResize));
 }
 
-bool Game::onWindowClose(ME::WindowCloseEvent &e) { return true; }
+bool Game::onWindowClose(WindowCloseEvent &e) { return true; }
 
-bool Game::onWindowResize(ME::WindowResizeEvent &e) {
+bool Game::onWindowResize(WindowResizeEvent &e) {
     R_SetWindowResolution(e.GetWidth(), e.GetHeight());
     R_ResetProjection(ENGINE()->realTarget);
     ResolutionChanged(e.GetWidth(), e.GetHeight());
@@ -2517,7 +2517,7 @@ void Game::tickPlayer() {
                                     std::tie(pl_we, pl) = Iso.world->getHostPlayer();
                                 }
 
-                                if (pl->holdtype != EnumPlayerHoldType::None) {
+                                if (pl->holdtype != EnumPlayerHoldType::HoldTypeNone) {
                                     auto &v = pl->heldItem->vacuumCells;
                                     v.erase(std::remove(v.begin(), v.end(), par), v.end());
                                 }
@@ -2578,7 +2578,7 @@ void Game::tickPlayer() {
                                                 if (Iso.world->player) std::tie(pl_we, pl) = Iso.world->getHostPlayer();
 
                                                 if (NULL == pl) return;
-                                                if (pl->holdtype != EnumPlayerHoldType::None) {
+                                                if (pl->holdtype != EnumPlayerHoldType::HoldTypeNone) {
                                                     auto &v = pl->heldItem->vacuumCells;
                                                     std::erase_if(v, [&](CellData *c) { return c == cur; });
                                                 }
@@ -3555,7 +3555,7 @@ void Game::ResolutionChanged(int newWidth, int newHeight) {
 
     METADOT_INFO("Ticking chunk...");
 
-    ME::Timer timer;
+    Timer timer;
     timer.start();
 
     tickChunkLoading();
@@ -3622,7 +3622,7 @@ void Game::quitToMainMenu() {
 
     std::string wpStr = METADOT_RESLOC(std::format("saves/{0}", worldName).c_str());
 
-    Iso.world = ME::create_scope<World>();
+    Iso.world = create_scope<World>();
     Iso.world->noSaveLoad = true;
     Iso.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
                     (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, ENGINE()->target, &global.audio, generator);
@@ -3712,3 +3712,5 @@ void Game::updateMaterialSounds() {
     // METADOT_BUG("{} / {} = {}", waterCt, 3000, water);
     global.audio.SetEventParameter("event:/World/WaterFlow", "FlowIntensity", water);
 }
+
+}  // namespace ME

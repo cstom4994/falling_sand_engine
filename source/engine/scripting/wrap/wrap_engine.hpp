@@ -5,6 +5,8 @@
 
 struct lua_State;
 
+namespace ME {
+
 #define DEFAULT_SCALE 2
 
 #define COLOR_LIMIT 16
@@ -20,5 +22,7 @@ int metadot_bind_fs(lua_State *L);
 int metadot_bind_lz4(lua_State *L);
 int metadot_bind_cstructcore(lua_State *L);
 int metadot_bind_cstructtest(lua_State *L);
+
+}  // namespace ME
 
 #endif

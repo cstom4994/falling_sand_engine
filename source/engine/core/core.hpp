@@ -51,17 +51,6 @@
 #define METADOT_OK 0
 #define METADOT_FAILED 1
 
-typedef struct Pixel {
-    u8 b;
-    u8 g;
-    u8 r;
-    u8 a;
-} Pixel;
-
-#pragma region engine_framework
-
-#include <cstdint>
-
 #ifdef ME_PLATFORM_WINDOWS
 #define METADOT_CDECL __cdecl
 #else
@@ -87,28 +76,7 @@ typedef struct Pixel {
 #define ME_ALIGN_TRUNCATE_PTR(p, n) ((void *)ME_ALIGN_TRUNCATE((uintptr_t)(p), n))
 #define ME_ALIGN_FORWARD_PTR(p, n) ((void *)ME_ALIGN_FORWARD((uintptr_t)(p), n))
 
-// Not sure where to put this... Here is good I guess.
-ME_INLINE uint64_t metadot_fnv1a(const void *data, int size) {
-    const char *s = (const char *)data;
-    uint64_t h = 14695981039346656037ULL;
-    char c = 0;
-    while (size--) {
-        h = h ^ (uint64_t)(*s++);
-        h = h * 1099511628211ULL;
-    }
-    return h;
-}
-
-#pragma endregion engine_framework
-
 #define METADOT_CALLABLE(func_name) [](auto... args) -> decltype(auto) { return func_name(std::move(args)...); }
-
-// ImGuiData Types
-
-struct MarkdownData {
-    std::string data;
-};
-METADOT_STRUCT(MarkdownData, data);
 
 #if defined(IGNORE_DEPRECATED_WARNING)
 #define ME_DEPRECATED_
@@ -121,6 +89,32 @@ METADOT_STRUCT(MarkdownData, data);
 #endif
 
 #define ME_OVERRIDE_ override
+
+namespace ME {
+
+typedef struct Pixel {
+    u8 b;
+    u8 g;
+    u8 r;
+    u8 a;
+} Pixel;
+
+// ImGuiData Types
+struct MarkdownData {
+    std::string data;
+};
+
+// Not sure where to put this... Here is good I guess.
+ME_INLINE uint64_t metadot_fnv1a(const void *data, int size) {
+    const char *s = (const char *)data;
+    uint64_t h = 14695981039346656037ULL;
+    char c = 0;
+    while (size--) {
+        h = h ^ (uint64_t)(*s++);
+        h = h * 1099511628211ULL;
+    }
+    return h;
+}
 
 // A portable and safe way to add byte offset to any pointer
 // https://stackoverflow.com/questions/15934111/portable-and-safe-way-to-add-byte-offset-to-any-pointer
@@ -135,5 +129,7 @@ inline T *addOffsetR(std::ptrdiff_t offset, T *ptr) {
     if (!ptr) return nullptr;
     return (T *)((unsigned char *)ptr + offset);
 }
+
+}  // namespace ME
 
 #endif

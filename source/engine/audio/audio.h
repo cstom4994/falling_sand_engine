@@ -8,6 +8,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "engine/core/core.hpp"
@@ -19,10 +20,16 @@
 #include <fmod.hpp>
 #include <fmod_studio.hpp>
 
-#pragma region FMODWrapper
+namespace FMOD {
+namespace Studio {
+class EventDescription;
+class Bank;
+}  // namespace Studio
+}  // namespace FMOD
 
-#include <string>
-#include <unordered_map>
+namespace ME {
+
+#pragma region FMODWrapper
 
 class event;
 
@@ -33,12 +40,6 @@ class event_instance {
     void stop();
 };
 
-namespace FMOD {
-namespace Studio {
-class EventDescription;
-}
-}  // namespace FMOD
-
 /**
    Models FMOD event descriptions
 */
@@ -48,12 +49,6 @@ struct event {
 
     event_instance instance();
 };
-
-namespace FMOD {
-namespace Studio {
-class Bank;
-}
-}  // namespace FMOD
 
 struct bank {
     /** Instance of the fmod bank object */
@@ -104,8 +99,6 @@ inline void check_err(FMOD_RESULT res) {
 }
 
 #pragma endregion FMODWrapper
-
-namespace ME {
 
 struct Implementation {
     Implementation();
@@ -158,8 +151,8 @@ public:
     FMOD_VECTOR VectorToFmod(const MEvec3 &vPosition);
 };
 
-}  // namespace ME
-
 void AudioEngineInit();
+
+}  // namespace ME
 
 #endif  // METAENGINE_AUDIO_H

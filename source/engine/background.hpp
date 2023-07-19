@@ -16,6 +16,8 @@
 #include "game_datastruct.hpp"
 #include "textures.hpp"
 
+namespace ME {
+
 class BackgroundLayer {
 public:
     TextureRef tex;
@@ -32,7 +34,7 @@ public:
     ~BackgroundLayer();
 };
 
-using BackgroundLayerRef = ME::ref<BackgroundLayer>;
+using BackgroundLayerRef = ref<BackgroundLayer>;
 
 class BackgroundObject {
 public:
@@ -63,10 +65,12 @@ public:
     void create() override;
     void destory() override;
     void reload() override;
-    void registerLua(ME::LuaWrapper::State &s_lua) override;
+    void registerLua(LuaWrapper::State &s_lua) override;
 
 public:
     void draw();
 };
+
+}  // namespace ME
 
 #endif

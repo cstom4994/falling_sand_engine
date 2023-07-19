@@ -4,6 +4,8 @@
 
 #include "game/player.hpp"
 
+namespace ME {
+
 Item::Item() {}
 
 Item::~Item() { ME_ASSERT(this->image); }
@@ -78,3 +80,5 @@ void Item::loadFillTexture(C_Surface *tex) {
     }
     fill.resize(maxN);
 }
+
+}  // namespace ME

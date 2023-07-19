@@ -5,6 +5,8 @@
 #include "engine/core/io/filesystem.h"
 #include "engine/ui/imgui_helper.hpp"
 
+namespace ME {
+
 void PackEditor::Init() {
     // file_dialog.SetTitle("选择包");
     // file_dialog.SetTypeFilters({".pack"});
@@ -119,3 +121,5 @@ void PackEditor::Draw() {
     }
     ImGui::End();
 }
+
+}  // namespace ME

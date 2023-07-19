@@ -5,6 +5,8 @@
 
 #include "engine/core/macros.hpp"
 
+namespace ME {
+
 static const int WINDOWS_MAX_WIDTH = 1920;
 static const int WINDOWS_MAX_HEIGHT = 1080;
 
@@ -63,6 +65,8 @@ static const char *engine_funcs_name_csc = "_metadot_cstruct_core";
 static const char *engine_funcs_name_cst = "_metadot_cstruct_test";
 static const char *engine_funcs_name_ecs = "_metadot_cecs";
 static const char *engine_funcs_name_uilayout = "_metadot_ui_layout";
+
+}  // namespace ME
 
 namespace UMeta {
 static constexpr char nameof_namespace[] = "UMeta";

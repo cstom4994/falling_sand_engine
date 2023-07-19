@@ -14,7 +14,9 @@
 #include "engine/engine.h"
 #include "engine/utils/utils.hpp"
 
-bool InitFilesystem() {
+namespace ME {
+
+bool ME_fs_init() {
 
     auto currentDir = std::filesystem::path(std::filesystem::current_path());
 
@@ -24,7 +26,7 @@ bool InitFilesystem() {
 
     for (int i = 0; i < 3; ++i) {
         if (std::filesystem::exists(currentDir / "Data")) {
-            ENGINE()->gamepath = normalizePath(currentDir.string()).c_str();
+            ENGINE()->gamepath = ME_fs_normalize_path_s(currentDir.string()).c_str();
             METADOT_INFO(std::format("Game data path detected: {0} (Base: {1})", ENGINE()->gamepath, std::filesystem::current_path().string().c_str()).c_str());
             return METADOT_OK;
         }
@@ -63,14 +65,7 @@ std::vector<char> ME_fs_read_file_to_vec(const char *path, size_t &size) {
     }
 }
 
-std::string normalizePath2(const std::string &messyPath) {
-    std::filesystem::path path(messyPath);
-    std::filesystem::path canonicalPath = std::filesystem::canonical(path);
-    std::string npath = canonicalPath.make_preferred().string();
-    return npath;
-}
-
-std::string normalizePath(const std::string &path, char delimiter) {
+std::string ME_fs_normalize_path_s(const std::string &path, char delimiter) {
     static constexpr char delims[] = "/\\";
 
     std::string norm;
@@ -162,3 +157,5 @@ std::string ME_fs_readfile(const std::string &filename) {
 
     return std::string(bytes.data(), fileSize);
 }
+
+}  // namespace

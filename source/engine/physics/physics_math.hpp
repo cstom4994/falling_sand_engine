@@ -14,6 +14,8 @@
 #include "engine/core/mathlib.hpp"
 #include "engine/core/sdl_wrapper.h"
 
+namespace ME {
+
 ME_INLINE bool IsValid(float x) { return isfinite(x); }
 
 ME_INLINE auto RectToPoint(const MEvec2 &v) {
@@ -450,5 +452,7 @@ Result FindPerimeter(int width, int height, unsigned char *data);
 Result FindPerimeter(int width, int height, unsigned char *data, int lookX, int lookY);
 Direction FindEdge(int width, int height, unsigned char *data, int lookX, int lookY);
 }  // namespace MarchingSquares
+
+}  // namespace ME
 
 #endif

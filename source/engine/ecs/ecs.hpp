@@ -16,8 +16,8 @@
 #include <utility>
 #include <vector>
 
-#include "engine/core/mathlib.hpp"
 #include "ecs_impl.hpp"
+#include "engine/core/mathlib.hpp"
 
 namespace ME::ecs {
 
@@ -97,7 +97,7 @@ namespace std {
 template <>
 struct hash<ME::ecs::entity> final {
     std::size_t operator()(const ME::ecs::entity& ent) const noexcept {
-        return NewMaths::hash_combine(std::hash<const ME::ecs::registry*>()(&ent.owner()), std::hash<ME::ecs::entity_id>()(ent.id()));
+        return ME::NewMaths::hash_combine(std::hash<const ME::ecs::registry*>()(&ent.owner()), std::hash<ME::ecs::entity_id>()(ent.id()));
     }
 };
 }  // namespace std
@@ -162,7 +162,7 @@ namespace std {
 template <>
 struct hash<ME::ecs::const_entity> final {
     std::size_t operator()(const ME::ecs::const_entity& ent) const noexcept {
-        return NewMaths::hash_combine(std::hash<const ME::ecs::registry*>()(&ent.owner()), std::hash<ME::ecs::entity_id>()(ent.id()));
+        return ME::NewMaths::hash_combine(std::hash<const ME::ecs::registry*>()(&ent.owner()), std::hash<ME::ecs::entity_id>()(ent.id()));
     }
 };
 }  // namespace std

@@ -2,6 +2,8 @@
 
 #include "audio.h"
 
+namespace ME {
+
 void event_instance::start() { assert(false && "Unimpl"); }
 
 void event_instance::stop() { assert(false && "Unimpl"); }
@@ -84,8 +86,6 @@ FMOD::System *get_fmod_core_system() {
     assert(lowLevelSystem != nullptr);
     return lowLevelSystem;
 }
-
-namespace ME {
 
 Implementation::Implementation() { init_fmod_system(); }
 
@@ -282,6 +282,6 @@ float Audio::VolumeTodB(float volume) { return 20.0f * log10f(volume); }
 
 void Audio::Shutdown() { delete sgpImplementation; }
 
-}  // namespace ME
-
 void AudioEngineInit() {}
+
+}  // namespace ME

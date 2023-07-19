@@ -5,9 +5,6 @@
 
 #include "basic_types.h"
 
-//--------------------------------------------------------------------------------------------------------------------------------//
-// MEMORY FUNCTIONS USED
-
 #ifndef ME_MALLOC_FUNC
 #define ME_MALLOC_FUNC(s) malloc((s))
 #endif
@@ -16,9 +13,7 @@
 #define ME_FREE_FUNC(p) free((p))
 #endif
 
-// #ifndef ME_REALLOC
-// #define ME_REALLOC(p, s) realloc(p, s)
-// #endif
+namespace ME {
 
 typedef struct ME_mem_alloc_stack_t ME_mem_alloc_stack_t;
 ME_mem_alloc_stack_t* ME_mem_alloc_stack_create(void* memory_chunk, size_t size);
@@ -46,15 +41,15 @@ void ME_mem_alloc_frame_free(ME_mem_alloc_frame_t* frame);
 #else
 
 #ifndef ME_MALLOC
-#define ME_MALLOC(size) ME_mem_alloc_leak_check_alloc((size), (char*)__FILE__, __LINE__)
+#define ME_MALLOC(size) ::ME::ME_mem_alloc_leak_check_alloc((size), (char*)__FILE__, __LINE__)
 #endif
 
 #ifndef ME_FREE
-#define ME_FREE(mem) ME_mem_alloc_leak_check_free(mem)
+#define ME_FREE(mem) ::ME::ME_mem_alloc_leak_check_free(mem)
 #endif
 
 #ifndef ME_CALLOC
-#define ME_CALLOC(count, element_size) ME_mem_alloc_leak_check_calloc(count, element_size, (char*)__FILE__, __LINE__)
+#define ME_CALLOC(count, element_size) ::ME::ME_mem_alloc_leak_check_calloc(count, element_size, (char*)__FILE__, __LINE__)
 #endif
 
 #endif
@@ -112,5 +107,7 @@ void operator delete(void* ptr) noexcept;
 void ME_get_memory_leak();
 
 #endif
+
+}  // namespace ME
 
 #endif

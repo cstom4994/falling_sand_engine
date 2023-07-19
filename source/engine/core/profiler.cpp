@@ -17,6 +17,8 @@
 #include "engine/utils/utility.hpp"
 #include "libs/lz4/lz4.h"
 
+namespace ME {
+
 u64 profiler_get_clock_frequency();
 
 // Data load/save functions
@@ -457,7 +459,7 @@ int ME_profiler_free_list_check_ptr(profiler_free_list_t *_freeList, void *_ptr)
     return ((uintptr_t)_freeList->m_maxBlocks * (uintptr_t)_freeList->m_blockSize) > (uintptr_t)(((u8 *)_ptr) - _freeList->m_buffer) ? 1 : 0;
 }
 
-namespace ME::profiler {
+namespace profiler {
 
 profiler_context::profiler_context()
     : m_scopesOpen(0), m_displayScopes(0), m_frameStartTime(0), m_frameEndTime(0), m_thresholdCrossed(false), m_timeThreshold(0.0f), m_levelThreshold(0), m_pauseProfiling(false) {
@@ -493,7 +495,7 @@ void profiler_context::register_thread(u64 _threadID, const char *_name) { m_thr
 void profiler_context::unregister_thread(u64 _threadID) { m_threadNames.erase(_threadID); }
 
 void profiler_context::begin_frame() {
-    ME::scoped_mutex_locker lock(m_mutex);
+    scoped_mutex_locker lock(m_mutex);
 
     u64 frameBeginTime, frameEndTime;
     static u64 beginPrevFrameTime = ME_profiler_get_clock();
@@ -581,7 +583,7 @@ void profiler_context::dec_level() {
 profiler_scope *profiler_context::begin_ccope(const char *_file, int _line, const char *_name) {
     profiler_scope *scope = 0;
     {
-        ME::scoped_mutex_locker lock(m_mutex);
+        scoped_mutex_locker lock(m_mutex);
         if (m_scopesOpen == ME_SCOPES_MAX) return 0;
 
         scope = (profiler_scope *)ME_profiler_free_list_alloc(&m_scopesAllocator);
@@ -623,7 +625,7 @@ const char *profiler_context::add_string(const char *_name, buffer_use _buffer) 
 }
 
 void profiler_context::get_frame_data(profiler_frame *_data) {
-    ME::scoped_mutex_locker lock(m_mutex);
+    scoped_mutex_locker lock(m_mutex);
 
     static profiler_thread threadData[ME_DRAW_THREADS_MAX];
 
@@ -649,7 +651,7 @@ void profiler_context::get_frame_data(profiler_frame *_data) {
     }
 }
 
-}  // namespace ME::profiler
+}  // namespace profiler
 
 void ME_profiler_graph_init(profiler_graph *fps, int style, const char *name) {
     memset(fps, 0, sizeof(profiler_graph));
@@ -756,3 +758,4 @@ void ME_profiler_graph_render(MEsurface_context *surface, float x, float y, prof
         ME_surface_Text(surface, x + w - 3, y + 3, str, NULL);
     }
 }
+}  // namespace ME

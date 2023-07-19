@@ -30,6 +30,8 @@
 
 #define ME_SURFACE_COUNTOF(arr) (sizeof(arr) / sizeof(0 [arr]))
 
+namespace ME {
+
 enum MEsurface_commands {
     ME_SURFACE_MOVETO = 0,
     ME_SURFACE_LINETO = 1,
@@ -2774,4 +2776,5 @@ void ME_surface_TextMetrics(MEsurface_context* ctx, float* ascender, float* desc
     if (descender != NULL) *descender *= invscale;
     if (lineh != NULL) *lineh *= invscale;
 }
-// vim: ft=c nu noet ts=4
+
+}  // namespace ME

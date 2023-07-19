@@ -7,6 +7,8 @@
 #include "game.hpp"
 #include "game_datastruct.hpp"
 
+namespace ME {
+
 class ScriptingWorldGenerator : public WorldGenerator {
 
     void generateChunk(World *world, Chunk *ch) override;
@@ -27,5 +29,7 @@ class DefaultGenerator : public WorldGenerator {
 
     std::vector<Populator *> getPopulators() override;
 };
+
+}  // namespace ME
 
 #endif

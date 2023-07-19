@@ -50,8 +50,8 @@
 #define ME_GUI_TREE_MAX_TUPLE_ELEMENTS 3  // larger values generate less tree nodes
 #endif
 
-static_inline ImVec4 vec4_to_imvec4(const MEvec4 &v4) { return {v4.x, v4.y, v4.z, v4.w}; }
-static_inline ImColor vec4_to_imcolor(const MEvec4 &v4) { return {v4.x * 255.0f, v4.y * 255.0f, v4.z * 255.0f, v4.w * 255.0f}; }
+static_inline ImVec4 vec4_to_imvec4(const ME::MEvec4 &v4) { return {v4.x, v4.y, v4.z, v4.w}; }
+static_inline ImColor vec4_to_imcolor(const ME::MEvec4 &v4) { return {v4.x * 255.0f, v4.y * 255.0f, v4.z * 255.0f, v4.w * 255.0f}; }
 
 namespace ImGui {
 //      IMGUI::AUTO()
@@ -687,12 +687,12 @@ ME_INLINE ImVec4 ME_rgba2imvec(int r, int g, int b, int a = 255) {
     return ImVec4(newr, newg, newb, newa);
 }
 
-ME_INLINE MEcolor ME_imvec2rgba(ImVec4 iv) {
+ME_INLINE ME::MEcolor ME_imvec2rgba(ImVec4 iv) {
     u8 newr = iv.x * 255;
     u8 newg = iv.y * 255;
     u8 newb = iv.z * 255;
     u8 newa = iv.w * 255;
-    return MEcolor(newr, newg, newb, newa);
+    return ME::MEcolor(newr, newg, newb, newa);
 }
 
 namespace ImGui {

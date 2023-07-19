@@ -13,13 +13,15 @@
 #include <Windows.h>
 #endif
 
+namespace ME {
+
 // Fixed size very simple thread safe ring buffer
 template <typename T, size_t capacity>
 class ThreadSafeRingBuffer {
 public:
     // Push an item to the end if there is free space
-    //	Returns true if succesful
-    //	Returns false if there is not enough space
+    //  Returns true if succesful
+    //  Returns false if there is not enough space
     inline bool push_back(const T& item) {
         bool result = false;
         lock.lock();
@@ -34,8 +36,8 @@ public:
     }
 
     // Get an item if there are any
-    //	Returns true if succesful
-    //	Returns false if there are no items
+    //  Returns true if succesful
+    //  Returns false if there are no items
     inline bool pop_front(T& item) {
         bool result = false;
         lock.lock();
@@ -62,7 +64,7 @@ std::mutex wakeMutex;                                      // used in conjunctio
 uint64_t currentLabel = 0;                                 // tracks the state of execution of the main thread
 std::atomic<uint64_t> finishedLabel;                       // track the state of execution across background worker threads
 
-void ME_job::init() {
+void job::init() {
     // Initialize the worker execution state to 0:
     finishedLabel.store(0);
 
@@ -122,7 +124,7 @@ inline void poll() {
     std::this_thread::yield();   // allow this thread to be rescheduled
 }
 
-void ME_job::execute(const std::function<void()>& job) {
+void job::execute(const std::function<void()>& job) {
     // The main thread label state is updated:
     currentLabel += 1;
 
@@ -134,18 +136,18 @@ void ME_job::execute(const std::function<void()>& job) {
     wakeCondition.notify_one();  // wake one thread
 }
 
-bool ME_job::is_busy() {
+bool job::is_busy() {
     // Whenever the main thread label is not reached by the workers, it indicates that some worker is still alive
     return finishedLabel.load() < currentLabel;
 }
 
-void ME_job::wait() {
+void job::wait() {
     while (is_busy()) {
         poll();
     }
 }
 
-void ME_job::dispatch(uint32_t jobCount, uint32_t groupSize, const std::function<void(job_dispatch_args)>& job) {
+void job::dispatch(uint32_t jobCount, uint32_t groupSize, const std::function<void(job_dispatch_args)>& job) {
     if (jobCount == 0 || groupSize == 0) {
         return;
     }
@@ -181,3 +183,4 @@ void ME_job::dispatch(uint32_t jobCount, uint32_t groupSize, const std::function
         wakeCondition.notify_one();  // wake one thread
     }
 }
+}  // namespace ME

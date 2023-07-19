@@ -7,6 +7,8 @@
 #include "engine/core/io/packer.hpp"
 #include "engine/ui/imgui_helper.hpp"
 
+namespace ME {
+
 class PackEditor {
 private:
     // pack editor
@@ -27,5 +29,7 @@ public:
     void End();
     void Draw();
 };
+
+}  // namespace ME
 
 #endif

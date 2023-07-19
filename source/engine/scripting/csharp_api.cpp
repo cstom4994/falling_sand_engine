@@ -6,7 +6,6 @@
 #include "engine/utils/utility.hpp"
 
 namespace ME {
-namespace Scripting {
 
 void hello_from_cpp() { ME::println("C++: Hello!"); }
 
@@ -34,7 +33,5 @@ void CSharpBasicApi::OnInit() {
 CSharpBasicApi::~CSharpBasicApi() { delete mono; }
 
 void CSharpBasicApi::OnUpdate() {}
-
-}  // namespace Scripting
 
 }  // namespace ME

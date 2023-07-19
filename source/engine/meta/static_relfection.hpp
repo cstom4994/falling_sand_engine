@@ -12,8 +12,6 @@
 
 namespace ME::meta::static_refl {
 
-using namespace ME::cpp;
-
 template <typename Name, typename T>
 struct NamedValue;
 
@@ -397,7 +395,7 @@ struct FieldList : ElemList<Fields...> {
 template <typename T, typename... Bases>
 struct TypeInfoBase {
     using Type = T;
-    using TName = decltype(type_name<T>());
+    using TName = decltype(cpp::type_name<T>());
     static constexpr std::string_view name = TName::View();
     static constexpr BaseList bases = {Bases{}...};
 

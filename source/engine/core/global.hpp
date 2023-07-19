@@ -18,6 +18,8 @@
 #include "engine/meta/reflection.hpp"
 #include "engine/ui/imgui_impl.hpp"
 
+namespace ME {
+
 class Game;
 class Scripting;
 class UIData;
@@ -30,7 +32,7 @@ struct I18N {
 
 struct Global {
     Game *game = nullptr;
-    ME::Audio audio;
+    Audio audio;
     I18N I18N;
 };
 
@@ -79,5 +81,7 @@ enum MEf3_index { X, Y, Z, W };
 //    r.2 | 2.z   6.z   10.z   14.z |
 //    r.3 | 3.w   7.w   11.w   15.w |
 typedef float MEf44[4 * 4];
+
+}  // namespace ME
 
 #endif

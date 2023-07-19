@@ -10,6 +10,8 @@
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/ui/imgui_helper.hpp"
 
+using namespace ME;
+
 namespace lib {
 class element {
 public:

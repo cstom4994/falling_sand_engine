@@ -10,6 +10,8 @@
 #include "engine/scripting/scripting.hpp"
 #include "engine/ui/imgui_helper.hpp"
 
+namespace ME {
+
 struct Biome;
 
 MAKE_ENUM_FLAGS(SystemFlags, int){
@@ -47,18 +49,14 @@ public:
     virtual void reload() = 0;
 
     // Register Lua always been called before Create()
-    virtual void registerLua(ME::LuaWrapper::State &s_lua) = 0;
+    virtual void registerLua(LuaWrapper::State &s_lua) = 0;
 };
 
 template <>
-struct ME::meta::static_refl::TypeInfo<IGameSystem> : TypeInfoBase<IGameSystem> {
+struct meta::static_refl::TypeInfo<IGameSystem> : TypeInfoBase<IGameSystem> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {};
 };
-
-ME_GUI_DEFINE_BEGIN(template <>, IGameSystem)
-ImGui::Text("%s %d", var.getName().c_str(), var.priority);
-ME_GUI_DEFINE_END
 
 #define REGISTER_SYSTEM(name) name(u32 p, SystemFlags f = SystemFlags::Default) : IGameSystem(p, f, #name){};
 
@@ -69,7 +67,13 @@ public:
     void create() override;
     void destory() override;
     void reload() override;
-    void registerLua(ME::LuaWrapper::State &s_lua) override;
+    void registerLua(LuaWrapper::State &s_lua) override;
 };
+
+}  // namespace ME
+
+ME_GUI_DEFINE_BEGIN(template <>, ME::IGameSystem)
+ImGui::Text("%s %d", var.getName().c_str(), var.priority);
+ME_GUI_DEFINE_END
 
 #endif

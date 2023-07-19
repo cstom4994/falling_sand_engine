@@ -42,6 +42,10 @@
 #include "libs/glad/glad.h"
 #include "libs/imgui/font_awesome.h"
 
+namespace ME {
+
+extern int test_wang();
+
 void profiler_draw_frame_bavigation(frame_info *_infos, uint32_t _numInfos) {
     ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(1510.0f, 140.0f), ImGuiCond_FirstUseEver);
@@ -1042,7 +1046,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                         if (global.game->Iso.world == nullptr || !global.game->Iso.world->isPlayerInWorld()) {
                         } else {
-                            using namespace ME::meta::static_refl;
+                            using namespace ::ME::meta::static_refl;
 
                             TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t depth) {
                                 for (std::size_t i = 0; i < depth; i++) std::cout << "  ";
@@ -1138,7 +1142,6 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     }
                     ImGui::SameLine();
                     if (ImGui::Button("Wang")) {
-                        extern int test_wang();
                         test_wang();
                     }
                     ImGui::SameLine();
@@ -1160,7 +1163,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                 if (CollapsingHeader(ICON_LANG(ICON_FA_VECTOR_SQUARE, "ui_telemetry"))) {
                     GameUI::DrawDebugUI(global.game);
                 }
-#define INSPECTSHADER(_c) ME::inspect_shader(#_c, global.game->Iso.shaderworker->_c->shader)
+#define INSPECTSHADER(_c) ::ME::inspect_shader(#_c, global.game->Iso.shaderworker->_c->shader)
                 if (CollapsingHeader(CC("GLSL"))) {
                     ImGui::Indent();
                     INSPECTSHADER(newLightingShader);
@@ -1205,7 +1208,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                     ImGui::Indent();
                     if (check_chunk_ptr != nullptr)
-                        ME::meta::static_refl::TypeInfo<Chunk>::ForEachVarOf(*check_chunk_ptr, [&](const auto &field, auto &&var) {
+                        meta::static_refl::TypeInfo<Chunk>::ForEachVarOf(*check_chunk_ptr, [&](const auto &field, auto &&var) {
                             if (field.name == "pack_filename") return;
 
                             if (check_rigidbody)
@@ -1230,7 +1233,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                     ImGui::Text("ECS: %lu %lu", global.game->Iso.world->Reg().memory_usage().entities, global.game->Iso.world->Reg().memory_usage().components);
 
-                    global.game->Iso.world->Reg().for_joined_components<WorldEntity, Player>([&](ME::ecs::entity, WorldEntity &we, Player &p) {
+                    global.game->Iso.world->Reg().for_joined_components<WorldEntity, Player>([&](ecs::entity, WorldEntity &we, Player &p) {
                         ImGui::Auto(we, "实体");
                         ImGui::Auto(p, "玩家");
                     });
@@ -1487,7 +1490,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     }
                 };
 
-                ME::meta::dostruct::for_each(global.game->Iso.globaldef, ShowCVar);
+                // meta::dostruct::for_each(global.game->Iso.globaldef, ShowCVar);
 
                 ImGui::EndTable();
             }
@@ -1495,3 +1498,5 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         ImGui::End();
     }
 }
+
+}  // namespace ME

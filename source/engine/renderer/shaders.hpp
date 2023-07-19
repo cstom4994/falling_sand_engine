@@ -15,6 +15,8 @@
 #include "engine/core/sdl_wrapper.h"
 #include "engine/renderer/renderer_gpu.h"
 
+namespace ME {
+
 // Loads a shader and prepends version/compatibility info before compiling it.
 u32 ME_Shaders_LoadShader(R_ShaderEnum shader_type, const char* filename);
 R_ShaderBlock ME_Shaders_LoadShaderProgram(u32* p, const char* vertex_shader_file, const char* fragment_shader_file);
@@ -34,10 +36,10 @@ public:
     void Activate();
 };
 
-#define ShaderBaseDecl()                                                 \
-    u32 Init() {                                                         \
-        this->shader_name = ME::cpp::type_name<decltype(this)>().View(); \
-        return __super::Init();                                          \
+#define ShaderBaseDecl()                                                   \
+    u32 Init() {                                                           \
+        this->shader_name = ::ME::cpp::type_name<decltype(this)>().View(); \
+        return __super::Init();                                            \
     }
 
 typedef GLuint GLshader;   // a handle to a GL shader
@@ -207,5 +209,7 @@ public:
     //     #endif
     GLprogram* add_program_from_combined_file(const std::string& filename, const std::vector<GLenum>& shaderTypes);
 };
+
+}  // namespace ME
 
 #endif

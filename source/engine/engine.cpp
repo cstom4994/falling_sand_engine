@@ -4,15 +4,17 @@
 
 #include <cstdlib>
 
+#include "engine/core/base_memory.h"
 #include "engine/core/core.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
-#include "engine/core/base_memory.h"
 #include "engine/core/platform.h"
 #include "game.hpp"
 #include "textures.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
+
+namespace ME {
 
 EngineData g_engine_data;
 
@@ -30,7 +32,7 @@ int InitEngine(void (*InitCppReflection)()) {
 
     METADOT_INFO("Initializing Engine...");
 
-    bool init = InitTime() || InitFilesystem() || InitScreen(960, 540, 1, 60) || InitCore() || ME_initwindow();
+    bool init = InitTime() || ME_fs_init() || InitScreen(960, 540, 1, 60) || InitCore() || ME_initwindow();
 
     if (init) {
         EndEngine(1);
@@ -172,3 +174,5 @@ void ProcessTickTime() {
 
     ENGINE()->time.lastTime = ENGINE()->time.now;
 }
+
+}  // namespace ME

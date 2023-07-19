@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-    const auto game = ME::create_scope<Game>(argc, argv);
+    const auto game = ME::create_scope<ME::Game>(argc, argv);
     auto result = game->init(argc, argv);
 
 #ifdef CHECK_MEM

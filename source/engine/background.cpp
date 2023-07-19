@@ -13,6 +13,8 @@
 #include "game.hpp"
 #include "textures.hpp"
 
+namespace ME {
+
 BackgroundObject::~BackgroundObject() {
     for (size_t i = 0; i < layers.size(); i++) {
         layers[i].reset();
@@ -25,15 +27,15 @@ void BackgroundObject::Init() {
     // }
 }
 
-void NewBackgroundObject(std::string name, u32 solid, ME::LuaWrapper::LuaRef table) {
+void NewBackgroundObject(std::string name, u32 solid, LuaWrapper::LuaRef table) {
     auto &L = Scripting::get_singleton_ptr()->Lua->s_lua;
-    std::vector<ME::LuaWrapper::LuaRef> b = table;
+    std::vector<LuaWrapper::LuaRef> b = table;
     std::vector<BackgroundLayerRef> Layers;
 
     for (auto &c : b) {
         METADOT_BUG(std::format("{0} {1}, [{2:.2} {3:.2} {4:.2} {5:.2}]", name, c["name"].get<std::string>().c_str(), c["p1"].get<f32>(), c["p2"].get<f32>(), c["x1"].get<f32>(), c["x2"].get<f32>())
                             .c_str());
-        BackgroundLayerRef l = ME::create_ref<BackgroundLayer>(LoadTexture(c["name"].get<std::string>().c_str()), c["p1"].get<f32>(), c["p2"].get<f32>(), c["x1"].get<f32>(), c["x2"].get<f32>());
+        BackgroundLayerRef l = create_ref<BackgroundLayer>(LoadTexture(c["name"].get<std::string>().c_str()), c["p1"].get<f32>(), c["p2"].get<f32>(), c["x1"].get<f32>(), c["x2"].get<f32>());
         Layers.push_back(l);
     }
 
@@ -74,7 +76,7 @@ void BackgroundSystem::destory() {
 }
 void BackgroundSystem::reload() {}
 
-void BackgroundSystem::registerLua(ME::LuaWrapper::State &s_lua) { s_lua["NewBackgroundObject"] = ME::LuaWrapper::function(NewBackgroundObject); }
+void BackgroundSystem::registerLua(LuaWrapper::State &s_lua) { s_lua["NewBackgroundObject"] = LuaWrapper::function(NewBackgroundObject); }
 
 void BackgroundSystem::draw() {
     // 绘制背景贴图
@@ -182,3 +184,5 @@ BackgroundLayer::~BackgroundLayer() {
     // 背景贴图不在贴图包中 这里将其释放
     if (this->tex) this->tex.reset();
 }
+
+}  // namespace ME

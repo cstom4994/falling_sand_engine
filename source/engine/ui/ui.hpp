@@ -16,6 +16,8 @@
 #include "engine/ui/imgui_layer.hpp"
 #include "game/player.hpp"
 
+namespace ME {
+
 typedef enum elementType { coloredRectangle, texturedRectangle, textElement, lineElement, buttonElement, progressBarElement, windowElement, listBoxElement, inputBoxElement } ElementType;
 
 typedef union UIElementClass {
@@ -69,7 +71,7 @@ struct UIElement {
 
     bool visible = true;
 
-    ME::ref<UIElement> parent;
+    ref<UIElement> parent;
 
     UIMovable movable;
     UIResizable resizable;
@@ -91,10 +93,10 @@ struct UIElement {
 // static_assert(sizeof(UIElement) == 176);
 
 typedef struct UIData {
-    ME::ref<ImGuiLayer> imgui;
+    ref<ImGuiLayer> imgui;
 
     // std::map<std::string, UIElement> elementLists = {};
-    std::map<std::string, ME::ref<UIElement>> elementLists = {};
+    std::map<std::string, ref<UIElement>> elementLists = {};
 
     UIElement* oninput = nullptr;
     UIElement* onmoving = nullptr;
@@ -109,7 +111,7 @@ public:
     void create() override;
     void destory() override;
     void reload() override;
-    void registerLua(ME::LuaWrapper::State& s_lua) override;
+    void registerLua(LuaWrapper::State& s_lua) override;
 
     void UIRendererInit();
     void UIRendererPostUpdate();
@@ -124,5 +126,7 @@ public:
     void DrawPoint(MEvec3 pos, float size, Texture* texture, u8 r, u8 g, u8 b);
     void DrawLine(MEvec3 min, MEvec3 max, float thickness, u8 r, u8 g, u8 b);
 };
+
+}  // namespace ME
 
 #endif

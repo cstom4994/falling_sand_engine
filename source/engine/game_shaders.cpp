@@ -5,6 +5,8 @@
 #include "engine/engine.h"
 #include "game/player.hpp"
 
+namespace ME {
+
 #pragma region Shaders
 
 void CrtShader::Update(int w, int h) {
@@ -190,7 +192,7 @@ void UntexturedShader::Update(float mvp[], GLfloat gldata[]) {
 
 void ShaderWorkerSystem::create() {
 
-    ME::Timer timer;
+    Timer timer;
     timer.start();
 
     this->crtShader = new CrtShader;
@@ -275,4 +277,6 @@ void ShaderWorkerSystem::reload() {
 
 #undef SAFEUNLOADSHADER
 
-void ShaderWorkerSystem::registerLua(ME::LuaWrapper::State &s_lua) {}
+void ShaderWorkerSystem::registerLua(LuaWrapper::State &s_lua) {}
+
+}  // namespace ME

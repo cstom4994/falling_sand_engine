@@ -16,6 +16,8 @@
 #include "renderer_gpu.h"
 #include "renderer_opengl.h"
 
+namespace ME {
+
 void gpu_init_renderer_register(void);
 void gpu_free_renderer_register(void);
 
@@ -773,7 +775,7 @@ bool R_IsCameraEnabled(R_Target *target) {
     return target->use_camera;
 }
 
-R_Image *R_CreateImage(Uint16 w, Uint16 h, R_FormatEnum format) {
+R_Image *R_CreateImage(u16 w, u16 h, R_FormatEnum format) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) return NULL;
 
     return CreateImage(gpu_current_renderer, w, h, format);
@@ -2538,3 +2540,5 @@ void R_PolygonFilled(R_Target *target, unsigned int num_vertices, float *vertice
     CHECK_RENDERER();
     PolygonFilled(renderer, target, num_vertices, vertices, color);
 }
+
+}  // namespace ME

@@ -17,6 +17,8 @@
 #include "game/player.hpp"
 #include "libs/glad/glad.h"
 
+namespace ME {
+
 int ParseRunArgs(int argc, char *argv[]) {
 
     if (argc > 1) {
@@ -340,3 +342,5 @@ char *ME_clipboard_get() {
 }
 
 void ME_clipboard_set(const char *string) { SDL_SetClipboardText(string); }
+
+}  // namespace ME

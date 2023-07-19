@@ -5,6 +5,8 @@
 #include "engine/scripting/scripting.hpp"
 #include "game_ui.hpp"
 
+namespace ME {
+
 void InitGlobalDEF(GlobalDEF* s, bool openDebugUIs) {
 
     auto GlobalDEF = Scripting::get_singleton_ptr()->Lua->s_lua["global_def"];
@@ -81,7 +83,7 @@ void SaveGlobalDEF(std::string globaldef_src) {
 }
 
 template <>
-char ME::cvar::Cast<char>(std::string s) {
+char cvar::Cast<char>(std::string s) {
     if (s.size() > 0)
         return s[0];
     else
@@ -95,20 +97,20 @@ void check_args_limit(T v) {
 };
 
 template <>
-short ME::cvar::Cast<short>(std::string s) {
+short cvar::Cast<short>(std::string s) {
     int v = std::stoi(s);
     check_args_limit<int, short>(v);
     return (short)v;
 }
 
 template <>
-bool ME::cvar::Cast<bool>(std::string s) {
+bool cvar::Cast<bool>(std::string s) {
     int v = std::stoi(s);
     return (bool)v;
 }
 
 template <>
-const char* ME::cvar::Cast<const char*>(std::string s) {
+const char* cvar::Cast<const char*>(std::string s) {
     return s.c_str();
 }
 
@@ -119,38 +121,40 @@ CVAR_CAST_DEF(double, std::stod);
 CVAR_CAST_DEF(long double, std::stold);
 CVAR_CAST_DEF(std::string, std::string);
 
-ME::cvar::BaseCommand::BaseCommand(std::string name) : name(name) {}
-ME::cvar::BaseCommand::~BaseCommand() {}
+cvar::BaseCommand::BaseCommand(std::string name) : name(name) {}
+cvar::BaseCommand::~BaseCommand() {}
 
-void ME::cvar::BaseCommand::AddParameter(const ME::cvar::CommandParameter& p) { params.push_back(p); }
-std::string ME::cvar::BaseCommand::GetName() const { return name; }
-ME::cvar::BaseCommand::CommandArgs::size_type ME::cvar::BaseCommand::size() const { return params.size(); }
+void cvar::BaseCommand::AddParameter(const cvar::CommandParameter& p) { params.push_back(p); }
+std::string cvar::BaseCommand::GetName() const { return name; }
+cvar::BaseCommand::CommandArgs::size_type cvar::BaseCommand::size() const { return params.size(); }
 
-ME::cvar::BaseCommand::iterator ME::cvar::BaseCommand::begin() { return params.begin(); }
-ME::cvar::BaseCommand::iterator ME::cvar::BaseCommand::end() { return params.end(); }
+cvar::BaseCommand::iterator cvar::BaseCommand::begin() { return params.begin(); }
+cvar::BaseCommand::iterator cvar::BaseCommand::end() { return params.end(); }
 
-ME::cvar::CommandParameter::CommandParameter(std::string type, std::string name) : type(type), name(name) {}
+cvar::CommandParameter::CommandParameter(std::string type, std::string name) : type(type), name(name) {}
 
-std::string ME::cvar::CommandParameter::GetName() const { return name; }
-std::string ME::cvar::CommandParameter::GetType() const { return type; }
+std::string cvar::CommandParameter::GetName() const { return name; }
+std::string cvar::CommandParameter::GetType() const { return type; }
 
-ME::cvar::ConVar::~ConVar() {
+cvar::ConVar::~ConVar() {
     for (auto& p : convars) delete p.second;
 }
 
-void ME::cvar::ConVar::RemoveCommand(std::string name) {
+void cvar::ConVar::RemoveCommand(std::string name) {
     auto it = convars.find(name);
     delete it->second;
     if (it == convars.end()) convars.erase(it);
 }
 
-std::string ME::cvar::ConVar::Call(std::string name, std::queue<std::string> args) {
+std::string cvar::ConVar::Call(std::string name, std::queue<std::string> args) {
     auto it = convars.find(name);
     if (it == convars.end()) throw std::exception(name.c_str());
     return (*it).second->Call(args);
 }
 
-ME::cvar::ConVar::const_iterator ME::cvar::ConVar::begin() const { return convars.begin(); }
-ME::cvar::ConVar::const_iterator ME::cvar::ConVar::end() const { return convars.end(); }
-// ME::cvar::BaseCommand::const_iterator ME::cvar::BaseCommand::cbegin() const { return params.cbegin(); }
-// ME::cvar::BaseCommand::const_iterator ME::cvar::BaseCommand::cend() const { return params.cend(); }
+cvar::ConVar::const_iterator cvar::ConVar::begin() const { return convars.begin(); }
+cvar::ConVar::const_iterator cvar::ConVar::end() const { return convars.end(); }
+// cvar::BaseCommand::const_iterator cvar::BaseCommand::cbegin() const { return params.cbegin(); }
+// cvar::BaseCommand::const_iterator cvar::BaseCommand::cend() const { return params.cend(); }
+
+}  // namespace ME

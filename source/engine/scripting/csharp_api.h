@@ -3,7 +3,6 @@
 #include "csharp_bind.hpp"
 
 namespace ME {
-namespace Scripting {
 class CSharpBasicApi {
 
 public:
@@ -18,5 +17,4 @@ public:
 private:
     CSharpWrapper::mono* mono;
 };
-}  // namespace Scripting
 }  // namespace ME

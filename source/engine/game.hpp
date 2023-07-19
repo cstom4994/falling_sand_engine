@@ -41,6 +41,11 @@
 #include "textures.hpp"
 #include "world.hpp"
 
+namespace ME {
+
+using EventCallbackFn = std::function<void(Event &)>;
+using SystemList = std::vector<ref<IGameSystem>>;
+
 struct MEsurface_context;
 
 enum EnumGameState { MAIN_MENU, LOADING, INGAME };
@@ -50,11 +55,76 @@ struct ME_assets_handle_t {
     u32 size;
 };
 
-class Game {
-public:
-    using EventCallbackFn = std::function<void(ME::Event &)>;
-    using SystemList = std::vector<ME::ref<IGameSystem>>;
+struct Iso_t {
+    ref<BackgroundSystem> backgrounds;
+    ref<GameplayScriptSystem> gameplayscript;
+    ref<ShaderWorkerSystem> shaderworker;
+    ref<UISystem> ui;
 
+    SystemList systemList = {};
+
+    ME_pack_reader pack_reader;
+
+    GlobalDEF globaldef;
+    scope<World> world;
+    TexturePack texturepack;
+
+    thread_pool *updateDirtyPool = nullptr;
+    thread_pool *updateDirtyPool2 = nullptr;
+};
+
+struct TexturePack_t {
+    R_Image *backgroundImage = nullptr;
+
+    R_Image *loadingTexture = nullptr;
+    std::vector<u8> pixelsLoading;
+    u8 *pixelsLoading_ar = nullptr;
+    int loadingScreenW = 0;
+    int loadingScreenH = 0;
+
+    R_Image *worldTexture = nullptr;
+    R_Image *lightingTexture = nullptr;
+
+    R_Image *emissionTexture = nullptr;
+    std::vector<u8> pixelsEmission;
+    u8 *pixelsEmission_ar = nullptr;
+
+    R_Image *texture = nullptr;
+    std::vector<u8> pixels;
+    u8 *pixels_ar = nullptr;
+    R_Image *textureLayer2 = nullptr;
+    std::vector<u8> pixelsLayer2;
+    u8 *pixelsLayer2_ar = nullptr;
+    R_Image *textureBackground = nullptr;
+    std::vector<u8> pixelsBackground;
+    u8 *pixelsBackground_ar = nullptr;
+    R_Image *textureObjects = nullptr;
+    R_Image *textureObjectsLQ = nullptr;
+    std::vector<u8> pixelsObjects;
+    u8 *pixelsObjects_ar = nullptr;
+    R_Image *textureObjectsBack = nullptr;
+    R_Image *textureCells = nullptr;
+    std::vector<u8> pixelsCells;
+    u8 *pixelsCells_ar = nullptr;
+    R_Image *textureEntities = nullptr;
+    R_Image *textureEntitiesLQ = nullptr;
+
+    R_Image *textureFire = nullptr;
+    R_Image *texture2Fire = nullptr;
+    std::vector<u8> pixelsFire;
+    u8 *pixelsFire_ar = nullptr;
+
+    R_Image *textureFlowSpead = nullptr;
+    R_Image *textureFlow = nullptr;
+    std::vector<u8> pixelsFlow;
+    u8 *pixelsFlow_ar = nullptr;
+
+    R_Image *temperatureMap = nullptr;
+    std::vector<u8> pixelsTemp;
+    u8 *pixelsTemp_ar = nullptr;
+};
+
+class Game {
 public:
     EnumGameState state = LOADING;
     EnumGameState stateAfterLoad = MAIN_MENU;
@@ -99,80 +169,14 @@ public:
     i32 fadeOutWaitFrames = 0;
     i64 fadeOutStart = 0;
     i64 fadeOutLength = 0;
-    ME::meta::any_function fadeOutCallback = []() {};
+    meta::any_function fadeOutCallback = []() {};
+
+    Iso_t Iso;
+    TexturePack_t TexturePack_;
 
     EventCallbackFn EventCallback;
 
     BackgroundObject *bg = nullptr;
-
-    struct {
-        ME::ref<BackgroundSystem> backgrounds;
-        ME::ref<GameplayScriptSystem> gameplayscript;
-        ME::ref<ShaderWorkerSystem> shaderworker;
-        ME::ref<UISystem> ui;
-
-        SystemList systemList = {};
-
-        ME_pack_reader pack_reader;
-
-        GlobalDEF globaldef;
-        ME::scope<World> world;
-        TexturePack texturepack;
-
-        ME::thread_pool *updateDirtyPool = nullptr;
-        ME::thread_pool *updateDirtyPool2 = nullptr;
-    } Iso;
-
-    struct {
-        R_Image *backgroundImage = nullptr;
-
-        R_Image *loadingTexture = nullptr;
-        std::vector<u8> pixelsLoading;
-        u8 *pixelsLoading_ar = nullptr;
-        int loadingScreenW = 0;
-        int loadingScreenH = 0;
-
-        R_Image *worldTexture = nullptr;
-        R_Image *lightingTexture = nullptr;
-
-        R_Image *emissionTexture = nullptr;
-        std::vector<u8> pixelsEmission;
-        u8 *pixelsEmission_ar = nullptr;
-
-        R_Image *texture = nullptr;
-        std::vector<u8> pixels;
-        u8 *pixels_ar = nullptr;
-        R_Image *textureLayer2 = nullptr;
-        std::vector<u8> pixelsLayer2;
-        u8 *pixelsLayer2_ar = nullptr;
-        R_Image *textureBackground = nullptr;
-        std::vector<u8> pixelsBackground;
-        u8 *pixelsBackground_ar = nullptr;
-        R_Image *textureObjects = nullptr;
-        R_Image *textureObjectsLQ = nullptr;
-        std::vector<u8> pixelsObjects;
-        u8 *pixelsObjects_ar = nullptr;
-        R_Image *textureObjectsBack = nullptr;
-        R_Image *textureCells = nullptr;
-        std::vector<u8> pixelsCells;
-        u8 *pixelsCells_ar = nullptr;
-        R_Image *textureEntities = nullptr;
-        R_Image *textureEntitiesLQ = nullptr;
-
-        R_Image *textureFire = nullptr;
-        R_Image *texture2Fire = nullptr;
-        std::vector<u8> pixelsFire;
-        u8 *pixelsFire_ar = nullptr;
-
-        R_Image *textureFlowSpead = nullptr;
-        R_Image *textureFlow = nullptr;
-        std::vector<u8> pixelsFlow;
-        u8 *pixelsFlow_ar = nullptr;
-
-        R_Image *temperatureMap = nullptr;
-        std::vector<u8> pixelsTemp;
-        u8 *pixelsTemp_ar = nullptr;
-    } TexturePack_;
 
 public:
     EnumGameState getGameState() const { return state; }
@@ -190,9 +194,9 @@ public:
     int run(int argc, char *argv[]);
     int exit();
     void updateFrameEarly();
-    void onEvent(ME::Event &e);
-    bool onWindowClose(ME::WindowCloseEvent &e);
-    bool onWindowResize(ME::WindowResizeEvent &e);
+    void onEvent(Event &e);
+    bool onWindowClose(WindowCloseEvent &e);
+    bool onWindowResize(WindowResizeEvent &e);
     void setEventCallback(const EventCallbackFn &callback) { EventCallback = callback; }
     void tick();
     void tickChunkLoading();
@@ -211,5 +215,7 @@ public:
     void quitToMainMenu();
     ME_assets_handle_t get_assets(std::string path);
 };
+
+}  // namespace ME
 
 #endif

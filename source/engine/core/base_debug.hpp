@@ -7,6 +7,8 @@
 #include "engine/core/macros.hpp"
 #include "engine/ui/imgui_impl.hpp"
 
+namespace ME {
+
 struct AppMetaData {
     std::string platform;
     std::string compiler;
@@ -16,5 +18,7 @@ struct AppMetaData {
 
 int ME_buildnum(void);
 AppMetaData ME_metadata(void);
+
+}  // namespace ME
 
 #endif

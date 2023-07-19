@@ -24,6 +24,8 @@
 #include "libs/imgui/font_awesome.h"
 #include "libs/imgui/text_editor.h"
 
+namespace ME {
+
 #define LANG(_c) global.I18N.Get(_c).c_str()
 #define ICON_LANG(_i, _c) std::string(std::string(_i) + " " + global.I18N.Get(_c)).c_str()
 
@@ -131,8 +133,6 @@ ME_INLINE struct sort_inclusive {
 int profiler_draw_frame(profiler_frame* _data, void* _buffer = 0, size_t _bufferSize = 0, bool _inGame = true, bool _multi = false);
 void profiler_draw_stats(profiler_frame* _data, bool _multi = false);
 
-namespace ME {
-
 class OpenGL3TextureManager {
 public:
     ~OpenGL3TextureManager() {
@@ -172,7 +172,6 @@ private:
 
     Textures mTextures;
 };
-}  // namespace ME
 
 class Material;
 class WorldMeta;
@@ -209,7 +208,7 @@ private:
     ImGuiID dockspace_id;
 
     // console
-    ME::MEconsole console;
+    MEconsole console;
 
     // pack editor
     PackEditor m_pack_editor;
@@ -235,5 +234,7 @@ public:
         return m_imgui;
     }
 };
+
+}  // namespace ME
 
 #endif

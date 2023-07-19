@@ -19,6 +19,8 @@
 
 #define R_GET_PIXEL(surface, x, y) *((u32 *)((u8 *)surface->pixels + ((y)*surface->pitch) + ((x) * sizeof(u32))))
 
+namespace ME {
+
 struct ShaderBase;
 struct MEsurface_context;
 
@@ -178,8 +180,6 @@ u32 ME_draw_darken_color(u32 col, float brightness);
 void ME_draw_text(std::string text, MEcolor col, int x, int y, bool outline = false, MEcolor outline_col = {0, 0, 0, 180});
 void ME_draw_text_plate(R_Target *target, std::string text, MEcolor col, int x, int y, MEcolor backcolor = {77, 77, 77, 140});
 
-namespace ME {
-
 class DebugOutputGL final {
 public:
     DebugOutputGL() {}
@@ -284,7 +284,6 @@ float get_scrollable_height();
 
 void inspect_shader(const char *label, GLuint program);
 void inspect_vertex_array(const char *label, GLuint vao);
-}  // namespace ME
 
 #if 0
 
@@ -332,5 +331,7 @@ public:
     void DrawAABB(b2AABB *aabb, const MEcolor &color);
 };
 #endif
+
+}  // namespace ME
 
 #endif

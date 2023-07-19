@@ -6,6 +6,8 @@
 #include "engine/ui/ui.hpp"
 #include "engine/utils/utility.hpp"
 
+namespace ME {
+
 LBIND_TYPE(lbT_Context, "Surface.Context");
 LBIND_TYPE(lbT_Image, "Surface.Image");
 LBIND_TYPE(lbT_Paint, "Surface.Paint");
@@ -1329,3 +1331,5 @@ int luaopen_surface_color(lua_State *L) {
     luaL_newlib(L, libs);
     return 1;
 }
+
+}  // namespace ME

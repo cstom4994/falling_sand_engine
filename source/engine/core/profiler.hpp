@@ -12,7 +12,8 @@
 #include "engine/core/basic_types.h"
 #include "engine/core/core.hpp"
 #include "engine/core/platform.h"
-// #include "engine/ui/surface.h"
+
+namespace ME {
 
 struct MEsurface_context;
 
@@ -181,7 +182,7 @@ void *ME_profiler_free_list_alloc(profiler_free_list_t *_freeList);
 void ME_profiler_free_list_free(profiler_free_list_t *_freeList, void *_ptr);
 int ME_profiler_free_list_check_ptr(profiler_free_list_t *_freeList, void *_ptr);
 
-namespace ME::profiler {
+namespace profiler {
 
 class profiler_context {
     enum buffer_use {
@@ -192,7 +193,7 @@ class profiler_context {
         Count
     };
 
-    ME::pthread_mutex m_mutex;
+    pthread_mutex m_mutex;
     profiler_free_list_t m_scopesAllocator;
     u32 m_scopesOpen;
     profiler_scope *m_scopesCapture[ME_SCOPES_MAX];
@@ -230,7 +231,7 @@ public:
     void get_frame_data(profiler_frame *_data);
 };
 
-}  // namespace ME::profiler
+}  // namespace profiler
 
 #define GRAPH_HISTORY_COUNT 100
 #define GPU_QUERY_COUNT 5
@@ -253,5 +254,7 @@ void ME_profiler_graph_init(profiler_graph *fps, int style, const char *name);
 void ME_profiler_graph_update(profiler_graph *fps, float frameTime);
 void ME_profiler_graph_render(MEsurface_context *surface, float x, float y, profiler_graph *fps);
 float ME_profiler_graph_avg(profiler_graph *fps);
+
+}  // namespace ME
 
 #endif

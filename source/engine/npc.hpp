@@ -10,6 +10,8 @@
 #include "game_datastruct.hpp"
 #include "textures.hpp"
 
+namespace ME {
+
 class State {
 public:
     // Basic set of mandate requirements
@@ -115,7 +117,7 @@ public:
     Item *heldItem = nullptr;
     f32 holdAngle = 0;
     i64 startThrow = 0;
-    EnumPlayerHoldType holdtype = None;
+    EnumPlayerHoldType holdtype = HoldTypeNone;
     int hammerX = 0;
     int hammerY = 0;
 
@@ -163,9 +165,11 @@ inline Bot::Bot(int _ID) {
     pos = {0, 0};
 }
 
-class NpcSystem : public ME::ecs::system<move_player_event> {
+class NpcSystem : public ecs::system<move_player_event> {
 public:
-    void process(ME::ecs::registry &world, const move_player_event &evt) override;
+    void process(ecs::registry &world, const move_player_event &evt) override;
 };
+
+}  // namespace ME
 
 #endif

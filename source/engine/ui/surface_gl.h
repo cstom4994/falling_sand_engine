@@ -5,6 +5,8 @@
 #include "engine/renderer/gpu.hpp"
 #include "surface.h"
 
+namespace ME {
+
 // Create flags
 
 enum MEsurface_createFlags {
@@ -41,5 +43,7 @@ typedef struct MEsurface_GLframebuffer MEsurface_GLframebuffer;
 void ME_surface_gl_BindFramebuffer(MEsurface_GLframebuffer* fb);
 MEsurface_GLframebuffer* ME_surface_gl_CreateFramebuffer(MEsurface_context* ctx, int w, int h, int imageFlags);
 void ME_surface_gl_DeleteFramebuffer(MEsurface_GLframebuffer* fb);
+
+}  // namespace ME
 
 #endif

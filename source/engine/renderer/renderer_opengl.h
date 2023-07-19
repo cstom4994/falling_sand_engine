@@ -91,6 +91,8 @@ void main(void)\n\
     fragColor = color;\n\
 }"
 
+namespace ME {
+
 typedef struct ContextData_OpenGL_3 {
     MEcolor last_color;
     bool last_use_texturing;
@@ -311,5 +313,7 @@ void Polyline(R_Renderer *renderer, R_Target *target, unsigned int num_vertices,
 void PolygonFilled(R_Renderer *renderer, R_Target *target, unsigned int num_vertices, float *vertices, MEcolor color);
 
 #endif
+
+}  // namespace ME
 
 #endif

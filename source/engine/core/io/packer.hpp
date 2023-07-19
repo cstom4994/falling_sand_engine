@@ -11,6 +11,8 @@
 
 #define PACK_HEADER_SIZE 8
 
+namespace ME {
+
 typedef enum ME_packresult_t {
     SUCCESS_PACK_RESULT = 0,
     FAILED_TO_ALLOCATE_PACK_RESULT = 1,
@@ -80,5 +82,7 @@ ME_pack_result ME_pack_files(const char *packPath, u64 fileCount, const char **f
 
 void ME_get_pack_library_version(u8 *majorVersion, u8 *minorVersion, u8 *patchVersion);
 ME_pack_result ME_get_pack_info(const char *filePath, u8 *majorVersion, u8 *minorVersion, u8 *patchVersion, bool *isLittleEndian, u64 *itemCount);
+
+}  // namespace ME
 
 #endif

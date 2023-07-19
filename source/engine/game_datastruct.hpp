@@ -19,6 +19,10 @@
 #include "engine/utils/type.hpp"
 #include "game_basic.hpp"
 
+struct ImGuiContext;
+
+namespace ME {
+
 struct Chunk;
 struct Populator;
 struct World;
@@ -29,7 +33,6 @@ struct Biome;
 struct Material;
 struct Player;
 struct Game;
-struct ImGuiContext;
 
 #define RegisterFunctions(name, func)    \
     Meta::AnyFunction any_##func{&func}; \
@@ -61,7 +64,7 @@ public:
 };
 
 template <>
-struct ME::meta::static_refl::TypeInfo<WorldEntity> : TypeInfoBase<WorldEntity> {
+struct meta::static_refl::TypeInfo<WorldEntity> : TypeInfoBase<WorldEntity> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("x"), &Type::x},
@@ -77,10 +80,6 @@ struct ME::meta::static_refl::TypeInfo<WorldEntity> : TypeInfoBase<WorldEntity> 
             Field{TSTR("is_player"), &Type::is_player},
     };
 };
-
-ME_GUI_DEFINE_BEGIN(template <>, WorldEntity)
-ME::meta::static_refl::TypeInfo<WorldEntity>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
-ME_GUI_DEFINE_END
 
 void ReleaseGameData();
 
@@ -113,7 +112,7 @@ struct MaterialInteraction {
 };
 
 template <>
-struct ME::meta::static_refl::TypeInfo<MaterialInteraction> : TypeInfoBase<MaterialInteraction> {
+struct meta::static_refl::TypeInfo<MaterialInteraction> : TypeInfoBase<MaterialInteraction> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("type"), &MaterialInteraction::type}, Field{TSTR("data1"), &MaterialInteraction::data1}, Field{TSTR("data2"), &MaterialInteraction::data2},
@@ -162,7 +161,7 @@ struct Material {
 };
 
 template <>
-struct ME::meta::static_refl::TypeInfo<Material> : TypeInfoBase<Material> {
+struct meta::static_refl::TypeInfo<Material> : TypeInfoBase<Material> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("name"), &Material::name},
@@ -188,13 +187,6 @@ struct ME::meta::static_refl::TypeInfo<Material> : TypeInfoBase<Material> {
             Field{TSTR("slipperyness"), &Material::slipperyness},
     };
 };
-
-ME_GUI_DEFINE_BEGIN(template <>, Material)
-ME::meta::static_refl::TypeInfo<Material>::ForEachVarOf(var, [](auto field, auto &&value) {
-    static_assert(std::is_lvalue_reference_v<decltype(value)>);
-    ImGui::Auto(value, std::string(field.name));
-});
-ME_GUI_DEFINE_END
 
 struct MaterialsList {
     std::unordered_map<int, Material> ScriptableMaterials;
@@ -256,7 +248,7 @@ struct GameData {
     MaterialsList materials_list;
 
     struct {
-        std::unordered_map<std::string, ME::meta::any_function> Functions;
+        std::unordered_map<std::string, meta::any_function> Functions;
     } HostData;
 };
 
@@ -282,15 +274,10 @@ public:
 };
 
 template <>
-struct ME::meta::static_refl::TypeInfo<MaterialInstance> : TypeInfoBase<MaterialInstance> {
+struct meta::static_refl::TypeInfo<MaterialInstance> : TypeInfoBase<MaterialInstance> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {};
 };
-
-ME_GUI_DEFINE_BEGIN(template <>, MaterialInstance)
-ImGui::Text("MaterialInstance:\n%d", var.id);
-ImGui::Auto(var.mat, "Material");
-ME_GUI_DEFINE_END
 
 extern MaterialInstance Tiles_NOTHING;
 extern MaterialInstance Tiles_TEST_SOLID;
@@ -369,18 +356,13 @@ public:
 };
 
 template <>
-struct ME::meta::static_refl::TypeInfo<Biome> : TypeInfoBase<Biome> {
+struct meta::static_refl::TypeInfo<Biome> : TypeInfoBase<Biome> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("id"), &Type::id},
             Field{TSTR("name"), &Type::name},
     };
 };
-
-ME_GUI_DEFINE_BEGIN(template <>, Biome)
-ImGui::Text("Name: %s", var.name.c_str());
-ImGui::Text("ID: %d", var.id);
-ME_GUI_DEFINE_END
 
 struct WorldGenerator {
     virtual void generateChunk(World *world, Chunk *ch) = 0;
@@ -450,5 +432,28 @@ struct TreePopulator : public Populator {
 };
 
 #pragma endregion Populators
+
+}  // namespace ME
+
+ME_GUI_DEFINE_BEGIN(template <>, ME::WorldEntity)
+ME::meta::static_refl::TypeInfo<ME::WorldEntity>::ForEachVarOf(var, [&](const auto &field, auto &&value) { ImGui::Auto(value, std::string(field.name)); });
+ME_GUI_DEFINE_END
+
+ME_GUI_DEFINE_BEGIN(template <>, ME::Material)
+ME::meta::static_refl::TypeInfo<ME::Material>::ForEachVarOf(var, [](auto field, auto &&value) {
+    static_assert(std::is_lvalue_reference_v<decltype(value)>);
+    ImGui::Auto(value, std::string(field.name));
+});
+ME_GUI_DEFINE_END
+
+ME_GUI_DEFINE_BEGIN(template <>, ME::MaterialInstance)
+ImGui::Text("MaterialInstance:\n%d", var.id);
+ImGui::Auto(var.mat, "Material");
+ME_GUI_DEFINE_END
+
+ME_GUI_DEFINE_BEGIN(template <>, ME::Biome)
+ImGui::Text("Name: %s", var.name.c_str());
+ImGui::Text("ID: %d", var.id);
+ME_GUI_DEFINE_END
 
 #endif

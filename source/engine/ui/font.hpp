@@ -10,6 +10,8 @@
 #include "engine/ui/fontcache.hpp"
 // #include "engine/core/property.hpp"
 
+namespace ME {
+
 class ME_fontcache /*: public ME::props_auto_reg<ME_fontcache>*/ {
     // public:
     //     static void reg() {
@@ -31,5 +33,6 @@ private:
     GLuint screen_w;
     GLuint screen_h;
 };
+}  // namespace ME
 
 #endif

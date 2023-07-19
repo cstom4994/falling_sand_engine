@@ -7,6 +7,8 @@
 #include "game.hpp"
 #include "game_datastruct.hpp"
 
+namespace ME {
+
 #pragma region MaterialTestGenerator
 
 void MaterialTestGenerator::generateChunk(World *world, Chunk *ch) {
@@ -398,3 +400,5 @@ int test_wang() {
 
     return 0;
 }
+
+}  // namespace ME

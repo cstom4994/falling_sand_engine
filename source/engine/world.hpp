@@ -21,6 +21,8 @@
 #include "libs/fastnoise/fastnoise.h"
 #include "libs/parallel_hashmap/phmap.h"
 
+namespace ME {
+
 class Populator;
 class WorldGenerator;
 class Player;
@@ -49,17 +51,17 @@ struct WorldMeta {
 
     bool save(std::string worldFileName);
 };
-METADOT_STRUCT(WorldMeta, worldName, lastOpenedVersion, lastOpenedTime);
+// METADOT_STRUCT(WorldMeta, worldName, lastOpenedVersion, lastOpenedTime);
 
 struct WorldSystem {
-    using TPL = ME::scope<ME::thread_pool>;
+    using TPL = scope<thread_pool>;
     TPL tickPool;
     TPL tickVisitedPool;
     TPL updateRigidBodyHitboxPool;
 };
 
 class World {
-    using PhyBodytype = ME::phy::Body::BodyType;
+    using PhyBodytype = phy::Body::BodyType;
 
 public:
     std::string worldName = "";
@@ -87,21 +89,21 @@ public:
         phmap::flat_hash_map<int, phmap::flat_hash_map<int, Chunk *>> chunkCache;
         std::vector<Populator *> populators;
 
-        ME::ecs::entity_id player;
+        ecs::entity_id player;
     };
 
     struct {
-        ME::ecs::registry registry;
+        ecs::registry registry;
 
         WorldSystem world_sys;
     };
 
-    ME::ecs::registry &Reg() { return registry; }
+    ecs::registry &Reg() { return registry; }
 
     bool *hasPopulator = nullptr;
     int highestPopulator = 0;
     FastNoise noise;
-    ME::Audio *audioEngine = nullptr;
+    Audio *audioEngine = nullptr;
 
     std::vector<MaterialInstance> tiles{};
     f32 *flowX = nullptr;
@@ -133,12 +135,12 @@ public:
     MErect lastMeshLoadZone{};
 
     MEvec2 gravity{};
-    ME::scope<ME::phy::PhysicsSystem> phy = nullptr;
+    scope<phy::PhysicsSystem> phy = nullptr;
     RigidBody *staticBody = nullptr;
     WorldGenerator *gen = nullptr;
 
-    void init(std::string worldPath, u16 w, u16 h, R_Target *renderer, ME::Audio *audioEngine, WorldGenerator *generator);
-    void init(std::string worldPath, u16 w, u16 h, R_Target *target, ME::Audio *audioEngine);
+    void init(std::string worldPath, u16 w, u16 h, R_Target *renderer, Audio *audioEngine, WorldGenerator *generator);
+    void init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *audioEngine);
     MaterialInstance getTile(int x, int y);
     void setTile(int x, int y, MaterialInstance type);
     MaterialInstance getTileLayer2(int x, int y);
@@ -155,8 +157,8 @@ public:
     void tickChunkGeneration();
     void addCell(CellData *cell);
     void explosion(int x, int y, int radius);
-    RigidBody *makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, ME::phy::Shape *shape, f32 density, f32 friction, TextureRef texture);
-    RigidBody *makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<ME::phy::Shape *> shape, f32 density, f32 friction, TextureRef texture);
+    RigidBody *makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, phy::Shape *shape, f32 density, f32 friction, TextureRef texture);
+    RigidBody *makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<phy::Shape *> shape, f32 density, f32 friction, TextureRef texture);
     void updateRigidBodyHitbox(RigidBody *rb);
     void updateChunkMesh(Chunk *chunk);
     void updateWorldMesh();
@@ -183,5 +185,6 @@ public:
     bool isPlayerInWorld();
     std::tuple<WorldEntity *, Player *> getHostPlayer();
 };
+}  // namespace ME
 
 #endif

@@ -193,8 +193,6 @@ void println(const Args &...args) {
     (std::cout << ... << args) << std::endl;
 }
 
-}  // namespace ME
-
 template <typename T>
 class MoveOnly {
 public:
@@ -268,18 +266,20 @@ static_assert(sizeof(int) == sizeof(MoveOnly<int>));
     T(T &&) = delete;                 \
     T &operator=(T &&) = delete;
 
+}  // namespace ME
+
 //--------------------------------------------------------------------------------------------------------------------------------//
 // LOGGING FUNCTIONS
 
 #if defined(ME_DEBUG)
-#define METADOT_BUG(...) ME::Logger::log(ME::ME_LOG_TYPE_NOTE, std::format("[Native] {0}:{1} ", __func__, __LINE__).c_str(), __VA_ARGS__)
+#define METADOT_BUG(...) ::ME::Logger::log(::ME::ME_LOG_TYPE_NOTE, std::format("[Native] {0}:{1} ", __func__, __LINE__).c_str(), __VA_ARGS__)
 #else
 #define METADOT_BUG(...)
 #endif
-#define METADOT_TRACE(...) ME::Logger::log(ME::ME_LOG_TYPE_NOTE, __VA_ARGS__)
-#define METADOT_INFO(...) ME::Logger::log(ME::ME_LOG_TYPE_MESSAGE, __VA_ARGS__)
-#define METADOT_WARN(...) ME::Logger::log(ME::ME_LOG_TYPE_WARNING, __VA_ARGS__)
-#define METADOT_ERROR(...) ME::Logger::log(ME::ME_LOG_TYPE_ERROR, __VA_ARGS__)
+#define METADOT_TRACE(...) ::ME::Logger::log(::ME::ME_LOG_TYPE_NOTE, __VA_ARGS__)
+#define METADOT_INFO(...) ::ME::Logger::log(::ME::ME_LOG_TYPE_MESSAGE, __VA_ARGS__)
+#define METADOT_WARN(...) ::ME::Logger::log(::ME::ME_LOG_TYPE_WARNING, __VA_ARGS__)
+#define METADOT_ERROR(...) ::ME::Logger::log(::ME::ME_LOG_TYPE_ERROR, __VA_ARGS__)
 
 #define METADOT_LOG_SCOPE_FUNCTION(...)
 #define METADOT_LOG_SCOPE_F(...)
@@ -308,7 +308,7 @@ public:
 
     static T *get_singleton_ptr() {
         if (this_instance.get() == NULL) {
-            ME::ref<T> t(new T);
+            ref<T> t(new T);
             this_instance = t;
         }
         return this_instance.get();
@@ -317,18 +317,18 @@ public:
     static T &get_singleton() { return (*get_singleton_ptr()); }
 
     static void clean() {
-        ME::ref<T> t;
+        ref<T> t;
         this_instance = t;
     }
 
 protected:
     singleton() {}
 
-    static ME::ref<T> this_instance;
+    static ref<T> this_instance;
 };
 
 template <typename T>
-ME::ref<T> singleton<T>::this_instance;
+ref<T> singleton<T>::this_instance;
 
 //=============================================================================
 
@@ -377,11 +377,11 @@ public:
     T &operator*() const { return get_singleton(); }
 
 private:
-    static ME::ref<T> this_instance;
+    static ref<T> this_instance;
 };
 
 template <typename T>
-ME::ref<T> singleton_ptr<T>::this_instance;
+ref<T> singleton_ptr<T>::this_instance;
 
 template <typename T>
 inline T *get_singleton_ptr() {
@@ -615,8 +615,6 @@ private:
     std::mutex mutex;
     std::condition_variable cv;
 };
-
-}  // namespace ME
 
 std::vector<std::string> split(std::string strToSplit, char delimeter);
 std::vector<std::string> string_split(std::string s, const char delimiter);
@@ -1063,167 +1061,8 @@ void parseNumbers(const std::string &s, numberType ray[size], int *actualSize = 
     parseNumbers<size>(s.c_str(), ray, actualSize);
 }
 
-#ifndef PATH_MAX
-#define PATH_MAX 260
-#endif
-#ifndef FILENAME_MAX
-#define FILENAME_MAX 256
-#endif
-
-// #define max(a, b)                                                                                  \
-//     ({                                                                                             \
-//         __typeof__(a) _a = (a);                                                                    \
-//         __typeof__(b) _b = (b);                                                                    \
-//         _a > _b ? _a : _b;                                                                         \
-//     })
-
-// #define min(a, b)                                                                                  \
-//     ({                                                                                             \
-//         __typeof__(a) _a = (a);                                                                    \
-//         __typeof__(b) _b = (b);                                                                    \
-//         _a < _b ? _a : _b;                                                                         \
-//     })
-
-/* --- PRINTF_BYTE_TO_BINARY macro's --- */
-#define PRINTF_BINARY_PATTERN_INT8 "%c%c%c%c%c%c%c%c"
-#define PRINTF_BYTE_TO_BINARY_INT8(i)                                                                                                                                       \
-    (((i)&0x80ll) ? '1' : '0'), (((i)&0x40ll) ? '1' : '0'), (((i)&0x20ll) ? '1' : '0'), (((i)&0x10ll) ? '1' : '0'), (((i)&0x08ll) ? '1' : '0'), (((i)&0x04ll) ? '1' : '0'), \
-            (((i)&0x02ll) ? '1' : '0'), (((i)&0x01ll) ? '1' : '0')
-
-#define PRINTF_BINARY_PATTERN_INT16 PRINTF_BINARY_PATTERN_INT8 PRINTF_BINARY_PATTERN_INT8
-#define PRINTF_BYTE_TO_BINARY_INT16(i) PRINTF_BYTE_TO_BINARY_INT8((i) >> 8), PRINTF_BYTE_TO_BINARY_INT8(i)
-#define PRINTF_BINARY_PATTERN_INT32 PRINTF_BINARY_PATTERN_INT16 PRINTF_BINARY_PATTERN_INT16
-#define PRINTF_BYTE_TO_BINARY_INT32(i) PRINTF_BYTE_TO_BINARY_INT16((i) >> 16), PRINTF_BYTE_TO_BINARY_INT16(i)
-#define PRINTF_BINARY_PATTERN_INT64 PRINTF_BINARY_PATTERN_INT32 PRINTF_BINARY_PATTERN_INT32
-#define PRINTF_BYTE_TO_BINARY_INT64(i) PRINTF_BYTE_TO_BINARY_INT32((i) >> 32), PRINTF_BYTE_TO_BINARY_INT32(i)
-/* --- end macros --- */
-
-// vsnprintf replacement from Valentin Milea:
-// http://stackoverflow.com/questions/2915672/snprintf-and-visual-studio-2010
-#if defined(_MSC_VER) && _MSC_VER < 1900
-
-#define snprintf c99_snprintf
-#define vsnprintf c99_vsnprintf
-
-ME_INLINE int c99_vsnprintf(char *outBuf, size_t size, const char *format, va_list ap) {
-    int count = -1;
-
-    if (size != 0) count = _vsnprintf_s(outBuf, size, _TRUNCATE, format, ap);
-    if (count == -1) count = _vscprintf(format, ap);
-
-    return count;
-}
-
-ME_INLINE int c99_snprintf(char *outBuf, size_t size, const char *format, ...) {
-    int count;
-    va_list ap;
-
-    va_start(ap, format);
-    count = c99_vsnprintf(outBuf, size, format, ap);
-    va_end(ap);
-
-    return count;
-}
-
-#endif
-
-// Trie structures and interface
-
-// Add all supported types here, as 'Trie_type'
-typedef enum TrieType { Trie_None, Trie_Pointer, Trie_String, Trie_MEvec3, Trie_double, Trie_float, Trie_char, Trie_int } TrieType;
-
-// Structure used to retrieve all the data from the trie
-// Add all supported types inside the union, as 'type* typeValue'
-typedef struct TrieElement {
-    char *key;
-    TrieType type;
-    unsigned size;
-    union {
-        void *pointerValue;
-        char *stringValue;
-        MEvec3 *vector3Value;
-        f64 *doubleValue;
-        f32 *floatValue;
-        char *charValue;
-        int *intValue;
-    };
-} TrieElement;
-
-#define TRIE_ALPHABET_SIZE 256
-typedef struct TrieCell {
-    TrieType elementType;
-    unsigned maxKeySize;
-    union {
-        unsigned numberOfElements;
-        unsigned elementSize;
-    };
-    // In a leaf and branch, the '\0' points to the data stored, while in a trunk it points to NULL
-    // In both branch and trunk, all the other characters points to other Tries
-    void *branch[TRIE_ALPHABET_SIZE];
-} Trie;
-
-Trie InitTrie();
-void FreeTrie(Trie *trie);
-
-void InsertTrie(Trie *trie, const char *key, const void *value, int size, TrieType valueType);
-void InsertTrieString(Trie *trie, const char *key, const char *value);
-
-int TrieContainsKey(Trie trie, const char *key);
-void *GetTrieElement(Trie trie, const char *key);
-void *GetTrieElementWithProperties(Trie trie, const char *key, int *sizeOut, TrieType *typeOut);
-void *GetTrieElementAsPointer(Trie trie, const char *key, void *defaultValue);
-char *GetTrieElementAsString(Trie trie, const char *key, char *defaultValue);
-
-// Macro to generate headers for the insertion and retrieval functions
-// Remember to call the function template macro on utils.c and to modify the TrieType enum when adding more types
-#define TRIE_TYPE_FUNCTION_HEADER_MACRO(type)                        \
-    void InsertTrie_##type(Trie *trie, const char *key, type value); \
-    type GetTrieElementAs_##type(Trie trie, const char *key, type defaultValue);
-
-TRIE_TYPE_FUNCTION_HEADER_MACRO(MEvec3)
-TRIE_TYPE_FUNCTION_HEADER_MACRO(f64)
-TRIE_TYPE_FUNCTION_HEADER_MACRO(f32)
-TRIE_TYPE_FUNCTION_HEADER_MACRO(char)
-TRIE_TYPE_FUNCTION_HEADER_MACRO(int)
-
-// Functions to obtain all data inside a trie
-// The data returned should be used before any new replace modifications
-// are made in the trie, as the data pointed can be freed when replaced
-TrieElement *GetTrieElementsArray(Trie trie, int *outElementsCount);
-void FreeTrieElementsArray(TrieElement *elementsArray, int elementsCount);
-
 void Vector3ToTable(lua_State *L, MEvec3 vector);
 
-//--------------------------------------------------------------------------------------------------------------------------------//
-// DEBUG LOGGING:
-
-// represents different message types
-typedef enum MEmessageType {
-    ME_MESSAGE_CPU_MEMORY,  // the message is about CPU memory usage
-    ME_MESSAGE_GPU_MEMORY,  // the message is about GPU memory usage
-    ME_MESSAGE_SHADER,      // the message is about shader compilation
-    ME_MESSAGE_FILE_IO      // the message is about file I/O (just used for if opening a file fails)
-} MEmessageType;
-
-template <>
-struct ME::meta::static_refl::TypeInfo<MEmessageType> : TypeInfoBase<MEmessageType> {
-    static constexpr AttrList attrs = {};
-    static constexpr FieldList fields = {
-            Field{TSTR("ME_MESSAGE_CPU_MEMORY"), Type::ME_MESSAGE_CPU_MEMORY},
-            Field{TSTR("ME_MESSAGE_GPU_MEMORY"), Type::ME_MESSAGE_GPU_MEMORY},
-            Field{TSTR("ME_MESSAGE_SHADER"), Type::ME_MESSAGE_SHADER},
-            Field{TSTR("ME_MESSAGE_FILE_IO"), Type::ME_MESSAGE_FILE_IO},
-    };
-};
-
-// represents different message severities
-typedef enum MEmessageSeverity {
-    ME_MESSAGE_NOTE,   // the message is purely informative, no error has occured
-    ME_MESSAGE_ERROR,  // an error has occured, but the engine is still able to run without crashing
-    ME_MESSAGE_FATAL   // a fatal error has occured, and the engine will likely not be able to continue running without crashing
-} MEmessageSeverity;
-
-// the message callback function, the last parameter is the actual message in string format
-extern void (*g_engine_message_callback)(MEmessageType, MEmessageSeverity, const char *);  // TODO: figure out a better way to use this than a global variable
+}  // namespace ME
 
 #endif

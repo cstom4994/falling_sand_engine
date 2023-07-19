@@ -7,8 +7,10 @@
 #include "engine/core/core.hpp"
 #include "engine/core/mathlib.hpp"
 #include "engine/game_datastruct.hpp"
-#include "engine/textures.hpp"
 #include "engine/renderer/gpu.hpp"
+#include "engine/textures.hpp"
+
+namespace ME {
 
 struct CellData {
 
@@ -32,3 +34,5 @@ struct CellData {
     explicit CellData(MaterialInstance tile, f32 x, f32 y, f32 vx, f32 vy, f32 ax, f32 ay) : tile(std::move(tile)), x(x), y(y), vx(vx), vy(vy), ax(ax), ay(ay) {}
     CellData(const CellData& part) : tile(part.tile), x(part.x), y(part.y), vx(part.vx), vy(part.vy), ax(part.ax), ay(part.ay) {}
 };
+
+}  // namespace ME

@@ -6,12 +6,14 @@
 #include <memory>
 #include <string>
 
-#include "engine/utils/stl.hpp"
 #include "engine/core/global.hpp"
 #include "engine/core/sdl_wrapper.h"
 #include "engine/game.hpp"
+#include "engine/utils/stl.hpp"
 
-std::vector<ME::ref<KeyControl>> ControlSystem::keyControls = {};
+namespace ME {
+
+std::vector<ref<KeyControl>> ControlSystem::keyControls = {};
 std::map<std::string, int> ControlSystem::SDLKeymap = {};
 bool ControlSystem::initted = false;
 
@@ -73,30 +75,30 @@ void ControlSystem::KeyEvent(C_KeyboardEvent event) {
 }
 
 void ControlSystem::InitKey() {
-    STATS_DISPLAY = Add(ME::create_ref<KeyControl>(SDLK_o, RISING));
-    STATS_DISPLAY_DETAILED = Add(ME::create_ref<KeyControl>(SDLK_LSHIFT, MOMENTARY));
-    DEBUG_UI = Add(ME::create_ref<KeyControl>(SDLK_TAB, RISING));
-    CONSOLE_UI = Add(ME::create_ref<KeyControl>(SDLK_BACKQUOTE, RISING));
-    DEBUG_REFRESH = Add(ME::create_ref<KeyControl>(SDLK_KP_0, RISING));
-    DEBUG_UPDATE_WORLD_MESH = Add(ME::create_ref<KeyControl>(SDLK_KP_1, RISING));
-    DEBUG_TICK = Add(ME::create_ref<KeyControl>(SDLK_KP_2, RISING));
-    DEBUG_EXPLODE = Add(ME::create_ref<KeyControl>(SDLK_e, RISING));
-    DEBUG_CARVE = Add(ME::create_ref<KeyControl>(SDLK_c, RISING));
-    DEBUG_RIGID = Add(ME::create_ref<KeyControl>(SDLK_r, RISING));
-    DEBUG_DRAW = Add(ME::create_ref<KeyControl>(SDLK_x, MOMENTARY));
-    DEBUG_BRUSHSIZE_INC = Add(ME::create_ref<KeyControl>(']', TYPE));
-    DEBUG_BRUSHSIZE_DEC = Add(ME::create_ref<KeyControl>('[', TYPE));
-    DEBUG_TOGGLE_PLAYER = Add(ME::create_ref<KeyControl>(SDLK_p, RISING));
-    PLAYER_UP = Add(ME::create_ref<KeyControl>(SDLK_w, MOMENTARY));
-    PLAYER_LEFT = Add(ME::create_ref<KeyControl>(SDLK_a, MOMENTARY));
-    PLAYER_DOWN = Add(ME::create_ref<KeyControl>(SDLK_s, MOMENTARY));
-    PLAYER_RIGHT = Add(ME::create_ref<KeyControl>(SDLK_d, MOMENTARY));
-    ZOOM_IN = Add(ME::create_ref<KeyControl>(SDLK_PAGEUP, MOMENTARY));
-    ZOOM_OUT = Add(ME::create_ref<KeyControl>(SDLK_PAGEDOWN, MOMENTARY));
-    PAUSE = Add(ME::create_ref<KeyControl>(SDLK_ESCAPE, RISING));
+    STATS_DISPLAY = Add(create_ref<KeyControl>(SDLK_o, RISING));
+    STATS_DISPLAY_DETAILED = Add(create_ref<KeyControl>(SDLK_LSHIFT, MOMENTARY));
+    DEBUG_UI = Add(create_ref<KeyControl>(SDLK_TAB, RISING));
+    CONSOLE_UI = Add(create_ref<KeyControl>(SDLK_BACKQUOTE, RISING));
+    DEBUG_REFRESH = Add(create_ref<KeyControl>(SDLK_KP_0, RISING));
+    DEBUG_UPDATE_WORLD_MESH = Add(create_ref<KeyControl>(SDLK_KP_1, RISING));
+    DEBUG_TICK = Add(create_ref<KeyControl>(SDLK_KP_2, RISING));
+    DEBUG_EXPLODE = Add(create_ref<KeyControl>(SDLK_e, RISING));
+    DEBUG_CARVE = Add(create_ref<KeyControl>(SDLK_c, RISING));
+    DEBUG_RIGID = Add(create_ref<KeyControl>(SDLK_r, RISING));
+    DEBUG_DRAW = Add(create_ref<KeyControl>(SDLK_x, MOMENTARY));
+    DEBUG_BRUSHSIZE_INC = Add(create_ref<KeyControl>(']', TYPE));
+    DEBUG_BRUSHSIZE_DEC = Add(create_ref<KeyControl>('[', TYPE));
+    DEBUG_TOGGLE_PLAYER = Add(create_ref<KeyControl>(SDLK_p, RISING));
+    PLAYER_UP = Add(create_ref<KeyControl>(SDLK_w, MOMENTARY));
+    PLAYER_LEFT = Add(create_ref<KeyControl>(SDLK_a, MOMENTARY));
+    PLAYER_DOWN = Add(create_ref<KeyControl>(SDLK_s, MOMENTARY));
+    PLAYER_RIGHT = Add(create_ref<KeyControl>(SDLK_d, MOMENTARY));
+    ZOOM_IN = Add(create_ref<KeyControl>(SDLK_PAGEUP, MOMENTARY));
+    ZOOM_OUT = Add(create_ref<KeyControl>(SDLK_PAGEDOWN, MOMENTARY));
+    PAUSE = Add(create_ref<KeyControl>(SDLK_ESCAPE, RISING));
 }
 
-KeyControl *ControlSystem::Add(ME::ref<KeyControl> c) {
+KeyControl *ControlSystem::Add(ref<KeyControl> c) {
 
     if (!initted) {
         keyControls = {};
@@ -357,7 +359,7 @@ std::string ControlSystem::SDLKeyToString(int sdlkey) {
 int ControlSystem::StringToSDLKey(const std::string &s) {
     InitKeymap();
 
-    std::map<std::string, int>::iterator i = SDLKeymap.find(ME::cpp::Lowercase(s));
+    std::map<std::string, int>::iterator i = SDLKeymap.find(cpp::Lowercase(s));
     if (i == SDLKeymap.end()) return 0;
 
     return i->second;
@@ -389,3 +391,5 @@ bool KeyControl::get() {
     lastRaw = raw;
     return ret;
 }
+
+}  // namespace ME

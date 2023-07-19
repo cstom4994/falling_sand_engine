@@ -6,6 +6,8 @@
 #include "engine/utils/name.hpp"
 #include "engine/utils/utility.hpp"
 
+namespace ME {
+
 u32 ME_Shaders_LoadShader(R_ShaderEnum thisype, const char* filename) {
 
     u32 shader;
@@ -105,7 +107,7 @@ int ME_shader_load(GLenum type, const char* path, const char* includePath) {
 
         char messageFinal[1024 + 256];
         sprintf(messageFinal, "failed to compile shader at \"%s\" with the following info log:\n%s", path, message);
-        g_engine_message_callback(ME_MESSAGE_SHADER, ME_MESSAGE_ERROR, messageFinal);
+        METADOT_ERROR(messageFinal);
 
         glDeleteShader(shader);
         return -1;
@@ -213,7 +215,7 @@ static char* ME_add_include_file(char* baseSource, const char* includePath) {
 
     char* versionStart = strstr(baseSource, "#version");
     if (versionStart == NULL) {
-        g_engine_message_callback(ME_MESSAGE_SHADER, ME_MESSAGE_ERROR, "shader source file did not contain a #version, unable to include another shader");
+        METADOT_ERROR("shader source file did not contain a #version, unable to include another shader");
 
         ME_FREE(baseSource);
         ME_FREE(includeSource);
@@ -224,7 +226,7 @@ static char* ME_add_include_file(char* baseSource, const char* includePath) {
     while (baseSource[i] != '\n') {
         i++;
         if (i >= baseLen) {
-            g_engine_message_callback(ME_MESSAGE_SHADER, ME_MESSAGE_ERROR, "end of shader source file was reached before end of #version was found");
+            METADOT_ERROR("end of shader source file was reached before end of #version was found");
             ME_FREE(baseSource);
             ME_FREE(includeSource);
             return NULL;
@@ -259,7 +261,7 @@ static bool ME_load_into_buffer(const char* path, char** buffer) {
             (*buffer)[length] = '\0';
             result = true;
         } else {
-            g_engine_message_callback(ME_MESSAGE_CPU_MEMORY, ME_MESSAGE_ERROR, "failed to allocate memory for shader source code");
+            METADOT_ERROR("failed to allocate memory for shader source code");
             result = false;
         }
 
@@ -268,7 +270,7 @@ static bool ME_load_into_buffer(const char* path, char** buffer) {
     } else {
         char message[256];
         sprintf(message, "failed to open file \"%s\" for reading", path);
-        g_engine_message_callback(ME_MESSAGE_FILE_IO, ME_MESSAGE_ERROR, message);
+        METADOT_ERROR(message);
         return false;
     }
 }
@@ -560,3 +562,5 @@ GLprogram* ME_shader_set::add_program_from_combined_file(const std::string& file
 
     return add_program(typedShaders);
 }
+
+}  // namespace ME

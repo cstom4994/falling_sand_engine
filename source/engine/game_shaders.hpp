@@ -7,6 +7,8 @@
 #include "engine/renderer/shaders.hpp"
 #include "game_datastruct.hpp"
 
+namespace ME {
+
 class CrtShader : public ShaderBase {
 public:
     bool enable;
@@ -105,7 +107,9 @@ public:
     void create() override;
     void destory() override;
     void reload() override;
-    void registerLua(ME::LuaWrapper::State &s_lua) override;
+    void registerLua(LuaWrapper::State &s_lua) override;
 };
+
+}  // namespace ME
 
 #endif

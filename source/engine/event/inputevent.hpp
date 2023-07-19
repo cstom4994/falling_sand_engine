@@ -11,6 +11,8 @@
 #include "engine/core/core.hpp"
 #include "engine/core/sdl_wrapper.h"
 
+namespace ME {
+
 enum EnumControlMode { MOMENTARY, RISING, FALLING, TOGGLE, TYPE };
 
 class KeyControl {
@@ -69,7 +71,7 @@ public:
     static KeyControl *ZOOM_OUT;
     static KeyControl *PAUSE;
 
-    static std::vector<ME::ref<KeyControl>> keyControls;
+    static std::vector<ref<KeyControl>> keyControls;
     static std::map<std::string, int> SDLKeymap;
 
     static bool initted;
@@ -79,11 +81,13 @@ public:
     // Register the key binding
     static void InitKey();
     // Add key binding
-    static KeyControl *Add(ME::ref<KeyControl> c);
+    static KeyControl *Add(ref<KeyControl> c);
 
     static void InitKeymap();
     static std::string SDLKeyToString(int sdlkey);
     static int StringToSDLKey(const std::string &s);
 };
+
+}  // namespace ME
 
 #endif

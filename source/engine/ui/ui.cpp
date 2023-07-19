@@ -17,6 +17,8 @@
 #include "engine/renderer/renderer_opengl.h"
 #include "engine/textures.hpp"
 
+namespace ME {
+
 // Color definitions
 MEcolor bgPanelColor = {0.02, 0.02, 0.05};
 MEcolor bgLightColor = {0.2, 0.2, 0.35};
@@ -41,36 +43,35 @@ void UISystem::UIRendererInit() {
     uidata = new UIData;
 
     METADOT_INFO("Loading ImGUI");
-    uidata->imgui = ME::create_ref<ImGuiLayer>();
+    uidata->imgui = create_ref<ImGuiLayer>();
     uidata->imgui->Init();
 
     // Test element drawing
-    auto testElement1 = ME::create_ref<UIElement>(UIElement{.type = ElementType::windowElement,
-                                                            .visible = false,
-                                                            .resizable = {true},
-                                                            .x = 50,
-                                                            .y = 50,
-                                                            .w = 200,
-                                                            .h = 200,
-                                                            .state = 0,
-                                                            .color = bgPanelColor,
-                                                            .texture = LoadTexture("data/assets/ui/demo_background.png"),
-                                                            .cclass = {.window = {}}});
+    auto testElement1 = create_ref<UIElement>(UIElement{.type = ElementType::windowElement,
+                                                        .visible = false,
+                                                        .resizable = {true},
+                                                        .x = 50,
+                                                        .y = 50,
+                                                        .w = 200,
+                                                        .h = 200,
+                                                        .state = 0,
+                                                        .color = bgPanelColor,
+                                                        .texture = LoadTexture("data/assets/ui/demo_background.png"),
+                                                        .cclass = {.window = {}}});
 
-    auto testElement2 =
-            ME::create_ref<UIElement>(UIElement{.type = ElementType::textElement, .parent = testElement1, .x = 5, .y = 5, .w = 40, .h = 20, .color = {1, 255, 1, 255}, .text = "哈哈哈哈哈嗝"});
-    auto testElement3 = ME::create_ref<UIElement>(UIElement{.type = ElementType::buttonElement,
-                                                            .parent = testElement1,
-                                                            .x = 20,
-                                                            .y = 40,
-                                                            .w = 20,
-                                                            .h = 20,
-                                                            .state = 0,
-                                                            .color = {255, 0, 20, 255},
-                                                            .text = "按钮捏",
-                                                            .cclass = {.button = {.hot_color = {1, 255, 1, 255}, .func = []() { METADOT_INFO("button pressed"); }}}});
+    auto testElement2 = create_ref<UIElement>(UIElement{.type = ElementType::textElement, .parent = testElement1, .x = 5, .y = 5, .w = 40, .h = 20, .color = {1, 255, 1, 255}, .text = "哈哈哈哈哈嗝"});
+    auto testElement3 = create_ref<UIElement>(UIElement{.type = ElementType::buttonElement,
+                                                        .parent = testElement1,
+                                                        .x = 20,
+                                                        .y = 40,
+                                                        .w = 20,
+                                                        .h = 20,
+                                                        .state = 0,
+                                                        .color = {255, 0, 20, 255},
+                                                        .text = "按钮捏",
+                                                        .cclass = {.button = {.hot_color = {1, 255, 1, 255}, .func = []() { METADOT_INFO("button pressed"); }}}});
 
-    auto testElement4 = ME::create_ref<UIElement>(
+    auto testElement4 = create_ref<UIElement>(
             UIElement{.type = ElementType::progressBarElement,
                       .parent = testElement1,
                       .x = 20,
@@ -82,30 +83,30 @@ void UISystem::UIRendererInit() {
                       .text = "进度条",
                       .cclass = {.progressbar = {.bar_type = 1, .bar_current = 50.0f, .bar_limit = 1000.0f, .bar_color = {54, 54, 54, 255}, .bar_text_color = {255, 255, 255, 255}}}});
 
-    auto testElement5 = ME::create_ref<UIElement>(
+    auto testElement5 = create_ref<UIElement>(
             UIElement{.type = ElementType::texturedRectangle, .parent = testElement1, .x = 40, .y = 20, .w = 100, .h = 50, .state = 0, .color = {}, .texture = LoadTexture("data/assets/ui/logo.png")});
 
-    auto testElement6 = ME::create_ref<UIElement>(UIElement{.type = ElementType::inputBoxElement,
-                                                            .parent = testElement1,
-                                                            .x = 40,
-                                                            .y = 80,
-                                                            .w = 60,
-                                                            .h = 20,
-                                                            .state = 0,
-                                                            .color = {54, 54, 54, 255},
-                                                            .text = "编辑框1",
-                                                            .cclass = {.inputbox = {.bg_color = {54, 54, 54, 255}, .text_color = {255, 0, 20, 255}}}});
+    auto testElement6 = create_ref<UIElement>(UIElement{.type = ElementType::inputBoxElement,
+                                                        .parent = testElement1,
+                                                        .x = 40,
+                                                        .y = 80,
+                                                        .w = 60,
+                                                        .h = 20,
+                                                        .state = 0,
+                                                        .color = {54, 54, 54, 255},
+                                                        .text = "编辑框1",
+                                                        .cclass = {.inputbox = {.bg_color = {54, 54, 54, 255}, .text_color = {255, 0, 20, 255}}}});
 
-    auto testElement7 = ME::create_ref<UIElement>(UIElement{.type = ElementType::inputBoxElement,
-                                                            .parent = testElement1,
-                                                            .x = 40,
-                                                            .y = 105,
-                                                            .w = 60,
-                                                            .h = 20,
-                                                            .state = 0,
-                                                            .color = {54, 54, 54, 255},
-                                                            .text = "编辑框2",
-                                                            .cclass = {.inputbox = {.bg_color = {54, 54, 54, 255}, .text_color = {255, 0, 20, 255}}}});
+    auto testElement7 = create_ref<UIElement>(UIElement{.type = ElementType::inputBoxElement,
+                                                        .parent = testElement1,
+                                                        .x = 40,
+                                                        .y = 105,
+                                                        .w = 60,
+                                                        .h = 20,
+                                                        .state = 0,
+                                                        .color = {54, 54, 54, 255},
+                                                        .text = "编辑框2",
+                                                        .cclass = {.inputbox = {.bg_color = {54, 54, 54, 255}, .text_color = {255, 0, 20, 255}}}});
 
     uidata->elementLists.insert(std::make_pair("testElement1", testElement1));
     uidata->elementLists.insert(std::make_pair("testElement2", testElement2));
@@ -115,28 +116,28 @@ void UISystem::UIRendererInit() {
     uidata->elementLists.insert(std::make_pair("testElement6", testElement6));
     uidata->elementLists.insert(std::make_pair("testElement7", testElement7));
 
-    auto window_menu = ME::create_ref<UIElement>(UIElement{.type = ElementType::windowElement,
-                                                           .visible = false,
-                                                           .resizable = {true},
-                                                           .x = 150,
-                                                           .y = 150,
-                                                           .w = 200,
-                                                           .h = 200,
-                                                           .state = 0,
-                                                           .color = bgPanelColor,
-                                                           .texture = LoadTexture("data/assets/ui/demo_background.png"),
-                                                           .cclass = {.window = {}}});
+    auto window_menu = create_ref<UIElement>(UIElement{.type = ElementType::windowElement,
+                                                       .visible = false,
+                                                       .resizable = {true},
+                                                       .x = 150,
+                                                       .y = 150,
+                                                       .w = 200,
+                                                       .h = 200,
+                                                       .state = 0,
+                                                       .color = bgPanelColor,
+                                                       .texture = LoadTexture("data/assets/ui/demo_background.png"),
+                                                       .cclass = {.window = {}}});
 
-    auto button_play = ME::create_ref<UIElement>(UIElement{.type = ElementType::buttonElement,
-                                                           .parent = window_menu,
-                                                           .x = 20,
-                                                           .y = 40,
-                                                           .w = 20,
-                                                           .h = 20,
-                                                           .state = 0,
-                                                           .color = {255, 0, 20, 255},
-                                                           .text = "按钮捏",
-                                                           .cclass = {.button = {.hot_color = {1, 255, 1, 255}, .func = []() { METADOT_INFO("button pressed"); }}}});
+    auto button_play = create_ref<UIElement>(UIElement{.type = ElementType::buttonElement,
+                                                       .parent = window_menu,
+                                                       .x = 20,
+                                                       .y = 40,
+                                                       .w = 20,
+                                                       .h = 20,
+                                                       .state = 0,
+                                                       .color = {255, 0, 20, 255},
+                                                       .text = "按钮捏",
+                                                       .cclass = {.button = {.hot_color = {1, 255, 1, 255}, .func = []() { METADOT_INFO("button pressed"); }}}});
 
     uidata->elementLists.insert(std::make_pair("window_menu", window_menu));
     uidata->elementLists.insert(std::make_pair("button_play", button_play));
@@ -266,7 +267,7 @@ void UISystem::UIRendererUpdate() {
 
     uidata->imgui->Update();
     auto &l = Scripting::get_singleton_ptr()->Lua->s_lua;
-    ME::LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
+    LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
     OnGameGUIUpdate();
 
     if (global.game->state == LOADING) return;
@@ -442,4 +443,6 @@ void UISystem::destory() { UIRendererFree(); }
 
 void UISystem::reload() {}
 
-void UISystem::registerLua(ME::LuaWrapper::State &s_lua) {}
+void UISystem::registerLua(LuaWrapper::State &s_lua) {}
+
+}  // namespace ME

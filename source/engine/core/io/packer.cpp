@@ -9,6 +9,8 @@
 #include "engine/utils/utility.hpp"
 #include "libs/lz4/lz4.h"
 
+namespace ME {
+
 typedef struct pack_item {
     pack_iteminfo info;
     char *path;
@@ -762,3 +764,5 @@ ME_pack_result ME_get_pack_info(const char *filePath, u8 *majorVersion, u8 *mino
     *_itemCount = itemCount;
     return SUCCESS_PACK_RESULT;
 }
+
+}  // namespace ME

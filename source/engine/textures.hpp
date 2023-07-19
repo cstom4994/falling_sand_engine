@@ -8,6 +8,8 @@
 #include "engine/engine.h"
 #include "engine/renderer/renderer_gpu.h"
 
+namespace ME {
+
 // 贴图类
 class Texture {
 private:
@@ -24,7 +26,7 @@ public:
 };
 
 // 贴图引用
-using TextureRef = ME::ref<Texture>;
+using TextureRef = ref<Texture>;
 
 struct TexturePack {
     TextureRef testTexture;
@@ -62,5 +64,7 @@ C_Surface *ScaleSurface(C_Surface *src, f32 x, f32 y);
 TextureRef LoadAsepriteTexture(const std::string &path);
 TextureRef LoadTextureData(const std::string &path);
 void RenderTextureRect(TextureRef tex, R_Target *target, int x, int y, MErect *clip = nullptr);
+
+}  // namespace ME
 
 #endif

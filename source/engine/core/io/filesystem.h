@@ -17,14 +17,14 @@
 //                    ("%s", std::format("FILE: {0} does not exist", stringPath)))
 
 #define FUTIL_ASSERT_EXIST(stringPath)
+#define METADOT_RESLOC(x) ::ME::ME_fs_get_path(x).c_str()
 
-bool InitFilesystem();
+namespace ME {
+
+bool ME_fs_init();
 std::string ME_fs_get_path(std::string path);
-
-#define METADOT_RESLOC(x) ME_fs_get_path(x).c_str()
-
 std::vector<char> ME_fs_read_file_to_vec(const char* path, size_t& size);
-std::string normalizePath(const std::string& path, char delimiter = '/');
+std::string ME_fs_normalize_path_s(const std::string& path, char delimiter = '/');
 
 ME_INLINE bool ME_fs_exists(const std::string& filename) {
     std::ifstream file(filename);
@@ -51,5 +51,7 @@ std::string ME_fs_normalize_path(const std::string& messyPath);
 bool ME_fs_directory_exists(const std::filesystem::path& path, std::filesystem::file_status status = std::filesystem::file_status{});
 void ME_fs_create_directory(const std::string& directory_name);
 std::string ME_fs_readfile(const std::string& filename);
+
+}  // namespace ME
 
 #endif
