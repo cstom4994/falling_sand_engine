@@ -1542,7 +1542,7 @@ void render(float dt) {
             renderFunctionView();
         }
     }
-    ImGui::End();
+    ImGui::end();
 
     if (second) {
         std::lock_guard<std::mutex> lock(g_mutex);

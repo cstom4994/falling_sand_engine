@@ -37,10 +37,7 @@ static void textures_end() { EndTexture(global.game->Iso.texturepack); }
 static void textures_load(std::string name, std::string path) {}
 static void controls_init() { ControlSystem::InitKey(); }
 
-static void init_ecs() {
-    auto luacore = Scripting::get_singleton_ptr()->Lua;
-    auto &luawrap = luacore->s_lua;
-}
+static void init_ecs() { auto &luawrap = Scripting::get_singleton_ptr()->s_lua; }
 
 static void load_lua(std::string luafile) {}
 
@@ -61,9 +58,9 @@ void Biome::createBiome(std::string name, int id) {
 void GameplayScriptSystem::create() {
     METADOT_BUG("GameplayScriptSystem created");
 
-    Scripting::get_singleton_ptr()->FastLoadLua(METADOT_RESLOC("data/scripts/game.lua"));
-    Scripting::get_singleton_ptr()->FastCallFunc("OnGameEngineLoad")();
-    Scripting::get_singleton_ptr()->FastCallFunc("OnGameLoad")(global.game);
+    Scripting::get_singleton_ptr()->fast_load_lua(METADOT_RESLOC("data/scripts/game.lua"));
+    Scripting::get_singleton_ptr()->fast_call_func("OnGameEngineLoad")();
+    Scripting::get_singleton_ptr()->fast_call_func("OnGameLoad")(global.game);
 
     // GlobalDEF table initialization
     InitGlobalDEF(&global.game->Iso.globaldef, false);
@@ -73,7 +70,7 @@ void GameplayScriptSystem::create() {
     global.I18N.Init();
 }
 
-void GameplayScriptSystem::destory() { Scripting::get_singleton_ptr()->FastCallFunc("OnGameEngineUnLoad")(); }
+void GameplayScriptSystem::destory() { Scripting::get_singleton_ptr()->fast_call_func("OnGameEngineUnLoad")(); }
 
 void GameplayScriptSystem::reload() {}
 

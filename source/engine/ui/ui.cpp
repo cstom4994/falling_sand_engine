@@ -9,7 +9,7 @@
 #include "engine/core/mathlib.hpp"
 #include "engine/core/platform.h"
 #include "engine/core/profiler.hpp"
-#include "engine/engine.h"
+#include "engine/engine.hpp"
 #include "engine/event/inputevent.hpp"
 #include "engine/game.hpp"
 #include "engine/renderer/gpu.hpp"
@@ -266,7 +266,7 @@ f32 BoxDistence(MErect box, MEvec2 A) {
 void UISystem::UIRendererUpdate() {
 
     uidata->imgui->Update();
-    auto &l = Scripting::get_singleton_ptr()->Lua->s_lua;
+    auto &l = Scripting::get_singleton_ptr()->s_lua;
     LuaWrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
     OnGameGUIUpdate();
 

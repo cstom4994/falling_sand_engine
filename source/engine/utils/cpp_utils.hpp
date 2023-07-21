@@ -14,10 +14,10 @@
 #include <type_traits>
 #include <unordered_map>
 
+#include "engine/core/base_memory.h"
 #include "engine/core/const.h"
 #include "engine/core/core.hpp"
 #include "engine/core/mathlib.hpp"
-#include "engine/core/base_memory.h"
 // #include "engine/scripting/lua_wrapper.hpp"
 #include "libs/cJSON.h"
 // #include "sdl_wrapper.h"
@@ -107,21 +107,21 @@ constexpr bool is_virtual_base_of_v = is_virtual_base_of<Base, Derived>::value;
 template <size_t N>
 constexpr std::size_t lengthof(const char (&str)[N]) noexcept;
 
-constexpr std::size_t string_hash_seed(std::size_t seed, const char* str, std::size_t N) noexcept;
+constexpr std::size_t string_hash_seed(std::size_t seed, const char *str, std::size_t N) noexcept;
 constexpr std::size_t string_hash_seed(std::size_t seed, std::string_view str) noexcept { return string_hash_seed(seed, str.data(), str.size()); }
 template <std::size_t N>
 constexpr std::size_t string_hash_seed(std::size_t seed, const char (&str)[N]) noexcept {
     return string_hash_seed(seed, str, N - 1);
 }
-constexpr std::size_t string_hash_seed(std::size_t seed, const char* str) noexcept;
+constexpr std::size_t string_hash_seed(std::size_t seed, const char *str) noexcept;
 
-constexpr std::size_t string_hash(const char* str, std::size_t N) noexcept;
+constexpr std::size_t string_hash(const char *str, std::size_t N) noexcept;
 constexpr std::size_t string_hash(std::string_view str) noexcept { return string_hash(str.data(), str.size()); }
 template <std::size_t N>
 constexpr std::size_t string_hash(const char (&str)[N]) noexcept {
     return string_hash(str, N - 1);
 }
-constexpr std::size_t string_hash(const char* str) noexcept;
+constexpr std::size_t string_hash(const char *str) noexcept;
 
 template <typename T>
 struct is_function_pointer;
@@ -168,12 +168,12 @@ template <typename T, std::size_t N>
 class TempArray {
 public:
     template <typename... Elems>
-    constexpr TempArray(Elems&&... elems) : data{static_cast<T>(elems)...} {}
+    constexpr TempArray(Elems &&...elems) : data{static_cast<T>(elems)...} {}
 
     constexpr operator std::add_lvalue_reference_t<T[N]>() & { return data; }
-    constexpr operator std::add_lvalue_reference_t<const T[N]>() const& { return data; }
+    constexpr operator std::add_lvalue_reference_t<const T[N]>() const & { return data; }
     constexpr operator std::add_rvalue_reference_t<T[N]>() && { return std::move(data); }
-    constexpr operator std::add_rvalue_reference_t<const T[N]>() const&& { return std::move(data); }
+    constexpr operator std::add_rvalue_reference_t<const T[N]>() const && { return std::move(data); }
 
     constexpr operator std::span<T>() { return data; }
     constexpr operator std::span<const T>() const { return data; }
@@ -186,7 +186,7 @@ private:
 
 template <typename T, typename... Ts>
 TempArray(T, Ts...) -> TempArray<T, sizeof...(Ts) + 1>;
-}  // namespace ::ME::cpp
+}  // namespace ME::cpp
 
 // To Typename Template Type
 
@@ -332,13 +332,13 @@ struct has_virtual_base_helper<std::void_t<decltype(reinterpret_cast<has_virtual
 template <typename Void, typename Base, typename Derived>
 struct is_virtual_base_of_helper : std::is_base_of<Base, Derived> {};
 template <typename Base, typename Derived>
-struct is_virtual_base_of_helper<std::void_t<decltype(static_cast<Derived*>(std::declval<Base*>()))>, Base, Derived> : std::false_type {};
+struct is_virtual_base_of_helper<std::void_t<decltype(static_cast<Derived *>(std::declval<Base *>()))>, Base, Derived> : std::false_type {};
 
 template <class Void, template <class...> class Op, class... Args>
 struct is_valid : std::false_type {};
 template <template <class...> class Op, class... Args>
 struct is_valid<std::void_t<Op<Args...>>, Op, Args...> : std::true_type {};
-}  // namespace ::ME::cpp::details
+}  // namespace ME::cpp::details
 
 template <template <typename...> typename T, typename... Ts>
 struct ::ME::cpp::is_instantiable : details::is_instantiable<void, T, Ts...> {};
@@ -385,7 +385,7 @@ constexpr std::size_t ME::cpp::lengthof(const char (&str)[N]) noexcept {
     return N - 1;
 }
 
-constexpr std::size_t ME::cpp::string_hash_seed(std::size_t seed, const char* str, std::size_t N) noexcept {
+constexpr std::size_t ME::cpp::string_hash_seed(std::size_t seed, const char *str, std::size_t N) noexcept {
     using Traits = details::fnv1a_traits<sizeof(std::size_t)>;
     std::size_t value = seed;
 
@@ -394,7 +394,7 @@ constexpr std::size_t ME::cpp::string_hash_seed(std::size_t seed, const char* st
     return value;
 }
 
-constexpr std::size_t ME::cpp::string_hash_seed(std::size_t seed, const char* curr) noexcept {
+constexpr std::size_t ME::cpp::string_hash_seed(std::size_t seed, const char *curr) noexcept {
     using Traits = details::fnv1a_traits<sizeof(std::size_t)>;
     std::size_t value = seed;
 
@@ -405,12 +405,12 @@ constexpr std::size_t ME::cpp::string_hash_seed(std::size_t seed, const char* cu
     return value;
 }
 
-constexpr std::size_t ME::cpp::string_hash(const char* str, std::size_t N) noexcept {
+constexpr std::size_t ME::cpp::string_hash(const char *str, std::size_t N) noexcept {
     using Traits = details::fnv1a_traits<sizeof(std::size_t)>;
     return string_hash_seed(Traits::offset, str, N);
 }
 
-constexpr std::size_t ME::cpp::string_hash(const char* str) noexcept {
+constexpr std::size_t ME::cpp::string_hash(const char *str) noexcept {
     using Traits = details::fnv1a_traits<sizeof(std::size_t)>;
     return string_hash_seed(Traits::offset, str);
 }
@@ -448,8 +448,91 @@ struct function_traits<ReturnType (ClassType::*)(Args...) const> {
 };
 
 template <typename F>
-typename function_traits<F>::std_function to_function(F& lambda) {
+typename function_traits<F>::std_function to_function(F &lambda) {
     return typename function_traits<F>::std_function(lambda);
 }
+
+namespace ME {
+
+template <typename T>
+class moveonly {
+public:
+    static_assert(std::is_default_constructible_v<T>);
+    static_assert(std::is_trivially_copy_constructible_v<T>);
+    static_assert(std::is_trivially_copy_assignable_v<T>);
+    static_assert(std::is_trivially_move_constructible_v<T>);
+    static_assert(std::is_trivially_move_assignable_v<T>);
+    static_assert(std::is_swappable_v<T>);
+
+    moveonly() = default;
+
+    ~moveonly() = default;
+
+    explicit moveonly(const T &val) noexcept { m_value = val; }
+
+    moveonly(const moveonly &) = delete;
+
+    moveonly &operator=(const moveonly &) = delete;
+
+    moveonly(moveonly &&other) noexcept { m_value = std::exchange(other.m_value, T{}); }
+
+    moveonly &operator=(moveonly &&other) noexcept {
+        std::swap(m_value, other.m_value);
+        return *this;
+    }
+
+    operator const T &() const { return m_value; }
+
+    moveonly &operator=(const T &val) {
+        m_value = val;
+        return *this;
+    }
+
+    // MoveOnly<T> has the same memory layout as T
+    // So it's perfectly safe to overload operator&
+    T *operator&() { return &m_value; }
+
+    const T *operator&() const { return &m_value; }
+
+    T *operator->() { return &m_value; }
+
+    const T *operator->() const { return &m_value; }
+
+    bool operator==(const T &val) const { return m_value == val; }
+
+    bool operator!=(const T &val) const { return m_value != val; }
+
+private:
+    T m_value{};
+};
+
+static_assert(sizeof(int) == sizeof(moveonly<int>));
+
+class noncopyable {
+public:
+    noncopyable(const noncopyable &) = delete;
+    noncopyable &operator=(const noncopyable &) = delete;
+
+protected:
+    noncopyable() = default;
+    ~noncopyable() = default;
+};
+
+struct format_str {
+    constexpr format_str(const char *str) noexcept : str(str) {}
+    const char *str;
+};
+
+template <format_str F>
+constexpr auto operator""_f() {
+    return [=]<typename... T>(T... args) { return std::format(F.str, args...); };
+}
+
+class exception : public std::exception {};
+
+template <typename V, typename Alloc = std::allocator<V>>
+using vector = std::vector<V, Alloc>;
+
+}  // namespace ME
 
 #endif

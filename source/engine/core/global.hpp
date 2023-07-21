@@ -13,14 +13,14 @@
 #include "engine/core/core.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/platform.h"
-#include "engine/engine.h"
+#include "engine/engine.hpp"
 #include "engine/game_shaders.hpp"
 #include "engine/meta/reflection.hpp"
 #include "engine/ui/imgui_impl.hpp"
 
 namespace ME {
 
-class Game;
+class game;
 class Scripting;
 class UIData;
 
@@ -31,7 +31,7 @@ struct I18N {
 };
 
 struct Global {
-    Game *game = nullptr;
+    game *game = nullptr;
     Audio audio;
     I18N I18N;
 };

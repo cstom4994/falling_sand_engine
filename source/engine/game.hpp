@@ -34,7 +34,6 @@
 #include "engine/ui/font.hpp"
 #include "engine/ui/imgui_layer.hpp"
 #include "engine/ui/ui.hpp"
-#include "engine/utils/utils.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
 #include "game_shaders.hpp"
@@ -124,7 +123,14 @@ struct TexturePack_t {
     u8 *pixelsTemp_ar = nullptr;
 };
 
-class Game {
+class game final : public engine::application {
+public:
+    bool initialize(int argc, char *argv[]) override;
+    void shutdown() noexcept override;
+    bool frame_tick() override;
+    void frame_render() override;
+    void frame_finalize() override;
+
 public:
     EnumGameState state = LOADING;
     EnumGameState stateAfterLoad = MAIN_MENU;
@@ -187,8 +193,8 @@ public:
         }
     }
 
-    Game(int argc, char *argv[]);
-    ~Game();
+    game() = default;
+    ~game() = default;
 
     int init(int argc, char *argv[]);
     int run(int argc, char *argv[]);

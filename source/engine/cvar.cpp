@@ -9,7 +9,7 @@ namespace ME {
 
 void InitGlobalDEF(GlobalDEF* s, bool openDebugUIs) {
 
-    auto GlobalDEF = Scripting::get_singleton_ptr()->Lua->s_lua["global_def"];
+    auto GlobalDEF = Scripting::get_singleton_ptr()->s_lua["global_def"];
 
     if (!GlobalDEF.is_nil_ref()) {
         s->draw_frame_graph = GlobalDEF["draw_frame_graph"].get<decltype(s->draw_frame_graph)>();

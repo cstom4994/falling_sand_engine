@@ -2,7 +2,7 @@
 
 #include "game_shaders.hpp"
 
-#include "engine/engine.h"
+#include "engine/engine.hpp"
 #include "game/player.hpp"
 
 namespace ME {

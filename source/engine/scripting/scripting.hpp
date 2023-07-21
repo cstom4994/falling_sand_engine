@@ -10,16 +10,13 @@
 #include <string>
 
 #include "engine/core/macros.hpp"
-#include "engine/engine.h"
+#include "engine/engine.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
-#include "engine/utils/struct.hpp"
 #include "engine/utils/utility.hpp"
 
 struct lua_State;
 
 namespace ME {
-
-#pragma region struct_as
 
 template <typename T>
 ME_INLINE void struct_as(std::string &s, const char *table, const char *key, const T &value) {
@@ -30,8 +27,6 @@ template <>
 ME_INLINE void struct_as(std::string &s, const char *table, const char *key, const std::string &value) {
     s += std::format("{0}.{1} = \"{2}\"\n", table, key, value);
 }
-
-#pragma endregion struct_as
 
 using ppair = std::pair<const char *, const void *>;
 
@@ -66,15 +61,6 @@ void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
 //     });
 // }
 
-struct LuaCore {
-    LuaWrapper::State s_lua;
-    lua_State *L;
-
-    struct {
-        LuaWrapper::LuaTable Biome;
-    } Data_;
-};
-
 class MonoLayer {
 private:
     MonoObject *callEntryMethod(const char *methodName, void *obj = nullptr, void **params = nullptr, MonoObject **ex = nullptr);
@@ -94,28 +80,32 @@ void script_runfile(const char *filePath);
 
 class Scripting : public singleton<Scripting> {
 public:
-    LuaCore *Lua;
+    LuaWrapper::State s_lua;
+    lua_State *L;
+
+    struct {
+        LuaWrapper::LuaTable Biome;
+    } Data_;
+
     MonoLayer Mono;
 
-    Scripting() { METADOT_BUG("Scripting CSingleton Init"); };
-    ~Scripting() { METADOT_BUG("Scripting CSingleton End"); };
+    Scripting() { METADOT_BUG("[Scripting] init"); };
+    ~Scripting() { METADOT_BUG("[Scripting] end"); };
 
-    void Init();
-    void End();
-    void Update();
-    void UpdateRender();
-    void UpdateTick();
+    void init();
+    void end();
+    void update();
+    void update_render();
+    void update_tick();
 
-    ME_INLINE auto FastCallFunc(std::string name) {
-        ME_ASSERT(Lua);
-        auto &luawrap = Lua->s_lua;
+    ME_INLINE auto fast_call_func(std::string name) {
+        auto &luawrap = this->s_lua;
         auto func = luawrap[name];
         return func;
     }
 
-    ME_INLINE bool FastLoadLua(std::string path) {
-        ME_ASSERT(Lua);
-        auto &luawrap = Lua->s_lua;
+    ME_INLINE bool fast_load_lua(std::string path) {
+        auto &luawrap = this->s_lua;
         return luawrap.dofile(path);
     }
 

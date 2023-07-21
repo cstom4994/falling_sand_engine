@@ -62,22 +62,10 @@ std::string str(T1 x, T... args) {
     return to_str(x) + str(args...);
 }
 
-enum [[maybe_unused]] log_colour { ME_LOG_COLOUR_GREEN = 0, ME_LOG_COLOUR_YELLOW = 1, ME_LOG_COLOUR_RED = 2, ME_LOG_COLOUR_WHITE = 3, ME_LOG_COLOUR_BLUE = 4, ME_LOG_COLOUR_NULL = 5 };
+enum log_colour { ME_LOG_COLOUR_GREEN = 0, ME_LOG_COLOUR_YELLOW = 1, ME_LOG_COLOUR_RED = 2, ME_LOG_COLOUR_WHITE = 3, ME_LOG_COLOUR_BLUE = 4, ME_LOG_COLOUR_NULL = 5 };
 
 enum log_type { ME_LOG_TYPE_WARNING = 1, ME_LOG_TYPE_ERROR = 2, ME_LOG_TYPE_NOTE = 4, ME_LOG_TYPE_SUCCESS = 0, ME_LOG_TYPE_MESSAGE = 3 };
 
-enum [[maybe_unused]] log_operations {
-    // This is the default operation
-    ME_LOG_OPERATION_TERMINAL,
-    ME_LOG_OPERATION_FILE,
-    ME_LOG_OPERATION_FILE_AND_TERMINAL,
-};
-
-// The offset by which the names of the given message types are listed in the logColours array below
-constexpr uint8_t logTypeOffset = 6;
-
-// A constexpr list of strings, elements 0-5 are escape codes for colours, 6-11 are the messages used for the given
-// escape colours
 constexpr const char *logColours[] = {"\x1b[32m", "\x1b[33m", "\x1b[31m", "\x1b[37m", "\x1b[34m", "\x1b[0m", "Success", "Warning", "Error", "Message", "Debug", "Null"};
 
 struct log_msg {
@@ -86,22 +74,18 @@ struct log_msg {
     i64 time;
 };
 
-class LoggerInternal {
-public:
-    LoggerInternal() noexcept;
-    ~LoggerInternal() noexcept;
-
+class logger {
 private:
-    friend class Logger;
     friend class MEconsole;
 
     static void writeline(std::string &msg);
 
-    template <bool bFile, typename... args>
-    void log(const char *message, log_type type, args &&...argv) noexcept {
+    template <typename... args>
+    static void log_impl(const char *message, log_type type, args &&...argv) noexcept {
+
+        constexpr uint8_t logTypeOffset = 6;
+
         std::string output;
-        bool bError = false;
-        if (type == ME_LOG_TYPE_ERROR && using_errors) bError = true;
 
         output = std::string(logColours[type + logTypeOffset]) + ": " + message;
         std::stringstream ss;
@@ -109,52 +93,21 @@ private:
         output += ss.str();
         output += "\n";
 
-        // if constexpr (bFile)
-        //     fileout << output << std::endl;
-        // else
-        //     std::cout << logColours[type] << output << logColours[logTypeOffset - 1] << std::endl;
-
         writeline(output);
 
-        message_log.emplace_back(log_msg{output, type, ME_gettime()});
-
-        if (bError) {
-#ifdef NO_INSTANT_CRASH
-            std::cin.get();
-#endif
-            std::terminate();
-        }
+        m_message_log.emplace_back(log_msg{output, type, ME_gettime()});
     }
 
-    std::ofstream fileout;
-    bool using_errors = false;
-    std::vector<log_msg> message_log;
-
-    log_operations operation_type = ME_LOG_OPERATION_TERMINAL;
+    static std::vector<log_msg> m_message_log;
 
     static std::string get_current_time() noexcept;
-    void shutdown_file_stream() noexcept;
-};
 
-inline LoggerInternal loggerInternal;
-
-class Logger {
 public:
-    static void set_crash_on_error(bool bError) noexcept;
-
-    static void set_current_log_file(const char *file) noexcept;
-
-    static void set_log_operation(log_operations op) noexcept;
+    static const std::vector<log_msg> &message_log() noexcept { return m_message_log; }
 
     template <typename... args>
     static void log(log_type type, const char *message, args &&...argv) noexcept {
-        if (loggerInternal.operation_type == ME_LOG_OPERATION_FILE_AND_TERMINAL) {
-            loggerInternal.log<false>(message, type, argv...);
-            loggerInternal.log<true>(message, type, argv...);
-        } else if (loggerInternal.operation_type == ME_LOG_OPERATION_TERMINAL)
-            loggerInternal.log<false>(message, type, argv...);
-        else
-            loggerInternal.log<true>(message, type, argv...);
+        log_impl(message, type, argv...);
     }
 };
 
@@ -193,96 +146,7 @@ void println(const Args &...args) {
     (std::cout << ... << args) << std::endl;
 }
 
-template <typename T>
-class MoveOnly {
-public:
-    static_assert(std::is_default_constructible_v<T>);
-    static_assert(std::is_trivially_copy_constructible_v<T>);
-    static_assert(std::is_trivially_copy_assignable_v<T>);
-    static_assert(std::is_trivially_move_constructible_v<T>);
-    static_assert(std::is_trivially_move_assignable_v<T>);
-    static_assert(std::is_swappable_v<T>);
-
-    MoveOnly() = default;
-
-    ~MoveOnly() = default;
-
-    explicit MoveOnly(const T &val) noexcept { m_value = val; }
-
-    MoveOnly(const MoveOnly &) = delete;
-
-    MoveOnly &operator=(const MoveOnly &) = delete;
-
-    MoveOnly(MoveOnly &&other) noexcept { m_value = std::exchange(other.m_value, T{}); }
-
-    MoveOnly &operator=(MoveOnly &&other) noexcept {
-        std::swap(m_value, other.m_value);
-        return *this;
-    }
-
-    operator const T &() const {  // NOLINT(google-explicit-constructor)
-        return m_value;
-    }
-
-    MoveOnly &operator=(const T &val) {
-        m_value = val;
-        return *this;
-    }
-
-    // MoveOnly<T> has the same memory layout as T
-    // So it's perfectly safe to overload operator&
-    T *operator&()  // NOLINT(google-runtime-operator)
-    {
-        return &m_value;
-    }
-
-    const T *operator&() const {  // NOLINT(google-runtime-operator)
-        return &m_value;
-    }
-
-    T *operator->() { return &m_value; }
-
-    const T *operator->() const { return &m_value; }
-
-    bool operator==(const T &val) const { return m_value == val; }
-
-    bool operator!=(const T &val) const { return m_value != val; }
-
-private:
-    T m_value{};
-};
-
-static_assert(sizeof(int) == sizeof(MoveOnly<int>));
-
-#define MOVE_ONLY(T)                  \
-    T(const T &) = delete;            \
-    T &operator=(const T &) = delete; \
-    T(T &&) noexcept = default;       \
-    T &operator=(T &&) noexcept = default;
-
-#define NO_MOVE_OR_COPY(T)            \
-    T(const T &) = delete;            \
-    T &operator=(const T &) = delete; \
-    T(T &&) = delete;                 \
-    T &operator=(T &&) = delete;
-
 }  // namespace ME
-
-//--------------------------------------------------------------------------------------------------------------------------------//
-// LOGGING FUNCTIONS
-
-#if defined(ME_DEBUG)
-#define METADOT_BUG(...) ::ME::Logger::log(::ME::ME_LOG_TYPE_NOTE, std::format("[Native] {0}:{1} ", __func__, __LINE__).c_str(), __VA_ARGS__)
-#else
-#define METADOT_BUG(...)
-#endif
-#define METADOT_TRACE(...) ::ME::Logger::log(::ME::ME_LOG_TYPE_NOTE, __VA_ARGS__)
-#define METADOT_INFO(...) ::ME::Logger::log(::ME::ME_LOG_TYPE_MESSAGE, __VA_ARGS__)
-#define METADOT_WARN(...) ::ME::Logger::log(::ME::ME_LOG_TYPE_WARNING, __VA_ARGS__)
-#define METADOT_ERROR(...) ::ME::Logger::log(::ME::ME_LOG_TYPE_ERROR, __VA_ARGS__)
-
-#define METADOT_LOG_SCOPE_FUNCTION(...)
-#define METADOT_LOG_SCOPE_F(...)
 
 template <typename... Args>
 bool DebugCheck(const bool succeeded, const char *failMessage, Args... args) {
@@ -329,8 +193,6 @@ protected:
 
 template <typename T>
 ref<T> singleton<T>::this_instance;
-
-//=============================================================================
 
 template <typename T>
 class static_singleton {
@@ -413,7 +275,6 @@ struct pointer_sorter {
 };
 
 //-----------------------------------------------------------------------------
-
 // thread pool
 
 template <typename R>
@@ -615,6 +476,10 @@ private:
     std::mutex mutex;
     std::condition_variable cv;
 };
+
+}  // namespace ME
+
+namespace ME {
 
 std::vector<std::string> split(std::string strToSplit, char delimeter);
 std::vector<std::string> string_split(std::string s, const char delimiter);
@@ -1064,5 +929,30 @@ void parseNumbers(const std::string &s, numberType ray[size], int *actualSize = 
 void Vector3ToTable(lua_State *L, MEvec3 vector);
 
 }  // namespace ME
+
+#if defined(ME_DEBUG)
+#define METADOT_BUG(...) ::ME::logger::log(::ME::ME_LOG_TYPE_NOTE, std::format("[Native] {0}:{1} ", __func__, __LINE__).c_str(), __VA_ARGS__)
+#else
+#define METADOT_BUG(...)
+#endif
+#define METADOT_TRACE(...) ::ME::logger::log(::ME::ME_LOG_TYPE_NOTE, __VA_ARGS__)
+#define METADOT_INFO(...) ::ME::logger::log(::ME::ME_LOG_TYPE_MESSAGE, __VA_ARGS__)
+#define METADOT_WARN(...) ::ME::logger::log(::ME::ME_LOG_TYPE_WARNING, __VA_ARGS__)
+#define METADOT_ERROR(...) ::ME::logger::log(::ME::ME_LOG_TYPE_ERROR, __VA_ARGS__)
+
+#define METADOT_LOG_SCOPE_FUNCTION(...)
+#define METADOT_LOG_SCOPE_F(...)
+
+#define MOVE_ONLY(T)                  \
+    T(const T &) = delete;            \
+    T &operator=(const T &) = delete; \
+    T(T &&) noexcept = default;       \
+    T &operator=(T &&) noexcept = default;
+
+#define NO_MOVE_OR_COPY(T)            \
+    T(const T &) = delete;            \
+    T &operator=(const T &) = delete; \
+    T(T &&) = delete;                 \
+    T &operator=(T &&) = delete;
 
 #endif

@@ -14,7 +14,7 @@
 
 namespace ME {
 
-class Game;
+class game;
 
 namespace GameUI {
 
@@ -50,26 +50,26 @@ public:
     std::map<std::string, FMOD::Studio::Bus *> OptionsUI__busMap = {};
 };
 
-void DrawDebugUI(Game *game);
+void DrawDebugUI(game *game);
 
 void DebugDrawUI__Setup();
-void DebugDrawUI__Draw(Game *game);
+void DebugDrawUI__Draw(game *game);
 
-void MainMenuUI__RefreshWorlds(Game *game);
+void MainMenuUI__RefreshWorlds(game *game);
 void MainMenuUI__Setup();
-void MainMenuUI__Draw(Game *game);
-void MainMenuUI__DrawMainMenu(Game *game);
-void MainMenuUI__DrawInGame(Game *game);
-void MainMenuUI__DrawWorldLists(Game *game);
-void MainMenuUI__reset(Game *game);
-void MainMenuUI__DrawCreateWorldUI(Game *game);
-void MainMenuUI__inputChanged(std::string text, Game *game);
+void MainMenuUI__Draw(game *game);
+void MainMenuUI__DrawMainMenu(game *game);
+void MainMenuUI__DrawInGame(game *game);
+void MainMenuUI__DrawWorldLists(game *game);
+void MainMenuUI__reset(game *game);
+void MainMenuUI__DrawCreateWorldUI(game *game);
+void MainMenuUI__inputChanged(std::string text, game *game);
 
-void OptionsUI__Draw(Game *game);
-void OptionsUI__DrawGeneral(Game *game);
-void OptionsUI__DrawVideo(Game *game);
-void OptionsUI__DrawAudio(Game *game);
-void OptionsUI__DrawInput(Game *game);
+void OptionsUI__Draw(game *game);
+void OptionsUI__DrawGeneral(game *game);
+void OptionsUI__DrawVideo(game *game);
+void OptionsUI__DrawAudio(game *game);
+void OptionsUI__DrawInput(game *game);
 
 }  // namespace GameUI
 

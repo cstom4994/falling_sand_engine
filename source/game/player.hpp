@@ -202,11 +202,11 @@ struct meta::static_refl::TypeInfo<Player> : TypeInfoBase<Player> {
 struct move_player_event {
     f32 dt;
     f32 thruTick;
-    Game *g;
+    game *g;
 };
 
 struct entity_update_event {
-    Game *g;
+    game *g;
 };
 
 class ControableSystem : public ecs::system<move_player_event> {

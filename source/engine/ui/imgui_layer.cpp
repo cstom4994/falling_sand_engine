@@ -21,7 +21,7 @@
 #include "engine/core/global.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/macros.hpp"
-#include "engine/engine.h"
+#include "engine/engine.hpp"
 #include "engine/game.hpp"
 #include "engine/game_datastruct.hpp"
 #include "engine/game_ui.hpp"
@@ -36,7 +36,6 @@
 #include "engine/ui/imgui_impl.hpp"
 #include "engine/ui/ui.hpp"
 #include "engine/utils/utility.hpp"
-#include "engine/utils/utils.hpp"
 #include "game/items.hpp"
 #include "game/player.hpp"
 #include "libs/glad/glad.h"
@@ -424,7 +423,7 @@ int profiler_draw_frame(profiler_frame *_data, void *_buffer, size_t _bufferSize
         //         // ImGui::Auto(allocation_metrics::MemoryDebugMap, "map");
         // #endif
 
-        auto L = Scripting::get_singleton_ptr()->Lua->L;
+        auto L = Scripting::get_singleton_ptr()->L;
         lua_gc(L, LUA_GCCOLLECT, 0);
         lua_Integer kb = lua_gc(L, LUA_GCCOUNT, 0);
         lua_Integer bytes = lua_gc(L, LUA_GCCOUNTB, 0);

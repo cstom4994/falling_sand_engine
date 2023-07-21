@@ -5036,7 +5036,7 @@ void SetAttributeSource(R_Renderer *renderer, int num_values, R_Attribute source
 
 #if 0
 #define SET_COMMON_FUNCTIONS(impl)                            \
-    impl->Init = &Init;                                       \
+    impl->init = &init;                                       \
     impl->CreateTargetFromWindow = &CreateTargetFromWindow;   \
     impl->SetActiveTarget = &SetActiveTarget;                 \
     impl->CreateAliasTarget = &CreateAliasTarget;             \

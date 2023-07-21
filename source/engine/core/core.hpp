@@ -37,7 +37,6 @@
 
 #include "engine/core/basic_types.h"
 #include "engine/core/macros.hpp"
-#include "engine/utils/struct.hpp"
 
 #define METADOT_INT8_MAX 0x7F
 #define METADOT_UINT8_MAX 0xFF
@@ -87,8 +86,6 @@
 #else
 #define ME_DEPRECATED_
 #endif
-
-#define ME_OVERRIDE_ override
 
 namespace ME {
 

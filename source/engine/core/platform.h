@@ -1,5 +1,4 @@
 
-
 #ifndef ME_PLATFORM_H
 #define ME_PLATFORM_H
 
@@ -9,26 +8,17 @@
 #include "engine/core/macros.hpp"
 #include "engine/core/sdl_wrapper.h"
 
-/*--------------------------------------------------------------------------
- * Platform specific headers
- *------------------------------------------------------------------------*/
 #ifdef ME_PLATFORM_WINDOWS
+#ifndef WINDOWS_LEAN_AND_MEAN
 #define WINDOWS_LEAN_AND_MEAN
+#endif
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x601
 #endif
-#include <windows.h>
-#elif defined(ME_PLATFORM_POSIX)
-#include <pthread.h>
-#include <sys/time.h>
-#else
-#error "Unsupported platform!"
-#endif
-
-#if defined(ME_PLATFORM_WINDOWS)
 #include <Windows.h>
 #include <io.h>
 #include <shobjidl.h>
+#include <windows.h>
 
 #if defined(_MSC_VER)
 #define __func__ __FUNCTION__
@@ -42,21 +32,29 @@
 #define PATH_MAX 260
 #endif
 
-#elif defined(ME_PLATFORM_LINUX)
+#define S_ISREG(m) (((m)&0170000) == (0100000))
+#define S_ISDIR(m) (((m)&0170000) == (0040000))
+
+#elif defined(ME_PLATFORM_POSIX) || defined(ME_PLATFORM_LINUX)
 #include <bits/types/struct_tm.h>
 #include <bits/types/time_t.h>
 #include <dirent.h>
 #include <limits.h>
+#include <pthread.h>
 #include <sys/io.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #define PATH_SEP '/'
+
 #elif defined(ME_PLATFORM_APPLE)
 #include <TargetConditionals.h>
 #include <mach-o/dyld.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#else
+#error "Unsupported platform!"
 #endif
 
 #ifdef ME_PLATFORM_WINDOWS
@@ -66,20 +64,6 @@
 #else
 #define getFullPath(a, b) realpath(a, b)
 #define PATH_SEPARATOR '/'
-#endif
-
-#ifndef MAX_PATH
-#include <limits.h>
-#ifdef PATH_MAX
-#define MAX_PATH PATH_MAX
-#else
-#define MAX_PATH 256
-#endif
-#endif
-
-#if MAX_PATH > 1024
-#undef MAX_PATH
-#define MAX_PATH 1024
 #endif
 
 /*--------------------------------------------------------------------------*/
@@ -121,9 +105,9 @@ static inline pthread_key_t ME_tls_allocate() {
     return handle;
 }
 
-static inline void ME_tls_set_value(pthread_key_t _handle, void *_value) { pthread_setspecific(_handle, _value); }
+static inline void ME_tls_set_value(pthread_key_t _handle, void* _value) { pthread_setspecific(_handle, _value); }
 
-static inline void *ME_tls_get_value(pthread_key_t _handle) { return pthread_getspecific(_handle); }
+static inline void* ME_tls_get_value(pthread_key_t _handle) { return pthread_getspecific(_handle); }
 
 static inline void ME_tls_free(pthread_key_t _handle) { pthread_key_delete(_handle); }
 
@@ -145,15 +129,15 @@ static inline void ME_mutex_unlock(ME_mutex* _mutex) { LeaveCriticalSection(_mut
 #elif defined(ME_PLATFORM_POSIX)
 typedef pthread_mutex_t ME_mutex;
 
-static inline void ME_mutex_init(ME_mutex *_mutex) { pthread_mutex_init(_mutex, NULL); }
+static inline void ME_mutex_init(ME_mutex* _mutex) { pthread_mutex_init(_mutex, NULL); }
 
-static inline void ME_mutex_destroy(ME_mutex *_mutex) { pthread_mutex_destroy(_mutex); }
+static inline void ME_mutex_destroy(ME_mutex* _mutex) { pthread_mutex_destroy(_mutex); }
 
-static inline void ME_mutex_lock(ME_mutex *_mutex) { pthread_mutex_lock(_mutex); }
+static inline void ME_mutex_lock(ME_mutex* _mutex) { pthread_mutex_lock(_mutex); }
 
-static inline int ME_mutex_trylock(ME_mutex *_mutex) { return pthread_mutex_trylock(_mutex); }
+static inline int ME_mutex_trylock(ME_mutex* _mutex) { return pthread_mutex_trylock(_mutex); }
 
-static inline void ME_mutex_unlock(ME_mutex *_mutex) { pthread_mutex_unlock(_mutex); }
+static inline void ME_mutex_unlock(ME_mutex* _mutex) { pthread_mutex_unlock(_mutex); }
 
 #else
 #error "Unsupported platform!"
@@ -207,134 +191,17 @@ ME_INLINE void ME_win_init_dpi() {
 #endif
 }
 
-#pragma region strings
-
-#ifndef _WIN32
-
-#pragma message("this strinengine.h implementation is for Windows only!")
-
-#else
-
-static int bcmp(const void *s1, const void *s2, size_t n) { return memcmp(s1, s2, n); }
-
-static void bcopy(const void *src, void *dest, size_t n) { memcpy(dest, src, n); }
-
-static void bzero(void *s, size_t n) { memset(s, 0, n); }
-
-static void explicit_bzero(void *s, size_t n) {
-    volatile char *vs = (volatile char *)s;
-    while (n) {
-        *vs++ = 0;
-        n--;
-    }
-}
-
-static const char *index(const char *s, int c) { return strchr(s, c); }
-
-static const char *rindex(const char *s, int c) { return strrchr(s, c); }
-
-static int ffs(int i) {
-    int bit;
-
-    if (0 == i) return 0;
-
-    for (bit = 1; !(i & 1); ++bit) i >>= 1;
-    return bit;
-}
-
-static int ffsl(long i) {
-    int bit;
-
-    if (0 == i) return 0;
-
-    for (bit = 1; !(i & 1); ++bit) i >>= 1;
-    return bit;
-}
-
-static int ffsll(long long i) {
-    int bit;
-
-    if (0 == i) return 0;
-
-    for (bit = 1; !(i & 1); ++bit) i >>= 1;
-    return bit;
-}
-
-#ifndef __MINGW32__
-
-static int strcasecmp(const char *s1, const char *s2) {
-    const unsigned char *u1 = (const unsigned char *)s1;
-    const unsigned char *u2 = (const unsigned char *)s2;
-    int result;
-
-    while ((result = tolower(*u1) - tolower(*u2)) == 0 && *u1 != 0) {
-        *u1++;
-        *u2++;
-    }
-
-    return result;
-}
-
-static int strncasecmp(const char *s1, const char *s2, size_t n) {
-    const unsigned char *u1 = (const unsigned char *)s1;
-    const unsigned char *u2 = (const unsigned char *)s2;
-    int result;
-
-    for (; n != 0; n--) {
-        result = tolower(*u1) - tolower(*u2);
-        if (result) return result;
-        if (*u1 == 0) return 0;
-    }
-    return 0;
-}
-
-static int strcasecmp_l(const char *s1, const char *s2, _locale_t loc) {
-    const unsigned char *u1 = (const unsigned char *)s1;
-    const unsigned char *u2 = (const unsigned char *)s2;
-    int result;
-
-    while ((result = _tolower_l(*u1, loc) - _tolower_l(*u2, loc)) == 0 && *u1 != 0) {
-        *u1++;
-        *u2++;
-    }
-
-    return result;
-}
-
-static int strncasecmp_l(const char *s1, const char *s2, size_t n, _locale_t loc) {
-    const unsigned char *u1 = (const unsigned char *)s1;
-    const unsigned char *u2 = (const unsigned char *)s2;
-    int result;
-
-    for (; n != 0; n--) {
-        result = _tolower_l(*u1, loc) - _tolower_l(*u2, loc);
-        if (result) return result;
-        if (*u1 == 0) return 0;
-    }
-    return 0;
-}
-
-#endif
-
-#endif
-
-#pragma endregion strings
-
 #if __linux__
 #define openFile(filePath, mode) fopen(filePath, mode)
 #define seekFile(file, offset, whence) fseeko(file, offset, whence)
 #define tellFile(file) ftello(file)
 #elif _WIN32
-inline static FILE *openFile(const char *filePath, const char *mode) {
-    FILE *file;
-
+inline static FILE* openFile(const char* filePath, const char* mode) {
+    FILE* file;
     errno_t error = fopen_s(&file, filePath, mode);
-
     if (error != 0) return NULL;
-
     return file;
 }
-
 #define seekFile(file, offset, whence) _fseeki64(file, offset, whence)
 #define tellFile(file) _ftelli64(file)
 #else
@@ -342,11 +209,6 @@ inline static FILE *openFile(const char *filePath, const char *mode) {
 #endif
 
 #define closeFile(file) fclose(file)
-
-#ifdef ME_PLATFORM_WINDOWS
-#define S_ISREG(m) (((m)&0170000) == (0100000))
-#define S_ISDIR(m) (((m)&0170000) == (0040000))
-#endif
 
 }  // namespace ME
 

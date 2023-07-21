@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "engine/engine.h"
+#include "engine/engine.hpp"
 
 #include <cstdlib>
 
@@ -173,6 +173,21 @@ void ProcessTickTime() {
     ENGINE()->time.frameTimesTrace[TraceTimeNum - 1] = (u16)(ME_gettime() - ENGINE()->time.now);
 
     ENGINE()->time.lastTime = ENGINE()->time.now;
+}
+
+engine::parameters::parameters(std::string game_name, std::string debug_args) noexcept : m_game_name(std::move(game_name)), m_debug_args(std::move(debug_args)) {}
+
+engine::engine(int argc, char *argv[], const parameters &params) : m_argc(argc) { m_argv = argv; }
+
+engine::~engine() noexcept {}
+
+bool engine::start(application_uptr app) {
+    ME_ASSERT(is_in_main_thread());
+
+    app->initialize(m_argc, m_argv);
+    app->shutdown();
+
+    return true;
 }
 
 }  // namespace ME

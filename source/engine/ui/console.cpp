@@ -229,7 +229,7 @@ void ME::MEconsole::set_log_colour(ImVec4 colour, log_type type) noexcept {
 }
 
 void ME::MEconsole::display(bool *bInteractingWithTextbox) noexcept {
-    for (auto &a : loggerInternal.message_log) {
+    for (auto &a : logger::message_log()) {
         ImVec4 colour;
         switch (a.type) {
             case ME_LOG_TYPE_WARNING:
@@ -279,7 +279,8 @@ void ME::MEconsole::draw_internal_display() noexcept {
     int n = 9;
 
     std::vector<log_msg>::const_reverse_iterator backwardIterator;
-    for (backwardIterator = loggerInternal.message_log.crbegin(); backwardIterator != loggerInternal.message_log.crend(); backwardIterator++) {
+    auto &logger_list = logger::message_log();
+    for (backwardIterator = logger_list.crbegin(); backwardIterator != logger_list.crend(); backwardIterator++) {
         if (n < 0) break;
 
         i64 dtime = now - backwardIterator->time;
@@ -333,7 +334,9 @@ void ME::MEconsole::draw_internal_display() noexcept {
     }
 }
 
-void ME::MEconsole::add_to_message_log(const std::string &msg, log_type type) noexcept { loggerInternal.message_log.emplace_back(log_msg{msg, type}); }
+void ME::MEconsole::add_to_message_log(const std::string &msg, log_type type) noexcept {
+    // logger::message_log.emplace_back(log_msg{msg, type});
+}
 
 void ME::MEconsole::Init() {
     convar.Command("help", [this]() {

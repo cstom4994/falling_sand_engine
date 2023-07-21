@@ -11,7 +11,7 @@
 
 #include "engine/core/core.hpp"
 #include "engine/core/profiler.hpp"
-#include "engine/engine.h"
+#include "engine/engine.hpp"
 
 // #define VE_FONTCACHE_DEBUGPRINT
 #include "engine/ui/fontcache.hpp"

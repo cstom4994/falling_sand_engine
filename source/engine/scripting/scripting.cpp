@@ -29,7 +29,6 @@
 #include "engine/textures.hpp"
 #include "engine/ui/imgui_impl.hpp"
 #include "engine/utils/utility.hpp"
-#include "engine/utils/utils.hpp"
 
 namespace ME {
 
@@ -103,7 +102,7 @@ static int catch_panic(lua_State *L) {
 
 static int metadot_autoload(lua_State *L) {
     std::string string = lua_tostring(L, 1);
-    auto &LuaCore = Scripting::get_singleton_ptr()->Lua->s_lua;
+    auto &LuaCore = Scripting::get_singleton_ptr()->s_lua;
     ME_ASSERT(&LuaCore);
     if (ME_str_starts_with(string, "LUA::")) ME_str_replace_with(string, "LUA::", "data/scripts/");
     script_runfile(string.c_str());
@@ -145,7 +144,7 @@ static int ls(lua_State *L) {
 }
 
 static void add_packagepath(const char *p) {
-    auto &s_lua = Scripting::get_singleton_ptr()->Lua->s_lua;
+    auto &s_lua = Scripting::get_singleton_ptr()->s_lua;
     ME_ASSERT(&s_lua);
     s_lua.dostring(std::format("package.path = "
                                "'{0}/?.lua;' .. package.path",
@@ -200,9 +199,7 @@ static std::string readStringFromFile(const char *filePath) {
     return out;
 }
 
-lua_State *LuaCoreCppFunc(void *luacorecpp) { return ((LuaCore *)luacorecpp)->s_lua.state(); }
-
-static void InitLua(LuaCore *lc) {
+static void InitLua(Scripting *lc) {
 
     lc->L = lc->s_lua.state();
 
@@ -270,9 +267,7 @@ static void InitLua(LuaCore *lc) {
     script_runfile("data/scripts/init.lua");
 }
 
-static void EndLua(LuaCore *_struct) {}
-
-void run_script_in_console(LuaCore *_struct, const char *c) {
+void run_script_in_console(Scripting *_struct, const char *c) {
     luaL_loadstring(_struct->L, c);
     auto result = ME_debug_pcall(_struct->L, 0, LUA_MULTRET, 0);
     if (result != LUA_OK) {
@@ -284,15 +279,15 @@ void run_script_in_console(LuaCore *_struct, const char *c) {
 void script_runfile(const char *filePath) {
     FUTIL_ASSERT_EXIST(filePath);
 
-    int result = luaL_loadfile(Scripting::get_singleton_ptr()->Lua->L, METADOT_RESLOC(filePath));
+    int result = luaL_loadfile(Scripting::get_singleton_ptr()->L, METADOT_RESLOC(filePath));
     if (result != LUA_OK) {
-        print_error(Scripting::get_singleton_ptr()->Lua->L);
+        print_error(Scripting::get_singleton_ptr()->L);
         return;
     }
-    result = ME_debug_pcall(Scripting::get_singleton_ptr()->Lua->L, 0, LUA_MULTRET, 0);
+    result = ME_debug_pcall(Scripting::get_singleton_ptr()->L, 0, LUA_MULTRET, 0);
 
     if (result != LUA_OK) {
-        print_error(Scripting::get_singleton_ptr()->Lua->L);
+        print_error(Scripting::get_singleton_ptr()->L);
     }
 }
 
@@ -533,11 +528,10 @@ bool MonoLayer::isMonoLoaded() { return happyLoad; }
 }
 #endif
 
-void Scripting::Init() {
+void Scripting::init() {
     Timer timer;
     timer.start();
-    this->Lua = new LuaCore;
-    InitLua(Lua);
+    InitLua(this);
     timer.stop();
     METADOT_INFO(std::format("LuaLayer loading done in {0:.4f} ms", timer.get()).c_str());
 
@@ -547,29 +541,23 @@ void Scripting::Init() {
     METADOT_INFO(std::format("MonoLayer loading done in {0:.4f} ms", timer.get()).c_str());
 }
 
-void Scripting::End() {
-    EndLua(Lua);
-    delete Lua;
+void Scripting::end() { Mono.onDetach(); }
 
-    Mono.onDetach();
-}
-
-void Scripting::Update() {
-    ME_ASSERT(Lua);
+void Scripting::update() {
     // luaL_loadstring(_struct->L, s_couroutineFileSrc.c_str());
     // if (metadot_debug_pcall(_struct->L, 0, LUA_MULTRET, 0) != LUA_OK) {
     //     print_error(_struct->L);
     //     return;
     // }
-    auto &luawrap = Lua->s_lua;
+    auto &luawrap = this->s_lua;
     auto OnUpdate = luawrap["OnUpdate"];
     OnUpdate();
 
     Mono.onUpdate();
 }
 
-void Scripting::UpdateRender() { this->FastCallFunc("OnRender"); }
+void Scripting::update_render() { this->fast_call_func("OnRender"); }
 
-void Scripting::UpdateTick() { this->FastCallFunc("OnGameTickUpdate"); }
+void Scripting::update_tick() { this->fast_call_func("OnGameTickUpdate"); }
 
 }  // namespace ME

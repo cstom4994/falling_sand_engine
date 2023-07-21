@@ -1,9 +1,5 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include <memory>
-
-#include "game.hpp"
-
 #ifdef main
 #undef main
 #endif
@@ -32,14 +28,15 @@ void operator delete(void* ptr) noexcept {
 
 #endif
 
+extern int ME_main(int argc, char* argv[]);
+
 int main(int argc, char* argv[]) {
 
 #ifdef CHECK_MEM
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-    const auto game = ME::create_scope<ME::Game>(argc, argv);
-    auto result = game->init(argc, argv);
+    auto result = ME_main(argc, argv);
 
 #ifdef CHECK_MEM
     _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);

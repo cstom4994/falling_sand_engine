@@ -14,7 +14,7 @@
 #include "engine/core/core.hpp"
 #include "engine/core/macros.hpp"
 #include "engine/core/mathlib_base.hpp"
-#include "engine/engine.h"
+#include "engine/engine.hpp"
 
 // FMOD header
 #include <fmod.hpp>

@@ -15,7 +15,6 @@
 #include "engine/physics/inc/physics2d.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/utils/utility.hpp"
-#include "engine/utils/utils.hpp"
 #include "game.hpp"
 #include "game/items.hpp"
 #include "game/player.hpp"

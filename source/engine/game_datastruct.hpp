@@ -32,7 +32,7 @@ struct CellData;
 struct Biome;
 struct Material;
 struct Player;
-struct Game;
+struct game;
 
 #define RegisterFunctions(name, func)    \
     Meta::AnyFunction any_##func{&func}; \

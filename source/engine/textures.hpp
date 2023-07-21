@@ -5,7 +5,7 @@
 
 #include "engine/core/core.hpp"
 #include "engine/core/sdl_wrapper.h"
-#include "engine/engine.h"
+#include "engine/engine.hpp"
 #include "engine/renderer/renderer_gpu.h"
 
 namespace ME {

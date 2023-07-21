@@ -8,7 +8,7 @@
 #include "engine/core/core.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/core/sdl_wrapper.h"
-#include "engine/engine.h"
+#include "engine/engine.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "libs/external/stb_image.h"
 

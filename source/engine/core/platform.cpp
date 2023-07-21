@@ -12,7 +12,7 @@
 #include "engine/core/io/packer.hpp"
 #include "engine/core/macros.hpp"
 #include "engine/core/sdl_wrapper.h"
-#include "engine/engine.h"
+#include "engine/engine.hpp"
 #include "engine/renderer/renderer_gpu.h"
 #include "game/player.hpp"
 #include "libs/glad/glad.h"

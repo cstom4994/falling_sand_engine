@@ -25,7 +25,7 @@
 #include "engine/core/platform.h"
 #include "engine/core/profiler.hpp"
 #include "engine/core/sdl_wrapper.h"
-#include "engine/engine.h"
+#include "engine/engine.hpp"
 #include "engine/event/applicationevent.hpp"
 #include "engine/game_utils/cells.h"
 #include "engine/game_utils/mdplot.h"
@@ -37,9 +37,8 @@
 #include "engine/scripting/wrap/wrap_imgui.hpp"
 #include "engine/ui/surface.h"
 #include "engine/ui/surface_gl.h"
-#include "engine/utils/promise.hpp"
+#include "engine/utils/module.hpp"
 #include "engine/utils/utility.hpp"
-#include "engine/utils/utils.hpp"
 #include "game/items.hpp"
 #include "game/player.hpp"
 #include "game_basic.hpp"
@@ -50,6 +49,13 @@
 #include "reflectionflat.hpp"
 #include "textures.hpp"
 #include "world_generator.h"
+
+int ME_main(int argc, char *argv[]) {
+    auto params = ME::engine::parameters("test", "nodebug").get();
+    ME::modules::initialize<engine>(argc, argv, params).start<game>();
+    ME::modules::shutdown<engine>();
+    return 0;
+}
 
 namespace ME {
 
@@ -74,10 +80,10 @@ Global global;
 //     }
 // }
 
-Game::Game(int argc, char *argv[]) {
+bool game::initialize(int argc, char *argv[]) {
     // Initialize promise handle
-    cpp::promise::handleUncaughtException(
-            [](cpp::promise::Promise &d) { d.fail([](long n, int m) { METADOT_BUG("UncaughtException parameters = %d %d", (int)n, m); }).fail([]() { METADOT_ERROR("UncaughtException"); }); });
+    // cpp::promise::handleUncaughtException(
+    //        [](cpp::promise::Promise &d) { d.fail([](long n, int m) { METADOT_BUG("UncaughtException parameters = %d %d", (int)n, m); }).fail([]() { METADOT_ERROR("UncaughtException"); }); });
 
     // Start memory management including GC
     ME_mem_init(argc, argv);
@@ -90,9 +96,13 @@ Game::Game(int argc, char *argv[]) {
     // Global game target
     global.game = this;
     METADOT_INFO(std::format("{0} {1}", METADOT_NAME, METADOT_VERSION_TEXT).c_str());
+
+    this->init(argc, argv);
+
+    return true;
 }
 
-Game::~Game() {
+void game::shutdown() noexcept {
     global.game = nullptr;
     ME_profiler_shutdown();
 
@@ -100,7 +110,13 @@ Game::~Game() {
     ME_mem_end();
 }
 
-int Game::init(int argc, char *argv[]) {
+bool game::frame_tick() { return false; }
+
+void game::frame_render() {}
+
+void game::frame_finalize() {}
+
+int game::init(int argc, char *argv[]) {
     // Parse args
     int ret = ParseRunArgs(argc, argv);
     if (ret == METADOT_FAILED) return METADOT_FAILED;
@@ -133,10 +149,10 @@ int Game::init(int argc, char *argv[]) {
 
     // Initialize scripting system
     METADOT_INFO("Loading Script...");
-    Scripting::get_singleton_ptr()->Init();
+    Scripting::get_singleton_ptr()->init();
 
     for (auto &s : Iso.systemList) {
-        s->registerLua(Scripting::get_singleton_ptr()->Lua->s_lua);
+        s->registerLua(Scripting::get_singleton_ptr()->s_lua);
         s->create();
         // if (!s->getFlag(SystemFlags::ImGui)) {
         //     s->Create();
@@ -227,7 +243,7 @@ int Game::init(int argc, char *argv[]) {
     return this->run(argc, argv);
 }
 
-void Game::createTexture() {
+void game::createTexture() {
 
     METADOT_LOG_SCOPE_FUNCTION(INFO);
     METADOT_INFO("Creating world textures...");
@@ -260,98 +276,98 @@ void Game::createTexture() {
     loadingOnColor = 0xFFFFFFFF;
     loadingOffColor = 0x000000FF;
 
-    std::vector<cpp::promise::Promise> Funcs = {
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+    std::vector<std::function<void(void)>> Funcs = {
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "loadingTexture");
                 TexturePack_.loadingTexture =
                         R_CreateImage(TexturePack_.loadingScreenW = (ENGINE()->windowWidth / 20), TexturePack_.loadingScreenH = (ENGINE()->windowHeight / 20), R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.loadingTexture, R_FILTER_NEAREST);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "texture");
                 TexturePack_.texture = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.texture, R_FILTER_NEAREST);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "worldTexture");
                 TexturePack_.worldTexture = R_CreateImage(Iso.world->width * Iso.globaldef.hd_objects_size, Iso.world->height * Iso.globaldef.hd_objects_size, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.worldTexture, R_FILTER_NEAREST);
 
                 R_LoadTarget(TexturePack_.worldTexture);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "lightingTexture");
                 TexturePack_.lightingTexture = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.lightingTexture, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.lightingTexture);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "emissionTexture");
                 TexturePack_.emissionTexture = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.emissionTexture, R_FILTER_NEAREST);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlow");
                 TexturePack_.textureFlow = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureFlow, R_FILTER_NEAREST);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlowSpead");
                 TexturePack_.textureFlowSpead = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureFlowSpead, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureFlowSpead);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFire");
                 TexturePack_.textureFire = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureFire, R_FILTER_NEAREST);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "texture2Fire");
                 TexturePack_.texture2Fire = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.texture2Fire, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.texture2Fire);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureLayer2");
                 TexturePack_.textureLayer2 = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureLayer2, R_FILTER_NEAREST);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureBackground");
                 TexturePack_.textureBackground = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureBackground, R_FILTER_NEAREST);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjects");
                 TexturePack_.textureObjects = R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1),
                                                             Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjects, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjects);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsLQ");
                 TexturePack_.textureObjectsLQ = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjectsLQ, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjectsLQ);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsBack");
                 TexturePack_.textureObjectsBack = R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1),
                                                                 Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjectsBack);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureCells");
                 TexturePack_.textureCells = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.textureCells, R_FILTER_NEAREST);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntities");
                 TexturePack_.textureEntities = R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1),
                                                              Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
@@ -359,73 +375,72 @@ void Game::createTexture() {
                 R_LoadTarget(TexturePack_.textureEntities);
 
                 R_SetImageFilter(TexturePack_.textureEntities, R_FILTER_NEAREST);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntitiesLQ");
                 TexturePack_.textureEntitiesLQ = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_LoadTarget(TexturePack_.textureEntitiesLQ);
 
                 R_SetImageFilter(TexturePack_.textureEntitiesLQ, R_FILTER_NEAREST);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "temperatureMap");
                 TexturePack_.temperatureMap = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.temperatureMap, R_FILTER_NEAREST);
-            }),
-            cpp::promise::newPromise([&](cpp::promise::Defer d) {
+            },
+            [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "backgroundImage");
                 TexturePack_.backgroundImage = R_CreateImage(ENGINE()->windowWidth, ENGINE()->windowHeight, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.backgroundImage, R_FILTER_NEAREST);
 
                 R_LoadTarget(TexturePack_.backgroundImage);
-            })};
+            },
+            [&]() {
+                // create texture pixel buffers
+                TexturePack_.pixels = std::vector<u8>(Iso.world->width * Iso.world->height * 4, 0);
+                TexturePack_.pixels_ar = &TexturePack_.pixels[0];
 
-    cpp::promise::all(Funcs);
+                TexturePack_.pixelsLayer2 = std::vector<u8>(Iso.world->width * Iso.world->height * 4, 0);
+                TexturePack_.pixelsLayer2_ar = &TexturePack_.pixelsLayer2[0];
 
-    auto init_pixels = [&]() {
-        // create texture pixel buffers
-        TexturePack_.pixels = std::vector<u8>(Iso.world->width * Iso.world->height * 4, 0);
-        TexturePack_.pixels_ar = &TexturePack_.pixels[0];
+                TexturePack_.pixelsBackground = std::vector<u8>(Iso.world->width * Iso.world->height * 4, 0);
+                TexturePack_.pixelsBackground_ar = &TexturePack_.pixelsBackground[0];
 
-        TexturePack_.pixelsLayer2 = std::vector<u8>(Iso.world->width * Iso.world->height * 4, 0);
-        TexturePack_.pixelsLayer2_ar = &TexturePack_.pixelsLayer2[0];
+                TexturePack_.pixelsObjects = std::vector<u8>(Iso.world->width * Iso.world->height * 4, ME_ALPHA_TRANSPARENT);
+                TexturePack_.pixelsObjects_ar = &TexturePack_.pixelsObjects[0];
 
-        TexturePack_.pixelsBackground = std::vector<u8>(Iso.world->width * Iso.world->height * 4, 0);
-        TexturePack_.pixelsBackground_ar = &TexturePack_.pixelsBackground[0];
+                TexturePack_.pixelsTemp = std::vector<u8>(Iso.world->width * Iso.world->height * 4, ME_ALPHA_TRANSPARENT);
+                TexturePack_.pixelsTemp_ar = &TexturePack_.pixelsTemp[0];
 
-        TexturePack_.pixelsObjects = std::vector<u8>(Iso.world->width * Iso.world->height * 4, ME_ALPHA_TRANSPARENT);
-        TexturePack_.pixelsObjects_ar = &TexturePack_.pixelsObjects[0];
+                TexturePack_.pixelsCells = std::vector<u8>(Iso.world->width * Iso.world->height * 4, ME_ALPHA_TRANSPARENT);
+                TexturePack_.pixelsCells_ar = &TexturePack_.pixelsCells[0];
 
-        TexturePack_.pixelsTemp = std::vector<u8>(Iso.world->width * Iso.world->height * 4, ME_ALPHA_TRANSPARENT);
-        TexturePack_.pixelsTemp_ar = &TexturePack_.pixelsTemp[0];
+                TexturePack_.pixelsLoading = std::vector<u8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, ME_ALPHA_TRANSPARENT);
+                TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
 
-        TexturePack_.pixelsCells = std::vector<u8>(Iso.world->width * Iso.world->height * 4, ME_ALPHA_TRANSPARENT);
-        TexturePack_.pixelsCells_ar = &TexturePack_.pixelsCells[0];
+                TexturePack_.pixelsFire = std::vector<u8>(Iso.world->width * Iso.world->height * 4, 0);
+                TexturePack_.pixelsFire_ar = &TexturePack_.pixelsFire[0];
 
-        TexturePack_.pixelsLoading = std::vector<u8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, ME_ALPHA_TRANSPARENT);
-        TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
+                TexturePack_.pixelsFlow = std::vector<u8>(Iso.world->width * Iso.world->height * 4, 0);
+                TexturePack_.pixelsFlow_ar = &TexturePack_.pixelsFlow[0];
 
-        TexturePack_.pixelsFire = std::vector<u8>(Iso.world->width * Iso.world->height * 4, 0);
-        TexturePack_.pixelsFire_ar = &TexturePack_.pixelsFire[0];
+                TexturePack_.pixelsEmission = std::vector<u8>(Iso.world->width * Iso.world->height * 4, 0);
+                TexturePack_.pixelsEmission_ar = &TexturePack_.pixelsEmission[0];
+            }};
 
-        TexturePack_.pixelsFlow = std::vector<u8>(Iso.world->width * Iso.world->height * 4, 0);
-        TexturePack_.pixelsFlow_ar = &TexturePack_.pixelsFlow[0];
-
-        TexturePack_.pixelsEmission = std::vector<u8>(Iso.world->width * Iso.world->height * 4, 0);
-        TexturePack_.pixelsEmission_ar = &TexturePack_.pixelsEmission[0];
-    };
-
-    init_pixels();
+    for (auto &f : Funcs) {
+        std::invoke(f);
+    }
 
     timer.stop();
 
     METADOT_INFO(std::format("Creating world textures done in {0:.4f} ms", timer.get()).c_str());
 }
 
-int Game::run(int argc, char *argv[]) {
+int game::run(int argc, char *argv[]) {
 
     const float px_ratio = 1.0f;  // spoilers: it's 1.0f
 
@@ -970,8 +985,8 @@ int Game::run(int argc, char *argv[]) {
             if (Iso.globaldef.tick_world) updateFrameEarly();
 
             while (ENGINE()->time.now - ENGINE()->time.lastTickTime > (1000.0f / ENGINE()->time.maxTps)) {
-                Scripting::get_singleton_ptr()->UpdateTick();
-                Scripting::get_singleton_ptr()->Update();
+                Scripting::get_singleton_ptr()->update_tick();
+                Scripting::get_singleton_ptr()->update();
                 if (Iso.globaldef.tick_world) {
                     tick();
                 }
@@ -1004,7 +1019,7 @@ int Game::run(int argc, char *argv[]) {
             ENGINE()->target = ENGINE()->realTarget;
         }
 
-        Scripting::get_singleton_ptr()->UpdateRender();
+        Scripting::get_singleton_ptr()->update_render();
 
         // std::string test_text = "hello";
         // fontcache.ME_fontcache_push(test_text, {0.5, 0.5});
@@ -1137,7 +1152,7 @@ int Game::run(int argc, char *argv[]) {
 
         tickProfiler();
 
-        INVOKE_ONCE(lua_bind::l_G = Scripting::get_singleton_ptr()->Lua->L; lua_bind::imgui_init_lua(););
+        INVOKE_ONCE(lua_bind::l_G = Scripting::get_singleton_ptr()->L; lua_bind::imgui_init_lua(););
         // INVOKE_ONCE(Scripting::get_singleton_ptr()->Lua->s_lua.dostring(R"(
         //  -- Main window
         //  local Window = ImGui.new("Window", "example title")
@@ -1214,7 +1229,7 @@ int Game::run(int argc, char *argv[]) {
     return exit();
 }
 
-int Game::exit() {
+int game::exit() {
     METADOT_INFO("Shutting down...");
 
     Iso.world->saveWorld();
@@ -1231,7 +1246,7 @@ int Game::exit() {
 
     fontcache.ME_fontcache_end();
 
-    Scripting::get_singleton_ptr()->End();
+    Scripting::get_singleton_ptr()->end();
     Scripting::clean();
 
     ReleaseGameData();
@@ -1261,7 +1276,7 @@ int Game::exit() {
     return METADOT_OK;
 }
 
-void Game::updateFrameEarly() {
+void game::updateFrameEarly() {
 
     // handle controls
     if (ControlSystem::DEBUG_UI->get()) {
@@ -1640,22 +1655,22 @@ void Game::updateFrameEarly() {
     }
 }
 
-void Game::onEvent(Event &e) {
+void game::onEvent(Event &e) {
     EventDispatcher dispatcher(e);
     dispatcher.Dispatch<WindowCloseEvent>(ME_BIND_EVENT_FN(onWindowClose));
     dispatcher.Dispatch<WindowResizeEvent>(ME_BIND_EVENT_FN(onWindowResize));
 }
 
-bool Game::onWindowClose(WindowCloseEvent &e) { return true; }
+bool game::onWindowClose(WindowCloseEvent &e) { return true; }
 
-bool Game::onWindowResize(WindowResizeEvent &e) {
+bool game::onWindowResize(WindowResizeEvent &e) {
     R_SetWindowResolution(e.GetWidth(), e.GetHeight());
     R_ResetProjection(ENGINE()->realTarget);
     ResolutionChanged(e.GetWidth(), e.GetHeight());
     return true;
 }
 
-void Game::tick() {
+void game::tick() {
 
     // METADOT_BUG(std::format("{0:f} {1:f}", accLoadX, accLoadY).c_str());
 
@@ -2205,7 +2220,7 @@ GameIsolate_.world->width * 4
     }
 }
 
-void Game::tickChunkLoading() {
+void game::tickChunkLoading() {
 
     // if need to load chunks
     if ((abs(accLoadX) > CHUNK_W / 2 || abs(accLoadY) > CHUNK_H / 2)) {
@@ -2387,7 +2402,7 @@ void Game::tickChunkLoading() {
     }
 }
 
-void Game::tickPlayer() {
+void game::tickPlayer() {
 
     Player *pl = nullptr;
     WorldEntity *pl_we = nullptr;
@@ -2672,7 +2687,7 @@ void Game::tickPlayer() {
     }
 }
 
-void Game::tickProfiler() {
+void game::tickProfiler() {
     {
         ME_profiler_scope_auto("Profiler");
 
@@ -2696,7 +2711,7 @@ void Game::tickProfiler() {
     // }
 }
 
-void Game::updateFrameLate() {
+void game::updateFrameLate() {
 
     if (state == LOADING) {
 
@@ -2746,7 +2761,7 @@ void Game::updateFrameLate() {
     }
 }
 
-void Game::renderEarly() {
+void game::renderEarly() {
 
     Iso.ui->UIRendererPostUpdate();
 
@@ -2892,7 +2907,7 @@ void Game::renderEarly() {
     }
 }
 
-void Game::renderLate() {
+void game::renderLate() {
 
     ENGINE()->target = TexturePack_.backgroundImage->target;
     R_Clear(ENGINE()->target);
@@ -3064,7 +3079,7 @@ void Game::renderLate() {
     }
 }
 
-void Game::renderOverlays() {
+void game::renderOverlays() {
 
     char fpsText[50];
     snprintf(fpsText, sizeof(fpsText), "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, ENGINE()->time.feelsLikeFps);
@@ -3523,7 +3538,7 @@ Drawing::drawText(target, buffVersion, font16, 4, HEIGHT - 32 + 13, 0xff, 0xff, 
 */
 }
 
-void Game::renderTemperatureMap(World *world) {
+void game::renderTemperatureMap(World *world) {
 
     for (int x = 0; x < Iso.world->width; x++) {
         for (int y = 0; y < Iso.world->height; y++) {
@@ -3540,7 +3555,7 @@ void Game::renderTemperatureMap(World *world) {
     }
 }
 
-void Game::ResolutionChanged(int newWidth, int newHeight) {
+void game::ResolutionChanged(int newWidth, int newHeight) {
 
     int prevWidth = ENGINE()->windowWidth;
     int prevHeight = ENGINE()->windowHeight;
@@ -3573,7 +3588,7 @@ void Game::ResolutionChanged(int newWidth, int newHeight) {
     }
 }
 
-int Game::getAimSurface(int dist) {
+int game::getAimSurface(int dist) {
     int dcx = this->mx - ENGINE()->windowWidth / 2;
     int dcy = this->my - ENGINE()->windowHeight / 2;
 
@@ -3603,7 +3618,7 @@ int Game::getAimSurface(int dist) {
     return startInd;
 }
 
-void Game::quitToMainMenu() {
+void game::quitToMainMenu() {
 
     if (state == LOADING) return;
 
@@ -3659,7 +3674,7 @@ void Game::quitToMainMenu() {
     gameUI.visible_mainmenu = true;
 }
 
-ME_assets_handle_t Game::get_assets(std::string path) {
+ME_assets_handle_t game::get_assets(std::string path) {
     ME_pack_result pack_result;
 
     ME_assets_handle_t handle;
@@ -3677,7 +3692,7 @@ ME_assets_handle_t Game::get_assets(std::string path) {
     return handle;
 }
 
-int Game::getAimSolidSurface(int dist) {
+int game::getAimSolidSurface(int dist) {
     int dcx = this->mx - ENGINE()->windowWidth / 2;
     int dcy = this->my - ENGINE()->windowHeight / 2;
 
@@ -3706,7 +3721,7 @@ int Game::getAimSolidSurface(int dist) {
     return startInd;
 }
 
-void Game::updateMaterialSounds() {
+void game::updateMaterialSounds() {
     u16 waterCt = std::min(movingTiles[GAME()->materials_list.WATER.id], (u16)5000);
     f32 water = (f32)waterCt / 3000;
     // METADOT_BUG("{} / {} = {}", waterCt, 3000, water);

@@ -5,9 +5,9 @@
 #include <cstring>
 #include <string_view>
 
+#include "cpp_utils.hpp"
 #include "func.hpp"
 #include "tstr.hpp"
-#include "utils.hpp"
 
 namespace ME::cpp {
 template <auto V>

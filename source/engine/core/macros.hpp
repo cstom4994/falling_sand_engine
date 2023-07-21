@@ -91,8 +91,6 @@
 #define ME_OPTMIZE_ON __pragma(optimize("", on))
 #define ME_DEBUGBREAK __debugbreak()
 
-#define ME_OVERRIDE override
-
 #if defined(IGNORE_DEPRECATED_WARNING)
 #define ME_DEPRECATED
 #elif defined(_MSC_VER)

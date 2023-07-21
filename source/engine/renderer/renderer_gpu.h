@@ -1730,7 +1730,7 @@ typedef struct R_RendererImpl {
      *  \see R_InitRenderer()
      *  \see R_InitRendererByID()
      */
-    R_Target *(*Init)(R_Renderer *renderer, R_RendererID renderer_request, u16 w, u16 h, R_WindowFlagEnum SDL_flags);
+    R_Target *(*init)(R_Renderer *renderer, R_RendererID renderer_request, u16 w, u16 h, R_WindowFlagEnum SDL_flags);
 
     /*! \see R_CreateTargetFromWindow
      * The extra parameter is used internally to reuse/reinit a target. */

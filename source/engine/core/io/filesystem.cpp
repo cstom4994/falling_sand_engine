@@ -11,8 +11,7 @@
 #include "engine/core/base_memory.h"
 #include "engine/core/core.hpp"
 #include "engine/core/platform.h"
-#include "engine/engine.h"
-#include "engine/utils/utils.hpp"
+#include "engine/engine.hpp"
 
 namespace ME {
 
@@ -158,4 +157,4 @@ std::string ME_fs_readfile(const std::string &filename) {
     return std::string(bytes.data(), fileSize);
 }
 
-}  // namespace
+}  // namespace ME

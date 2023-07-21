@@ -28,21 +28,14 @@ Timer::~Timer() noexcept { stop(); }
 
 double Timer::get() const noexcept { return duration; }
 
-void Logger::set_crash_on_error(bool bError) noexcept { loggerInternal.using_errors = bError; }
+std::vector<log_msg> logger::m_message_log{};
 
-void Logger::set_current_log_file(const char *file) noexcept {
-    loggerInternal.shutdown_file_stream();
-    loggerInternal.fileout = std::ofstream(file);
-}
-
-void Logger::set_log_operation(log_operations op) noexcept { loggerInternal.operation_type = op; }
-
-void LoggerInternal::writeline(std::string &msg) {
+void logger::writeline(std::string &msg) {
     OutputDebugStringA(msg.c_str());
     std::cout << msg;
 }
 
-std::string LoggerInternal::get_current_time() noexcept {
+std::string logger::get_current_time() noexcept {
     auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
     std::string realTime = std::ctime(&now);
@@ -51,11 +44,29 @@ std::string LoggerInternal::get_current_time() noexcept {
     return realTime;
 }
 
-void LoggerInternal::shutdown_file_stream() noexcept { fileout.close(); }
+// --------------- Lua stack manipulation functions ---------------
 
-LoggerInternal::LoggerInternal() noexcept {}
+// Creates an table with the xyz entries and populate with the vector values
+void Vector3ToTable(lua_State *L, MEvec3 vector) {
 
-LoggerInternal::~LoggerInternal() noexcept { shutdown_file_stream(); }
+    lua_newtable(L);
+    lua_pushliteral(L, "x");      // x index
+    lua_pushnumber(L, vector.x);  // x value
+    lua_rawset(L, -3);            // Store x in table
+
+    lua_pushliteral(L, "y");      // y index
+    lua_pushnumber(L, vector.y);  // y value
+    lua_rawset(L, -3);            // Store y in table
+
+    lua_pushliteral(L, "z");      // z index
+    lua_pushnumber(L, vector.z);  // z value
+    lua_rawset(L, -3);            // Store z in table
+}
+
+}  // namespace ME
+
+// 文本相关操作
+namespace ME {
 
 std::vector<std::string> split(std::string strToSplit, char delimeter) {
     std::stringstream ss(strToSplit);
@@ -226,24 +237,4 @@ std::string ME_str_u32stringto_string(std::u32string_view s) {
     for (auto c : s) out += (char)c;
     return out;
 }
-
-// --------------- Lua stack manipulation functions ---------------
-
-// Creates an table with the xyz entries and populate with the vector values
-void Vector3ToTable(lua_State *L, MEvec3 vector) {
-
-    lua_newtable(L);
-    lua_pushliteral(L, "x");      // x index
-    lua_pushnumber(L, vector.x);  // x value
-    lua_rawset(L, -3);            // Store x in table
-
-    lua_pushliteral(L, "y");      // y index
-    lua_pushnumber(L, vector.y);  // y value
-    lua_rawset(L, -3);            // Store y in table
-
-    lua_pushliteral(L, "z");      // z index
-    lua_pushnumber(L, vector.z);  // z value
-    lua_rawset(L, -3);            // Store z in table
-}
-
 }  // namespace ME
