@@ -13,7 +13,7 @@
 #include "engine/renderer/renderer_opengl.h"
 #include "engine/textures.hpp"
 #include "engine/ui/imgui_impl.hpp"
-#include "engine/ui/imgui_layer.hpp"
+#include "engine/ui/dbgui.hpp"
 #include "game/player.hpp"
 
 namespace ME {
@@ -111,7 +111,7 @@ public:
     void create() override;
     void destory() override;
     void reload() override;
-    void registerLua(LuaWrapper::State& s_lua) override;
+    void registerLua(lua_wrapper::State& s_lua) override;
 
     void UIRendererInit();
     void UIRendererPostUpdate();

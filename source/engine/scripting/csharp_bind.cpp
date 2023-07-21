@@ -1,7 +1,7 @@
 
 #include "csharp_bind.hpp"
 
-namespace ME::CSharpWrapper {
+namespace ME::csharp_wrapper {
 
 std::ostream& operator<<(std::ostream& out, const object& obj) {
     out << obj.to_string();
@@ -27,4 +27,4 @@ std::ostream& operator<<(std::ostream& out, const class_type& cl) {
     out << cl.get_name();
     return out;
 }
-}  // namespace CSharpWrapper
+}  // namespace csharp_wrapper

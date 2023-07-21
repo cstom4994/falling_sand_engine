@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "engine/scripting/scripting.hpp"
-#include "engine/ui/imgui_helper.hpp"
+#include "engine/ui/imgui_utils.hpp"
 
 namespace ME {
 
@@ -49,7 +49,7 @@ public:
     virtual void reload() = 0;
 
     // Register Lua always been called before Create()
-    virtual void registerLua(LuaWrapper::State &s_lua) = 0;
+    virtual void registerLua(lua_wrapper::State &s_lua) = 0;
 };
 
 template <>
@@ -67,7 +67,7 @@ public:
     void create() override;
     void destory() override;
     void reload() override;
-    void registerLua(LuaWrapper::State &s_lua) override;
+    void registerLua(lua_wrapper::State &s_lua) override;
 };
 
 }  // namespace ME

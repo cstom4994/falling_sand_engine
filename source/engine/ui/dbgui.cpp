@@ -1,6 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#include "imgui_layer.hpp"
+#include "dbgui.hpp"
 
 #include <cassert>
 #include <cstddef>
@@ -44,6 +44,533 @@
 namespace ME {
 
 extern int test_wang();
+
+typedef struct ConsoleArgv {
+    char **argv, *data;
+    const char *error;
+    int argc, data_length, error_index, error_code;
+} ConsoleArgv;
+
+void ConsoleArgvParseFree(ConsoleArgv *props) {
+    free(props->data);
+    free(props->argv);
+    free(props);
+}
+
+ConsoleArgv *ConsoleArgvParse(const char *input) {
+
+    auto field_seperator = [](char seperator) -> int {
+        const char *list = " \t\n";
+        if (seperator) {
+            while (*list) {
+                if (*list++ == seperator) return 1;
+            }
+            return 0;
+        }
+        return 1;  // null is always a field seperator
+    };
+
+    ConsoleArgv *console_argv = (ConsoleArgv *)calloc(1, sizeof(ConsoleArgv));
+
+    if (!input) {
+        console_argv->error_code = 1;
+        console_argv->error = "cannot parse null pointer";
+        return console_argv;
+    }
+
+    /* Get the input length */
+    long input_length = -1;
+test_next_input_char:
+    if (input[++input_length]) goto test_next_input_char;
+
+    if (!input_length) {
+        console_argv->error_code = 2;
+        console_argv->error = "cannot parse empty input";
+        return console_argv;
+    }
+
+    int composing_argument = 0;
+    long quote = 0;
+    long index;
+    char look_ahead;
+
+    // FIRST PASS
+    // discover how many elements we have, and discover how large a data buffer we need
+    for (index = 0; index <= input_length; index++) {
+
+        if (field_seperator(input[index])) {
+            if (composing_argument) {
+                // close the argument
+                composing_argument = 0;
+                console_argv->data_length++;
+            }
+            continue;
+        }
+
+        if (!composing_argument) {
+            console_argv->argc++;
+            composing_argument = 1;
+        }
+
+        switch (input[index]) {
+
+            /* back slash */
+            case '\\':
+                // If the sequence is not \' or \" or seperator copy the back slash, and
+                // the data
+                look_ahead = *(input + index + 1);
+                if (look_ahead == '"' || look_ahead == '\'' || field_seperator(look_ahead)) {
+                    index++;
+                } else {
+                    index++;
+                    console_argv->data_length++;
+                }
+                break;
+
+            /* double quote */
+            case '"':
+                quote = index;
+                while (input[++index] != '"') {
+                    switch (input[index]) {
+                        case '\0':
+                            console_argv->error_index = quote + 1;
+                            console_argv->error_code = 3;
+                            console_argv->error = "unterminated double quote";
+                            return console_argv;
+                            break;
+                        case '\\':
+                            look_ahead = *(input + index + 1);
+                            if (look_ahead == '"') {
+                                index++;
+                            } else {
+                                index++;
+                                console_argv->data_length++;
+                            }
+                            break;
+                    }
+                    console_argv->data_length++;
+                }
+
+                continue;
+                break;
+
+            /* single quote */
+            case '\'':
+                /* copy single quoted data */
+                quote = index;  // QT used as temp here...
+                while (input[++index] != '\'') {
+                    if (!input[index]) {
+                        // unterminated double quote @ input
+                        console_argv->error_index = quote + 1;
+                        console_argv->error_code = 4;
+                        console_argv->error = "unterminated single quote";
+                        return console_argv;
+                    }
+                    console_argv->data_length++;
+                }
+                continue;
+                break;
+        }
+
+        // "record" the data
+        console_argv->data_length++;
+    }
+
+    // +1 for extra NULL pointer required by execv() and friends
+    console_argv->argv = (char **)calloc(console_argv->argc + 1, sizeof(char *));
+    console_argv->data = (char *)calloc(console_argv->data_length, 1);
+
+    // SECOND PASS
+    composing_argument = 0;
+    quote = 0;
+
+    int data_index = 0;
+    int arg_index = 0;
+
+    for (index = 0; index <= input_length; index++) {
+
+        if (field_seperator(input[index])) {
+            if (composing_argument) {
+                composing_argument = 0;
+                console_argv->data[data_index++] = '\0';
+            }
+            continue;
+        }
+
+        if (!composing_argument) {
+            console_argv->argv[arg_index++] = (console_argv->data + data_index);
+            composing_argument = 1;
+        }
+
+        switch (input[index]) {
+
+            /* back slash */
+            case '\\':
+                // If the sequence is not \' or \" or field seperator copy the backslash
+                look_ahead = *(input + index + 1);
+                if (look_ahead == '"' || look_ahead == '\'' || field_seperator(look_ahead)) {
+                    index++;
+                } else {
+                    console_argv->data[data_index++] = input[index++];
+                }
+                break;
+
+            /* double quote */
+            case '"':
+                while (input[++index] != '"') {
+                    if (input[index] == '\\') {
+                        look_ahead = *(input + index + 1);
+                        if (look_ahead == '"') {
+                            index++;
+                        } else {
+                            console_argv->data[data_index++] = input[index++];
+                        }
+                    }
+                    console_argv->data[data_index++] = input[index];
+                }
+                continue;
+                break;
+
+            /* single quote */
+            case '\'':
+                /* copy single quoted data */
+                while (input[++index] != '\'') {
+                    console_argv->data[data_index++] = input[index];
+                }
+                continue;
+                break;
+        }
+
+        // "record" the data
+        console_argv->data[data_index++] = input[index];
+    }
+
+    return console_argv;
+}
+
+void console::set_log_colour(ImVec4 colour, log_type type) noexcept {
+    switch (type) {
+        case log_type::warning:
+            warning = colour;
+            return;
+        case log_type::error:
+            error = colour;
+            return;
+        case log_type::note:
+            note = colour;
+            return;
+        case log_type::trace:
+            message = colour;
+            return;
+    }
+}
+
+void console::display(bool *bInteractingWithTextbox) noexcept {
+    for (auto &a : logger::message_log()) {
+        ImVec4 colour;
+        switch (a.type) {
+            case log_type::warning:
+                colour = warning;
+                break;
+            case log_type::error:
+                colour = error;
+                break;
+            case log_type::note:
+                colour = note;
+                break;
+            case log_type::trace:
+                colour = message;
+                break;
+        }
+
+        ImGui::TextColored(colour, "%s", a.msg.c_str());
+    }
+
+    static std::string command;
+    if ((ImGui::InputTextWithHint("##Input", "Enter any command here", &command) || ImGui::IsItemActive()) && bInteractingWithTextbox != nullptr) *bInteractingWithTextbox = true;
+    ImGui::SameLine();
+    if (ImGui::Button("Send##consoleCommand") || (*bInteractingWithTextbox && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter)))) {
+        // for (auto &a : loggerInternal.commands) {
+        //     if (command.rfind(a.cmd, 0) == 0) {
+        //         a.func(command);
+        //         break;
+        //     }
+        // }
+        // ME_scripting::get_singleton_ptr()->run_command(command);
+
+        this->eval(command);
+
+        command.clear();
+    }
+    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) ImGui::SetScrollHereY(1.0f);
+}
+
+void console::draw_internal_display() noexcept {
+
+    i64 now = ME_gettime();
+
+    log_msg log_list[10] = {};
+    int n = 9;
+
+    std::vector<log_msg>::const_reverse_iterator backwardIterator;
+    auto &logger_list = logger::message_log();
+    for (backwardIterator = logger_list.crbegin(); backwardIterator != logger_list.crend(); backwardIterator++) {
+        if (n < 0) break;
+
+        i64 dtime = now - backwardIterator->time;
+
+        if (dtime > 4000) {
+            n--;
+            break;  // 直接跳出循环就可以，在此之后的日志只可能比这更老的
+        }
+        log_list[n] = *backwardIterator;
+        n--;
+    }
+
+    int x = 10, y = 10;
+
+    ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
+
+    for (auto &a : log_list) {
+
+        if (a.msg.empty()) continue;
+
+        i64 dtime = now - a.time;
+
+        ImVec4 colour;
+        switch (a.type) {
+            case log_type::warning:
+                colour = warning;
+                break;
+            case log_type::error:
+                colour = error;
+                break;
+            case log_type::note:
+                colour = note;
+                break;
+            case log_type::trace:
+                colour = message;
+                break;
+        }
+
+        bool outline = true;
+
+        if (dtime >= 3500) {
+            colour.w = std::abs((4000 - dtime) / 500.0f);
+            outline = false;
+        }
+
+        ME_draw_text(a.msg, ME_imvec2rgba(colour), x, y, true);
+        y = y + 12;
+    }
+}
+
+void console::add_to_message_log(const std::string &msg, log_type type) noexcept {
+    // logger::message_log.emplace_back(log_msg{msg, type});
+}
+
+void console::init() {
+    convar.Command("help", [this]() {
+        METADOT_INFO("All commands");
+        for (auto &p : this->convar) {
+            this->print_command_info(p.second);
+        }
+    });
+
+    // dostruct::for_each(global.game->Iso.globaldef, [&](const char *name, auto &value) {
+    //     // console_imgui->System().RegisterVariable(name, value, Command::Arg<int>(""));
+    //     convar.Value(name, value);
+    // });
+
+    convar.Value("game_scale", the<engine>().eng()->render_scale);
+}
+
+void console::end() {}
+
+void console::print_command_info(cvar::BaseCommand *cmd) {
+    switch (cmd->GetCmdType()) {
+        case CommandType::CVAR_VAR:
+            METADOT_INFO(std::format(" - {0} {1}", cmd->GetReturnType(), cmd->GetName()).c_str());
+            break;
+
+        case CommandType::CVAR_FUNC:
+            std::string params;
+            bool first = true;
+            for (const cvar::CommandParameter &p : *cmd) {
+                if (!first) params.append(", ");
+                first = false;
+                params.append(p.GetType());
+            }
+
+            METADOT_INFO(std::format(" - {0} {1} ({2})", cmd->GetReturnType(), cmd->GetName(), params).c_str());
+            break;
+    }
+}
+
+std::string console::execute(std::string cmd_name, std::queue<std::string> arguments, console_result &ret) {
+    std::string result;
+
+    try {
+        result = convar.Call(cmd_name, arguments);
+        ret = OK;
+    } catch (std::exception &e) {
+        METADOT_ERROR(std::format("[ConVar] exception thrown {0} : {1}", cmd_name, e.what()).c_str());
+        ret = ERR;
+    } catch (...) {
+    }
+
+    return result;
+}
+
+bool console::eval(std::string &cmd) {
+
+    std::unique_ptr<ConsoleArgv, void (*)(ConsoleArgv *)> parsedArgs(ConsoleArgvParse(cmd.c_str()), ConsoleArgvParseFree);
+
+    switch (parsedArgs->error_code) {
+        case 1:
+            break;
+
+        case 2:
+            return false;
+
+        case 3:
+        case 4:
+            METADOT_ERROR(std::format("[ConVar] Syntax error: {0} at column {1}", parsedArgs->error, parsedArgs->error_index).c_str());
+            return false;
+    }
+
+    std::string cmd_name(parsedArgs->argv[0]);
+    if (!cmd_name.empty() && cmd_name[0] == '#') return false;
+
+    std::queue<std::string> args;
+    for (int i = 1; i < parsedArgs->argc; ++i) args.push(parsedArgs->argv[i]);
+
+    console_result code;
+    std::string result = this->execute(cmd_name, args, code);
+
+    if (!result.empty()) METADOT_INFO(result.c_str());
+    if (code == EXIT) return true;
+
+    return false;
+}
+
+void console::display_full(bool *bInteractingWithTextbox) noexcept {
+    ImGui::Begin(ICON_LANG(ICON_FA_TERMINAL, "ui_console"));
+    display(bInteractingWithTextbox);
+    ImGui::End();
+}
+
+void pack_editor::init() { file = ME_fs_get_path("data/scripts"); }
+
+void pack_editor::end() {
+    if (pack_reader_is_loaded) {
+        ME_destroy_pack_reader(pack_reader);
+    }
+}
+
+void pack_editor::draw() {
+    if (ImGui::Begin("包编辑器")) {
+
+        if (ImGui::Button("打开包") && !pack_reader_is_loaded) filebrowser = true;
+        ImGui::SameLine();
+        if (ImGui::Button("关闭包")) {
+            ME_destroy_pack_reader(pack_reader);
+            pack_reader_is_loaded = false;
+        }
+        ImGui::SameLine();
+        ImGui::Text("MetaDot Pack [%d.%d.%d]\n", PACK_VERSION_MAJOR, PACK_VERSION_MINOR, PACK_VERSION_PATCH);
+
+        if (filebrowser) {
+            ImGuiHelper::file_browser(file);
+
+            if (!file.empty() && !std::filesystem::is_directory(file)) {
+
+                if (pack_reader_is_loaded) {
+
+                } else {
+                    result = ME_get_pack_info(file.c_str(), &majorVersion, &minorVersion, &patchVersion, &isLittleEndian, &itemCount);
+                    if (result != SUCCESS_PACK_RESULT) return;
+
+                    result = ME_create_file_pack_reader(file.c_str(), 0, false, &pack_reader);
+                    if (result != SUCCESS_PACK_RESULT) return;
+
+                    if (result == SUCCESS_PACK_RESULT) itemCount = ME_get_pack_item_count(pack_reader);
+
+                    pack_reader_is_loaded = true;
+                }
+
+                // 复位变量
+                filebrowser = false;
+                file = ME_fs_get_path("data/scripts");
+            }
+        }
+
+        if (pack_reader_is_loaded && result == SUCCESS_PACK_RESULT) {
+
+            static int item_current_idx = -1;
+
+            ImGui::Text(
+                    "包信息:\n"
+                    " 打包版本: %d.%d.%d\n"
+                    " 小端模式: %s\n"
+                    " 文件数量: %llu\n\n",
+                    majorVersion, minorVersion, patchVersion, isLittleEndian ? "true" : "false", (long long unsigned int)itemCount);
+
+            ImVec2 outer_size = ImVec2(0.0f, ImGui::GetContentRegionMax().y - 250.0f);
+            if (ImGui::BeginTable("ui_pack_file_table", 4,
+                                  ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersV | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable | ImGuiTableFlags_RowBg |
+                                          ImGuiTableFlags_Borders | ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti,
+                                  outer_size)) {
+                ImGui::TableSetupScrollFreeze(0, 1);  // Make top row always visible
+                ImGui::TableSetupColumn("索引", ImGuiTableColumnFlags_WidthFixed, 50.0f);
+                ImGui::TableSetupColumn("文件名", ImGuiTableColumnFlags_WidthFixed, 550.0f);
+                ImGui::TableSetupColumn("大小", ImGuiTableColumnFlags_WidthFixed);
+                ImGui::TableSetupColumn("操作", ImGuiTableColumnFlags_WidthFixed);
+                ImGui::TableHeadersRow();
+
+                for (u64 i = 0; i < itemCount; ++i) {
+                    ImGui::PushID(i);
+                    ImGui::TableNextRow(ImGuiTableRowFlags_None);
+                    if (ImGui::TableSetColumnIndex(0)) {
+                        // if (ImGui::Selectable(std::format("{0}", ).c_str(), item_current_idx, ImGuiSelectableFlags_SpanAllColumns)) {
+                        //     item_current_idx = i;
+                        // }
+                        ImGui::Text("%llu", (long long unsigned int)i);
+                    }
+                    if (ImGui::TableSetColumnIndex(1)) {
+                        ImGui::Text("%s", ME_get_pack_item_path(pack_reader, i));
+                    }
+                    if (ImGui::TableSetColumnIndex(2)) {
+                        ImGui::Text("%u", ME_get_pack_item_data_size(pack_reader, i));
+                    }
+                    if (ImGui::TableSetColumnIndex(3)) {
+                        if (ImGui::SmallButton("查看")) {
+                            item_current_idx = i;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::SmallButton("替换")) {
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::SmallButton("删除")) {
+                        }
+                    }
+                    ImGui::PopID();
+                }
+
+                ImGui::EndTable();
+            }
+
+            if (item_current_idx >= 0) {
+                ImGui::Text("文件索引: %u\n包内路径: %s\n文件大小: %u\n", item_current_idx, ME_get_pack_item_path(pack_reader, item_current_idx),
+                            ME_get_pack_item_data_size(pack_reader, item_current_idx));
+            }
+
+        } else if (result != SUCCESS_PACK_RESULT) {
+            ImGui::Text("错误: %s.\n", pack_result_to_string(result));
+        }
+    }
+    ImGui::End();
+}
 
 void profiler_draw_frame_bavigation(frame_info *_infos, uint32_t _numInfos) {
     ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_FirstUseEver);
@@ -418,12 +945,12 @@ int profiler_draw_frame(profiler_frame *_data, void *_buffer, size_t _bufferSize
         //         ImGui::Dummy(ImVec2(0.0f, 10.0f));
         //         ImGui::Text("GC:\n");
         //         for (auto [name, size] : allocation_metrics::MemoryDebugMap) {
-        //             ImGui::Text("%s", ME::Format("   {0} {1}", name, size).c_str());
+        //             ImGui::Text("%s", Format("   {0} {1}", name, size).c_str());
         //         }
         //         // ImGui::Auto(allocation_metrics::MemoryDebugMap, "map");
         // #endif
 
-        auto L = Scripting::get_singleton_ptr()->L;
+        auto L = scripting::get_singleton_ptr()->L;
         lua_gc(L, LUA_GCCOLLECT, 0);
         lua_Integer kb = lua_gc(L, LUA_GCCOUNT, 0);
         lua_Integer bytes = lua_gc(L, LUA_GCCOUNTB, 0);
@@ -738,7 +1265,7 @@ void ImGuiLayer::Init() {
         style.Colors[ImGuiCol_WindowBg].w = 1.0f;
     }
 
-    ImGui_ImplSDL2_Init(ENGINE()->window, ENGINE()->glContext);
+    ImGui_ImplSDL2_Init(the<engine>().eng()->window, the<engine>().eng()->glContext);
 
     ImGui_ImplOpenGL3_Init();
 
@@ -748,12 +1275,12 @@ void ImGuiLayer::Init() {
 
 #if defined(ME_IMM32)
     common_control_initialize();
-    ME_ASSERT(imguiIMMCommunication.subclassify(ENGINE()->window));
+    ME_ASSERT(imguiIMMCommunication.subclassify(the<engine>().eng()->window));
 #endif
 
-    m_pack_editor.Init();
+    m_pack_editor.init();
 
-    console.Init();
+    console.init();
 
     editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
 
@@ -815,10 +1342,6 @@ void ImGuiLayer::Init() {
 
 #endif
 
-    // fileDialog.SetPwd(METADOT_RESLOC("data/scripts"));
-    // fileDialog.SetTitle("选择文件");
-    // fileDialog.SetTypeFilters({".lua"});
-
     // auto create_console = [&]() {
     //     METADOT_NEW(C, console_imgui, ImGuiConsole, global.I18N.Get("ui_console"));
 
@@ -833,7 +1356,7 @@ void ImGuiLayer::Init() {
 
     //    console_imgui->System().RegisterVariable("scale", Screen.gameScale, Command::Arg<i32>(""));
 
-    //    ME::meta::dostruct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>("")); });
+    //    meta::dostruct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value, Command::Arg<int>("")); });
 
     //    // Register custom commands
     //    console_imgui->System().RegisterCommand("random_background_color", "Assigns a random color to the background application", [&clear_color]() {
@@ -866,7 +1389,7 @@ void ImGuiLayer::Init() {
 }
 
 void ImGuiLayer::End() {
-    m_pack_editor.End();
+    m_pack_editor.end();
 
     RendererShutdownFunction();
     PlatformShutdownFunction();
@@ -884,11 +1407,11 @@ void ImGuiLayer::Draw() {
     (void)io;
 
     ImGui::Render();
-    SDL_GL_MakeCurrent(ENGINE()->window, ENGINE()->glContext);
+    SDL_GL_MakeCurrent(the<engine>().eng()->window, the<engine>().eng()->glContext);
 
     RenderFunction(ImGui::GetDrawData());
 
-    // Update and ENGINE()-> additional Platform Windows
+    // Update and the<engine>().eng()-> additional Platform Windows
     // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
     //  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
@@ -959,7 +1482,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
     console.draw_internal_display();
     if (global.game->Iso.globaldef.draw_console) console.display_full(&interactingWithTextbox);
 
-    if (global.game->Iso.globaldef.draw_pack_editor) m_pack_editor.Draw();
+    if (global.game->Iso.globaldef.draw_pack_editor) m_pack_editor.draw();
 
     auto cpos = editor.GetCursorPosition();
     if (global.game->Iso.globaldef.ui_tweak) {
@@ -1013,7 +1536,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                         rb->body->SetAngularDamping(0);
 
                         auto npc = global.game->Iso.world->Reg().create_entity();
-                        ME::ecs::entity_filler(npc)
+                        ecs::entity_filler(npc)
                                 .component<Controlable>()
                                 .component<WorldEntity>(true, pl_transform.x, pl_transform.y, 0.0f, 0.0f, (int)pl_transform.z, (int)pl_transform.w, rb, std::string("NPC"))
                                 .component<Bot>(1);
@@ -1026,17 +1549,17 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     ImGui::SameLine();
                     if (ImGui::Button("Audio")) {
                         // static bool play= 1;
-                        // static ME::ME_Audio *test_audio = ME::ME_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
-                        // static ME::Sound test_sound;
+                        // static ME_Audio *test_audio = ME_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
+                        // static Sound test_sound;
                         // if (play) {
                         //     ME_ASSERT(test_audio);
                         //     // metadot_music_play(test_audio, 0.f);
                         //     // ME_audio_destroy(test_audio);
                         //     int err;
-                        //     test_sound = ME::metadot_play_sound(test_audio, ME::metadot_sound_params_defaults(), &err);
+                        //     test_sound = metadot_play_sound(test_audio, metadot_sound_params_defaults(), &err);
                         //     play ^= 1;
                         // } else {
-                        //     ME::metadot_sound_set_is_paused(test_sound, true);
+                        //     metadot_sound_set_is_paused(test_sound, true);
                         //     play ^= 1;
                         // }
                     }
@@ -1248,7 +1771,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                     // if (check_rigidbody_ptr != nullptr) {
                     //     ImGui::Text("刚体名: %s", check_rigidbody_ptr->name.c_str());
-                    //     ME::meta::static_refl::TypeInfo<RigidBody>::ForEachVarOf(*check_rigidbody_ptr, [&](const auto &field, auto &&var) { ImGui::Auto(var, std::string(field.name)); });
+                    //     meta::static_refl::TypeInfo<RigidBody>::ForEachVarOf(*check_rigidbody_ptr, [&](const auto &field, auto &&var) { ImGui::Auto(var, std::string(field.name)); });
                     // }
                 }
                 ImGui::EndTabItem();
@@ -1264,7 +1787,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                     ImGui::TableHeadersRow();
 
-                    // ME::meta::dostruct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value,
+                    // meta::dostruct::for_each(global.game->GameIsolate_.globaldef, [&](const char *name, auto &value) { console_imgui->System().RegisterVariable(name, value,
                     // Command::Arg<int>(""));
                     // });
                     int i = 0;
@@ -1309,7 +1832,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                         // fileDialog.Open();
                         filebrowser = true;
                     }
-                    if (ImGui::MenuItem(LANG("ui_save"))) {
+                    if (view_editing && view_editing->tags == EditorTags::Editor_Code && ImGui::MenuItem(LANG("ui_save"))) {
                         if (view_editing && view_contents.size()) {
                             auto textToSave = editor.GetText();
                             std::ofstream o(view_editing->file);
@@ -1325,7 +1848,8 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     }
                     ImGui::EndMenu();
                 }
-                if (ImGui::BeginMenu(LANG("ui_edit"))) {
+
+                if (view_editing && view_editing->tags == EditorTags::Editor_Code && ImGui::BeginMenu(LANG("ui_edit"))) {
                     bool ro = editor.IsReadOnly();
                     if (ImGui::MenuItem(LANG("ui_readonly_mode"), nullptr, &ro)) editor.SetReadOnly(ro);
                     ImGui::Separator();
@@ -1347,7 +1871,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                     ImGui::EndMenu();
                 }
 
-                if (ImGui::BeginMenu(LANG("ui_view"))) {
+                if (view_editing && view_editing->tags == EditorTags::Editor_Code && ImGui::BeginMenu(LANG("ui_view"))) {
                     if (ImGui::MenuItem("Dark palette")) editor.SetPalette(TextEditor::GetDarkPalette());
                     if (ImGui::MenuItem("Light palette")) editor.SetPalette(TextEditor::GetLightPalette());
                     if (ImGui::MenuItem("Retro blue palette")) editor.SetPalette(TextEditor::GetRetroBluePalette());
@@ -1359,9 +1883,10 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
             if (filebrowser) {
                 if (ImGui::Begin("File Browser", NULL)) {
 
-                    auto file = ImGuiHelper::file_browser(ME_fs_get_path("data/scripts"));
+                    static std::string file = ME_fs_get_path("data/scripts");
+                    ImGuiHelper::file_browser(file);
 
-                    if (!file.empty()) {
+                    if (!file.empty() && !std::filesystem::is_directory(file)) {
 
                         METADOT_INFO(file.c_str());
 
@@ -1369,13 +1894,22 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                         for (auto code : view_contents)
                             if (code.file == file) shouldopen = false;
                         if (shouldopen) {
+                            auto extension = std::filesystem::path(file).extension().string();
                             std::ifstream i(file);
                             if (i.good()) {
-                                std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
-                                view_contents.push_back(EditorView{.tags = EditorTags::Editor_Code, .file = file, .content = str});
+                                if (extension == ".lua") {
+                                    std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
+                                    view_contents.push_back(EditorView{.tags = EditorTags::Editor_Code, .file = file, .content = str});
+                                } else if (extension == ".md") {
+                                    std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
+                                    view_contents.push_back(EditorView{.tags = EditorTags::Editor_Markdown, .file = file, .content = str});
+                                }
                             }
                         }
+
+                        // 复位变量
                         filebrowser = false;
+                        file = ME_fs_get_path("data/scripts");
                     }
                 }
                 ImGui::End();
@@ -1394,9 +1928,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
 
                     ImGui::EndTabItem();
                 } else {
-                    if (view.is_edited) {
-                        view.is_edited = false;
-                    }
+                    if (view.is_edited) view.is_edited = false;
                 }
             }
 
@@ -1409,6 +1941,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                         editor.Render("TextEditor");
                         break;
                     case Editor_Markdown:
+                        ImGuiHelper::markdown(view_editing->content);
                         break;
                     default:
                         break;

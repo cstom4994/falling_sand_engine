@@ -1,8 +1,6 @@
 // Copyright(c) 2022-2023, KaoruXun
 
 // This source file may include
-// https://github.com/maildrop/DearImGui-with-IMM32 (MIT) by TOGURO Mikito
-// https://github.com/mekhontsev/imgui_md (MIT) by mekhontsev
 // https://github.com/ocornut/imgui (MIT) by Omar Cornut
 
 #ifndef ME_IMGUI_IMPL_HPP
@@ -29,7 +27,7 @@
 #include <utility>
 #include <vector>
 
-#include "imgui_helper.hpp"
+#include "imgui_utils.hpp"
 
 #if defined(_WIN32)
 #define ME_IMM32

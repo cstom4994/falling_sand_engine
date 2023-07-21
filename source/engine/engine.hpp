@@ -26,71 +26,7 @@ Module& safe_module_initialize(Args&&... args) {
     return modules::is_initialized<Module>() ? modules::instance<Module>() : modules::initialize<Module>(std::forward<Args>(args)...);
 }
 
-class engine final : public module<engine> {
-public:
-    class application;
-    using application_uptr = scope<application>;
-
-public:
-    // class debug_parameters;
-    // class window_parameters;
-    // class timer_parameters;
-    class parameters;
-
-public:
-    engine(int argc, char* argv[], const parameters& params);
-    ~engine() noexcept final;
-
-    template <typename Application, typename... Args>
-    bool start(Args&&... args);
-    bool start(application_uptr app);
-
-    // f32 time() const noexcept;
-    // f32 delta_time() const noexcept;
-
-    // u32 frame_rate() const noexcept;
-    // u32 frame_count() const noexcept;
-    // f32 realtime_time() const noexcept;
-
-private:
-    int m_argc;
-    char** m_argv;
-};
-
-class engine::parameters {
-public:
-    parameters() = delete;
-    parameters(std::string game_name, std::string debug_args) noexcept;
-
-    ME_INLINE parameters& get() noexcept { return *this; }
-
-    parameters& game_name(std::string value) noexcept;
-    std::string& game_name() noexcept;
-    const std::string& game_name() const noexcept;
-
-private:
-    std::string m_game_name{"noname"};
-    std::string m_debug_args{"debugargs"};
-};
-
-// Engine functions called from main
-int InitEngine(void (*InitCppReflection)());
-void EngineUpdate();
-void EngineUpdateEnd();
-void EndEngine(int errorOcurred);
-void DrawSplash();
-
-class engine::application : private ME::noncopyable {
-public:
-    virtual ~application() noexcept = default;
-    virtual bool initialize(int argc, char* argv[]) = 0;
-    virtual void shutdown() noexcept = 0;
-    virtual bool frame_tick() = 0;
-    virtual void frame_render() = 0;
-    virtual void frame_finalize() = 0;
-};
-
-typedef struct EngineData {
+typedef struct engine_data {
     C_Window* window;
     C_GLContext* glContext;
 
@@ -132,25 +68,79 @@ typedef struct EngineData {
         f32 framesPerSecond;
     } time;
 
-} EngineData;
+} engine_data;
 
-extern EngineData g_engine_data;
+class engine final : public module<engine> {
+public:
+    class application;
+    using application_uptr = scope<application>;
 
-ME_INLINE EngineData* ENGINE() { return &g_engine_data; }
+public:
+    class parameters;
 
-void ExitGame();
-void GameExited();
+public:
+    engine(int argc, char* argv[], const parameters& params);
+    ~engine() noexcept final;
 
-int InitCore();
-bool InitTime();
-bool InitScreen(int windowWidth, int windowHeight, int scale, int maxFPS);
+    template <typename Application, typename... Args>
+    bool start(Args&&... args);
+    bool start(application_uptr app);
 
-void UpdateTime();
-void WaitUntilNextFrame();
+    bool is_running() const noexcept { return m_initialized_engine; }
+    bool& running() noexcept { return m_initialized_engine; }
+    engine_data* eng() noexcept { return &m_eng; }
 
-void InitFPS();
-void ProcessTickTime();
-f32 GetFPS();
+    int init_eng();
+    void update_post();
+    void update_time();
+    void update_end();
+    void end_eng(int errorOcurred);
+    void draw_splash();
+
+    int init_core();
+    bool init_time();
+    bool init_screen(int windowWidth, int windowHeight, int scale, int maxFPS);
+
+    f32 fps() const noexcept { return m_eng.time.framesPerSecond; };
+
+private:
+    void process_tick_time();
+
+private:
+    engine_data m_eng;
+
+    bool m_initialized_engine = false;
+
+    // ƽ̨
+    int m_argc;
+    char** m_argv;
+};
+
+class engine::parameters {
+public:
+    parameters() = delete;
+    parameters(std::string game_name, std::string debug_args) noexcept;
+
+    ME_INLINE parameters& get() noexcept { return *this; }
+
+    parameters& game_name(std::string value) noexcept;
+    std::string& game_name() noexcept;
+    const std::string& game_name() const noexcept;
+
+private:
+    std::string m_game_name{"noname"};
+    std::string m_debug_args{"debugargs"};
+};
+
+class engine::application : private ME::noncopyable {
+public:
+    virtual ~application() noexcept = default;
+    virtual bool initialize(int argc, char* argv[]) = 0;
+    virtual void shutdown() noexcept = 0;
+    virtual bool frame_tick() = 0;
+    virtual void frame_render() = 0;
+    virtual void frame_finalize() = 0;
+};
 
 template <typename Application, typename... Args>
 ME_INLINE bool engine::start(Args&&... args) {

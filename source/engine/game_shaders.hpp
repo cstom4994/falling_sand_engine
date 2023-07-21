@@ -107,7 +107,7 @@ public:
     void create() override;
     void destory() override;
     void reload() override;
-    void registerLua(LuaWrapper::State &s_lua) override;
+    void registerLua(lua_wrapper::State &s_lua) override;
 };
 
 }  // namespace ME

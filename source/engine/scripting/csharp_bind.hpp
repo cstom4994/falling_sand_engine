@@ -1,38 +1,6 @@
 
 #pragma once
 
-#include "engine/core/core.hpp"
-#include "engine/core/sdl_wrapper.h"
-
-#if defined(ME_CS_DISABLE_EXCEPTIONS)
-namespace ME::CSharpWrapper {
-inline void throw_exception(const char* message) {
-    (void)message;
-    std::abort();
-}
-}  // namespace ME::CSharpWrapper
-#else
-#include <exception>
-
-namespace ME::CSharpWrapper {
-class mono_exception : public std::exception {
-public:
-    mono_exception(const char* message) : std::exception(message) {}
-};
-
-inline void throw_exception(const char* message) { throw mono_exception(message); }
-}  // namespace ME::CSharpWrapper
-#endif
-
-#include <cassert>
-
-#define ME_CS_CALLABLE(func_name) [](auto... args) -> decltype(auto) { return func_name(std::move(args)...); }
-
-#define ME_CS_GET(type, method_name) [](uintptr_t ptr) -> decltype(auto) { return reinterpret_cast<type*>(ptr)->method_name(); }
-#define ME_CS_SET(type, method_name) [](uintptr_t ptr, auto arg) -> void { reinterpret_cast<type*>(ptr)->method_name(std::move(arg)); }
-#define ME_CS_METHOD(type, method_name) [](uintptr_t ptr, auto... args) -> decltype(auto) { return reinterpret_cast<type*>(ptr)->method_name(std::move(args)...); }
-#define ME_CS_STATIC_METHOD(type, method_name) [](auto... args) -> decltype(auto) { return type::method_name(std::move(args)...); }
-
 #include <mono/jit/jit.h>
 #include <mono/metadata/appdomain.h>
 #include <mono/metadata/assembly.h>
@@ -43,6 +11,8 @@ inline void throw_exception(const char* message) { throw mono_exception(message)
 #include <mono/utils/mono-publib.h>
 
 #include <array>
+#include <cassert>
+#include <exception>
 #include <functional>
 #include <map>
 #include <memory>
@@ -54,7 +24,36 @@ inline void throw_exception(const char* message) { throw mono_exception(message)
 #include <typeinfo>
 #include <vector>
 
-namespace ME::CSharpWrapper {
+#include "engine/core/core.hpp"
+#include "engine/core/sdl_wrapper.h"
+
+#if defined(ME_CS_DISABLE_EXCEPTIONS)
+namespace ME::csharp_wrapper {
+inline void throw_exception(const char* message) {
+    (void)message;
+    std::abort();
+}
+}  // namespace ME::csharp_wrapper
+#else
+
+namespace ME::csharp_wrapper {
+class mono_exception : public std::exception {
+public:
+    mono_exception(const char* message) : std::exception(message) {}
+};
+
+inline void throw_exception(const char* message) { throw mono_exception(message); }
+}  // namespace ME::csharp_wrapper
+#endif
+
+#define ME_CS_CALLABLE(func_name) [](auto... args) -> decltype(auto) { return func_name(std::move(args)...); }
+
+#define ME_CS_GET(type, method_name) [](uintptr_t ptr) -> decltype(auto) { return reinterpret_cast<type*>(ptr)->method_name(); }
+#define ME_CS_SET(type, method_name) [](uintptr_t ptr, auto arg) -> void { reinterpret_cast<type*>(ptr)->method_name(std::move(arg)); }
+#define ME_CS_METHOD(type, method_name) [](uintptr_t ptr, auto... args) -> decltype(auto) { return reinterpret_cast<type*>(ptr)->method_name(std::move(args)...); }
+#define ME_CS_STATIC_METHOD(type, method_name) [](auto... args) -> decltype(auto) { return type::method_name(std::move(args)...); }
+
+namespace ME::csharp_wrapper {
 class method;
 
 template <typename... Args>
@@ -1516,4 +1515,4 @@ public:
         return *this;
     }
 };
-}  // namespace ME::CSharpWrapper
+}  // namespace ME::csharp_wrapper

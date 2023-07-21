@@ -10,7 +10,7 @@ namespace ME {
 void hello_from_cpp() { ME::println("C++: Hello!"); }
 
 CSharpBasicApi::CSharpBasicApi(std::string& path_to_mono) {
-    mono = new CSharpWrapper::mono(path_to_mono.c_str());
+    mono = new csharp_wrapper::mono(path_to_mono.c_str());
 
     this->OnInit();
 }
@@ -23,8 +23,8 @@ void CSharpBasicApi::OnInit() {
     mono->add_internal_call<void()>("MonoBindExamples.SimpleFunctionCall::HelloFromCpp()", ME_CS_CALLABLE(hello_from_cpp));
 
     // load assembly and get C# method
-    CSharpWrapper::assembly assembly(mono->get_domain(), "HotFix_Project.dll");
-    CSharpWrapper::method method = assembly.get_method("MonoBindExamples.SimpleFunctionCall::HelloFromCSharp()");
+    csharp_wrapper::assembly assembly(mono->get_domain(), "HotFix_Project.dll");
+    csharp_wrapper::method method = assembly.get_method("MonoBindExamples.SimpleFunctionCall::HelloFromCSharp()");
 
     // call C# method
     method.invoke_static<void()>();

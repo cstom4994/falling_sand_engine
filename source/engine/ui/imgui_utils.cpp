@@ -1,4 +1,4 @@
-#include "imgui_helper.hpp"
+#include "imgui_utils.hpp"
 
 #include <algorithm>
 #include <array>
@@ -10,7 +10,702 @@
 #include <tuple>
 #include <vector>
 
-bool ImGuiHelper::color_picker_3U32(const char *label, ImU32 *color, ImGuiColorEditFlags flags) {
+namespace ImGuiHelper {
+
+imgui_md::imgui_md() {
+    m_md.abi_version = 0;
+
+    m_md.flags = MD_FLAG_TABLES | MD_FLAG_UNDERLINE | MD_FLAG_STRIKETHROUGH;
+
+    m_md.enter_block = [](MD_BLOCKTYPE t, void* d, void* u) { return ((imgui_md*)u)->block(t, d, true); };
+
+    m_md.leave_block = [](MD_BLOCKTYPE t, void* d, void* u) { return ((imgui_md*)u)->block(t, d, false); };
+
+    m_md.enter_span = [](MD_SPANTYPE t, void* d, void* u) { return ((imgui_md*)u)->span(t, d, true); };
+
+    m_md.leave_span = [](MD_SPANTYPE t, void* d, void* u) { return ((imgui_md*)u)->span(t, d, false); };
+
+    m_md.text = [](MD_TEXTTYPE t, const MD_CHAR* text, MD_SIZE size, void* u) { return ((imgui_md*)u)->text(t, text, text + size); };
+
+    m_md.debug_log = nullptr;
+
+    m_md.syntax = nullptr;
+
+    ////////////////////////////////////////////////////////////////////////////
+
+    m_table_last_pos = ImVec2(0, 0);
+}
+
+void imgui_md::BLOCK_UL(const MD_BLOCK_UL_DETAIL* d, bool e) {
+    if (e) {
+        m_list_stack.push_back(list_info{0, d->mark, false});
+    } else {
+        m_list_stack.pop_back();
+        if (m_list_stack.empty()) ImGui::NewLine();
+    }
+}
+
+void imgui_md::BLOCK_OL(const MD_BLOCK_OL_DETAIL* d, bool e) {
+    if (e) {
+        m_list_stack.push_back(list_info{d->start, d->mark_delimiter, true});
+    } else {
+        m_list_stack.pop_back();
+        if (m_list_stack.empty()) ImGui::NewLine();
+    }
+}
+
+void imgui_md::BLOCK_LI(const MD_BLOCK_LI_DETAIL*, bool e) {
+    if (e) {
+        ImGui::NewLine();
+
+        list_info& nfo = m_list_stack.back();
+        if (nfo.is_ol) {
+            ImGui::Text("%d%c", nfo.cur_ol++, nfo.delim);
+            ImGui::SameLine();
+        } else {
+            if (nfo.delim == '*') {
+                float cx = ImGui::GetCursorPosX();
+                cx -= ImGui::GetStyle().FramePadding.x * 2;
+                ImGui::SetCursorPosX(cx);
+                ImGui::Bullet();
+            } else {
+                ImGui::Text("%c", nfo.delim);
+                ImGui::SameLine();
+            }
+        }
+
+        ImGui::Indent();
+    } else {
+        ImGui::Unindent();
+    }
+}
+
+void imgui_md::BLOCK_HR(bool e) {
+    if (!e) {
+        ImGui::NewLine();
+        ImGui::Separator();
+    }
+}
+
+void imgui_md::BLOCK_H(const MD_BLOCK_H_DETAIL* d, bool e) {
+    if (e) {
+        m_hlevel = d->level;
+        ImGui::NewLine();
+    } else {
+        m_hlevel = 0;
+    }
+
+    set_font(e);
+
+    if (!e) {
+        if (d->level <= 2) {
+            ImGui::NewLine();
+            ImGui::Separator();
+        }
+    }
+}
+
+void imgui_md::BLOCK_DOC(bool) {}
+
+void imgui_md::BLOCK_QUOTE(bool) {}
+void imgui_md::BLOCK_CODE(const MD_BLOCK_CODE_DETAIL*, bool e) { m_is_code = e; }
+
+void imgui_md::BLOCK_HTML(bool) {}
+
+void imgui_md::BLOCK_P(bool) {
+    if (!m_list_stack.empty()) return;
+    ImGui::NewLine();
+}
+
+void imgui_md::BLOCK_TABLE(const MD_BLOCK_TABLE_DETAIL*, bool e) {
+    if (e) {
+        m_table_row_pos.clear();
+        m_table_col_pos.clear();
+
+        m_table_last_pos = ImGui::GetCursorPos();
+    } else {
+
+        ImGui::NewLine();
+
+        if (m_table_border) {
+
+            m_table_last_pos.y = ImGui::GetCursorPos().y;
+
+            m_table_col_pos.push_back(m_table_last_pos.x);
+            m_table_row_pos.push_back(m_table_last_pos.y);
+
+            const ImVec2 wp = ImGui::GetWindowPos();
+            const ImVec2 sp = ImGui::GetStyle().ItemSpacing;
+            const float wx = wp.x + sp.x / 2;
+            const float wy = wp.y - sp.y / 2 - ImGui::GetScrollY();
+
+            for (int i = 0; i < m_table_col_pos.size(); ++i) {
+                m_table_col_pos[i] += wx;
+            }
+
+            for (int i = 0; i < m_table_row_pos.size(); ++i) {
+                m_table_row_pos[i] += wy;
+            }
+
+            ////////////////////////////////////////////////////////////////////
+
+            const ImColor c = ImGui::GetStyle().Colors[ImGuiCol_TextDisabled];
+
+            ImDrawList* dl = ImGui::GetWindowDrawList();
+
+            const float xmin = m_table_col_pos.front();
+            const float xmax = m_table_col_pos.back();
+            for (int i = 0; i < m_table_row_pos.size(); ++i) {
+                const float p = m_table_row_pos[i];
+                dl->AddLine(ImVec2(xmin, p), ImVec2(xmax, p), c, i == 1 && m_table_header_highlight ? 2.0f : 1.0f);
+            }
+
+            const float ymin = m_table_row_pos.front();
+            const float ymax = m_table_row_pos.back();
+            for (int i = 0; i < m_table_col_pos.size(); ++i) {
+                const float p = m_table_col_pos[i];
+                dl->AddLine(ImVec2(p, ymin), ImVec2(p, ymax), c, 1.0f);
+            }
+        }
+    }
+}
+
+void imgui_md::BLOCK_THEAD(bool e) {
+    m_is_table_header = e;
+    if (m_table_header_highlight) set_font(e);
+}
+
+void imgui_md::BLOCK_TBODY(bool e) { m_is_table_body = e; }
+
+void imgui_md::BLOCK_TR(bool e) {
+    ImGui::SetCursorPosY(m_table_last_pos.y);
+
+    if (e) {
+        m_table_next_column = 0;
+        ImGui::NewLine();
+        m_table_row_pos.push_back(ImGui::GetCursorPosY());
+    }
+}
+
+void imgui_md::BLOCK_TH(const MD_BLOCK_TD_DETAIL* d, bool e) { BLOCK_TD(d, e); }
+
+void imgui_md::BLOCK_TD(const MD_BLOCK_TD_DETAIL*, bool e) {
+    if (e) {
+
+        if (m_table_next_column < m_table_col_pos.size()) {
+            ImGui::SetCursorPosX(m_table_col_pos[m_table_next_column]);
+        } else {
+            m_table_col_pos.push_back(m_table_last_pos.x);
+        }
+
+        ++m_table_next_column;
+
+        ImGui::Indent(m_table_col_pos[m_table_next_column - 1]);
+        ImGui::SetCursorPos(ImVec2(m_table_col_pos[m_table_next_column - 1], m_table_row_pos.back()));
+
+    } else {
+        const ImVec2 p = ImGui::GetCursorPos();
+        ImGui::Unindent(m_table_col_pos[m_table_next_column - 1]);
+        ImGui::SetCursorPosX(p.x);
+        if (p.y > m_table_last_pos.y) m_table_last_pos.y = p.y;
+    }
+    ImGui::TextUnformatted("");
+
+    if (!m_table_border && e && m_table_next_column == 1) {
+        ImGui::SameLine(0.0f, 0.0f);
+    } else {
+        ImGui::SameLine();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void imgui_md::set_href(bool e, const MD_ATTRIBUTE& src) {
+    if (e) {
+        m_href.assign(src.text, src.size);
+    } else {
+        m_href.clear();
+    }
+}
+
+void imgui_md::set_font(bool e) {
+    if (e) {
+        ImGui::PushFont(get_font());
+    } else {
+        ImGui::PopFont();
+    }
+}
+
+void imgui_md::set_color(bool e) {
+    if (e) {
+        ImGui::PushStyleColor(ImGuiCol_Text, get_color());
+    } else {
+        ImGui::PopStyleColor();
+    }
+}
+
+void imgui_md::line(ImColor c, bool under) {
+    ImVec2 mi = ImGui::GetItemRectMin();
+    ImVec2 ma = ImGui::GetItemRectMax();
+
+    if (!under) {
+        ma.y -= ImGui::GetFontSize() / 2;
+    }
+
+    mi.y = ma.y;
+
+    ImGui::GetWindowDrawList()->AddLine(mi, ma, c, 1.0f);
+}
+
+void imgui_md::SPAN_A(const MD_SPAN_A_DETAIL* d, bool e) {
+    set_href(e, d->href);
+    set_color(e);
+}
+
+void imgui_md::SPAN_EM(bool e) {
+    m_is_em = e;
+    set_font(e);
+}
+
+void imgui_md::SPAN_STRONG(bool e) {
+    m_is_strong = e;
+    set_font(e);
+}
+
+void imgui_md::SPAN_IMG(const MD_SPAN_IMG_DETAIL* d, bool e) {
+    m_is_image = e;
+
+    set_href(e, d->src);
+
+    if (e) {
+
+        image_info nfo;
+        if (get_image(nfo)) {
+
+            const float scale = ImGui::GetIO().FontGlobalScale;
+            nfo.size.x *= scale;
+            nfo.size.y *= scale;
+
+            ImVec2 const csz = ImGui::GetContentRegionAvail();
+            if (nfo.size.x > csz.x) {
+                const float r = nfo.size.y / nfo.size.x;
+                nfo.size.x = csz.x;
+                nfo.size.y = csz.x * r;
+            }
+
+            ImGui::Image(nfo.texture_id, nfo.size, nfo.uv0, nfo.uv1, nfo.col_tint, nfo.col_border);
+
+            if (ImGui::IsItemHovered()) {
+
+                // if (d->title.size) {
+                //  ImGui::SetTooltip("%.*s", (int)d->title.size, d->title.text);
+                // }
+
+                if (ImGui::IsMouseReleased(0)) {
+                    open_url();
+                }
+            }
+        }
+    }
+}
+
+void imgui_md::SPAN_CODE(bool) {}
+
+void imgui_md::SPAN_LATEXMATH(bool) {}
+
+void imgui_md::SPAN_LATEXMATH_DISPLAY(bool) {}
+
+void imgui_md::SPAN_WIKILINK(const MD_SPAN_WIKILINK_DETAIL*, bool) {}
+
+void imgui_md::SPAN_U(bool e) { m_is_underline = e; }
+
+void imgui_md::SPAN_DEL(bool e) { m_is_strikethrough = e; }
+
+void imgui_md::render_text(const char* str, const char* str_end) {
+    const float scale = ImGui::GetIO().FontGlobalScale;
+    const ImGuiStyle& s = ImGui::GetStyle();
+    bool is_lf = false;
+
+    while (!m_is_image && str < str_end) {
+
+        const char* te = str_end;
+
+        if (!m_is_table_header) {
+
+            float wl = ImGui::GetContentRegionAvail().x;
+
+            if (m_is_table_body) {
+                wl = (m_table_next_column < m_table_col_pos.size() ? m_table_col_pos[m_table_next_column] : m_table_last_pos.x);
+                wl -= ImGui::GetCursorPosX();
+            }
+
+            te = ImGui::GetFont()->CalcWordWrapPositionA(scale, str, str_end, wl);
+
+            if (te == str) ++te;
+        }
+
+        ImGui::TextUnformatted(str, te);
+
+        if (te > str && *(te - 1) == '\n') {
+            is_lf = true;
+        }
+
+        if (!m_href.empty()) {
+
+            ImVec4 c;
+            if (ImGui::IsItemHovered()) {
+
+                ImGui::SetTooltip("%s", m_href.c_str());
+
+                c = s.Colors[ImGuiCol_ButtonHovered];
+                if (ImGui::IsMouseReleased(0)) {
+                    open_url();
+                }
+            } else {
+                c = s.Colors[ImGuiCol_Button];
+            }
+            line(c, true);
+        }
+        if (m_is_underline) {
+            line(s.Colors[ImGuiCol_Text], true);
+        }
+        if (m_is_strikethrough) {
+            line(s.Colors[ImGuiCol_Text], false);
+        }
+
+        str = te;
+
+        while (str < str_end && *str == ' ') ++str;
+    }
+
+    if (!is_lf) ImGui::SameLine(0.0f, 0.0f);
+}
+
+bool imgui_md::render_entity(const char* str, const char* str_end) {
+    const size_t sz = str_end - str;
+    if (strncmp(str, "&nbsp;", sz) == 0) {
+        ImGui::TextUnformatted("");
+        ImGui::SameLine();
+        return true;
+    }
+    return false;
+}
+
+static bool skip_spaces(const std::string& d, size_t& p) {
+    for (; p < d.length(); ++p) {
+        if (d[p] != ' ' && d[p] != '\t') {
+            break;
+        }
+    }
+    return p < d.length();
+}
+
+static std::string get_div_class(const char* str, const char* str_end) {
+    if (str_end <= str) return "";
+
+    std::string d(str, str_end - str);
+    if (d.back() == '>') d.pop_back();
+
+    const char attr[] = "class";
+    size_t p = d.find(attr);
+    if (p == std::string::npos) return "";
+    p += sizeof(attr) - 1;
+
+    if (!skip_spaces(d, p)) return "";
+
+    if (d[p] != '=') return "";
+    ++p;
+
+    if (!skip_spaces(d, p)) return "";
+
+    bool has_q = false;
+
+    if (d[p] == '"' || d[p] == '\'') {
+        has_q = true;
+        ++p;
+    }
+    if (p == d.length()) return "";
+
+    if (!has_q) {
+        if (!skip_spaces(d, p)) return "";
+    }
+
+    size_t pe;
+    for (pe = p; pe < d.length(); ++pe) {
+
+        const char c = d[pe];
+
+        if (has_q) {
+            if (c == '"' || c == '\'') {
+                break;
+            }
+        } else {
+            if (c == ' ' || c == '\t') {
+                break;
+            }
+        }
+    }
+
+    return d.substr(p, pe - p);
+}
+
+bool imgui_md::check_html(const char* str, const char* str_end) {
+    const size_t sz = str_end - str;
+
+    if (strncmp(str, "<br>", sz) == 0) {
+        ImGui::NewLine();
+        return true;
+    }
+    if (strncmp(str, "<hr>", sz) == 0) {
+        ImGui::Separator();
+        return true;
+    }
+    if (strncmp(str, "<u>", sz) == 0) {
+        m_is_underline = true;
+        return true;
+    }
+    if (strncmp(str, "</u>", sz) == 0) {
+        m_is_underline = false;
+        return true;
+    }
+
+    const size_t div_sz = 4;
+    if (strncmp(str, "<div", sz > div_sz ? div_sz : sz) == 0) {
+        m_div_stack.emplace_back(get_div_class(str + div_sz, str_end));
+        html_div(m_div_stack.back(), true);
+        return true;
+    }
+    if (strncmp(str, "</div>", sz) == 0) {
+        if (m_div_stack.empty()) return false;
+        html_div(m_div_stack.back(), false);
+        m_div_stack.pop_back();
+        return true;
+    }
+    return false;
+}
+
+void imgui_md::html_div(const std::string& dclass, bool e) {
+    // Example:
+#if 0 
+    if (dclass == "red") {
+        if (e) {
+            ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+        } else {
+            ImGui::PopStyleColor();
+        }
+    }
+#endif
+    dclass;
+    e;
+}
+
+int imgui_md::text(MD_TEXTTYPE type, const char* str, const char* str_end) {
+    switch (type) {
+        case MD_TEXT_NORMAL:
+            render_text(str, str_end);
+            break;
+        case MD_TEXT_CODE:
+            render_text(str, str_end);
+            break;
+        case MD_TEXT_NULLCHAR:
+            break;
+        case MD_TEXT_BR:
+            ImGui::NewLine();
+            break;
+        case MD_TEXT_SOFTBR:
+            soft_break();
+            break;
+        case MD_TEXT_ENTITY:
+            if (!render_entity(str, str_end)) {
+                render_text(str, str_end);
+            };
+            break;
+        case MD_TEXT_HTML:
+            if (!check_html(str, str_end)) {
+                render_text(str, str_end);
+            }
+            break;
+        case MD_TEXT_LATEXMATH:
+            render_text(str, str_end);
+            break;
+        default:
+            break;
+    }
+
+    if (m_is_table_header) {
+        const float x = ImGui::GetCursorPosX();
+        if (x > m_table_last_pos.x) m_table_last_pos.x = x;
+    }
+
+    return 0;
+}
+
+int imgui_md::block(MD_BLOCKTYPE type, void* d, bool e) {
+    switch (type) {
+        case MD_BLOCK_DOC:
+            BLOCK_DOC(e);
+            break;
+        case MD_BLOCK_QUOTE:
+            BLOCK_QUOTE(e);
+            break;
+        case MD_BLOCK_UL:
+            BLOCK_UL((MD_BLOCK_UL_DETAIL*)d, e);
+            break;
+        case MD_BLOCK_OL:
+            BLOCK_OL((MD_BLOCK_OL_DETAIL*)d, e);
+            break;
+        case MD_BLOCK_LI:
+            BLOCK_LI((MD_BLOCK_LI_DETAIL*)d, e);
+            break;
+        case MD_BLOCK_HR:
+            BLOCK_HR(e);
+            break;
+        case MD_BLOCK_H:
+            BLOCK_H((MD_BLOCK_H_DETAIL*)d, e);
+            break;
+        case MD_BLOCK_CODE:
+            BLOCK_CODE((MD_BLOCK_CODE_DETAIL*)d, e);
+            break;
+        case MD_BLOCK_HTML:
+            BLOCK_HTML(e);
+            break;
+        case MD_BLOCK_P:
+            BLOCK_P(e);
+            break;
+        case MD_BLOCK_TABLE:
+            BLOCK_TABLE((MD_BLOCK_TABLE_DETAIL*)d, e);
+            break;
+        case MD_BLOCK_THEAD:
+            BLOCK_THEAD(e);
+            break;
+        case MD_BLOCK_TBODY:
+            BLOCK_TBODY(e);
+            break;
+        case MD_BLOCK_TR:
+            BLOCK_TR(e);
+            break;
+        case MD_BLOCK_TH:
+            BLOCK_TH((MD_BLOCK_TD_DETAIL*)d, e);
+            break;
+        case MD_BLOCK_TD:
+            BLOCK_TD((MD_BLOCK_TD_DETAIL*)d, e);
+            break;
+        default:
+            assert(false);
+            break;
+    }
+
+    return 0;
+}
+
+int imgui_md::span(MD_SPANTYPE type, void* d, bool e) {
+    switch (type) {
+        case MD_SPAN_EM:
+            SPAN_EM(e);
+            break;
+        case MD_SPAN_STRONG:
+            SPAN_STRONG(e);
+            break;
+        case MD_SPAN_A:
+            SPAN_A((MD_SPAN_A_DETAIL*)d, e);
+            break;
+        case MD_SPAN_IMG:
+            SPAN_IMG((MD_SPAN_IMG_DETAIL*)d, e);
+            break;
+        case MD_SPAN_CODE:
+            SPAN_CODE(e);
+            break;
+        case MD_SPAN_DEL:
+            SPAN_DEL(e);
+            break;
+        case MD_SPAN_LATEXMATH:
+            SPAN_LATEXMATH(e);
+            break;
+        case MD_SPAN_LATEXMATH_DISPLAY:
+            SPAN_LATEXMATH_DISPLAY(e);
+            break;
+        case MD_SPAN_WIKILINK:
+            SPAN_WIKILINK((MD_SPAN_WIKILINK_DETAIL*)d, e);
+            break;
+        case MD_SPAN_U:
+            SPAN_U(e);
+            break;
+        default:
+            assert(false);
+            break;
+    }
+
+    return 0;
+}
+
+int imgui_md::print(const std::string& str) {
+    return md_parse(str.c_str(), (MD_SIZE)str.size(), &m_md, this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+ImFont* imgui_md::get_font() const {
+    return nullptr;  // default font
+
+    // Example:
+#if 0
+    if (m_is_table_header) {
+        return g_font_bold;
+    }
+
+    switch (m_hlevel)
+    {
+    case 0:
+        return m_is_strong ? g_font_bold : g_font_regular;
+    case 1:
+        return g_font_bold_large;
+    default:
+        return g_font_bold;
+    }
+#endif
+};
+
+ImVec4 imgui_md::get_color() const {
+    if (!m_href.empty()) {
+        return ImGui::GetStyle().Colors[ImGuiCol_ButtonHovered];
+    }
+    return ImGui::GetStyle().Colors[ImGuiCol_Text];
+}
+
+bool imgui_md::get_image(image_info& nfo) const {
+    // Use m_href to identify images
+
+    // Example - Imgui font texture
+    nfo.texture_id = ImGui::GetIO().Fonts->TexID;
+    nfo.size = {100, 50};
+    nfo.uv0 = {0, 0};
+    nfo.uv1 = {1, 1};
+    nfo.col_tint = {1, 1, 1, 1};
+    nfo.col_border = {0, 0, 0, 0};
+
+    return true;
+};
+
+void imgui_md::open_url() const {
+    // Example:
+
+#if 0   
+    if (!m_is_image) {
+        SDL_OpenURL(m_href.c_str());
+    } else {
+        //image clicked
+    }
+#endif
+}
+
+void imgui_md::soft_break() {
+    // Example:
+#if 0
+    ImGui::NewLine();
+#endif
+}
+}  // namespace ImGuiHelper
+
+bool ImGuiHelper::color_picker_3U32(const char* label, ImU32* color, ImGuiColorEditFlags flags) {
     float col[3];
     col[0] = (float)((*color >> 0) & 0xFF) / 255.0f;
     col[1] = (float)((*color >> 8) & 0xFF) / 255.0f;
@@ -23,7 +718,7 @@ bool ImGuiHelper::color_picker_3U32(const char *label, ImU32 *color, ImGuiColorE
     return result;
 }
 
-std::string ImGuiHelper::file_browser(const std::string &path) {
+void ImGuiHelper::file_browser(std::string& path) {
 
     ImGui::Text("Current Path: %s", path.c_str());
     ImGui::Separator();
@@ -32,102 +727,19 @@ std::string ImGuiHelper::file_browser(const std::string &path) {
         std::filesystem::path currentPath(path);
         if (!currentPath.empty()) {
             currentPath = currentPath.parent_path();
-            return file_browser(currentPath.string());
+            path = currentPath.string();
         }
     }
 
-    for (const auto &entry : std::filesystem::directory_iterator(path)) {
-        const auto &entryPath = entry.path();
-        const auto &entryFilename = entryPath.filename().string();
+    for (const auto& entry : std::filesystem::directory_iterator(path)) {
+        const auto& entryPath = entry.path();
+        const auto& entryFilename = entryPath.filename().string();
         if (entry.is_directory()) {
-            if (ImGui::Selectable((entryFilename + "/").c_str())) return file_browser(entryPath.string());
+            if (ImGui::Selectable((entryFilename + "/").c_str())) path = entryPath.string();
 
         } else {
-            if (ImGui::Selectable(entryFilename.c_str())) return entryFilename;
+            if (ImGui::Selectable(entryFilename.c_str())) path = entryPath.string();
         }
-    }
-
-    return {};
-}
-
-MEimstr::MEimstr() : m_data(0), m_ref_count(0) {}
-MEimstr::MEimstr(size_t len) : m_data(0), m_ref_count(0) { reserve(len); }
-MEimstr::MEimstr(char *string) : m_data(string), m_ref_count(0) { ref(); }
-
-MEimstr::MEimstr(const char *string) : m_data(0), m_ref_count(0) {
-    if (string) {
-        m_data = ImStrdup(string);
-        ref();
-    }
-}
-
-MEimstr::MEimstr(const MEimstr &other) {
-    m_ref_count = other.m_ref_count;
-    m_data = other.m_data;
-    ref();
-}
-
-MEimstr::~MEimstr() { unref(); }
-
-char &MEimstr::operator[](size_t pos) { return m_data[pos]; }
-
-MEimstr::operator char *() { return m_data; }
-
-bool MEimstr::operator==(const char *string) { return strcmp(string, m_data) == 0; }
-
-bool MEimstr::operator!=(const char *string) { return strcmp(string, m_data) != 0; }
-
-bool MEimstr::operator==(MEimstr &string) { return strcmp(string.c_str(), m_data) == 0; }
-
-bool MEimstr::operator!=(const MEimstr &string) { return strcmp(string.c_str(), m_data) != 0; }
-
-MEimstr &MEimstr::operator=(const char *string) {
-    if (m_data) unref();
-    m_data = ImStrdup(string);
-    ref();
-    return *this;
-}
-
-MEimstr &MEimstr::operator=(const MEimstr &other) {
-    if (m_data && m_data != other.m_data) unref();
-    m_ref_count = other.m_ref_count;
-    m_data = other.m_data;
-    ref();
-    return *this;
-}
-
-void MEimstr::reserve(size_t len) {
-    if (m_data) unref();
-    m_data = (char *)ImGui::MemAlloc(len + 1);
-    m_data[len] = '\0';
-    ref();
-}
-
-char *MEimstr::get() { return m_data; }
-
-const char *MEimstr::c_str() const { return m_data; }
-
-bool MEimstr::empty() const { return m_data == 0 || m_data[0] == '\0'; }
-
-int MEimstr::refcount() const { return *m_ref_count; }
-
-void MEimstr::ref() {
-    if (!m_ref_count) {
-        m_ref_count = new int();
-        (*m_ref_count) = 0;
-    }
-    (*m_ref_count)++;
-}
-
-void MEimstr::unref() {
-    if (m_ref_count) {
-        (*m_ref_count)--;
-        if (*m_ref_count == 0) {
-            ImGui::MemFree(m_data);
-            m_data = 0;
-            delete m_ref_count;
-        }
-        m_ref_count = 0;
     }
 }
 
@@ -143,14 +755,14 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #pragma comment(lib, "comctl32.lib")
 
 void ME_imgui_imm::operator()() {
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
 
     static ImVec2 window_pos = ImVec2();
     static ImVec2 window_pos_pivot = ImVec2();
 
     static ImGuiID candidate_window_root_id = 0;
 
-    static ImGuiWindow *lastTextInputNavWindow = nullptr;
+    static ImGuiWindow* lastTextInputNavWindow = nullptr;
     static ImGuiID lastTextInputActiveId = 0;
     static ImGuiID lastTextInputFocusId = 0;
 
@@ -160,7 +772,7 @@ void ME_imgui_imm::operator()() {
                             ImGui::GetCurrentContext()->PlatformImeData.InputPos.y);  //
         window_pos_pivot = ImVec2(0.0f, 0.0f);
 
-        const ImGuiContext *const currentContext = ImGui::GetCurrentContext();
+        const ImGuiContext* const currentContext = ImGui::GetCurrentContext();
         IM_ASSERT(currentContext || !"ImGui::GetCurrentContext() return nullptr.");
         if (currentContext) {
             if (!ImGui::IsMouseClicked(0)) {
@@ -228,7 +840,7 @@ void ME_imgui_imm::operator()() {
         /* Draw Candidate List */
         if (show_ime_candidate_list && !candidate_list.list_utf8.empty()) {
 
-            std::vector<const char *> listbox_items = {};
+            std::vector<const char*> listbox_items = {};
 
             IM_ASSERT(candidate_window_num);
             int candidate_page = ((int)candidate_list.selection) / candidate_window_num;
@@ -244,7 +856,7 @@ void ME_imgui_imm::operator()() {
                 }
             }
 
-            std::for_each(begin_ite, end_ite, [&](auto &item) { listbox_items.push_back(item.c_str()); });
+            std::for_each(begin_ite, end_ite, [&](auto& item) { listbox_items.push_back(item.c_str()); });
 
             const float candidate_window_height = ((ImGui::GetStyle().FramePadding.y * 2) + ((ImGui::GetTextLineHeightWithSpacing()) * ((int)std::size(listbox_items) + 2)));
 
@@ -262,7 +874,7 @@ void ME_imgui_imm::operator()() {
                 if (ImGui::BeginListBox("##IMECandidateListWindow", ImVec2(static_cast<int>(std::size(listbox_items)), static_cast<int>(std::size(listbox_items))))) {
 
                     int i = 0;
-                    for (const char *&listbox_item : listbox_items) {
+                    for (const char*& listbox_item : listbox_items) {
                         if (ImGui::Selectable(listbox_item, (i == candidate_selection))) {
 
                             /* candidate list selection */
@@ -339,7 +951,7 @@ void ME_imgui_imm::operator()() {
     return;
 }
 
-ME_imgui_imm::imm_candidate_list ME_imgui_imm::imm_candidate_list::cocreate(const CANDIDATELIST *const src, const size_t src_size) {
+ME_imgui_imm::imm_candidate_list ME_imgui_imm::imm_candidate_list::cocreate(const CANDIDATELIST* const src, const size_t src_size) {
     IM_ASSERT(nullptr != src);
     IM_ASSERT(sizeof(CANDIDATELIST) <= src->dwSize);
     IM_ASSERT(src->dwSelection < src->dwCount);
@@ -351,10 +963,10 @@ ME_imgui_imm::imm_candidate_list ME_imgui_imm::imm_candidate_list::cocreate(cons
     if (!(src->dwSelection < src->dwCount)) {
         return dst;
     }
-    const char *const baseaddr = reinterpret_cast<const char *>(src);
+    const char* const baseaddr = reinterpret_cast<const char*>(src);
 
     for (size_t i = 0; i < src->dwCount; ++i) {
-        const wchar_t *const item = reinterpret_cast<const wchar_t *>(baseaddr + src->dwOffset[i]);
+        const wchar_t* const item = reinterpret_cast<const wchar_t*>(baseaddr + src->dwOffset[i]);
         const int require_byte = WideCharToMultiByte(CP_UTF8, 0, item, -1, nullptr, 0, NULL, NULL);
         if (0 < require_byte) {
             std::unique_ptr<char[]> utf8buf{new char[require_byte]};
@@ -382,8 +994,8 @@ bool ME_imgui_imm::update_candidate_window(HWND hWnd) {
 
                 std::vector<char> candidatelist((size_t)dwSize);
                 if ((DWORD)(std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)) ==
-                    ImmGetCandidateListW(hImc, 0, reinterpret_cast<CANDIDATELIST *>(candidatelist.data()), (DWORD)(std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)))) {
-                    const CANDIDATELIST *const cl = reinterpret_cast<CANDIDATELIST *>(candidatelist.data());
+                    ImmGetCandidateListW(hImc, 0, reinterpret_cast<CANDIDATELIST*>(candidatelist.data()), (DWORD)(std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)))) {
+                    const CANDIDATELIST* const cl = reinterpret_cast<CANDIDATELIST*>(candidatelist.data());
                     candidate_list = std::move(imm_candidate_list::cocreate(cl, dwSize));
                     result = true;
                 }
@@ -405,14 +1017,14 @@ ME_imgui_imm::imm_communication_subclassproc(HWND hWnd, UINT uMsg, WPARAM wParam
         } break;
         default:
             if (dwRefData) {
-                return imm_communication_subclassproc_implement(hWnd, uMsg, wParam, lParam, uIdSubclass, *reinterpret_cast<ME_imgui_imm *>(dwRefData));
+                return imm_communication_subclassproc_implement(hWnd, uMsg, wParam, lParam, uIdSubclass, *reinterpret_cast<ME_imgui_imm*>(dwRefData));
             }
     }
     return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
 }
 
 LRESULT
-ME_imgui_imm::imm_communication_subclassproc_implement(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, ME_imgui_imm &comm) {
+ME_imgui_imm::imm_communication_subclassproc_implement(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, ME_imgui_imm& comm) {
     switch (uMsg) {
         case WM_KEYDOWN:
         case WM_KEYUP:
@@ -513,7 +1125,7 @@ ME_imgui_imm::imm_communication_subclassproc_implement(HWND hWnd, UINT uMsg, WPA
                                 将 std::wstring 转换为 std::unique_ptr <char[]> 作为 UTF - 8 空终止字符串
                                 如果参数是空字符串，则输入 nullptr
                                 */
-                                    auto to_utf8_pointer = [](const std::wstring &arg) -> std::unique_ptr<char[]> {
+                                    auto to_utf8_pointer = [](const std::wstring& arg) -> std::unique_ptr<char[]> {
                                         if (arg.empty()) {
                                             return std::unique_ptr<char[]>(nullptr);
                                         }
@@ -622,9 +1234,9 @@ ME_imgui_imm::imm_communication_subclassproc_implement(HWND hWnd, UINT uMsg, WPA
                                 (void)(lParam);
                                 std::vector<char> candidatelist((size_t)dwSize);
                                 if ((DWORD)(std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)) ==
-                                    ImmGetCandidateListW(hImc, 0, reinterpret_cast<CANDIDATELIST *>(candidatelist.data()),
+                                    ImmGetCandidateListW(hImc, 0, reinterpret_cast<CANDIDATELIST*>(candidatelist.data()),
                                                          (DWORD)(std::size(candidatelist) * sizeof(typename decltype(candidatelist)::value_type)))) {
-                                    const CANDIDATELIST *const cl = reinterpret_cast<CANDIDATELIST *>(candidatelist.data());
+                                    const CANDIDATELIST* const cl = reinterpret_cast<CANDIDATELIST*>(candidatelist.data());
                                     comm.candidate_list = std::move(imm_candidate_list::cocreate(cl, dwSize));
                                 }
                             }
@@ -663,7 +1275,7 @@ ME_imgui_imm::imm_communication_subclassproc_implement(HWND hWnd, UINT uMsg, WPA
                 case IMGUI_IMM_COMMAND_NOP:  // NOP
                     return 1;
                 case IMGUI_IMM_COMMAND_SUBCLASSIFY: {
-                    ImGuiIO &io = ImGui::GetIO();
+                    ImGuiIO& io = ImGui::GetIO();
                     if (io.ImeWindowHandle) {
                         IM_ASSERT(IsWindow(static_cast<HWND>(io.ImeWindowHandle)));
                         ME_ASSERT(ImmAssociateContextEx(static_cast<HWND>(io.ImeWindowHandle), nullptr, IACE_IGNORENOCONTEXT));
@@ -733,7 +1345,7 @@ BOOL ME_imgui_imm::subclassify_impl(HWND hWnd) {
 
             但是，这种方法不好，因为当有多个目标操作系统窗口时它会崩溃。
     */
-    ImGui::GetIO().ImeWindowHandle = static_cast<void *>(hWnd);
+    ImGui::GetIO().ImeWindowHandle = static_cast<void*>(hWnd);
     if (::SetWindowSubclass(hWnd, ME_imgui_imm::imm_communication_subclassproc, reinterpret_cast<UINT_PTR>(ME_imgui_imm::imm_communication_subclassproc), reinterpret_cast<DWORD_PTR>(this))) {
         /*
            I want to close IME once by calling imgex::imm_associate_context_disable()
@@ -785,8 +1397,8 @@ void ShowAutoTestWindow() {
 
     if (ImGui::Begin("自动序列UI")) {
 
-        auto myCollapsingHeader = [](const char *name) -> bool {
-            ImGuiStyle &style = ImGui::GetStyle();
+        auto myCollapsingHeader = [](const char* name) -> bool {
+            ImGuiStyle& style = ImGui::GetStyle();
             ImGui::PushStyleColor(ImGuiCol_Header, style.Colors[ImGuiCol_Button]);
             ImGui::PushStyleColor(ImGuiCol_HeaderHovered, style.Colors[ImGuiCol_ButtonHovered]);
             ImGui::PushStyleColor(ImGuiCol_HeaderActive, style.Colors[ImGuiCol_ButtonActive]);
@@ -890,7 +1502,7 @@ Container data, large structs and tuples are hidden by default.
             ImGui::Auto(R"code(
     char * buffer = "To edit a string use std::string. Manual buffers are unwelcome here.";
     ImGui::Auto(buffer, "buffer");)code");
-            char *buffer = "To edit a string use std::string. Manual buffers are unwelcome here.";
+            char* buffer = "To edit a string use std::string. Manual buffers are unwelcome here.";
             ImGui::Auto(buffer, "buffer");
 
             ImGui::Unindent();
@@ -992,8 +1604,8 @@ Container data, large structs and tuples are hidden by default.
                 ImGui::Auto(R"code(
     static std::set<char*> set = { "set","with","char*" };
     ImGui::Auto(set,"set");)code");
-                static std::set<char *> set = {"set", "with", "char*"};  // for some reason, this does not work
-                ImGui::Auto(set, "set");                                 // the problem is with the const iterator, but
+                static std::set<char*> set = {"set", "with", "char*"};  // for some reason, this does not work
+                ImGui::Auto(set, "set");                                // the problem is with the const iterator, but
 
                 ImGui::NewLine();
                 ImGui::Separator();
@@ -1001,7 +1613,7 @@ Container data, large structs and tuples are hidden by default.
                 ImGui::Auto(R"code(
     static std::map<char*, std::string> map = { {"asd","somevalue"},{"bsd","value"} };
     ImGui::Auto(map, "map");    // insert and other operations)code");
-                static std::map<char *, std::string> map = {{"asd", "somevalue"}, {"bsd", "value"}};
+                static std::map<char*, std::string> map = {{"asd", "somevalue"}, {"bsd", "value"}};
                 ImGui::Auto(map, "map");  // insert and other operations
 
                 ImGui::TreePop();
@@ -1014,7 +1626,7 @@ Container data, large structs and tuples are hidden by default.
             ImGui::Auto(R"code(
     static float *pf = nullptr;
     ImGui::Auto(pf, "pf");)code");
-            static float *pf = nullptr;
+            static float* pf = nullptr;
             ImGui::Auto(pf, "pf");
 
             ImGui::NewLine();
@@ -1042,7 +1654,7 @@ Container data, large structs and tuples are hidden by default.
     static std::string str = "I can be changed! (my pointee cannot)";
     static std::string *const strpc = &str;)code");
             static std::string str = "I can be changed! (my pointee cannot)";
-            static std::string *const strpc = &str;
+            static std::string* const strpc = &str;
             ImGui::Auto(strpc, "strpc");
 
             ImGui::NewLine();

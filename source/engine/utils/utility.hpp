@@ -38,6 +38,7 @@
 #include "engine/core/core.hpp"
 #include "engine/core/mathlib.hpp"
 #include "engine/meta/static_relfection.hpp"
+#include "engine/utils/enum.hpp"
 
 struct lua_State;
 
@@ -62,11 +63,7 @@ std::string str(T1 x, T... args) {
     return to_str(x) + str(args...);
 }
 
-enum log_colour { ME_LOG_COLOUR_GREEN = 0, ME_LOG_COLOUR_YELLOW = 1, ME_LOG_COLOUR_RED = 2, ME_LOG_COLOUR_WHITE = 3, ME_LOG_COLOUR_BLUE = 4, ME_LOG_COLOUR_NULL = 5 };
-
-enum log_type { ME_LOG_TYPE_WARNING = 1, ME_LOG_TYPE_ERROR = 2, ME_LOG_TYPE_NOTE = 4, ME_LOG_TYPE_SUCCESS = 0, ME_LOG_TYPE_MESSAGE = 3 };
-
-constexpr const char *logColours[] = {"\x1b[32m", "\x1b[33m", "\x1b[31m", "\x1b[37m", "\x1b[34m", "\x1b[0m", "Success", "Warning", "Error", "Message", "Debug", "Null"};
+ENUM_HPP_CLASS_DECL(log_type, u8, (trace)(warning)(error)(note)(msg));
 
 struct log_msg {
     std::string msg;
@@ -76,7 +73,7 @@ struct log_msg {
 
 class logger {
 private:
-    friend class MEconsole;
+    friend class console;
 
     static void writeline(std::string &msg);
 
@@ -87,7 +84,7 @@ private:
 
         std::string output;
 
-        output = std::string(logColours[type + logTypeOffset]) + ": " + message;
+        output = std::string(log_type_traits::to_string(type).value()) + ": " + message;
         std::stringstream ss;
         (ss << ... << argv);
         output += ss.str();
@@ -931,14 +928,14 @@ void Vector3ToTable(lua_State *L, MEvec3 vector);
 }  // namespace ME
 
 #if defined(ME_DEBUG)
-#define METADOT_BUG(...) ::ME::logger::log(::ME::ME_LOG_TYPE_NOTE, std::format("[Native] {0}:{1} ", __func__, __LINE__).c_str(), __VA_ARGS__)
+#define METADOT_BUG(...) ::ME::logger::log(::ME::log_type::note, std::format("[Native] {0}:{1} ", __func__, __LINE__).c_str(), __VA_ARGS__)
 #else
 #define METADOT_BUG(...)
 #endif
-#define METADOT_TRACE(...) ::ME::logger::log(::ME::ME_LOG_TYPE_NOTE, __VA_ARGS__)
-#define METADOT_INFO(...) ::ME::logger::log(::ME::ME_LOG_TYPE_MESSAGE, __VA_ARGS__)
-#define METADOT_WARN(...) ::ME::logger::log(::ME::ME_LOG_TYPE_WARNING, __VA_ARGS__)
-#define METADOT_ERROR(...) ::ME::logger::log(::ME::ME_LOG_TYPE_ERROR, __VA_ARGS__)
+#define METADOT_TRACE(...) ::ME::logger::log(::ME::log_type::trace, __VA_ARGS__)
+#define METADOT_INFO(...) ::ME::logger::log(::ME::log_type::note, __VA_ARGS__)
+#define METADOT_WARN(...) ::ME::logger::log(::ME::log_type::warning, __VA_ARGS__)
+#define METADOT_ERROR(...) ::ME::logger::log(::ME::log_type::error, __VA_ARGS__)
 
 #define METADOT_LOG_SCOPE_FUNCTION(...)
 #define METADOT_LOG_SCOPE_F(...)

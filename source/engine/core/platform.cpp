@@ -128,7 +128,7 @@ int ME_initwindow() {
 
     SDL_SetHintWithPriority(SDL_HINT_RENDER_DRIVER, "opengl", SDL_HINT_OVERRIDE);
 
-// ENGINE()->ing on Catalina with High DPI (retina)
+// the<engine>().eng()->ing on Catalina with High DPI (retina)
 // https://github.com/grimfang4/sdl-gpu/issues/201
 #if defined(METADOT_ALLOW_HIGHDPI)
     R_WindowFlagEnum SDL_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -139,9 +139,9 @@ int ME_initwindow() {
     // create the window
     METADOT_INFO("Creating game window...");
 
-    ENGINE()->window = SDL_CreateWindow(win_game, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, ENGINE()->windowWidth, ENGINE()->windowHeight, SDL_flags);
+    the<engine>().eng()->window = SDL_CreateWindow(win_game, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, the<engine>().eng()->windowWidth, the<engine>().eng()->windowHeight, SDL_flags);
 
-    if (ENGINE()->window == nullptr) {
+    if (the<engine>().eng()->window == nullptr) {
         METADOT_ERROR("Could not create SDL_Window: %s", SDL_GetError());
         return METADOT_FAILED;
     }
@@ -152,24 +152,24 @@ int ME_initwindow() {
     METADOT_INFO("Creating gpu target...");
 
     R_SetPreInitFlags(R_INIT_DISABLE_VSYNC);
-    R_SetInitWindow(SDL_GetWindowID(ENGINE()->window));
+    R_SetInitWindow(SDL_GetWindowID(the<engine>().eng()->window));
 
-    ENGINE()->target = R_Init(ENGINE()->windowWidth, ENGINE()->windowHeight, SDL_flags);
+    the<engine>().eng()->target = R_Init(the<engine>().eng()->windowWidth, the<engine>().eng()->windowHeight, SDL_flags);
 
-    if (ENGINE()->target == NULL) {
+    if (the<engine>().eng()->target == NULL) {
         METADOT_ERROR("Could not create R_Target: %s", SDL_GetError());
         return METADOT_FAILED;
     }
 
 #if defined(METADOT_ALLOW_HIGHDPI)
-    R_SetVirtualResolution(ENGINE()->Target_.target, WIDTH * 2, HEIGHT * 2);
+    R_SetVirtualResolution(the<engine>().eng()->Target_.target, WIDTH * 2, HEIGHT * 2);
 #endif
 
-    ENGINE()->realTarget = ENGINE()->target;
+    the<engine>().eng()->realTarget = the<engine>().eng()->target;
 
-    ENGINE()->glContext = (C_GLContext *)ENGINE()->target->context->context;
+    the<engine>().eng()->glContext = (C_GLContext *)the<engine>().eng()->target->context->context;
 
-    SDL_GL_MakeCurrent(ENGINE()->window, ENGINE()->glContext);
+    SDL_GL_MakeCurrent(the<engine>().eng()->window, the<engine>().eng()->glContext);
 
     auto metadot_gl_global_init = [](ME_gl_loader_fn loader_fp) {
         if (NULL == loader_fp) {
@@ -229,11 +229,11 @@ int ME_initwindow() {
 #if defined(_WIN32)
     SDL_SysWMinfo info{};
     SDL_VERSION(&info.version);
-    if (SDL_GetWindowWMInfo(ENGINE()->window, &info)) {
+    if (SDL_GetWindowWMInfo(the<engine>().eng()->window, &info)) {
         ME_ASSERT(IsWindow(info.info.win.window));
-        // ENGINE()->wndh = info.info.win.window;
+        // the<engine>().eng()->wndh = info.info.win.window;
     } else {
-        // ENGINE()->wndh = NULL;
+        // the<engine>().eng()->wndh = NULL;
     }
 #elif defined(__linux)
     global.HostData.wndh = 0;
@@ -258,39 +258,39 @@ int ME_initwindow() {
 
 void ME_endwindow() {
 
-    if (NULL != ENGINE()->target) R_FreeTarget(ENGINE()->target);
-    // if (NULL != ENGINE()->realTarget) R_FreeTarget(ENGINE()->realTarget);
-    if (ENGINE()->window) SDL_DestroyWindow(ENGINE()->window);
+    if (NULL != the<engine>().eng()->target) R_FreeTarget(the<engine>().eng()->target);
+    // if (NULL != the<engine>().eng()->realTarget) R_FreeTarget(the<engine>().eng()->realTarget);
+    if (the<engine>().eng()->window) SDL_DestroyWindow(the<engine>().eng()->window);
     R_Quit();
 }
 
 void ME_win_set_displaymode(E_DisplayMode mode) {
     switch (mode) {
         case WINDOWED:
-            SDL_SetWindowDisplayMode(ENGINE()->window, NULL);
-            SDL_SetWindowFullscreen(ENGINE()->window, 0);
+            SDL_SetWindowDisplayMode(the<engine>().eng()->window, NULL);
+            SDL_SetWindowFullscreen(the<engine>().eng()->window, 0);
             // GameUI::OptionsUI::item_current_idx = 0;
             break;
         case BORDERLESS:
-            SDL_SetWindowDisplayMode(ENGINE()->window, NULL);
-            SDL_SetWindowFullscreen(ENGINE()->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+            SDL_SetWindowDisplayMode(the<engine>().eng()->window, NULL);
+            SDL_SetWindowFullscreen(the<engine>().eng()->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
             // GameUI::OptionsUI::item_current_idx = 1;
             break;
         case FULLSCREEN:
-            SDL_MaximizeWindow(ENGINE()->window);
+            SDL_MaximizeWindow(the<engine>().eng()->window);
 
             int w;
             int h;
-            SDL_GetWindowSize(ENGINE()->window, &w, &h);
+            SDL_GetWindowSize(the<engine>().eng()->window, &w, &h);
 
             SDL_DisplayMode disp;
-            SDL_GetWindowDisplayMode(ENGINE()->window, &disp);
+            SDL_GetWindowDisplayMode(the<engine>().eng()->window, &disp);
 
             disp.w = w;
             disp.h = h;
 
-            SDL_SetWindowDisplayMode(ENGINE()->window, &disp);
-            SDL_SetWindowFullscreen(ENGINE()->window, SDL_WINDOW_FULLSCREEN);
+            SDL_SetWindowDisplayMode(the<engine>().eng()->window, &disp);
+            SDL_SetWindowFullscreen(the<engine>().eng()->window, SDL_WINDOW_FULLSCREEN);
             // GameUI::OptionsUI::item_current_idx = 2;
             break;
     }
@@ -334,7 +334,7 @@ void ME_set_vsync(bool vsync) {
 
 void ME_win_set_minimize_onlostfocus(bool minimize) { SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, minimize ? "1" : "0"); }
 
-void ME_win_set_windowtitle(const char *title) { SDL_SetWindowTitle(ENGINE()->window, win_title_server); }
+void ME_win_set_windowtitle(const char *title) { SDL_SetWindowTitle(the<engine>().eng()->window, win_title_server); }
 
 char *ME_clipboard_get() {
     char *text = SDL_GetClipboardText();

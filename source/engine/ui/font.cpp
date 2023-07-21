@@ -360,7 +360,7 @@ void ME_fontcache::ME_fontcache_push(std::string &text, MEvec2 pos) {
     float section_end = 2.32f;
     if (current_scroll > section_start && current_scroll < section_end) {
         std::string how_it_works =
-                u8"Glyphs are GPU rasterised with 16x supersampling. This method is a simplification of \"Easy Scalable Text ENGINE()->ing on the GPU\",\n"
+                u8"Glyphs are GPU rasterised with 16x supersampling. This method is a simplification of \"Easy Scalable Text the<engine>().eng()->ing on the GPU\",\n"
                 u8"by Evan Wallace, making use of XOR blending. Bézier curves are handled via brute force triangle tessellation; even 6 triangles per\n"
                 u8"curve only generates < 300 triangles, which is nothing for modern GPUs! This avoids complex frag shader for reasonable quality.\n"
                 u8"\n"

@@ -15,7 +15,7 @@
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/scripting.hpp"
 #include "engine/ui/imgui_impl.hpp"
-#include "engine/ui/imgui_layer.hpp"
+#include "engine/ui/dbgui.hpp"
 #include "engine/ui/ui.hpp"
 #include "engine/utils/utility.hpp"
 #include "game.hpp"
@@ -32,15 +32,15 @@ namespace ME {
 GameUI::GameUI gameUI;
 
 void I18N::Init() {
-    auto L = Scripting::get_singleton_ptr();
+    auto L = scripting::get_singleton_ptr();
     ME_ASSERT(L, "Can't load I18N when luacore is invaild");
 
     Load("zh");
 }
 
-void I18N::Load(std::string lang) { Scripting::get_singleton_ptr()->s_lua["setlocale"](lang); }
+void I18N::Load(std::string lang) { scripting::get_singleton_ptr()->s_lua["setlocale"](lang); }
 
-std::string I18N::Get(std::string text) { return Scripting::get_singleton_ptr()->s_lua["translate"](text); }
+std::string I18N::Get(std::string text) { return scripting::get_singleton_ptr()->s_lua["translate"](text); }
 
 namespace GameUI {
 
@@ -53,7 +53,7 @@ void OptionsUI__Draw(game *game) {
     int tab = 0;
 
     if (ImGui::Button("返回")) {
-        LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
+        lua_wrapper::LuaRef s = scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
         s["state"] = 0;
     }
     if (ImGui::Button("保存")) {
@@ -296,7 +296,7 @@ void MainMenuUI__Draw(game *game) {
         return;
     }
 
-    LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
+    lua_wrapper::LuaRef s = scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
 
     if (s["state"] == 0) {
         MainMenuUI__DrawMainMenu(game);
@@ -333,12 +333,12 @@ void MainMenuUI__DrawMainMenu(game *game) {
     // ImGui::TextColored(ImVec4(211.0f, 211.0f, 211.0f, 255.0f), CC("大摆钟送快递"));
 
     if (ImGui::Button(LANG("ui_play"))) {
-        LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
+        lua_wrapper::LuaRef s = scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
         s["state"] = 4;
     }
 
     if (ImGui::Button(LANG("ui_option"))) {
-        LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
+        lua_wrapper::LuaRef s = scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
         s["state"] = 1;
     }
 
@@ -357,12 +357,12 @@ void MainMenuUI__DrawInGame(game *game) {
     }
 
     if (ImGui::Button("选项")) {
-        LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
+        lua_wrapper::LuaRef s = scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
         s["state"] = 1;
     }
 
     if (ImGui::Button("离开到主菜单")) {
-        LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
+        lua_wrapper::LuaRef s = scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
         s["state"] = 0;
         game->quitToMainMenu();
     }
@@ -382,7 +382,7 @@ void MainMenuUI__DrawCreateWorldUI(game *game) {
     ImGui::ListBox(LANG("ui_worldgenerator"), &gameUI.MainMenuUI__selIndex, world_types, IM_ARRAYSIZE(world_types), 4);
 
     if (ImGui::Button(LANG("ui_return"))) {
-        LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
+        lua_wrapper::LuaRef s = scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
         s["state"] = 4;
     }
 
@@ -404,7 +404,7 @@ void MainMenuUI__DrawCreateWorldUI(game *game) {
 
         METADOT_INFO(std::format("Creating world named \"{0}\" at \"{1}\"", worldTitle, METADOT_RESLOC(std::format("saves/{0}", wn).c_str())).c_str());
         gameUI.visible_mainmenu = false;
-        LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
+        lua_wrapper::LuaRef s = scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
         s["state"] = 5;
 
         game->setGameState(LOADING, INGAME);
@@ -426,7 +426,7 @@ void MainMenuUI__DrawCreateWorldUI(game *game) {
 
         game->Iso.world = create_scope<World>();
         game->Iso.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / 3 / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * 3, (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3,
-                              ENGINE()->target, &global.audio, generator);
+                              the<engine>().eng()->target, &global.audio, generator);
         game->Iso.world->metadata.worldName = std::string(gameUI.MainMenuUI__worldNameBuf);
         game->Iso.world->metadata.lastOpenedTime = ME_gettime() / 1000;
         game->Iso.world->metadata.lastOpenedVersion = std::to_string(ME_buildnum());
@@ -501,13 +501,13 @@ void MainMenuUI__DrawWorldLists(game *game) {
     ImGui::Text("%s", LANG("ui_play"));
 
     if (ImGui::Button(LANG("ui_newworld"))) {
-        LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
+        lua_wrapper::LuaRef s = scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
         s["state"] = 3;
         MainMenuUI__reset(game);
     }
 
     if (ImGui::Button(LANG("ui_return"))) {
-        LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
+        lua_wrapper::LuaRef s = scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
         s["state"] = 0;
     }
 
@@ -533,10 +533,10 @@ void MainMenuUI__DrawWorldLists(game *game) {
             METADOT_INFO("Selected world: ", worldName.c_str());
 
             gameUI.visible_mainmenu = false;
-            LuaWrapper::LuaRef s = Scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
+            lua_wrapper::LuaRef s = scripting::get_singleton_ptr()->s_lua["game_datastruct"]["ui"];
             s["state"] = 5;
 
-            game->fadeOutStart = ENGINE()->time.now;
+            game->fadeOutStart = the<engine>().eng()->time.now;
             game->fadeOutLength = 250;
             game->fadeOutCallback = [&, game, worldName]() {
                 game->setGameState(LOADING, INGAME);
@@ -545,7 +545,7 @@ void MainMenuUI__DrawWorldLists(game *game) {
 
                 game->Iso.world = create_scope<World>();
                 game->Iso.world->init(METADOT_RESLOC(std::format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
-                                      (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, ENGINE()->target, &global.audio);
+                                      (int)ceil(WINDOWS_MAX_HEIGHT / 3 / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * 3, the<engine>().eng()->target, &global.audio);
                 game->Iso.world->metadata.lastOpenedTime = ME_gettime() / 1000;
                 game->Iso.world->metadata.lastOpenedVersion = std::to_string(ME_buildnum());
                 game->Iso.world->metadata.save(game->Iso.world->worldName);
@@ -557,7 +557,7 @@ void MainMenuUI__DrawWorldLists(game *game) {
                     }
                 }
 
-                game->fadeInStart = ENGINE()->time.now;
+                game->fadeInStart = the<engine>().eng()->time.now;
                 game->fadeInLength = 250;
                 game->fadeInWaitFrames = 4;
             };

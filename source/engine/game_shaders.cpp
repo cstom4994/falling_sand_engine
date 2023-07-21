@@ -277,6 +277,6 @@ void ShaderWorkerSystem::reload() {
 
 #undef SAFEUNLOADSHADER
 
-void ShaderWorkerSystem::registerLua(LuaWrapper::State &s_lua) {}
+void ShaderWorkerSystem::registerLua(lua_wrapper::State &s_lua) {}
 
 }  // namespace ME

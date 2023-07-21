@@ -27,9 +27,9 @@ void BackgroundObject::Init() {
     // }
 }
 
-void NewBackgroundObject(std::string name, u32 solid, LuaWrapper::LuaRef table) {
-    auto &L = Scripting::get_singleton_ptr()->s_lua;
-    std::vector<LuaWrapper::LuaRef> b = table;
+void NewBackgroundObject(std::string name, u32 solid, lua_wrapper::LuaRef table) {
+    auto &L = scripting::get_singleton_ptr()->s_lua;
+    std::vector<lua_wrapper::LuaRef> b = table;
     std::vector<BackgroundLayerRef> Layers;
 
     for (auto &c : b) {
@@ -62,7 +62,7 @@ BackgroundObject *BackgroundSystem::Get(std::string name) {
 void BackgroundSystem::create() {
 
     // NewBackgroundObject("TEST_OVERWORLD");
-    auto &L = Scripting::get_singleton_ptr()->s_lua;
+    auto &L = scripting::get_singleton_ptr()->s_lua;
 
     this->registerLua(L);
 
@@ -76,22 +76,22 @@ void BackgroundSystem::destory() {
 }
 void BackgroundSystem::reload() {}
 
-void BackgroundSystem::registerLua(LuaWrapper::State &s_lua) { s_lua["NewBackgroundObject"] = LuaWrapper::function(NewBackgroundObject); }
+void BackgroundSystem::registerLua(lua_wrapper::State &s_lua) { s_lua["NewBackgroundObject"] = lua_wrapper::function(NewBackgroundObject); }
 
 void BackgroundSystem::draw() {
     // 绘制背景贴图
     if (NULL == global.game->bg) global.game->bg = global.game->Iso.backgrounds->Get("TEST_OVERWORLD");
-    if (NULL != global.game->bg && !global.game->bg->layers.empty() && global.game->Iso.globaldef.draw_background && ENGINE()->render_scale <= ME_ARRAY_SIZE(global.game->bg->layers[0]->surface) &&
+    if (NULL != global.game->bg && !global.game->bg->layers.empty() && global.game->Iso.globaldef.draw_background && the<engine>().eng()->render_scale <= ME_ARRAY_SIZE(global.game->bg->layers[0]->surface) &&
         global.game->Iso.world->loadZone.y > -5 * CHUNK_H) {
         R_SetShapeBlendMode(R_BLEND_SET);
         MEcolor col = {static_cast<u8>((global.game->bg->solid >> 16) & 0xff), static_cast<u8>((global.game->bg->solid >> 8) & 0xff), static_cast<u8>((global.game->bg->solid >> 0) & 0xff), 0xff};
-        R_ClearColor(ENGINE()->target, col);
+        R_ClearColor(the<engine>().eng()->target, col);
 
         MErect dst;
         MErect src;
 
-        f32 arX = (f32)ENGINE()->windowWidth / (global.game->bg->layers[0]->surface[0]->w);
-        f32 arY = (f32)ENGINE()->windowHeight / (global.game->bg->layers[0]->surface[0]->h);
+        f32 arX = (f32)the<engine>().eng()->windowWidth / (global.game->bg->layers[0]->surface[0]->w);
+        f32 arY = (f32)the<engine>().eng()->windowHeight / (global.game->bg->layers[0]->surface[0]->h);
 
         f64 time = ME_gettime() / 1000.0;
 
@@ -100,15 +100,15 @@ void BackgroundSystem::draw() {
         for (size_t i = 0; i < global.game->bg->layers.size(); i++) {
             BackgroundLayerRef bglayer = global.game->bg->layers[i];
 
-            C_Surface *texture = bglayer->surface[(size_t)ENGINE()->render_scale - 1];
+            C_Surface *texture = bglayer->surface[(size_t)the<engine>().eng()->render_scale - 1];
 
-            R_Image *tex = bglayer->texture[(size_t)ENGINE()->render_scale - 1];
+            R_Image *tex = bglayer->texture[(size_t)the<engine>().eng()->render_scale - 1];
             R_SetBlendMode(tex, R_BLEND_NORMAL);
 
             int tw = texture->w;
             int th = texture->h;
 
-            int iter = (int)ceil((f32)ENGINE()->windowWidth / (tw)) + 1;
+            int iter = (int)ceil((f32)the<engine>().eng()->windowWidth / (tw)) + 1;
             for (int n = 0; n < iter; n++) {
 
                 src.x = 0;
@@ -116,17 +116,17 @@ void BackgroundSystem::draw() {
                 src.w = tw;
                 src.h = th;
 
-                dst.x = (((GAME()->ofsX + GAME()->camX) + global.game->Iso.world->loadZone.x * ENGINE()->render_scale) + n * tw / bglayer->parralaxX) * bglayer->parralaxX +
-                        global.game->Iso.world->width / 2.0f * ENGINE()->render_scale - tw / 2.0f;
-                dst.y = ((GAME()->ofsY + GAME()->camY) + global.game->Iso.world->loadZone.y * ENGINE()->render_scale) * bglayer->parralaxY +
-                        global.game->Iso.world->height / 2.0f * ENGINE()->render_scale - th / 2.0f - ENGINE()->windowHeight / 3.0f * (ENGINE()->render_scale - 1);
+                dst.x = (((GAME()->ofsX + GAME()->camX) + global.game->Iso.world->loadZone.x * the<engine>().eng()->render_scale) + n * tw / bglayer->parralaxX) * bglayer->parralaxX +
+                        global.game->Iso.world->width / 2.0f * the<engine>().eng()->render_scale - tw / 2.0f;
+                dst.y = ((GAME()->ofsY + GAME()->camY) + global.game->Iso.world->loadZone.y * the<engine>().eng()->render_scale) * bglayer->parralaxY +
+                        global.game->Iso.world->height / 2.0f * the<engine>().eng()->render_scale - th / 2.0f - the<engine>().eng()->windowHeight / 3.0f * (the<engine>().eng()->render_scale - 1);
                 dst.w = (f32)tw;
                 dst.h = (f32)th;
 
-                dst.x += (f32)(ENGINE()->render_scale * fmod(bglayer->moveX * time, tw));
+                dst.x += (f32)(the<engine>().eng()->render_scale * fmod(bglayer->moveX * time, tw));
 
                 // TODO: optimize
-                while (dst.x >= ENGINE()->windowWidth - 10) dst.x -= (iter * tw);
+                while (dst.x >= the<engine>().eng()->windowWidth - 10) dst.x -= (iter * tw);
                 while (dst.x + dst.w < 0) dst.x += (iter * tw - 1);
 
                 // TODO: optimize
@@ -144,17 +144,17 @@ void BackgroundSystem::draw() {
                     dst.y = 0;
                 }
 
-                if (dst.x + dst.w >= ENGINE()->windowWidth) {
-                    src.w -= (int)((dst.x + dst.w) - ENGINE()->windowWidth);
-                    dst.w += ENGINE()->windowWidth - (dst.x + dst.w);
+                if (dst.x + dst.w >= the<engine>().eng()->windowWidth) {
+                    src.w -= (int)((dst.x + dst.w) - the<engine>().eng()->windowWidth);
+                    dst.w += the<engine>().eng()->windowWidth - (dst.x + dst.w);
                 }
 
-                if (dst.y + dst.h >= ENGINE()->windowHeight) {
-                    src.h -= (int)((dst.y + dst.h) - ENGINE()->windowHeight);
-                    dst.h += ENGINE()->windowHeight - (dst.y + dst.h);
+                if (dst.y + dst.h >= the<engine>().eng()->windowHeight) {
+                    src.h -= (int)((dst.y + dst.h) - the<engine>().eng()->windowHeight);
+                    dst.h += the<engine>().eng()->windowHeight - (dst.y + dst.h);
                 }
 
-                R_BlitRect(tex, &src, ENGINE()->target, &dst);
+                R_BlitRect(tex, &src, the<engine>().eng()->target, &dst);
             }
         }
     }

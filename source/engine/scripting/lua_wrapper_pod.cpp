@@ -233,7 +233,7 @@ const ITypeInterface *GetTypeInterface(lua_State *L, void *ptr) {
 }
 }  // namespace LuaStruct
 
-namespace ME::LuaWrapper {
+namespace ME::lua_wrapper {
 
 namespace PodBind {
 
@@ -396,7 +396,7 @@ int LuaBindingNewIndex(lua_State *L) {
     return 0;
 }
 
-void LuaBindingSetProperties(lua_State *L, ME::LuaWrapper::PodBind::bind_properties *properties) {
+void LuaBindingSetProperties(lua_State *L, ME::lua_wrapper::PodBind::bind_properties *properties) {
     // Assumes table at top of the stack for the properties.
     while (properties->name != nullptr) {
 
@@ -451,4 +451,4 @@ void CheckArgCount(lua_State *L, int expected) {
 
 };  // namespace PodBind
 
-}  // namespace ME::LuaWrapper
+}  // namespace ME::lua_wrapper

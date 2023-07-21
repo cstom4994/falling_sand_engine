@@ -204,7 +204,7 @@ void ME_surface_Restore(MEsurface_context* ctx);
 void ME_surface_Reset(MEsurface_context* ctx);
 
 //
-// ENGINE()-> styles
+// the<engine>().eng()-> styles
 //
 // Fill and stroke render style can be either a solid color or a paint which is a gradient or a pattern.
 // Solid color is simply defined as a color value, different kinds of paints can be created
@@ -593,7 +593,7 @@ void ME_surface_TextMetrics(MEsurface_context* ctx, float* ascender, float* desc
 int ME_surface_TextBreakLines(MEsurface_context* ctx, const char* string, const char* end, float breakRowWidth, MEsurface_textRow* rows, int maxRows);
 
 //
-// Internal ENGINE()-> API
+// Internal the<engine>().eng()-> API
 //
 enum MEsurface_texture {
     ME_SURFACE_TEXTURE_ALPHA = 0x01,

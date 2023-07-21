@@ -37,7 +37,7 @@ static void textures_end() { EndTexture(global.game->Iso.texturepack); }
 static void textures_load(std::string name, std::string path) {}
 static void controls_init() { ControlSystem::InitKey(); }
 
-static void init_ecs() { auto &luawrap = Scripting::get_singleton_ptr()->s_lua; }
+static void init_ecs() { auto &luawrap = scripting::get_singleton_ptr()->s_lua; }
 
 static void load_lua(std::string luafile) {}
 
@@ -58,9 +58,9 @@ void Biome::createBiome(std::string name, int id) {
 void GameplayScriptSystem::create() {
     METADOT_BUG("GameplayScriptSystem created");
 
-    Scripting::get_singleton_ptr()->fast_load_lua(METADOT_RESLOC("data/scripts/game.lua"));
-    Scripting::get_singleton_ptr()->fast_call_func("OnGameEngineLoad")();
-    Scripting::get_singleton_ptr()->fast_call_func("OnGameLoad")(global.game);
+    scripting::get_singleton_ptr()->fast_load_lua(METADOT_RESLOC("data/scripts/game.lua"));
+    scripting::get_singleton_ptr()->fast_call_func("OnGameEngineLoad")();
+    scripting::get_singleton_ptr()->fast_call_func("OnGameLoad")(global.game);
 
     // GlobalDEF table initialization
     InitGlobalDEF(&global.game->Iso.globaldef, false);
@@ -70,27 +70,27 @@ void GameplayScriptSystem::create() {
     global.I18N.Init();
 }
 
-void GameplayScriptSystem::destory() { Scripting::get_singleton_ptr()->fast_call_func("OnGameEngineUnLoad")(); }
+void GameplayScriptSystem::destory() { scripting::get_singleton_ptr()->fast_call_func("OnGameEngineUnLoad")(); }
 
 void GameplayScriptSystem::reload() {}
 
-void GameplayScriptSystem::registerLua(LuaWrapper::State &s_lua) {
-    s_lua["controls_init"] = LuaWrapper::function(controls_init);
-    s_lua["materials_init"] = LuaWrapper::function(InitMaterials);
-    s_lua["materials_register"] = LuaWrapper::function(RegisterMaterial);
-    s_lua["materials_push"] = LuaWrapper::function(PushMaterials);
-    s_lua["textures_load"] = LuaWrapper::function(textures_load);
-    s_lua["textures_init"] = LuaWrapper::function(textures_init);
-    s_lua["textures_end"] = LuaWrapper::function(textures_end);
-    s_lua["audio_load_event"] = LuaWrapper::function(audio_load_event);
-    s_lua["audio_play_event"] = LuaWrapper::function(audio_play_event);
-    s_lua["audio_load_bank"] = LuaWrapper::function(audio_load_bank);
-    s_lua["audio_init"] = LuaWrapper::function(audio_init);
-    s_lua["create_biome"] = LuaWrapper::function(Biome::createBiome);
-    s_lua["init_ecs"] = LuaWrapper::function(init_ecs);
+void GameplayScriptSystem::registerLua(lua_wrapper::State &s_lua) {
+    s_lua["controls_init"] = lua_wrapper::function(controls_init);
+    s_lua["materials_init"] = lua_wrapper::function(InitMaterials);
+    s_lua["materials_register"] = lua_wrapper::function(RegisterMaterial);
+    s_lua["materials_push"] = lua_wrapper::function(PushMaterials);
+    s_lua["textures_load"] = lua_wrapper::function(textures_load);
+    s_lua["textures_init"] = lua_wrapper::function(textures_init);
+    s_lua["textures_end"] = lua_wrapper::function(textures_end);
+    s_lua["audio_load_event"] = lua_wrapper::function(audio_load_event);
+    s_lua["audio_play_event"] = lua_wrapper::function(audio_play_event);
+    s_lua["audio_load_bank"] = lua_wrapper::function(audio_load_bank);
+    s_lua["audio_init"] = lua_wrapper::function(audio_init);
+    s_lua["create_biome"] = lua_wrapper::function(Biome::createBiome);
+    s_lua["init_ecs"] = lua_wrapper::function(init_ecs);
 
-    s_lua["DrawMainMenuUI"] = LuaWrapper::function(GameUI::MainMenuUI__Draw);
-    s_lua["DrawDebugUI"] = LuaWrapper::function(GameUI::DebugDrawUI__Draw);
+    s_lua["DrawMainMenuUI"] = lua_wrapper::function(GameUI::MainMenuUI__Draw);
+    s_lua["DrawDebugUI"] = lua_wrapper::function(GameUI::DebugDrawUI__Draw);
 
     // ItemBinding::register_class(s_lua.state());
     RigidBodyBinding::register_class(s_lua.state());

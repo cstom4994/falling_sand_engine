@@ -50,7 +50,7 @@ void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
 #define LoadLuaConfig(_struct, _luat, _c) _struct->_c = _luat[#_c].get<decltype(_struct->_c)>()
 
 // template<typename T>
-// void LoadLuaConfig(const T &_struct, LuaWrapper::LuaTable *luat) {
+// void LoadLuaConfig(const T &_struct, lua_wrapper::LuaTable *luat) {
 //     int idx = 0;
 //     test_visitor vis;
 //     ME::meta::dostruct::apply_visitor(vis, _struct);
@@ -78,19 +78,19 @@ public:
 void print_error(lua_State *state, int result = 0);
 void script_runfile(const char *filePath);
 
-class Scripting : public singleton<Scripting> {
+class scripting : public singleton<scripting> {
 public:
-    LuaWrapper::State s_lua;
+    lua_wrapper::State s_lua;
     lua_State *L;
 
     struct {
-        LuaWrapper::LuaTable Biome;
+        lua_wrapper::LuaTable Biome;
     } Data_;
 
     MonoLayer Mono;
 
-    Scripting() { METADOT_BUG("[Scripting] init"); };
-    ~Scripting() { METADOT_BUG("[Scripting] end"); };
+    scripting() { METADOT_BUG("[Scripting] init"); };
+    ~scripting() { METADOT_BUG("[Scripting] end"); };
 
     void init();
     void end();
@@ -110,7 +110,7 @@ public:
     }
 
 private:
-    friend class singleton<Scripting>;
+    friend class singleton<scripting>;
 };
 
 }  // namespace ME

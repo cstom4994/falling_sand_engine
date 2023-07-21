@@ -1,7 +1,7 @@
 // Copyright(c) 2022-2023, KaoruXun All rights reserved.
 
-#ifndef ME_IMGUILAYER_HPP
-#define ME_IMGUILAYER_HPP
+#ifndef ME_DBGUI_HPP
+#define ME_DBGUI_HPP
 
 #include <inttypes.h>
 
@@ -14,17 +14,23 @@
 #include "engine/audio/audio.h"
 #include "engine/core/base_debug.hpp"
 #include "engine/core/base_memory.h"
+#include "engine/core/basic_types.h"
+#include "engine/core/global.hpp"
+#include "engine/core/io/packer.hpp"
 #include "engine/core/macros.hpp"
 #include "engine/core/profiler.hpp"
 #include "engine/core/sdl_wrapper.h"
+#include "engine/cvar.hpp"
 #include "engine/game_datastruct.hpp"
-#include "engine/ui/console.h"
+#include "engine/scripting/scripting.hpp"
 #include "engine/ui/imgui_impl.hpp"
-#include "engine/ui/pack_editor.h"
 #include "libs/imgui/font_awesome.h"
 #include "libs/imgui/text_editor.h"
 
 namespace ME {
+
+class Material;
+class WorldMeta;
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
 #define ICON_LANG(_i, _c) std::string(std::string(_i) + " " + global.I18N.Get(_c)).c_str()
@@ -173,11 +179,64 @@ private:
     Textures mTextures;
 };
 
-class Material;
-class WorldMeta;
+enum console_result { OK, ERR, EXIT };
+
+class console {
+
+public:
+    void init();
+    void end();
+
+public:
+    void display_full(bool* bInteractingWithTextbox) noexcept;
+    void display(bool* bInteractingWithTextbox) noexcept;
+
+    void draw_internal_display() noexcept;
+
+    static void add_to_message_log(const std::string& msg, log_type type) noexcept;
+    // static void add_command(const command_type &cmd) noexcept;
+
+    void set_log_colour(ImVec4 colour, log_type type) noexcept;
+
+    void print_command_info(cvar::BaseCommand*);
+    std::string execute(std::string Command, std::queue<std::string> args, console_result&);
+    bool eval(std::string& cmd);
+
+private:
+    friend class logger;
+
+    cvar::ConVar convar;
+
+    // ImVec4 success = {0.0f, 1.0f, 0.0f, 1.0f};
+    ImVec4 warning = {1.0f, 1.0f, 0.0f, 1.0f};
+    ImVec4 error = {1.0f, 0.0f, 0.0f, 1.0f};
+    ImVec4 note = ME_rgba2imvec(0, 183, 255, 255);
+    ImVec4 message = {1.0f, 1.0f, 1.0f, 1.0f};
+};
+
+class pack_editor {
+private:
+    // pack editor
+    ME_pack_reader pack_reader;
+    bool pack_reader_is_loaded = false;
+    u8 majorVersion;
+    u8 minorVersion;
+    u8 patchVersion;
+    bool isLittleEndian;
+    u64 itemCount;
+    ME_pack_result result;
+    std::string file;
+
+    // file
+    bool filebrowser = false;
+
+public:
+    void init();
+    void end();
+    void draw();
+};
 
 enum ImGuiWindowTags {
-
     UI_None = 0,
     UI_MainMenu = 1 << 0,
     UI_GCManager = 1 << 1,
@@ -208,10 +267,10 @@ private:
     ImGuiID dockspace_id;
 
     // console
-    MEconsole console;
+    console console;
 
     // pack editor
-    PackEditor m_pack_editor;
+    pack_editor m_pack_editor;
 
 private:
     static void (*RendererShutdownFunction)();

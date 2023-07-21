@@ -102,7 +102,7 @@ static int catch_panic(lua_State *L) {
 
 static int metadot_autoload(lua_State *L) {
     std::string string = lua_tostring(L, 1);
-    auto &LuaCore = Scripting::get_singleton_ptr()->s_lua;
+    auto &LuaCore = scripting::get_singleton_ptr()->s_lua;
     ME_ASSERT(&LuaCore);
     if (ME_str_starts_with(string, "LUA::")) ME_str_replace_with(string, "LUA::", "data/scripts/");
     script_runfile(string.c_str());
@@ -144,7 +144,7 @@ static int ls(lua_State *L) {
 }
 
 static void add_packagepath(const char *p) {
-    auto &s_lua = Scripting::get_singleton_ptr()->s_lua;
+    auto &s_lua = scripting::get_singleton_ptr()->s_lua;
     ME_ASSERT(&s_lua);
     s_lua.dostring(std::format("package.path = "
                                "'{0}/?.lua;' .. package.path",
@@ -199,7 +199,7 @@ static std::string readStringFromFile(const char *filePath) {
     return out;
 }
 
-static void InitLua(Scripting *lc) {
+static void InitLua(scripting *lc) {
 
     lc->L = lc->s_lua.state();
 
@@ -243,31 +243,31 @@ static void InitLua(Scripting *lc) {
     ME_preload_auto(lc->L, ffi_module_open, "ffi");
     ME_preload_auto(lc->L, luaopen_lbind, "lbind");
 
-#define REGISTER_LUAFUNC(_f) lc->s_lua[#_f] = LuaWrapper::function(_f)
+#define REGISTER_LUAFUNC(_f) lc->s_lua[#_f] = lua_wrapper::function(_f)
 
-    lc->s_lua["METADOT_RESLOC"] = LuaWrapper::function([](const char *a) { return METADOT_RESLOC(a); });
-    lc->s_lua["GetSurfaceFromTexture"] = LuaWrapper::function([](TextureRef tex) { return tex->surface(); });
-    lc->s_lua["GetWindowH"] = LuaWrapper::function([]() { return ENGINE()->windowHeight; });
-    lc->s_lua["GetWindowW"] = LuaWrapper::function([]() { return ENGINE()->windowWidth; });
+    lc->s_lua["METADOT_RESLOC"] = lua_wrapper::function([](const char *a) { return METADOT_RESLOC(a); });
+    lc->s_lua["GetSurfaceFromTexture"] = lua_wrapper::function([](TextureRef tex) { return tex->surface(); });
+    lc->s_lua["GetWindowH"] = lua_wrapper::function([]() { return the<engine>().eng()->windowHeight; });
+    lc->s_lua["GetWindowW"] = lua_wrapper::function([]() { return the<engine>().eng()->windowWidth; });
 
-    lc->s_lua["SDL_FreeSurface"] = LuaWrapper::function(SDL_FreeSurface);
-    lc->s_lua["R_SetImageFilter"] = LuaWrapper::function(R_SetImageFilter);
-    lc->s_lua["R_CopyImageFromSurface"] = LuaWrapper::function(R_CopyImageFromSurface);
-    lc->s_lua["R_GetTextureHandle"] = LuaWrapper::function(R_GetTextureHandle);
-    lc->s_lua["R_GetTextureAttr"] = LuaWrapper::function(R_GetTextureAttr);
-    lc->s_lua["LoadTextureData"] = LuaWrapper::function(LoadTextureData);
-    // lc->s_lua["DestroyTexture"] = LuaWrapper::function(DestroyTexture);
-    // lc->s_lua["CreateTexture"] = LuaWrapper::function(CreateTexture);
-    lc->s_lua["metadot_buildnum"] = LuaWrapper::function(ME_buildnum);
-    lc->s_lua["metadot_metadata"] = LuaWrapper::function(ME_metadata);
-    lc->s_lua["add_packagepath"] = LuaWrapper::function(add_packagepath);
+    lc->s_lua["SDL_FreeSurface"] = lua_wrapper::function(SDL_FreeSurface);
+    lc->s_lua["R_SetImageFilter"] = lua_wrapper::function(R_SetImageFilter);
+    lc->s_lua["R_CopyImageFromSurface"] = lua_wrapper::function(R_CopyImageFromSurface);
+    lc->s_lua["R_GetTextureHandle"] = lua_wrapper::function(R_GetTextureHandle);
+    lc->s_lua["R_GetTextureAttr"] = lua_wrapper::function(R_GetTextureAttr);
+    lc->s_lua["LoadTextureData"] = lua_wrapper::function(LoadTextureData);
+    // lc->s_lua["DestroyTexture"] = lua_wrapper::function(DestroyTexture);
+    // lc->s_lua["CreateTexture"] = lua_wrapper::function(CreateTexture);
+    lc->s_lua["metadot_buildnum"] = lua_wrapper::function(ME_buildnum);
+    lc->s_lua["metadot_metadata"] = lua_wrapper::function(ME_metadata);
+    lc->s_lua["add_packagepath"] = lua_wrapper::function(add_packagepath);
 
 #undef REGISTER_LUAFUNC
 
     script_runfile("data/scripts/init.lua");
 }
 
-void run_script_in_console(Scripting *_struct, const char *c) {
+void run_script_in_console(scripting *_struct, const char *c) {
     luaL_loadstring(_struct->L, c);
     auto result = ME_debug_pcall(_struct->L, 0, LUA_MULTRET, 0);
     if (result != LUA_OK) {
@@ -279,15 +279,15 @@ void run_script_in_console(Scripting *_struct, const char *c) {
 void script_runfile(const char *filePath) {
     FUTIL_ASSERT_EXIST(filePath);
 
-    int result = luaL_loadfile(Scripting::get_singleton_ptr()->L, METADOT_RESLOC(filePath));
+    int result = luaL_loadfile(scripting::get_singleton_ptr()->L, METADOT_RESLOC(filePath));
     if (result != LUA_OK) {
-        print_error(Scripting::get_singleton_ptr()->L);
+        print_error(scripting::get_singleton_ptr()->L);
         return;
     }
-    result = ME_debug_pcall(Scripting::get_singleton_ptr()->L, 0, LUA_MULTRET, 0);
+    result = ME_debug_pcall(scripting::get_singleton_ptr()->L, 0, LUA_MULTRET, 0);
 
     if (result != LUA_OK) {
-        print_error(Scripting::get_singleton_ptr()->L);
+        print_error(scripting::get_singleton_ptr()->L);
     }
 }
 
@@ -386,7 +386,7 @@ static void initInternalCalls() {
 
 void MonoLayer::onAttach() {
 
-    std::filesystem::path monoDir = (std::filesystem::path(ENGINE()->exepath) / "net");
+    std::filesystem::path monoDir = (std::filesystem::path(the<engine>().eng()->exepath) / "net");
     if (monoDir.empty()) {
         METADOT_ERROR("Cannot find mono installation dir");
         return;
@@ -403,7 +403,7 @@ void MonoLayer::onAttach() {
     initInternalCalls();
 
     // Open a assembly in the domain
-    std::string assPath = std::format("{0}/ManagedCore.dll", ENGINE()->exepath);
+    std::string assPath = std::format("{0}/ManagedCore.dll", the<engine>().eng()->exepath);
     assembly = mono_domain_assembly_open(domain, assPath.c_str());
     if (!assembly) {
         METADOT_ERROR("mono_domain_assembly_open failed");
@@ -528,7 +528,7 @@ bool MonoLayer::isMonoLoaded() { return happyLoad; }
 }
 #endif
 
-void Scripting::init() {
+void scripting::init() {
     Timer timer;
     timer.start();
     InitLua(this);
@@ -541,9 +541,9 @@ void Scripting::init() {
     METADOT_INFO(std::format("MonoLayer loading done in {0:.4f} ms", timer.get()).c_str());
 }
 
-void Scripting::end() { Mono.onDetach(); }
+void scripting::end() { Mono.onDetach(); }
 
-void Scripting::update() {
+void scripting::update() {
     // luaL_loadstring(_struct->L, s_couroutineFileSrc.c_str());
     // if (metadot_debug_pcall(_struct->L, 0, LUA_MULTRET, 0) != LUA_OK) {
     //     print_error(_struct->L);
@@ -556,8 +556,8 @@ void Scripting::update() {
     Mono.onUpdate();
 }
 
-void Scripting::update_render() { this->fast_call_func("OnRender"); }
+void scripting::update_render() { this->fast_call_func("OnRender"); }
 
-void Scripting::update_tick() { this->fast_call_func("OnGameTickUpdate"); }
+void scripting::update_tick() { this->fast_call_func("OnGameTickUpdate"); }
 
 }  // namespace ME

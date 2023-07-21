@@ -21,12 +21,12 @@ bool ME_fs_init() {
 
     char buffer[MAX_PATH];
     GetModuleFileNameA(NULL, buffer, MAX_PATH);
-    ENGINE()->exepath = std::filesystem::path(buffer).parent_path().string();
+    the<engine>().eng()->exepath = std::filesystem::path(buffer).parent_path().string();
 
     for (int i = 0; i < 3; ++i) {
         if (std::filesystem::exists(currentDir / "Data")) {
-            ENGINE()->gamepath = ME_fs_normalize_path_s(currentDir.string()).c_str();
-            METADOT_INFO(std::format("Game data path detected: {0} (Base: {1})", ENGINE()->gamepath, std::filesystem::current_path().string().c_str()).c_str());
+            the<engine>().eng()->gamepath = ME_fs_normalize_path_s(currentDir.string()).c_str();
+            METADOT_INFO(std::format("Game data path detected: {0} (Base: {1})", the<engine>().eng()->gamepath, std::filesystem::current_path().string().c_str()).c_str());
             return METADOT_OK;
         }
         currentDir = currentDir.parent_path();
@@ -37,11 +37,11 @@ bool ME_fs_init() {
 }
 
 std::string ME_fs_get_path(std::string path) {
-    if (ENGINE()->gamepath.empty()) {
-        ME_ASSERT(ENGINE()->gamepath.empty(), "gamepath not detected");
+    if (the<engine>().eng()->gamepath.empty()) {
+        ME_ASSERT(the<engine>().eng()->gamepath.empty(), "gamepath not detected");
         return {path};
     } else {
-        std::string get_path{ENGINE()->gamepath};
+        std::string get_path{the<engine>().eng()->gamepath};
         get_path.append(path);
         return get_path;
     }

@@ -12,9 +12,9 @@ public:
     void OnInit();
     void OnUpdate();
 
-    CSharpWrapper::mono* GetMono() { return mono; }
+    csharp_wrapper::mono* GetMono() { return mono; }
 
 private:
-    CSharpWrapper::mono* mono;
+    csharp_wrapper::mono* mono;
 };
 }  // namespace ME
