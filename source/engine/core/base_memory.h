@@ -73,8 +73,10 @@ struct alloc {
 
 #ifndef ME_DELETE
 #define ME_DELETE(_name, _class) \
-    _name->~_class();            \
-    ME_FREE(_name)
+    {                            \
+        _name->~_class();        \
+        ME_FREE(_name);          \
+    }
 #endif
 
 void* ME_mem_alloc_leak_check_alloc(size_t size, const char* file, int line);

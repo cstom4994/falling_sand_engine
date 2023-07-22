@@ -25,7 +25,7 @@ namespace ME {
 
 struct Chunk;
 struct Populator;
-struct World;
+struct world;
 struct RigidBody;
 struct R_Target;
 struct CellData;
@@ -321,12 +321,12 @@ public:
     Structure() = default;
 };
 
-class World;
+class world;
 
 class Structures {
 public:
-    static Structure makeTree(World world, int x, int y);
-    static Structure makeTree1(World world, int x, int y);
+    static Structure makeTree(world world, int x, int y);
+    static Structure makeTree1(world world, int x, int y);
 };
 
 class PlacedStructure {
@@ -365,70 +365,70 @@ struct meta::static_refl::TypeInfo<Biome> : TypeInfoBase<Biome> {
 };
 
 struct WorldGenerator {
-    virtual void generateChunk(World *world, Chunk *ch) = 0;
+    virtual void generateChunk(world *world, Chunk *ch) = 0;
     virtual std::vector<Populator *> getPopulators() = 0;
 };
 
 struct Populator {
     virtual int getPhase() = 0;
-    virtual std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) = 0;
+    virtual std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, world *world) = 0;
 };
 
 #pragma region Populators
 
 struct TestPhase1Populator : public Populator {
     int getPhase() { return 1; }
-    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world);
 };
 
 struct TestPhase2Populator : public Populator {
     int getPhase() { return 2; }
-    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world);
 };
 
 struct TestPhase3Populator : public Populator {
     int getPhase() { return 3; }
-    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world);
 };
 
 struct TestPhase4Populator : public Populator {
     int getPhase() { return 4; }
-    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world);
 };
 
 struct TestPhase5Populator : public Populator {
     int getPhase() { return 5; }
-    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world);
 };
 
 struct TestPhase6Populator : public Populator {
     int getPhase() { return 6; }
-    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world);
 };
 
 struct TestPhase0Populator : public Populator {
     int getPhase() { return 0; }
-    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world);
 };
 
 struct CavePopulator : public Populator {
     int getPhase() { return 0; }
-    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, world *world);
 };
 
 struct CobblePopulator : public Populator {
     int getPhase() { return 1; }
-    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, world *world);
 };
 
 struct OrePopulator : public Populator {
     int getPhase() { return 0; }
-    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, world *world);
 };
 
 struct TreePopulator : public Populator {
     int getPhase() { return 1; }
-    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world);
+    std::vector<PlacedStructure> apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, world *world);
 };
 
 #pragma endregion Populators

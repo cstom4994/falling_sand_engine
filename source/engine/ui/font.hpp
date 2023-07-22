@@ -9,10 +9,11 @@
 #include "engine/renderer/gpu.hpp"
 #include "engine/ui/fontcache.hpp"
 // #include "engine/core/property.hpp"
+#include "engine/utils/module.hpp"
 
 namespace ME {
 
-class ME_fontcache /*: public ME::props_auto_reg<ME_fontcache>*/ {
+class fontcache final : public module<fontcache> /*: public ME::props_auto_reg<ME_fontcache>*/ {
     // public:
     //     static void reg() {
     //         ME::registry::class_<ME_fontcache>()

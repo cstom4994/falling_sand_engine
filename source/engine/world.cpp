@@ -38,9 +38,9 @@ namespace ME {
 std::mutex g_mutex_loadchunk;
 std::mutex g_mutex_updatechunkmesh;
 
-void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *audioEngine) { init(worldPath, w, h, target, audioEngine, new MaterialTestGenerator()); }
+void world::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *audioEngine) { init(worldPath, w, h, target, audioEngine, new MaterialTestGenerator()); }
 
-void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *audioEngine, WorldGenerator *generator) {
+void world::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *audioEngine, WorldGenerator *generator) {
 
     this->worldName = worldPath;
 
@@ -170,7 +170,7 @@ void World::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *a
     // updateRigidBodyHitbox(rb2);
 }
 
-RigidBody *World::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, phy::Shape *shape, f32 density, f32 friction, TextureRef texture) {
+RigidBody *world::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, phy::Shape *shape, f32 density, f32 friction, TextureRef texture) {
 
     // b2BodyDef bodyDef;
     // bodyDef.type = type;
@@ -232,7 +232,7 @@ RigidBody *World::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, phy::
     return rb;
 }
 
-RigidBody *World::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<phy::Shape *> shape, f32 density, f32 friction, TextureRef texture) {
+RigidBody *world::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<phy::Shape *> shape, f32 density, f32 friction, TextureRef texture) {
 
     return this->makeRigidBody(type, x, y, angle, shape[0], density, friction, texture);
 
@@ -292,7 +292,7 @@ RigidBody *World::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, 
 #endif
 }
 
-void World::updateRigidBodyHitbox(RigidBody *rb) {
+void world::updateRigidBodyHitbox(RigidBody *rb) {
 
     C_Surface *texture = rb->get_surface();
 
@@ -722,7 +722,7 @@ void World::updateRigidBodyHitbox(RigidBody *rb) {
     delete rb;
 }
 
-void World::updateChunkMesh(Chunk *chunk) {
+void world::updateChunkMesh(Chunk *chunk) {
 
     std::lock_guard<std::mutex> locker(g_mutex_updatechunkmesh);
 
@@ -958,7 +958,7 @@ found : {};
     // worldRigidBodies.push_back(chunk->rb);
 }
 
-void World::updateWorldMesh() {
+void world::updateWorldMesh() {
 
     if (lastMeshZone.x == meshZone.x && lastMeshZone.y == meshZone.y && lastMeshZone.w == meshZone.w && lastMeshZone.h == meshZone.h) {
         if (lastMeshLoadZone.x == loadZone.x && lastMeshLoadZone.y == loadZone.y && lastMeshLoadZone.w == loadZone.w && lastMeshLoadZone.h == loadZone.h) {
@@ -991,23 +991,23 @@ void World::updateWorldMesh() {
     }
 }
 
-MaterialInstance World::getTile(int x, int y) {
+MaterialInstance world::getTile(int x, int y) {
     if (x < 0 || x >= width || y < 0 || y >= height) return Tiles_TEST_SOLID;
     return tiles[x + y * width];
 }
 
-void World::setTile(int x, int y, MaterialInstance type) {
+void world::setTile(int x, int y, MaterialInstance type) {
     if (x < 0 || x >= width || y < 0 || y >= height) return;
     tiles[x + y * width] = type;
     dirty[x + y * width] = true;
 }
 
-MaterialInstance World::getTileLayer2(int x, int y) {
+MaterialInstance world::getTileLayer2(int x, int y) {
     if (x < 0 || x >= width || y < 0 || y >= height) return Tiles_TEST_SOLID;
     return layer2[x + y * width];
 }
 
-void World::setTileLayer2(int x, int y, MaterialInstance type) {
+void world::setTileLayer2(int x, int y, MaterialInstance type) {
     if (x < 0 || x >= width || y < 0 || y >= height) return;
     layer2[x + y * width] = type;
     layer2Dirty[x + y * width] = true;
@@ -1028,7 +1028,7 @@ f32 CalculateVerticalFlowValue(f32 remainingLiquid, f32 destLiquid) {
     return value;
 }
 
-void World::tick() {
+void world::tick() {
 
 // TODO: 如果我们只检查最后标记为dirty的tiles会怎么样
 
@@ -1942,7 +1942,7 @@ for (int x = 0; x < width; x++) {
 }*/
 }
 
-void World::tickTemperature() {
+void world::tickTemperature() {
     // TODO: multithread
 
     for (int y = (tickZone.y + tickZone.h) - 1; y >= tickZone.y; y--) {
@@ -1998,7 +1998,7 @@ void World::tickTemperature() {
     // copy
 }
 
-void World::renderCells(unsigned char **texture) {
+void world::renderCells(unsigned char **texture) {
 
     for (auto &cur : cells) {
         if (cur->x < 0 || cur->x >= width || cur->y < 0 || cur->y >= height) continue;
@@ -2022,7 +2022,7 @@ void World::renderCells(unsigned char **texture) {
     }
 }
 
-void World::tickCells() {
+void world::tickCells() {
 
     /*C_Rect* fr = new C_Rect{ 0, 0, width, height };
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
@@ -2194,7 +2194,7 @@ void World::tickCells() {
     // });
 }
 
-void World::tickObjectsMesh() {
+void world::tickObjectsMesh() {
 
     std::vector<RigidBody *> *rbs = &rigidBodies;
     for (int i = 0; i < rbs->size(); i++) {
@@ -2210,7 +2210,7 @@ void World::tickObjectsMesh() {
     }
 }
 
-void World::tickObjectBounds() {
+void world::tickObjectBounds() {
 
     std::vector<RigidBody *> rbs = rigidBodies;
 
@@ -2231,7 +2231,7 @@ void World::tickObjectBounds() {
     }
 }
 
-void World::tickObjects() {
+void world::tickObjects() {
 
     int minX = width;
     int minY = height;
@@ -2297,9 +2297,9 @@ void World::tickObjects() {
     });
 }
 
-void World::addCell(CellData *cell) { cells.push_back(cell); }
+void world::addCell(CellData *cell) { cells.push_back(cell); }
 
-void World::explosion(int cx, int cy, int radius) {
+void world::explosion(int cx, int cy, int radius) {
     audioEngine->PlayEvent("event:/Explode");
 
     int outerRadius = radius * 2;
@@ -2338,7 +2338,7 @@ void World::explosion(int cx, int cy, int radius) {
     lastMeshZone = {};
 }
 
-void World::frame() {
+void world::frame() {
 
     while (toLoad.size() > 0) {
         LoadChunkParams para = toLoad[0];
@@ -2348,7 +2348,7 @@ void World::frame() {
         // readyToMerge.push_back(fut.get());
         // std::vector<std::future<ChunkReadyToMerge>> readyToReadyToMerge;
 
-        readyToReadyToMerge.push_back(std::async(&World::loadChunk, this, getChunk(para.x, para.y), para.populate, true));
+        readyToReadyToMerge.push_back(std::async(&world::loadChunk, this, getChunk(para.x, para.y), para.populate, true));
 
         // std::thread t(&World::loadChunk, this, para.x, para.y, para.populate);
         // t.join();
@@ -2413,7 +2413,7 @@ void World::frame() {
     }
 }
 
-void World::tickChunkGeneration() {
+void world::tickChunkGeneration() {
 
     int n = 0;
     int cenX = (-loadZone.x + loadZone.w / 2) / CHUNK_W;
@@ -2470,7 +2470,7 @@ void World::tickChunkGeneration() {
     needToTickGeneration = false;
 }
 
-void World::tickChunks() {
+void world::tickChunks() {
 
     if (lastLoadZone.x == loadZone.x && lastLoadZone.y == loadZone.y && lastLoadZone.w == loadZone.w && lastLoadZone.h == loadZone.h) {
         // camera didnt move
@@ -2609,7 +2609,7 @@ void World::tickChunks() {
     }
 }
 
-void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
+void world::queueLoadChunk(int cx, int cy, bool populate, bool render) {
 
     // toLoad.push_back(LoadChunkParams(cx, cy, populate, 0));
     Chunk *ch = getChunk(cx, cy);
@@ -2664,7 +2664,7 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
         needToTickGeneration = true;
         */
 
-        readyToReadyToMerge.push_back(std::async(&World::loadChunk, this, ch, populate, render));
+        readyToReadyToMerge.push_back(std::async(&world::loadChunk, this, ch, populate, render));
     }
 
     for (int x = 0; x < CHUNK_W; x++) {
@@ -2684,7 +2684,7 @@ void World::queueLoadChunk(int cx, int cy, bool populate, bool render) {
     // loadChunk(cx, cy, populate);
 }
 
-Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
+Chunk *world::loadChunk(Chunk *ch, bool populate, bool render) {
 
     std::lock_guard<std::mutex> locker(g_mutex_loadchunk);
 
@@ -2753,7 +2753,7 @@ Chunk *World::loadChunk(Chunk *ch, bool populate, bool render) {
     return ch;
 }
 
-void World::unloadChunk(Chunk *ch) {
+void world::unloadChunk(Chunk *ch) {
     // MaterialInstance* data = new MaterialInstance[CHUNK_W * CHUNK_H];
     // for (int x = 0; x < CHUNK_W; x++) {
     //  for (int y = 0; y < CHUNK_H; y++) {
@@ -2790,9 +2790,9 @@ void World::unloadChunk(Chunk *ch) {
     // delete data;
 }
 
-void World::writeChunkToDisk(Chunk *ch) { ch->ChunkWrite(ch->tiles, ch->layer2, ch->background); }
+void world::writeChunkToDisk(Chunk *ch) { ch->ChunkWrite(ch->tiles, ch->layer2, ch->background); }
 
-void World::chunkSaveCache(Chunk *ch) {
+void world::chunkSaveCache(Chunk *ch) {
     for (int x = 0; x < CHUNK_W; x++) {
         for (int y = 0; y < CHUNK_H; y++) {
             int tx = ch->x * CHUNK_W + loadZone.x + x;
@@ -2806,9 +2806,9 @@ void World::chunkSaveCache(Chunk *ch) {
     }
 }
 
-void World::generateChunk(Chunk *ch) { gen->generateChunk(this, ch); }
+void world::generateChunk(Chunk *ch) { gen->generateChunk(this, ch); }
 
-Biome *World::getBiomeAt(Chunk *ch, int x, int y) {
+Biome *world::getBiomeAt(Chunk *ch, int x, int y) {
 
     if (ch->biomes[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W]->id != Biome::biomeGet("DEFAULT")->id) {
         Biome *b = ch->biomes[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W];
@@ -2823,7 +2823,7 @@ Biome *World::getBiomeAt(Chunk *ch, int x, int y) {
     return ret;
 }
 
-Biome *World::getBiomeAt(int x, int y) {
+Biome *world::getBiomeAt(int x, int y) {
 
     Biome *ret = nullptr;
 
@@ -2866,7 +2866,7 @@ Biome *World::getBiomeAt(int x, int y) {
     return ret;
 }
 
-void World::addStructure(PlacedStructure str) {
+void world::addStructure(PlacedStructure str) {
     structures.push_back(str);
 
     for (int x = 0; x < str.base.w; x++) {
@@ -2884,7 +2884,7 @@ void World::addStructure(PlacedStructure str) {
     }
 }
 
-MEvec2 World::getNearestPoint(f32 x, f32 y) {
+MEvec2 world::getNearestPoint(f32 x, f32 y) {
     f32 xm = fmod(1 + fmod(x, 1), 1);
     f32 ym = fmod(1 + fmod(y, 1), 1);
     f32 closestDist = 100;
@@ -2901,7 +2901,7 @@ MEvec2 World::getNearestPoint(f32 x, f32 y) {
     return {closest.x + (x - xm), closest.y + (y - ym)};
 }
 
-std::vector<MEvec2> World::getPointsWithin(f32 x, f32 y, f32 w, f32 h) {
+std::vector<MEvec2> world::getPointsWithin(f32 x, f32 y, f32 w, f32 h) {
     f32 xm = fmod(1 + fmod(x, 1), 1);
     f32 ym = fmod(1 + fmod(y, 1), 1);
 
@@ -2919,7 +2919,7 @@ std::vector<MEvec2> World::getPointsWithin(f32 x, f32 y, f32 w, f32 h) {
     return pts;
 }
 
-Chunk *World::getChunk(int cx, int cy) {
+Chunk *world::getChunk(int cx, int cy) {
 
     auto xx = chunkCache.find(cx);
     if (xx != chunkCache.end()) {
@@ -2941,7 +2941,7 @@ Chunk *World::getChunk(int cx, int cy) {
     return c;
 }
 
-void World::populateChunk(Chunk *ch, int phase, bool render) {
+void world::populateChunk(Chunk *ch, int phase, bool render) {
 
     bool has = hasPopulator[phase];
     if (!hasPopulator[phase]) return;
@@ -3023,7 +3023,7 @@ void World::populateChunk(Chunk *ch, int phase, bool render) {
     }
 }
 
-void World::tickEntities(R_Target *t) {
+void world::tickEntities(R_Target *t) {
 
     C_Rect fr = {0, 0, width, height};
 
@@ -3256,7 +3256,7 @@ void World::tickEntities(R_Target *t) {
 }
 
 // Adapted from https://stackoverflow.com/a/52859805/8267529
-void World::forLine(int x0, int y0, int x1, int y1, std::function<bool(int)> fn) {
+void world::forLine(int x0, int y0, int x1, int y1, std::function<bool(int)> fn) {
     int dx = x1 - x0;
     int dy = y1 - y0;
 
@@ -3284,7 +3284,7 @@ void World::forLine(int x0, int y0, int x1, int y1, std::function<bool(int)> fn)
 }
 
 // Adapted from https://gamedev.stackexchange.com/a/182143
-void World::forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(int)> fn) {
+void world::forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(int)> fn) {
 
     f32 sx = x0;
     f32 sy = y0;
@@ -3321,11 +3321,11 @@ void World::forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(i
     }
 }
 
-bool World::isC2Ground(f32 x, f32 y) { return false; }
+bool world::isC2Ground(f32 x, f32 y) { return false; }
 
-bool World::isPlayerInWorld() { return player != 0; }
+bool world::isPlayerInWorld() { return player != 0; }
 
-std::tuple<WorldEntity *, Player *> World::getHostPlayer() {
+std::tuple<WorldEntity *, Player *> world::getHostPlayer() {
     Player *pl = nullptr;
     WorldEntity *pl_we = nullptr;
     if (player == 0) return std::make_tuple(pl_we, pl);
@@ -3337,7 +3337,7 @@ std::tuple<WorldEntity *, Player *> World::getHostPlayer() {
     return std::make_tuple(pl_we, pl);
 }
 
-RigidBody *World::physicsCheck(int x, int y) {
+RigidBody *world::physicsCheck(int x, int y) {
 
     if (getTile(x, y).mat->physicsType != PhysicsType::SOLID) return nullptr;
 
@@ -3423,7 +3423,7 @@ RigidBody *World::physicsCheck(int x, int y) {
 }
 
 // Helper for World::physicsCheck that does the 4-way recursive flood fill
-void World::physicsCheck_flood(int x, int y, bool *visited, int *count, u32 *cols, int *minX, int *maxX, int *minY, int *maxY) {
+void world::physicsCheck_flood(int x, int y, bool *visited, int *count, u32 *cols, int *minX, int *maxX, int *minY, int *maxY) {
     if (*count > 1000 || x < 0 || x >= width || y < 0 || y >= height) return;
     if (!visited[x + y * width] && getTile(x, y).mat->physicsType == PhysicsType::SOLID) {
         if (x < *minX) *minX = x;
@@ -3444,7 +3444,7 @@ void World::physicsCheck_flood(int x, int y, bool *visited, int *count, u32 *col
     }
 }
 
-void World::saveWorld() {
+void world::saveWorld() {
 
     this->metadata.save(this->worldName);
 
@@ -3543,7 +3543,7 @@ bool WorldMeta::save(std::string worldFileName) {
     return true;
 }
 
-World::~World() {
+world::~world() {
 
     tiles.clear();
     delete[] flowX;

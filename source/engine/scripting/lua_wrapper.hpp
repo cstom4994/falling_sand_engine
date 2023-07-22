@@ -5528,7 +5528,7 @@ struct FunctionInvokerType {
 
 template <typename T>
 inline FunctionInvokerType<fntuple::tuple<T>> function(T f) {
-    ME_STATIC_ASSERT(nativefunction::is_callable<typename traits::decay<T>::type>::value, "argument need callable");
+    static_assert(nativefunction::is_callable<typename traits::decay<T>::type>::value, "argument need callable");
     return FunctionInvokerType<fntuple::tuple<T>>(fntuple::tuple<T>(f));
 }
 
@@ -6354,18 +6354,18 @@ public:
     UserdataMetatable() {
         addStaticFunction("__gc", &class_userdata::destructor<ObjectWrapperBase>);
 
-        ME_STATIC_ASSERT(is_registerable<class_type>::value || !traits::is_std_vector<class_type>::value,
+        static_assert(is_registerable<class_type>::value || !traits::is_std_vector<class_type>::value,
                          "std::vector is binding to lua-table by default.If "
                          "you wants register for std::vector yourself,"
                          "please define ME_LUAWRAPPER_NO_STD_VECTOR_TO_TABLE");
 
-        ME_STATIC_ASSERT(is_registerable<class_type>::value || !traits::is_std_map<class_type>::value,
+        static_assert(is_registerable<class_type>::value || !traits::is_std_map<class_type>::value,
                          "std::map is binding to lua-table by default.If you "
                          "wants register for std::map yourself,"
                          "please define ME_LUAWRAPPER_NO_STD_MAP_TO_TABLE");
 
         // can not register push specialized class
-        ME_STATIC_ASSERT(is_registerable<class_type>::value,
+        static_assert(is_registerable<class_type>::value,
                          "Can not register specialized of type conversion "
                          "class. e.g. std::tuple");
     }

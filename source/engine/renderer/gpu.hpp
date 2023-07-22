@@ -21,7 +21,7 @@
 
 namespace ME {
 
-struct ShaderBase;
+struct shader_base;
 struct MEsurface_context;
 
 typedef struct Camera {

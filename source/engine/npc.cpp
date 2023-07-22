@@ -7,7 +7,7 @@
 
 namespace ME {
 
-void State::retrieveState(World &world, int bot) {}
+void State::retrieveState(world &world, int bot) {}
 
 bool Bot::tryInterrupt(State _state) {
 
@@ -15,7 +15,7 @@ bool Bot::tryInterrupt(State _state) {
     return true;
 }
 
-void Bot::executeTask(World &world) {
+void Bot::executeTask(world &world) {
     if (interrupt) {
 
         interrupt = false;

@@ -179,13 +179,21 @@ private:
     Textures mTextures;
 };
 
+struct dbgui_base {
+public:
+    virtual void init() = 0;
+    virtual void end() = 0;
+    virtual void draw() = 0;
+};
+
 enum console_result { OK, ERR, EXIT };
 
-class console {
+class console : public dbgui_base {
 
 public:
-    void init();
-    void end();
+    void init() override;
+    void end() override;
+    void draw() override;
 
 public:
     void display_full(bool* bInteractingWithTextbox) noexcept;
@@ -214,7 +222,7 @@ private:
     ImVec4 message = {1.0f, 1.0f, 1.0f, 1.0f};
 };
 
-class pack_editor {
+class pack_editor : public dbgui_base {
 private:
     // pack editor
     ME_pack_reader pack_reader;
@@ -231,9 +239,9 @@ private:
     bool filebrowser = false;
 
 public:
-    void init();
-    void end();
-    void draw();
+    void init() override;
+    void end() override;
+    void draw() override;
 };
 
 enum ImGuiWindowTags {
@@ -244,8 +252,7 @@ enum ImGuiWindowTags {
 
 enum EditorTags { Editor_Code = 0, Editor_Markdown = 1 };
 
-class ImGuiLayer {
-private:
+class code_editor : public dbgui_base {
     struct EditorView {
         EditorTags tags;
 
@@ -256,21 +263,26 @@ private:
         bool operator==(EditorView v) { return (v.file == this->file) && (v.tags == this->tags); }
     };
 
-    ImGuiContext* m_imgui = nullptr;
-
     std::vector<EditorView> view_contents;
-    TextEditor editor;
+    TextEditor text_editor;
     EditorView* view_editing = nullptr;
 
     bool filebrowser = false;
 
-    ImGuiID dockspace_id;
+public:
+    void init() override;
+    void end() override;
+    void draw() override;
+};
 
-    // console
-    console console;
+using dbgui_ref = ref<dbgui_base>;
 
-    // pack editor
-    pack_editor m_pack_editor;
+class dbgui {
+private:
+    ImGuiContext* m_imgui = nullptr;
+    ImGuiID dockspace_id = 0;
+
+    std::vector<dbgui_base*> dbgui_list = {};
 
 private:
     static void (*RendererShutdownFunction)();
@@ -280,15 +292,19 @@ private:
     static void (*RenderFunction)(ImDrawData*);
 
 public:
-    ImGuiLayer();
+    dbgui();
+
     void Init();
     void End();
     void NewFrame();
     void Draw();
     void Update();
-    const ImVec2 NextWindows(ImGuiWindowTags tag, ImVec2 pos);
-    const ImGuiID GetMainDockID() { return dockspace_id; }
-    const ImGuiContext* getImGuiCtx() {
+
+    ImVec2 NextWindows(ImGuiWindowTags tag, ImVec2 pos) const noexcept;
+
+    ImGuiID GetMainDockID() const noexcept { return dockspace_id; }
+
+    ImGuiContext* getImGuiCtx() const noexcept {
         ME_ASSERT(m_imgui, "Miss ImGuiContext");
         return m_imgui;
     }

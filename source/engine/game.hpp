@@ -56,16 +56,16 @@ struct ME_assets_handle_t {
 
 struct Iso_t {
     ref<BackgroundSystem> backgrounds;
-    ref<GameplayScriptSystem> gameplayscript;
-    ref<ShaderWorkerSystem> shaderworker;
-    ref<UISystem> ui;
+    ref<gameplay> gameplayscript;
+    ref<shader_worker> shaderworker;
+    ref<gui> ui;
 
     SystemList systemList = {};
 
     ME_pack_reader pack_reader;
 
     GlobalDEF globaldef;
-    scope<World> world;
+    scope<world> world;
     TexturePack texturepack;
 
     thread_pool *updateDirtyPool = nullptr;
@@ -136,7 +136,7 @@ public:
     EnumGameState stateAfterLoad = MAIN_MENU;
 
     // ME_debugdraw *debugDraw;
-    ME_fontcache fontcache;
+    // fontcache fontcache;
 
     MEsurface_context *surface;
     int fontNormal;
@@ -214,7 +214,7 @@ public:
     void createTexture();
     void renderEarly();
     void renderLate();
-    void renderTemperatureMap(World *world);
+    void renderTemperatureMap(world *world);
     void ResolutionChanged(int newWidth, int newHeight);
     int getAimSolidSurface(int dist);
     int getAimSurface(int dist);

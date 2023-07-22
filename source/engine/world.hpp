@@ -60,7 +60,7 @@ struct WorldSystem {
     TPL updateRigidBodyHitboxPool;
 };
 
-class World {
+class world {
     using PhyBodytype = phy::Body::BodyType;
 
 public:
@@ -70,7 +70,7 @@ public:
 
     R_Target *target = nullptr;
 
-    ~World();
+    ~world();
 
     struct {
         std::vector<CellData *> cells;

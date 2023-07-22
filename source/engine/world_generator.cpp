@@ -11,7 +11,7 @@ namespace ME {
 
 #pragma region MaterialTestGenerator
 
-void MaterialTestGenerator::generateChunk(World *world, Chunk *ch) {
+void MaterialTestGenerator::generateChunk(world *world, Chunk *ch) {
     MaterialInstance *prop = new MaterialInstance[CHUNK_W * CHUNK_H];
     MaterialInstance *layer2 = new MaterialInstance[CHUNK_W * CHUNK_H];
     u32 *background = new u32[CHUNK_W * CHUNK_H];
@@ -62,7 +62,7 @@ std::vector<Populator *> MaterialTestGenerator::getPopulators() { return {}; }
 
 #pragma region DefaultGenerator
 
-int DefaultGenerator::getBaseHeight(World *world, int x, Chunk *ch) {
+int DefaultGenerator::getBaseHeight(world *world, int x, Chunk *ch) {
 
     if (nullptr == ch) {
         return 0;
@@ -87,7 +87,7 @@ int DefaultGenerator::getBaseHeight(World *world, int x, Chunk *ch) {
     return 0;
 }
 
-int DefaultGenerator::getHeight(World *world, int x, Chunk *ch) {
+int DefaultGenerator::getHeight(world *world, int x, Chunk *ch) {
 
     int baseH = getBaseHeight(world, x, ch);
 
@@ -106,7 +106,7 @@ int DefaultGenerator::getHeight(World *world, int x, Chunk *ch) {
     return baseH;
 }
 
-void DefaultGenerator::generateChunk(World *world, Chunk *ch) {
+void DefaultGenerator::generateChunk(world *world, Chunk *ch) {
     MaterialInstance *prop = new MaterialInstance[CHUNK_W * CHUNK_H];
     MaterialInstance *layer2 = new MaterialInstance[CHUNK_W * CHUNK_H];
     u32 *background = new u32[CHUNK_W * CHUNK_H];
@@ -315,7 +315,7 @@ std::vector<Populator *> DefaultGenerator::getPopulators() {
 
 #pragma endregion
 
-void ScriptingWorldGenerator::generateChunk(World *world, Chunk *ch) {}
+void ScriptingWorldGenerator::generateChunk(world *world, Chunk *ch) {}
 
 std::vector<Populator *> ScriptingWorldGenerator::getPopulators() { return {}; }
 

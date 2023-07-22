@@ -52,11 +52,8 @@
 #endif
 
 #define ARRAYCOUNT(X) (sizeof(X) / sizeof(*(X)))
-
-// Preferably, and ironically, this macro should go unused.
-#ifndef ME_UNUSED
 #define ME_UNUSED(x) (void)sizeof(x)
-#endif
+#define ME_ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
 #define ME_CONCAT_IMPL(x, y) x##y
 #define ME_CONCAT(x, y) ME_CONCAT_IMPL(x, y)
@@ -153,22 +150,13 @@
 #endif
 #endif
 
-#define ME_APP_NAME "NekoEngine"
-#define ME_APP_VERSION_TEXT "0.0.1"
-#define ME_APP_VERSION_MAJOR 0
-#define ME_APP_VERSION_MINOR 0
-#define ME_APP_VERSION_BUILD 1
-#define ME_APP_COMPANY "Sandbox"
-#define ME_APP_COPYRIGHT "Copyright (c) 2023 KaoruXun. All rights reserved."
-
-#define PACK_VERSION_MAJOR 0
-#define PACK_VERSION_MINOR 0
-#define PACK_VERSION_PATCH 1
+#ifdef ME_PLATFORM_WINDOWS
+#define METADOT_CDECL __cdecl
+#else
+#define METADOT_CDECL
+#endif
 
 #define ME_LITTLE_ENDIAN 1
-
-#define RAD_PER_DEG 0.017453293f
-#define DEG_PER_RAD 57.2957795f
 
 #define BIT(x) (1 << x)
 
@@ -242,8 +230,8 @@
 #define ME_INT64_MAX 0x7FFFFFFFFFFFFFFF
 #define ME_UINT64_MAX 0xFFFFFFFFFFFFFFFF
 
-#define ME_OK 0
-#define ME_FAILED -1
+#define METADOT_OK 0
+#define METADOT_FAILED -1
 
 #ifdef ME_PLATFORM_WINDOWS
 #define ME_ASSERT SDL_assert
@@ -253,21 +241,6 @@
 
 #define ME_PRIVATE(_result_type) static _result_type
 #define ME_PUBLIC(_result_type) _result_type
-
-#define ME_ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-#define ME_KB 1024
-#define ME_MB (ME_KB * ME_KB)
-#define ME_GB (ME_MB * ME_MB)
-
-#define ME_STATIC_ASSERT(condition, error_message_string) static_assert(condition, error_message_string)
-#define ME_STRINGIZE_INTERNAL(...) #__VA_ARGS__
-#define ME_STRINGIZE(...) ME_STRINGIZE_INTERNAL(__VA_ARGS__)
-#define ME_OFFSET_OF(T, member) ((size_t)((uintptr_t)(&(((T *)0)->member))))
-#define ME_DEBUG_PRINTF(...)
-#define ME_ALIGN_TRUNCATE(v, n) ((v) & ~((n)-1))
-#define ME_ALIGN_FORWARD(v, n) ME_ALIGN_TRUNCATE((v) + (n)-1, (n))
-#define ME_ALIGN_TRUNCATE_PTR(p, n) ((void *)ME_ALIGN_TRUNCATE((uintptr_t)(p), n))
-#define ME_ALIGN_FORWARD_PTR(p, n) ((void *)ME_ALIGN_FORWARD((uintptr_t)(p), n))
 
 #define DD_ALIGNED_BUFFER(name) alignas(16) static const std::uint8_t name[]
 

@@ -387,6 +387,12 @@ void console::init() {
 
 void console::end() {}
 
+void console::draw() {
+    bool interactingWithTextbox;
+    this->draw_internal_display();
+    if (global.game->Iso.globaldef.draw_console) this->display_full(&interactingWithTextbox);
+}
+
 void console::print_command_info(cvar::BaseCommand *cmd) {
     switch (cmd->GetCmdType()) {
         case CommandType::CVAR_VAR:
@@ -469,6 +475,9 @@ void pack_editor::end() {
 }
 
 void pack_editor::draw() {
+
+    if (!global.game->Iso.globaldef.draw_pack_editor) return;
+
     if (ImGui::Begin("包编辑器")) {
 
         if (ImGui::Button("打开包") && !pack_reader_is_loaded) filebrowser = true;
@@ -950,7 +959,7 @@ int profiler_draw_frame(profiler_frame *_data, void *_buffer, size_t _bufferSize
         //         // ImGui::Auto(allocation_metrics::MemoryDebugMap, "map");
         // #endif
 
-        auto L = scripting::get_singleton_ptr()->L;
+        auto L = the<scripting>().L;
         lua_gc(L, LUA_GCCOLLECT, 0);
         lua_Integer kb = lua_gc(L, LUA_GCCOUNT, 0);
         lua_Integer bytes = lua_gc(L, LUA_GCCOUNTB, 0);
@@ -1181,7 +1190,7 @@ static int common_control_initialize() {
 
 #endif
 
-const ImVec2 ImGuiLayer::NextWindows(ImGuiWindowTags tag, ImVec2 pos) {
+ImVec2 dbgui::NextWindows(ImGuiWindowTags tag, ImVec2 pos) const noexcept {
     if (tag & UI_MainMenu) ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         ImVec2 windowspos = ImGui::GetPlatformIO().Platform_GetWindowPos(ImGui::GetMainViewport());
@@ -1190,13 +1199,13 @@ const ImVec2 ImGuiLayer::NextWindows(ImGuiWindowTags tag, ImVec2 pos) {
     return pos;
 }
 
-void (*ImGuiLayer::RendererShutdownFunction)();
-void (*ImGuiLayer::PlatformShutdownFunction)();
-void (*ImGuiLayer::RendererNewFrameFunction)();
-void (*ImGuiLayer::PlatformNewFrameFunction)();
-void (*ImGuiLayer::RenderFunction)(ImDrawData *);
+void (*dbgui::RendererShutdownFunction)();
+void (*dbgui::PlatformShutdownFunction)();
+void (*dbgui::RendererNewFrameFunction)();
+void (*dbgui::PlatformNewFrameFunction)();
+void (*dbgui::RenderFunction)(ImDrawData *);
 
-ImGuiLayer::ImGuiLayer() {
+dbgui::dbgui() {
     RendererShutdownFunction = ImGui_ImplOpenGL3_Shutdown;
     PlatformShutdownFunction = ImGui_ImplSDL2_Shutdown;
     RendererNewFrameFunction = ImGui_ImplOpenGL3_NewFrame;
@@ -1211,7 +1220,7 @@ ME_imgui_imm imguiIMMCommunication{};
 ME_PRIVATE(void *) ImGuiMalloc(size_t sz, void *user_data) { return ME_MALLOC(sz); }
 ME_PRIVATE(void) ImGuiFree(void *ptr, void *user_data) { ME_FREE(ptr); }
 
-void ImGuiLayer::Init() {
+void dbgui::Init() {
 
     IMGUI_CHECKVERSION();
 
@@ -1278,69 +1287,13 @@ void ImGuiLayer::Init() {
     ME_ASSERT(imguiIMMCommunication.subclassify(the<engine>().eng()->window));
 #endif
 
-    m_pack_editor.init();
+    dbgui_list.push_back(static_cast<dbgui_base *>(new console()));
+    dbgui_list.push_back(static_cast<dbgui_base *>(new pack_editor()));
+    dbgui_list.push_back(static_cast<dbgui_base *>(new code_editor()));
 
-    console.init();
-
-    editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
-
-#if 0
-
-        // set your own known preprocessor symbols...
-        static const char* ppnames[] = { "NULL", "PM_REMOVE",
-            "ZeroMemory", "DXGI_SWAP_EFFECT_DISCARD", "D3D_FEATURE_LEVEL", "D3D_DRIVER_TYPE_HARDWARE", "WINAPI","D3D11_SDK_VERSION", "assert" };
-        // ... and their corresponding values
-        static const char* ppvalues[] = {
-            "#define NULL ((void*)0)",
-            "#define PM_REMOVE (0x0001)",
-            "Microsoft's own memory zapper function\n(which is a macro actually)\nvoid ZeroMemory(\n\t[in] PVOID  Destination,\n\t[in] SIZE_T Length\n); ",
-            "enum DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_DISCARD = 0",
-            "enum D3D_FEATURE_LEVEL",
-            "enum D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_HARDWARE  = ( D3D_DRIVER_TYPE_UNKNOWN + 1 )",
-            "#define WINAPI __stdcall",
-            "#define D3D11_SDK_VERSION (7)",
-            " #define assert(expression) (void)(                                                  \n"
-            "    (!!(expression)) ||                                                              \n"
-            "    (_wassert(_CRT_WIDE(#expression), _CRT_WIDE(__FILE__), (unsigned)(__LINE__)), 0) \n"
-            " )"
-        };
-
-        for (int i = 0; i < sizeof(ppnames) / sizeof(ppnames[0]); ++i)
-        {
-            TextEditor::Identifier id;
-            id.mDeclaration = ppvalues[i];
-            lang.mPreprocIdentifiers.insert(std::make_pair(std::string(ppnames[i]), id));
-        }
-
-        // set your own identifiers
-        static const char* identifiers[] = {
-            "HWND", "HRESULT", "LPRESULT","D3D11_RENDER_TARGET_VIEW_DESC", "DXGI_SWAP_CHAIN_DESC","MSG","LRESULT","WPARAM", "LPARAM","UINT","LPVOID",
-            "ID3D11Device", "ID3D11DeviceContext", "ID3D11Buffer", "ID3D11Buffer", "ID3D10Blob", "ID3D11VertexShader", "ID3D11InputLayout", "ID3D11Buffer",
-            "ID3D10Blob", "ID3D11PixelShader", "ID3D11SamplerState", "ID3D11ShaderResourceView", "ID3D11RasterizerState", "ID3D11BlendState", "ID3D11DepthStencilState",
-            "IDXGISwapChain", "ID3D11ENGINE()->TargetView", "ID3D11Texture2D", "TextEditor" };
-        static const char* idecls[] =
-        {
-            "typedef HWND_* HWND", "typedef long HRESULT", "typedef long* LPRESULT", "struct D3D11_RENDER_TARGET_VIEW_DESC", "struct DXGI_SWAP_CHAIN_DESC",
-            "typedef tagMSG MSG\n * Message structure","typedef LONG_PTR LRESULT","WPARAM", "LPARAM","UINT","LPVOID",
-            "ID3D11Device", "ID3D11DeviceContext", "ID3D11Buffer", "ID3D11Buffer", "ID3D10Blob", "ID3D11VertexShader", "ID3D11InputLayout", "ID3D11Buffer",
-            "ID3D10Blob", "ID3D11PixelShader", "ID3D11SamplerState", "ID3D11ShaderResourceView", "ID3D11RasterizerState", "ID3D11BlendState", "ID3D11DepthStencilState",
-            "IDXGISwapChain", "ID3D11ENGINE()->TargetView", "ID3D11Texture2D", "class TextEditor" };
-        for (int i = 0; i < sizeof(identifiers) / sizeof(identifiers[0]); ++i)
-        {
-            TextEditor::Identifier id;
-            id.mDeclaration = std::string(idecls[i]);
-            lang.mIdentifiers.insert(std::make_pair(std::string(identifiers[i]), id));
-        }
-        editor.SetLanguageDefinition(lang);
-        //editor.SetPalette(TextEditor::GetLightPalette());
-
-        // error markers
-        TextEditor::ErrorMarkers markers;
-        markers.insert(std::make_pair<int, std::string>(6, "Example error here:\nInclude file not found: \"TextEditor.h\""));
-        markers.insert(std::make_pair<int, std::string>(41, "Another example error"));
-        editor.SetErrorMarkers(markers);
-
-#endif
+    for (auto &gui : dbgui_list) {
+        gui->init();
+    }
 
     // auto create_console = [&]() {
     //     METADOT_NEW(C, console_imgui, ImGuiConsole, global.I18N.Get("ui_console"));
@@ -1388,21 +1341,23 @@ void ImGuiLayer::Init() {
     // create_console();
 }
 
-void ImGuiLayer::End() {
-    m_pack_editor.end();
+void dbgui::End() {
+    for (auto &gui : dbgui_list) {
+        gui->end();
+    }
 
     RendererShutdownFunction();
     PlatformShutdownFunction();
     ImGui::DestroyContext();
 }
 
-void ImGuiLayer::NewFrame() {
+void dbgui::NewFrame() {
     RendererNewFrameFunction();
     PlatformNewFrameFunction();
     ImGui::NewFrame();
 }
 
-void ImGuiLayer::Draw() {
+void dbgui::Draw() {
     ImGuiIO &io = ImGui::GetIO();
     (void)io;
 
@@ -1433,7 +1388,7 @@ auto CollapsingHeader = [](const char *name) -> bool {
     return b;
 };
 
-void ImGuiLayer::Update() {
+void dbgui::Update() {
 
     ImGuiIO &io = ImGui::GetIO();
 
@@ -1441,50 +1396,14 @@ void ImGuiLayer::Update() {
     imguiIMMCommunication();
 #endif
 
-    MarkdownData md1;
-    md1.data = R"markdown(
-
-# Table
-
-Name &nbsp; &nbsp; &nbsp; &nbsp; | Multiline &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;<br>header  | [Link&nbsp;](#link1)
-:------|:-------------------|:--
-Value-One | Long <br>explanation <br>with \<br\>\'s|1
-~~Value-Two~~ | __text auto wrapped__\: long explanation here |25 37 43 56 78 90
-**etc** | [~~Some **link**~~](https://github.com/mekhontsev/ImGuiMarkdown)|3
-
-# List
-
-1. First ordered list item
-2. 测试中文
-   * Unordered sub-list 1.
-   * Unordered sub-list 2.
-1. Actual numbers don't matter, just that it's a number
-   1. **Ordered** sub-list 1
-   2. **Ordered** sub-list 2
-4. And another item with minuses.
-   - __sub-list with underline__
-   - sub-list with escapes: \[looks like\]\(link\)
-5. ~~Item with pluses and strikethrough~~.
-   + sub-list 1
-   + sub-list 2
-   + [Just a link](https://github.com/mekhontsev/ImGuiMarkdown).
-      * Item with [link1](#link1)
-      * Item with bold [**link2**](#link1)
-6. test12345
-
-)markdown";
-
     if (global.game->Iso.globaldef.draw_imgui_debug) {
         ImGui::ShowDemoWindow();
     }
 
-    bool interactingWithTextbox;
-    console.draw_internal_display();
-    if (global.game->Iso.globaldef.draw_console) console.display_full(&interactingWithTextbox);
+    for (auto &gui : dbgui_list) {
+        gui->draw();
+    }
 
-    if (global.game->Iso.globaldef.draw_pack_editor) m_pack_editor.draw();
-
-    auto cpos = editor.GetCursorPosition();
     if (global.game->Iso.globaldef.ui_tweak) {
 
         ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
@@ -1618,7 +1537,7 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
                             TypeInfo<Player>::fields.ForEach([&](auto field) {
                                 if constexpr (field.is_func) {
                                     if (field.name != "setItemInHand") return;
-                                    if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(WorldEntity * we, Item * item, World * world) /* const */>(&Player::setItemInHand)))
+                                    if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(WorldEntity * we, Item * item, world * world) /* const */>(&Player::setItemInHand)))
                                         (p->*(field.value))(global.game->Iso.world->Reg().find_component<WorldEntity>(global.game->Iso.world->player), i3, global.game->Iso.world.get());
                                     // else if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(Item *item, World *world) /* const */>(&Player::setItemInHand)))
                                     //     std::cout << (p.*(field.value))(1.f) << std::endl;
@@ -1823,135 +1742,6 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         ImGui::End();
 
         ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
-        if (ImGui::Begin(LANG("ui_scripts_editor"), NULL, ImGuiWindowFlags_MenuBar)) {
-
-            // if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_EDIT, "ui_scripts_editor"))) {
-            if (ImGui::BeginMenuBar()) {
-                if (ImGui::BeginMenu(LANG("ui_file"))) {
-                    if (ImGui::MenuItem(LANG("ui_open"))) {
-                        // fileDialog.Open();
-                        filebrowser = true;
-                    }
-                    if (view_editing && view_editing->tags == EditorTags::Editor_Code && ImGui::MenuItem(LANG("ui_save"))) {
-                        if (view_editing && view_contents.size()) {
-                            auto textToSave = editor.GetText();
-                            std::ofstream o(view_editing->file);
-                            o << textToSave;
-                        }
-                    }
-                    if (ImGui::MenuItem(LANG("ui_close"))) {
-                        for (auto &code : view_contents) {
-                            if (code.file == view_editing->file) {
-                                view_contents.erase(std::remove(std::begin(view_contents), std::end(view_contents), code), std::end(view_contents));
-                            }
-                        }
-                    }
-                    ImGui::EndMenu();
-                }
-
-                if (view_editing && view_editing->tags == EditorTags::Editor_Code && ImGui::BeginMenu(LANG("ui_edit"))) {
-                    bool ro = editor.IsReadOnly();
-                    if (ImGui::MenuItem(LANG("ui_readonly_mode"), nullptr, &ro)) editor.SetReadOnly(ro);
-                    ImGui::Separator();
-
-                    if (ImGui::MenuItem(LANG("ui_undo"), "ALT-Backspace", nullptr, !ro && editor.CanUndo())) editor.Undo();
-                    if (ImGui::MenuItem(LANG("ui_redo"), "Ctrl-Y", nullptr, !ro && editor.CanRedo())) editor.Redo();
-
-                    ImGui::Separator();
-
-                    if (ImGui::MenuItem(LANG("ui_copy"), "Ctrl-C", nullptr, editor.HasSelection())) editor.Copy();
-                    if (ImGui::MenuItem(LANG("ui_cut"), "Ctrl-X", nullptr, !ro && editor.HasSelection())) editor.Cut();
-                    if (ImGui::MenuItem(LANG("ui_delete"), "Del", nullptr, !ro && editor.HasSelection())) editor.Delete();
-                    if (ImGui::MenuItem(LANG("ui_paste"), "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr)) editor.Paste();
-
-                    ImGui::Separator();
-
-                    if (ImGui::MenuItem(LANG("ui_selectall"), nullptr, nullptr)) editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(editor.GetTotalLines(), 0));
-
-                    ImGui::EndMenu();
-                }
-
-                if (view_editing && view_editing->tags == EditorTags::Editor_Code && ImGui::BeginMenu(LANG("ui_view"))) {
-                    if (ImGui::MenuItem("Dark palette")) editor.SetPalette(TextEditor::GetDarkPalette());
-                    if (ImGui::MenuItem("Light palette")) editor.SetPalette(TextEditor::GetLightPalette());
-                    if (ImGui::MenuItem("Retro blue palette")) editor.SetPalette(TextEditor::GetRetroBluePalette());
-                    ImGui::EndMenu();
-                }
-                ImGui::EndMenuBar();
-            }
-
-            if (filebrowser) {
-                if (ImGui::Begin("File Browser", NULL)) {
-
-                    static std::string file = ME_fs_get_path("data/scripts");
-                    ImGuiHelper::file_browser(file);
-
-                    if (!file.empty() && !std::filesystem::is_directory(file)) {
-
-                        METADOT_INFO(file.c_str());
-
-                        bool shouldopen = true;
-                        for (auto code : view_contents)
-                            if (code.file == file) shouldopen = false;
-                        if (shouldopen) {
-                            auto extension = std::filesystem::path(file).extension().string();
-                            std::ifstream i(file);
-                            if (i.good()) {
-                                if (extension == ".lua") {
-                                    std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
-                                    view_contents.push_back(EditorView{.tags = EditorTags::Editor_Code, .file = file, .content = str});
-                                } else if (extension == ".md") {
-                                    std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
-                                    view_contents.push_back(EditorView{.tags = EditorTags::Editor_Markdown, .file = file, .content = str});
-                                }
-                            }
-                        }
-
-                        // 复位变量
-                        filebrowser = false;
-                        file = ME_fs_get_path("data/scripts");
-                    }
-                }
-                ImGui::End();
-            }
-
-            ImGui::BeginTabBar("ViewContents");
-
-            for (auto &view : view_contents) {
-                if (ImGui::BeginTabItem(ME_fs_get_filename(view.file.c_str()))) {
-                    view_editing = &view;
-
-                    if (!view_editing->is_edited) {
-                        if (view.tags == EditorTags::Editor_Code) editor.SetText(view_editing->content);
-                        view_editing->is_edited = true;
-                    }
-
-                    ImGui::EndTabItem();
-                } else {
-                    if (view.is_edited) view.is_edited = false;
-                }
-            }
-
-            if (view_editing && view_contents.size()) {
-                switch (view_editing->tags) {
-                    case Editor_Code:
-                        ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, editor.GetTotalLines(), editor.IsOverwrite() ? "Ovr" : "Ins",
-                                    editor.CanUndo() ? "*" : " ", editor.GetLanguageDefinition().mName.c_str(), ME_fs_get_filename(view_editing->file.c_str()));
-
-                        editor.Render("TextEditor");
-                        break;
-                    case Editor_Markdown:
-                        ImGuiHelper::markdown(view_editing->content);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            ImGui::EndTabBar();
-        }
-        ImGui::End();
-
-        ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         if (ImGui::Begin(ICON_LANG(ICON_FA_INFO, "ui_info"))) {
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -2029,6 +1819,201 @@ Value-One | Long <br>explanation <br>with \<br\>\'s|1
         }
         ImGui::End();
     }
+}
+
+void code_editor::init() {
+    text_editor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+
+#if 0
+
+        // set your own known preprocessor symbols...
+        static const char* ppnames[] = { "NULL", "PM_REMOVE",
+            "ZeroMemory", "DXGI_SWAP_EFFECT_DISCARD", "D3D_FEATURE_LEVEL", "D3D_DRIVER_TYPE_HARDWARE", "WINAPI","D3D11_SDK_VERSION", "assert" };
+        // ... and their corresponding values
+        static const char* ppvalues[] = {
+            "#define NULL ((void*)0)",
+            "#define PM_REMOVE (0x0001)",
+            "Microsoft's own memory zapper function\n(which is a macro actually)\nvoid ZeroMemory(\n\t[in] PVOID  Destination,\n\t[in] SIZE_T Length\n); ",
+            "enum DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_DISCARD = 0",
+            "enum D3D_FEATURE_LEVEL",
+            "enum D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_HARDWARE  = ( D3D_DRIVER_TYPE_UNKNOWN + 1 )",
+            "#define WINAPI __stdcall",
+            "#define D3D11_SDK_VERSION (7)",
+            " #define assert(expression) (void)(                                                  \n"
+            "    (!!(expression)) ||                                                              \n"
+            "    (_wassert(_CRT_WIDE(#expression), _CRT_WIDE(__FILE__), (unsigned)(__LINE__)), 0) \n"
+            " )"
+        };
+
+        for (int i = 0; i < sizeof(ppnames) / sizeof(ppnames[0]); ++i)
+        {
+            TextEditor::Identifier id;
+            id.mDeclaration = ppvalues[i];
+            lang.mPreprocIdentifiers.insert(std::make_pair(std::string(ppnames[i]), id));
+        }
+
+        // set your own identifiers
+        static const char* identifiers[] = {
+            "HWND", "HRESULT", "LPRESULT","D3D11_RENDER_TARGET_VIEW_DESC", "DXGI_SWAP_CHAIN_DESC","MSG","LRESULT","WPARAM", "LPARAM","UINT","LPVOID",
+            "ID3D11Device", "ID3D11DeviceContext", "ID3D11Buffer", "ID3D11Buffer", "ID3D10Blob", "ID3D11VertexShader", "ID3D11InputLayout", "ID3D11Buffer",
+            "ID3D10Blob", "ID3D11PixelShader", "ID3D11SamplerState", "ID3D11ShaderResourceView", "ID3D11RasterizerState", "ID3D11BlendState", "ID3D11DepthStencilState",
+            "IDXGISwapChain", "ID3D11ENGINE()->TargetView", "ID3D11Texture2D", "TextEditor" };
+        static const char* idecls[] =
+        {
+            "typedef HWND_* HWND", "typedef long HRESULT", "typedef long* LPRESULT", "struct D3D11_RENDER_TARGET_VIEW_DESC", "struct DXGI_SWAP_CHAIN_DESC",
+            "typedef tagMSG MSG\n * Message structure","typedef LONG_PTR LRESULT","WPARAM", "LPARAM","UINT","LPVOID",
+            "ID3D11Device", "ID3D11DeviceContext", "ID3D11Buffer", "ID3D11Buffer", "ID3D10Blob", "ID3D11VertexShader", "ID3D11InputLayout", "ID3D11Buffer",
+            "ID3D10Blob", "ID3D11PixelShader", "ID3D11SamplerState", "ID3D11ShaderResourceView", "ID3D11RasterizerState", "ID3D11BlendState", "ID3D11DepthStencilState",
+            "IDXGISwapChain", "ID3D11ENGINE()->TargetView", "ID3D11Texture2D", "class TextEditor" };
+        for (int i = 0; i < sizeof(identifiers) / sizeof(identifiers[0]); ++i)
+        {
+            TextEditor::Identifier id;
+            id.mDeclaration = std::string(idecls[i]);
+            lang.mIdentifiers.insert(std::make_pair(std::string(identifiers[i]), id));
+        }
+        editor.SetLanguageDefinition(lang);
+        //editor.SetPalette(TextEditor::GetLightPalette());
+
+        // error markers
+        TextEditor::ErrorMarkers markers;
+        markers.insert(std::make_pair<int, std::string>(6, "Example error here:\nInclude file not found: \"TextEditor.h\""));
+        markers.insert(std::make_pair<int, std::string>(41, "Another example error"));
+        editor.SetErrorMarkers(markers);
+
+#endif
+}
+
+void code_editor::end() {}
+
+void code_editor::draw() {
+    auto cpos = text_editor.GetCursorPosition();
+    if (ImGui::Begin(LANG("ui_scripts_editor"), NULL, ImGuiWindowFlags_MenuBar)) {
+
+        // if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_EDIT, "ui_scripts_editor"))) {
+        if (ImGui::BeginMenuBar()) {
+            if (ImGui::BeginMenu(LANG("ui_file"))) {
+                if (ImGui::MenuItem(LANG("ui_open"))) {
+                    // fileDialog.Open();
+                    filebrowser = true;
+                }
+                if (view_editing && view_editing->tags == EditorTags::Editor_Code && ImGui::MenuItem(LANG("ui_save"))) {
+                    if (view_editing && view_contents.size()) {
+                        auto textToSave = text_editor.GetText();
+                        std::ofstream o(view_editing->file);
+                        o << textToSave;
+                    }
+                }
+                if (ImGui::MenuItem(LANG("ui_close"))) {
+                    for (auto &code : view_contents) {
+                        if (code.file == view_editing->file) {
+                            view_contents.erase(std::remove(std::begin(view_contents), std::end(view_contents), code), std::end(view_contents));
+                        }
+                    }
+                }
+                ImGui::EndMenu();
+            }
+
+            if (view_editing && view_editing->tags == EditorTags::Editor_Code && ImGui::BeginMenu(LANG("ui_edit"))) {
+                bool ro = text_editor.IsReadOnly();
+                if (ImGui::MenuItem(LANG("ui_readonly_mode"), nullptr, &ro)) text_editor.SetReadOnly(ro);
+                ImGui::Separator();
+
+                if (ImGui::MenuItem(LANG("ui_undo"), "ALT-Backspace", nullptr, !ro && text_editor.CanUndo())) text_editor.Undo();
+                if (ImGui::MenuItem(LANG("ui_redo"), "Ctrl-Y", nullptr, !ro && text_editor.CanRedo())) text_editor.Redo();
+
+                ImGui::Separator();
+
+                if (ImGui::MenuItem(LANG("ui_copy"), "Ctrl-C", nullptr, text_editor.HasSelection())) text_editor.Copy();
+                if (ImGui::MenuItem(LANG("ui_cut"), "Ctrl-X", nullptr, !ro && text_editor.HasSelection())) text_editor.Cut();
+                if (ImGui::MenuItem(LANG("ui_delete"), "Del", nullptr, !ro && text_editor.HasSelection())) text_editor.Delete();
+                if (ImGui::MenuItem(LANG("ui_paste"), "Ctrl-V", nullptr, !ro && ImGui::GetClipboardText() != nullptr)) text_editor.Paste();
+
+                ImGui::Separator();
+
+                if (ImGui::MenuItem(LANG("ui_selectall"), nullptr, nullptr)) text_editor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(text_editor.GetTotalLines(), 0));
+
+                ImGui::EndMenu();
+            }
+
+            if (view_editing && view_editing->tags == EditorTags::Editor_Code && ImGui::BeginMenu(LANG("ui_view"))) {
+                if (ImGui::MenuItem("Dark palette")) text_editor.SetPalette(TextEditor::GetDarkPalette());
+                if (ImGui::MenuItem("Light palette")) text_editor.SetPalette(TextEditor::GetLightPalette());
+                if (ImGui::MenuItem("Retro blue palette")) text_editor.SetPalette(TextEditor::GetRetroBluePalette());
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenuBar();
+        }
+
+        if (filebrowser) {
+            if (ImGui::Begin("File Browser", NULL)) {
+
+                static std::string file = ME_fs_get_path("data/scripts");
+                ImGuiHelper::file_browser(file);
+
+                if (!file.empty() && !std::filesystem::is_directory(file)) {
+
+                    METADOT_INFO(file.c_str());
+
+                    bool shouldopen = true;
+                    for (auto code : view_contents)
+                        if (code.file == file) shouldopen = false;
+                    if (shouldopen) {
+                        auto extension = std::filesystem::path(file).extension().string();
+                        std::ifstream i(file);
+                        if (i.good()) {
+                            if (extension == ".lua") {
+                                std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
+                                view_contents.push_back(EditorView{.tags = EditorTags::Editor_Code, .file = file, .content = str});
+                            } else if (extension == ".md") {
+                                std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
+                                view_contents.push_back(EditorView{.tags = EditorTags::Editor_Markdown, .file = file, .content = str});
+                            }
+                        }
+                    }
+
+                    // 复位变量
+                    filebrowser = false;
+                    file = ME_fs_get_path("data/scripts");
+                }
+            }
+            ImGui::End();
+        }
+
+        ImGui::BeginTabBar("ViewContents");
+
+        for (auto &view : view_contents) {
+            if (ImGui::BeginTabItem(ME_fs_get_filename(view.file.c_str()))) {
+                view_editing = &view;
+
+                if (!view_editing->is_edited) {
+                    if (view.tags == EditorTags::Editor_Code) text_editor.SetText(view_editing->content);
+                    view_editing->is_edited = true;
+                }
+
+                ImGui::EndTabItem();
+            } else {
+                if (view.is_edited) view.is_edited = false;
+            }
+        }
+
+        if (view_editing && view_contents.size()) {
+            switch (view_editing->tags) {
+                case Editor_Code:
+                    ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, text_editor.GetTotalLines(), text_editor.IsOverwrite() ? "Ovr" : "Ins",
+                                text_editor.CanUndo() ? "*" : " ", text_editor.GetLanguageDefinition().mName.c_str(), ME_fs_get_filename(view_editing->file.c_str()));
+
+                    text_editor.Render("TextEditor");
+                    break;
+                case Editor_Markdown:
+                    ImGuiHelper::markdown(view_editing->content);
+                    break;
+                default:
+                    break;
+            }
+        }
+        ImGui::EndTabBar();
+    }
+    ImGui::End();
 }
 
 }  // namespace ME

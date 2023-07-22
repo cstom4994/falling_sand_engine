@@ -2312,7 +2312,7 @@ struct at<typelist<T, TS...>, 0> {
 
 template <typename T, typename... TS, size_t I>
 struct at<typelist<T, TS...>, I> {
-    ME_STATIC_ASSERT(I < (1 + sizeof...(TS)), "Out of bounds access");
+    static_assert(I < (1 + sizeof...(TS)), "Out of bounds access");
     using type = typename at<typelist<TS...>, I - 1>::type;
 };
 
@@ -2375,7 +2375,7 @@ struct find_ancestors<typelist<>, DESTLIST> {
 
 template <typename TL, typename T>
 struct find_ancestors {
-    ME_STATIC_ASSERT(is_typelist<TL>::value, "The first parameter is not a typelist");
+    static_assert(is_typelist<TL>::value, "The first parameter is not a typelist");
 
     template <typename U>
     using base_of_T = typename std::is_base_of<U, T>::type;
@@ -2389,7 +2389,7 @@ using namespace tmp;
 
 template <typename TL>
 struct hierarchy_iterator {
-    ME_STATIC_ASSERT(is_typelist<TL>::value, "Not a typelist");
+    static_assert(is_typelist<TL>::value, "Not a typelist");
     inline static void exec(void *_p) {
         using target_t = typename pop_front<TL>::type;
         if (auto ptr = static_cast<target_t *>(_p)) {

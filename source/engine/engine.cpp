@@ -46,6 +46,9 @@ void engine::update_end() { process_tick_time(); }
 
 void engine::end_eng(int errorOcurred) {
 
+    global.audio.Shutdown();
+    ME_endwindow();
+
     if (SDL_WasInit(SDL_INIT_EVERYTHING) != 0) SDL_Quit();
 
     if (errorOcurred) {

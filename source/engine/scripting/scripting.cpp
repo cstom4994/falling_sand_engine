@@ -20,8 +20,6 @@
 #include "engine/game_datastruct.hpp"
 #include "engine/meta/reflection.hpp"
 #include "engine/renderer/renderer_gpu.h"
-#include "engine/scripting/csharp_api.h"
-#include "engine/scripting/csharp_bind.hpp"
 #include "engine/scripting/ffi/ffi.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/scripting/lua_wrapper_ext.hpp"
@@ -102,7 +100,7 @@ static int catch_panic(lua_State *L) {
 
 static int metadot_autoload(lua_State *L) {
     std::string string = lua_tostring(L, 1);
-    auto &LuaCore = scripting::get_singleton_ptr()->s_lua;
+    auto &LuaCore = the<scripting>().s_lua;
     ME_ASSERT(&LuaCore);
     if (ME_str_starts_with(string, "LUA::")) ME_str_replace_with(string, "LUA::", "data/scripts/");
     script_runfile(string.c_str());
@@ -144,7 +142,7 @@ static int ls(lua_State *L) {
 }
 
 static void add_packagepath(const char *p) {
-    auto &s_lua = scripting::get_singleton_ptr()->s_lua;
+    auto &s_lua = the<scripting>().s_lua;
     ME_ASSERT(&s_lua);
     s_lua.dostring(std::format("package.path = "
                                "'{0}/?.lua;' .. package.path",
@@ -279,239 +277,17 @@ void run_script_in_console(scripting *_struct, const char *c) {
 void script_runfile(const char *filePath) {
     FUTIL_ASSERT_EXIST(filePath);
 
-    int result = luaL_loadfile(scripting::get_singleton_ptr()->L, METADOT_RESLOC(filePath));
+    int result = luaL_loadfile(the<scripting>().L, METADOT_RESLOC(filePath));
     if (result != LUA_OK) {
-        print_error(scripting::get_singleton_ptr()->L);
+        print_error(the<scripting>().L);
         return;
     }
-    result = ME_debug_pcall(scripting::get_singleton_ptr()->L, 0, LUA_MULTRET, 0);
+    result = ME_debug_pcall(the<scripting>().L, 0, LUA_MULTRET, 0);
 
     if (result != LUA_OK) {
-        print_error(scripting::get_singleton_ptr()->L);
+        print_error(the<scripting>().L);
     }
 }
-
-static void l_info(MonoString *s) {
-    auto c = mono_string_to_utf8(s);
-    METADOT_INFO("[CSharp] ", c);
-    mono_free(c);
-}
-
-static void l_warn(MonoString *s) {
-    auto c = mono_string_to_utf8(s);
-    METADOT_WARN("[CSharp] ", c);
-    mono_free(c);
-}
-
-static void l_error(MonoString *s) {
-    auto c = mono_string_to_utf8(s);
-    METADOT_ERROR("[CSharp] ", c);
-    mono_free(c);
-}
-
-static void l_trace(MonoString *s) {
-    auto c = mono_string_to_utf8(s);
-    METADOT_TRACE("[CSharp] ", c);
-    mono_free(c);
-}
-
-static mono_bool metadot_copy_file(MonoString *from, MonoString *to) {
-    auto f = mono_string_to_utf8(from);
-    auto t = mono_string_to_utf8(to);
-    bool suk = false;
-    try {
-        suk = std::filesystem::copy_file(f, t, std::filesystem::copy_options::overwrite_existing);
-    } catch (std::exception &e) {
-        METADOT_ERROR("Cannot copy {} to {}\n{}", f, t, e.what());
-    }
-    mono_free(f);
-    mono_free(t);
-
-    return suk;
-}
-
-static void metadot_profile_begin_session(MonoString *name, MonoString *path) {
-    auto n = mono_string_to_utf8(name);
-    auto p = mono_string_to_utf8(path);
-    // METADOT_PROFILE_BEGIN_SESSION(n, p);
-    mono_free(n);
-    mono_free(p);
-}
-
-static void metadot_profile_end_session() {}
-
-static MonoString *metadot_current_config() { return mono_string_new(mono_domain_get(), "ME_NO_DEBUG"); }
-
-static MonoDomain *domain;
-static MonoImage *image;
-static MonoAssembly *assembly;
-static MonoObject *entryInstance;
-
-static MonoObject *callCSMethod(const char *methodName, void *obj = nullptr, void **params = nullptr, MonoObject **ex = nullptr) {
-    MonoMethodDesc *TypeMethodDesc = mono_method_desc_new(methodName, NULL);
-    if (!TypeMethodDesc) return nullptr;
-
-    // Search the method in the image
-    MonoMethod *method = mono_method_desc_search_in_image(TypeMethodDesc, image);
-    if (!method) {
-        assert(false, "C# method not found: {}", methodName);
-        return nullptr;
-    }
-
-    auto b = mono_runtime_invoke(method, obj, params, ex);
-    if (ex && *ex) return nullptr;
-
-    return b;
-}
-
-static std::string hotSwapLoc = "MetaDotManagedCore.EntryHotSwap:";
-static std::string coldLoc = "MetaDotManagedCore.EntryCold:";
-static bool happyLoad = false;
-
-MonoObject *MonoLayer::callEntryMethod(const char *methodName, void *obj, void **params, MonoObject **ex) {
-    std::string s = hotSwapEnable ? hotSwapLoc : coldLoc;
-    return callCSMethod((s + methodName).c_str(), obj, params, ex);
-}
-
-static void initInternalCalls() {
-    mono_add_internal_call("MetaDotManagedCore.Log::metadot_trace(string)", l_trace);
-    mono_add_internal_call("MetaDotManagedCore.Log::metadot_info(string)", l_info);
-    mono_add_internal_call("MetaDotManagedCore.Log::metadot_warn(string)", l_warn);
-    mono_add_internal_call("MetaDotManagedCore.Log::metadot_error(string)", l_error);
-    mono_add_internal_call("MetaDotManagedCore.Log::METADOT_COPY_FILE(string,string)", metadot_copy_file);
-    mono_add_internal_call("MetaDotManagedCore.Log::METADOT_PROFILE_BEGIN_SESSION(string,string)", metadot_profile_begin_session);
-    mono_add_internal_call("MetaDotManagedCore.Log::METADOT_PROFILE_END_SESSION()", metadot_profile_end_session);
-    mono_add_internal_call("MetaDotManagedCore.Log::METADOT_CURRENT_CONFIG()", metadot_current_config);
-}
-
-void MonoLayer::onAttach() {
-
-    std::filesystem::path monoDir = (std::filesystem::path(the<engine>().eng()->exepath) / "net");
-    if (monoDir.empty()) {
-        METADOT_ERROR("Cannot find mono installation dir");
-        return;
-    }
-
-    mono_set_dirs(monoDir.string().c_str(), "");
-    //  Init a domain
-    domain = mono_jit_init("MetaDotManaged");
-    if (!domain) {
-        METADOT_ERROR("mono_jit_init failed");
-        return;
-    }
-
-    initInternalCalls();
-
-    // Open a assembly in the domain
-    std::string assPath = std::format("{0}/ManagedCore.dll", the<engine>().eng()->exepath);
-    assembly = mono_domain_assembly_open(domain, assPath.c_str());
-    if (!assembly) {
-        METADOT_ERROR("mono_domain_assembly_open failed");
-        return;
-    }
-
-    // Get a image from the assembly
-    image = mono_assembly_get_image(assembly);
-    if (!image) {
-        METADOT_ERROR("mono_assembly_get_image failed");
-        return;
-    }
-    MonoClass *entryClass = mono_class_from_name(image, "MetaDotManagedCore", "Entry");
-    if (!entryClass) {
-        METADOT_ERROR("Cannot load Entry.cs");
-    }
-    MonoBoolean b = hotSwapEnable;
-    void *array = {&b};
-    entryInstance = callCSMethod("MetaDotManagedCore.Entry:Init", nullptr, &array);
-    if (!entryInstance) {
-        METADOT_ERROR("callCSMethod entryInstance failed");
-        return;
-    }
-
-    /*
-        {
-            //Get the class
-            MonoClass* dogclass;
-            dogclass = mono_class_from_name(image, "", "Dog");
-            if (!dogclass)
-            {
-                std::cout << "mono_class_from_name failed" << std::endl;
-                system("pause");
-                return 1;
-            }
-
-            //Create a instance of the class
-            MonoObject* dogA;
-            dogA = mono_object_new(domain, dogclass);
-            if (!dogA)
-            {
-                std::cout << "mono_object_new failed" << std::endl;
-                system("pause");
-                return 1;
-            }
-
-            //Call its default constructor
-            mono_runtime_object_init(dogA);
-
-
-            //Build a method description object
-            MonoObject* result;
-            MonoMethodDesc* BarkMethodDesc;
-            char* BarkMethodDescStr = "Dog:Bark(int)";
-            BarkMethodDesc = mono_method_desc_new(BarkMethodDescStr, NULL);
-            if (!BarkMethodDesc)
-            {
-                std::cout << "mono_method_desc_new failed" << std::endl;
-                system("pause");
-                return 1;
-            }
-
-            //Search the method in the image
-            MonoMethod* method;
-            method = mono_method_desc_search_in_image(BarkMethodDesc, image);
-            if (!method)
-            {
-                std::cout << "mono_method_desc_search_in_image failed" << std::endl;
-                system("pause");
-                return 1;
-            }
-
-            //Set the arguments for the method
-            void* args[1];
-            int barkTimes = 10;
-            args[0] = &barkTimes;
-
-
-
-            MonoObject * pException = NULL;
-            //Run the method
-            std::cout << "Running the method: " << BarkMethodDescStr << std::endl;
-            mono_runtime_invoke(method, dogA, args, &pException);
-            if(pException)
-            {
-                system("pause");
-            }
-
-        }*/
-    callEntryMethod("OnAttach", entryInstance);
-
-    int size = 0;
-    try {
-        size = *(int *)mono_object_unbox(callCSMethod("MetaDotManagedCore.Entry:GetLayersSize", entryInstance));
-    } catch (...) {
-        METADOT_ERROR("Cannot load mono GetLayersSize");
-        happyLoad = false;
-    }
-    happyLoad = size || hotSwapEnable;
-}
-
-void MonoLayer::onDetach() { callEntryMethod("OnDetach", entryInstance); }
-
-void MonoLayer::onUpdate() { callEntryMethod("OnUpdate", entryInstance); }
-
-void MonoLayer::reloadAssembly() { callEntryMethod("ReloadAssembly", entryInstance); }
-
-bool MonoLayer::isMonoLoaded() { return happyLoad; }
 
 #if 0
 {
@@ -534,14 +310,9 @@ void scripting::init() {
     InitLua(this);
     timer.stop();
     METADOT_INFO(std::format("LuaLayer loading done in {0:.4f} ms", timer.get()).c_str());
-
-    timer.start();
-    Mono.onAttach();
-    timer.stop();
-    METADOT_INFO(std::format("MonoLayer loading done in {0:.4f} ms", timer.get()).c_str());
 }
 
-void scripting::end() { Mono.onDetach(); }
+void scripting::end() {}
 
 void scripting::update() {
     // luaL_loadstring(_struct->L, s_couroutineFileSrc.c_str());
@@ -552,8 +323,6 @@ void scripting::update() {
     auto &luawrap = this->s_lua;
     auto OnUpdate = luawrap["OnUpdate"];
     OnUpdate();
-
-    Mono.onUpdate();
 }
 
 void scripting::update_render() { this->fast_call_func("OnRender"); }

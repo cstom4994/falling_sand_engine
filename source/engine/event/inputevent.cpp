@@ -13,44 +13,44 @@
 
 namespace ME {
 
-std::vector<ref<KeyControl>> ControlSystem::keyControls = {};
-std::map<std::string, int> ControlSystem::SDLKeymap = {};
-bool ControlSystem::initted = false;
+std::vector<ref<KeyControl>> input::keyControls = {};
+std::map<std::string, int> input::SDLKeymap = {};
+bool input::initted = false;
 
-KeyControl *ControlSystem::STATS_DISPLAY = nullptr;
-KeyControl *ControlSystem::STATS_DISPLAY_DETAILED = nullptr;
-KeyControl *ControlSystem::DEBUG_UI = nullptr;
-KeyControl *ControlSystem::CONSOLE_UI = nullptr;
-KeyControl *ControlSystem::DEBUG_REFRESH = nullptr;
-KeyControl *ControlSystem::DEBUG_UPDATE_WORLD_MESH = nullptr;
-KeyControl *ControlSystem::DEBUG_TICK = nullptr;
-KeyControl *ControlSystem::DEBUG_EXPLODE = nullptr;
-KeyControl *ControlSystem::DEBUG_CARVE = nullptr;
-KeyControl *ControlSystem::DEBUG_RIGID = nullptr;
-KeyControl *ControlSystem::DEBUG_DRAW = nullptr;
-KeyControl *ControlSystem::DEBUG_BRUSHSIZE_INC = nullptr;
-KeyControl *ControlSystem::DEBUG_BRUSHSIZE_DEC = nullptr;
-KeyControl *ControlSystem::DEBUG_TOGGLE_PLAYER = nullptr;
-KeyControl *ControlSystem::PLAYER_UP = nullptr;
-KeyControl *ControlSystem::PLAYER_LEFT = nullptr;
-KeyControl *ControlSystem::PLAYER_DOWN = nullptr;
-KeyControl *ControlSystem::PLAYER_RIGHT = nullptr;
-KeyControl *ControlSystem::ZOOM_IN = nullptr;
-KeyControl *ControlSystem::ZOOM_OUT = nullptr;
-KeyControl *ControlSystem::PAUSE = nullptr;
+KeyControl *input::STATS_DISPLAY = nullptr;
+KeyControl *input::STATS_DISPLAY_DETAILED = nullptr;
+KeyControl *input::DEBUG_UI = nullptr;
+KeyControl *input::CONSOLE_UI = nullptr;
+KeyControl *input::DEBUG_REFRESH = nullptr;
+KeyControl *input::DEBUG_UPDATE_WORLD_MESH = nullptr;
+KeyControl *input::DEBUG_TICK = nullptr;
+KeyControl *input::DEBUG_EXPLODE = nullptr;
+KeyControl *input::DEBUG_CARVE = nullptr;
+KeyControl *input::DEBUG_RIGID = nullptr;
+KeyControl *input::DEBUG_DRAW = nullptr;
+KeyControl *input::DEBUG_BRUSHSIZE_INC = nullptr;
+KeyControl *input::DEBUG_BRUSHSIZE_DEC = nullptr;
+KeyControl *input::DEBUG_TOGGLE_PLAYER = nullptr;
+KeyControl *input::PLAYER_UP = nullptr;
+KeyControl *input::PLAYER_LEFT = nullptr;
+KeyControl *input::PLAYER_DOWN = nullptr;
+KeyControl *input::PLAYER_RIGHT = nullptr;
+KeyControl *input::ZOOM_IN = nullptr;
+KeyControl *input::ZOOM_OUT = nullptr;
+KeyControl *input::PAUSE = nullptr;
 
-bool ControlSystem::lmouse_down = false;
-bool ControlSystem::mmouse_down = false;
-bool ControlSystem::rmouse_down = false;
+bool input::lmouse_down = false;
+bool input::mmouse_down = false;
+bool input::rmouse_down = false;
 
-bool ControlSystem::lmouse_up = true;
-bool ControlSystem::mmouse_up = true;
-bool ControlSystem::rmouse_up = true;
+bool input::lmouse_up = true;
+bool input::mmouse_up = true;
+bool input::rmouse_up = true;
 
-int ControlSystem::mouse_x = 0;
-int ControlSystem::mouse_y = 0;
+int input::mouse_x = 0;
+int input::mouse_y = 0;
 
-void ControlSystem::KeyEvent(C_KeyboardEvent event) {
+void input::KeyEvent(C_KeyboardEvent event) {
 
     if (global.game->Iso.ui->UIRendererInput(event)) return;
 
@@ -74,7 +74,7 @@ void ControlSystem::KeyEvent(C_KeyboardEvent event) {
     }
 }
 
-void ControlSystem::InitKey() {
+void input::InitKey() {
     STATS_DISPLAY = Add(create_ref<KeyControl>(SDLK_o, RISING));
     STATS_DISPLAY_DETAILED = Add(create_ref<KeyControl>(SDLK_LSHIFT, MOMENTARY));
     DEBUG_UI = Add(create_ref<KeyControl>(SDLK_TAB, RISING));
@@ -98,7 +98,7 @@ void ControlSystem::InitKey() {
     PAUSE = Add(create_ref<KeyControl>(SDLK_ESCAPE, RISING));
 }
 
-KeyControl *ControlSystem::Add(ref<KeyControl> c) {
+KeyControl *input::Add(ref<KeyControl> c) {
 
     if (!initted) {
         keyControls = {};
@@ -109,7 +109,7 @@ KeyControl *ControlSystem::Add(ref<KeyControl> c) {
     return c.get();
 }
 
-void ControlSystem::InitKeymap() {
+void input::InitKeymap() {
     if (SDLKeymap.size() == 0) {
         SDLKeymap.insert(std::pair<std::string, int>("backspace", 8));
         SDLKeymap.insert(std::pair<std::string, int>("tab", 9));
@@ -345,7 +345,7 @@ void ControlSystem::InitKeymap() {
     }
 }
 
-std::string ControlSystem::SDLKeyToString(int sdlkey) {
+std::string input::SDLKeyToString(int sdlkey) {
     InitKeymap();
 
     std::map<std::string, int>::iterator i;
@@ -356,7 +356,7 @@ std::string ControlSystem::SDLKeyToString(int sdlkey) {
     return "unknown";
 }
 
-int ControlSystem::StringToSDLKey(const std::string &s) {
+int input::StringToSDLKey(const std::string &s) {
     InitKeymap();
 
     std::map<std::string, int>::iterator i = SDLKeymap.find(cpp::Lowercase(s));

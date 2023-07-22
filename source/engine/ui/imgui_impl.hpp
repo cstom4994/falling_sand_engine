@@ -36,7 +36,6 @@
 #endif
 
 #include "engine/core/core.hpp"
-#include "libs/imgui/md4c.h"
 
 // Backend API
 bool ImGui_ImplOpenGL3_Init();

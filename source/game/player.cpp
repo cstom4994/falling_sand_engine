@@ -91,7 +91,7 @@ void Player::renderLQ(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
 
 MEvec2 rotate_point2(f32 cx, f32 cy, f32 angle, MEvec2 p);
 
-void Player::setItemInHand(WorldEntity *we, Item *item, World *world) {
+void Player::setItemInHand(WorldEntity *we, Item *item, world *world) {
     RigidBody *r;
     if (heldItem != NULL) {
         phy::Rectangle *ps = new phy::Rectangle;

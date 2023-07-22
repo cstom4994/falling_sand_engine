@@ -31,21 +31,13 @@ platforms {"Win64"}
 filter "configurations:Debug"
 defines {"_DEBUG", "DEBUG", "_CRTDBG_MAP_ALLOC"}
 symbols "On"
+libdirs {"dependencies/SDL2/lib/debug"}
 
 filter "configurations:Release"
 defines {"_NDEBUG", "NDEBUG"}
 optimize "On"
 flags {"NoRuntimeChecks"}
-
-MONO_STATIC = 0
-
-local mono_libs = {}
-if (MONO_STATIC == 0) then
-    mono_libs = {"coreclr.import"}
-else
-    mono_libs = {"monosgen-2.0", "mono-component-debugger-static", "mono-component-diagnostics_tracing-static",
-                 "mono-component-hot_reload-static"}
-end
+libdirs {"dependencies/SDL2/lib/release"}
 
 -- if is_arch("arm.*") then
 --        add_defines("__METADOT_ARCH_ARM")
@@ -60,14 +52,13 @@ end
 filter "platforms:Win64"
 system "Windows"
 architecture "x86_64"
-libdirs {"dependencies/SDL2/lib/x64", "dependencies/libffi/lib", "dependencies/mono/lib", "dependencies/fmod/lib"}
+libdirs {"dependencies/libffi/lib", "dependencies/fmod/lib"}
 
 objdir "vsbuild/obj/%{cfg.platform}_%{cfg.buildcfg}"
 
 includedirs {"source"}
 
-includedirs {"dependencies/SDL2/include", "dependencies/libffi/include", "dependencies/mono/include",
-             "dependencies/fmod/include"}
+includedirs {"dependencies/SDL2/include", "dependencies/libffi/include", "dependencies/fmod/include"}
 
 ----------------------------------------------------------------------------
 -- projects
@@ -84,14 +75,12 @@ do
 
     files {"source/libs/**.h", "source/libs/**.hpp"}
 
-    files {"dependencies/SDL2/include/**.**", "dependencies/libffi/include/**.**", "dependencies/mono/include/**.**",
-           "dependencies/fmod/include/**.**"}
+    files {"dependencies/SDL2/include/**.**", "dependencies/libffi/include/**.**", "dependencies/fmod/include/**.**"}
 
     vpaths {
         ["libs/*"] = {"source/libs"},
         ["deps/sdl2/*"] = {"dependencies/SDL2/include"},
         ["deps/libffi/*"] = {"dependencies/libffi/include"},
-        ["deps/mono/*"] = {"dependencies/mono/include"},
         ["deps/fmod/*"] = {"dependencies/fmod/include"}
     }
 
@@ -119,47 +108,5 @@ do
         ["*"] = {"premake5.lua"}
     }
 
-    links {"external", "SDL2", "ffi", "fmod_vc", "fmodstudio_vc", mono_libs, win32_libs}
-end
-
-project "ManagedCore"
-do
-    kind "SharedLib"
-    language "C#"
-    targetdir "output"
-    debugdir "output/../"
-
-    clr "Unsafe"
-
-    dotnetframework "4.8"
-
-    files {"source/managed/core/**.cs"}
-
-    vpaths {
-        ["core/*"] = {"source/managed/core"}
-    }
-
-    warnings "off"
-end
-
-project "Managed"
-do
-    kind "SharedLib"
-    language "C#"
-    targetdir "output"
-    debugdir "output/../"
-
-    clr "Unsafe"
-
-    links {"ManagedCore"}
-
-    dotnetframework "4.8"
-
-    files {"source/managed/runtime/**.cs"}
-
-    vpaths {
-        ["runtime/*"] = {"source/managed/runtime"}
-    }
-
-    warnings "off"
+    links {"external", "SDL2", "ffi", "fmod_vc", "fmodstudio_vc", win32_libs}
 end

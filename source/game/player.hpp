@@ -174,7 +174,7 @@ public:
 
     void render(WorldEntity *we, R_Target *target, int ofsX, int ofsY);
     void renderLQ(WorldEntity *we, R_Target *target, int ofsX, int ofsY);
-    void setItemInHand(WorldEntity *we, Item *item, World *world);
+    void setItemInHand(WorldEntity *we, Item *item, world *world);
 
     Player(const Player &p) = default;
 
@@ -195,7 +195,7 @@ struct meta::static_refl::TypeInfo<Player> : TypeInfoBase<Player> {
 
             Field{TSTR("render"), static_cast<void (Type::*)(WorldEntity *we, R_Target *target, int ofsX, int ofsY) /* const */>(&Type::render)},
             Field{TSTR("renderLQ"), static_cast<void (Type::*)(WorldEntity *we, R_Target *target, int ofsX, int ofsY) /* const */>(&Type::renderLQ)},
-            Field{TSTR("setItemInHand"), static_cast<void (Type::*)(WorldEntity *we, Item *item, World *world) /* const */>(&Type::setItemInHand)},
+            Field{TSTR("setItemInHand"), static_cast<void (Type::*)(WorldEntity *we, Item *item, world *world) /* const */>(&Type::setItemInHand)},
     };
 };
 

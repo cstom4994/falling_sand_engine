@@ -60,9 +60,9 @@ struct meta::static_refl::TypeInfo<IGameSystem> : TypeInfoBase<IGameSystem> {
 
 #define REGISTER_SYSTEM(name) name(u32 p, SystemFlags f = SystemFlags::Default) : IGameSystem(p, f, #name){};
 
-class GameplayScriptSystem : public IGameSystem {
+class gameplay : public IGameSystem {
 public:
-    REGISTER_SYSTEM(GameplayScriptSystem)
+    REGISTER_SYSTEM(gameplay)
 
     void create() override;
     void destory() override;

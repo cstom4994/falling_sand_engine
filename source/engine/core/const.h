@@ -45,6 +45,10 @@ static const int GameTick = 4;
 #define METADOT_COMPANY "MetaDot"
 #define METADOT_COPYRIGHT "Copyright (c) 2022-2023 KaoruXun. All rights reserved."
 
+#define PACK_VERSION_MAJOR 0
+#define PACK_VERSION_MINOR 0
+#define PACK_VERSION_PATCH 1
+
 #define JRPC_VERSION "2.0"
 
 #define RAD_PER_DEG 0.017453293f

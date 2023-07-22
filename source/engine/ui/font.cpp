@@ -186,7 +186,7 @@ ME_PRIVATE(ve_fontcache) cache;
 
 ME_PRIVATE(ve_font_id) basic_font;
 
-void ME_fontcache::ME_fontcache_drawcmd() {
+void fontcache::ME_fontcache_drawcmd() {
 
     ME_profiler_scope_auto("RenderGUI.Font");
 
@@ -316,7 +316,7 @@ void test_font2( ve_font_id id )
 }
 #endif
 
-void ME_fontcache::ME_fontcache_load(const void *data, size_t data_size) {
+void fontcache::ME_fontcache_load(const void *data, size_t data_size) {
     ve_fontcache_init(&cache);
     ve_fontcache_configure_snap(&cache, this->screen_w, this->screen_h);
     // ME_PRIVATE(std::vector<u8>) buffer;
@@ -324,7 +324,7 @@ void ME_fontcache::ME_fontcache_load(const void *data, size_t data_size) {
     basic_font = ve_fontcache_load(&cache, data, data_size, 42.0f);
 }
 
-void ME_fontcache::ME_fontcache_push(std::string &text, MEvec2 pos) {
+void fontcache::ME_fontcache_push(std::string &text, MEvec2 pos) {
 
     ME_profiler_scope_auto("RenderGUI.Font.Post");
 
@@ -622,7 +622,7 @@ void ME_fontcache::ME_fontcache_push(std::string &text, MEvec2 pos) {
 #endif
 }
 
-void ME_fontcache::resize(MEvec2 size) {
+void fontcache::resize(MEvec2 size) {
     screen_w = size.x;
     screen_h = size.y;
 }
@@ -705,7 +705,7 @@ void test_plist() {
     }
 }
 
-int ME_fontcache::ME_fontcache_init() {
+int fontcache::ME_fontcache_init() {
 
     fontcache_shader_render_glyph = ME_font_compile_shader(vs_source_shared, fs_source_render_glyph);
     fontcache_shader_blit_atlas = ME_font_compile_shader(vs_source_shared, fs_source_blit_atlas);
@@ -731,7 +731,7 @@ int ME_fontcache::ME_fontcache_init() {
     return 0;
 }
 
-int ME_fontcache::ME_fontcache_end() {
+int fontcache::ME_fontcache_end() {
 
     ve_fontcache_shutdown(&cache);
     return 0;

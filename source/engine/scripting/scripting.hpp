@@ -3,8 +3,6 @@
 #ifndef ME_SCRIPTING_HPP
 #define ME_SCRIPTING_HPP
 
-#include <mono/metadata/object-forward.h>
-
 #include <functional>
 #include <map>
 #include <string>
@@ -12,6 +10,7 @@
 #include "engine/core/macros.hpp"
 #include "engine/engine.hpp"
 #include "engine/scripting/lua_wrapper.hpp"
+#include "engine/utils/module.hpp"
 #include "engine/utils/utility.hpp"
 
 struct lua_State;
@@ -61,33 +60,17 @@ void SaveLuaConfig(const T &_struct, const char *table_name, std::string &out) {
 //     });
 // }
 
-class MonoLayer {
-private:
-    MonoObject *callEntryMethod(const char *methodName, void *obj = nullptr, void **params = nullptr, MonoObject **ex = nullptr);
-
-public:
-    bool hotSwapEnable = true;
-    void onAttach();
-    void onDetach();
-    void onUpdate();
-
-    void reloadAssembly();
-    bool isMonoLoaded();
-};
-
 void print_error(lua_State *state, int result = 0);
 void script_runfile(const char *filePath);
 
-class scripting : public singleton<scripting> {
+class scripting : public module<scripting> {
 public:
     lua_wrapper::State s_lua;
-    lua_State *L;
+    lua_State *L = nullptr;
 
     struct {
         lua_wrapper::LuaTable Biome;
     } Data_;
-
-    MonoLayer Mono;
 
     scripting() { METADOT_BUG("[Scripting] init"); };
     ~scripting() { METADOT_BUG("[Scripting] end"); };
@@ -108,9 +91,6 @@ public:
         auto &luawrap = this->s_lua;
         return luawrap.dofile(path);
     }
-
-private:
-    friend class singleton<scripting>;
 };
 
 }  // namespace ME

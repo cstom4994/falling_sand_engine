@@ -135,13 +135,13 @@ int game::init(int argc, char *argv[]) {
     // Initialize Gameplay script system before scripting system initialization
     METADOT_INFO("Loading gameplay script...");
 
-    Iso.gameplayscript = create_ref<GameplayScriptSystem>(2);
+    Iso.gameplayscript = create_ref<gameplay>(2);
     Iso.systemList.push_back(Iso.gameplayscript);
 
-    Iso.ui = create_ref<UISystem>(4);
+    Iso.ui = create_ref<gui>(4);
     Iso.systemList.push_back(Iso.ui);
 
-    Iso.shaderworker = create_ref<ShaderWorkerSystem>(6, SystemFlags::Render);
+    Iso.shaderworker = create_ref<shader_worker>(6, SystemFlags::Render);
     Iso.systemList.push_back(Iso.shaderworker);
 
     Iso.backgrounds = create_ref<BackgroundSystem>(8);
@@ -149,10 +149,11 @@ int game::init(int argc, char *argv[]) {
 
     // Initialize scripting system
     METADOT_INFO("Loading Script...");
-    scripting::get_singleton_ptr()->init();
+    ME::modules::initialize<scripting>();
+    the<scripting>().init();
 
     for (auto &s : Iso.systemList) {
-        s->registerLua(scripting::get_singleton_ptr()->s_lua);
+        s->registerLua(the<scripting>().s_lua);
         s->create();
         // if (!s->getFlag(SystemFlags::ImGui)) {
         //     s->Create();
@@ -188,7 +189,7 @@ int game::init(int argc, char *argv[]) {
     Timer timer;
     timer.start();
 
-    Iso.world = create_scope<World>();
+    Iso.world = create_scope<world>();
     Iso.world->noSaveLoad = true;
     Iso.world->init(METADOT_RESLOC("saves/mainMenu"), (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
                     (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, the<engine>().eng()->target, &global.audio);
@@ -219,12 +220,14 @@ int game::init(int argc, char *argv[]) {
     ME_set_vsync(false);
     ME_win_set_minimize_onlostfocus(false);
 
-    fontcache.resize({(float)the<engine>().eng()->windowWidth, (float)the<engine>().eng()->windowHeight});
+    ME::modules::initialize<fontcache>();
 
-    fontcache.ME_fontcache_init();
+    the<fontcache>().resize({(float)the<engine>().eng()->windowWidth, (float)the<engine>().eng()->windowHeight});
+
+    the<fontcache>().ME_fontcache_init();
 
     auto ui_font = get_assets(".\\fonts\\fusion-pixel.ttf");
-    fontcache.ME_fontcache_load(ui_font.data, ui_font.size);
+    the<fontcache>().ME_fontcache_load(ui_font.data, ui_font.size);
 
     ME_profiler_graph_init(&this->fps, GRAPH_RENDER_FPS, "Frame Time");
     ME_profiler_graph_init(&this->cpuGraph, GRAPH_RENDER_MS, "CPU Time");
@@ -521,10 +524,10 @@ int game::run(int argc, char *argv[]) {
 
             } else if (windowEvent.type == SDL_MOUSEMOTION) {
 
-                ControlSystem::mouse_x = windowEvent.motion.x;
-                ControlSystem::mouse_y = windowEvent.motion.y;
+                input::mouse_x = windowEvent.motion.x;
+                input::mouse_y = windowEvent.motion.y;
 
-                if (ControlSystem::DEBUG_DRAW->get() && !Iso.ui->UIIsMouseOnControls()) {
+                if (input::DEBUG_DRAW->get() && !Iso.ui->UIIsMouseOnControls()) {
                     // draw material
 
                     int x = (int)((windowEvent.motion.x - GAME()->ofsX - GAME()->camX) / the<engine>().eng()->render_scale);
@@ -559,7 +562,7 @@ int game::run(int argc, char *argv[]) {
                     lastDrawMY = 0;
                 }
 
-                if (ControlSystem::mmouse_down && !Iso.ui->UIIsMouseOnControls()) {
+                if (input::mmouse_down && !Iso.ui->UIIsMouseOnControls()) {
                     // erase material
 
                     // erase from world
@@ -645,13 +648,13 @@ int game::run(int argc, char *argv[]) {
                 }
 
             } else if (windowEvent.type == SDL_KEYDOWN || windowEvent.type == SDL_KEYUP) {
-                ControlSystem::KeyEvent(windowEvent.key);
+                input::KeyEvent(windowEvent.key);
             }
 
             if (windowEvent.type == SDL_MOUSEBUTTONDOWN) {
                 if (windowEvent.button.button == SDL_BUTTON_LEFT) {
-                    ControlSystem::lmouse_down = true;
-                    ControlSystem::lmouse_up = false;
+                    input::lmouse_down = true;
+                    input::lmouse_up = false;
 
                     if (Iso.world->player) {
 
@@ -787,8 +790,8 @@ int game::run(int argc, char *argv[]) {
                     }
 
                 } else if (windowEvent.button.button == SDL_BUTTON_RIGHT) {
-                    ControlSystem::rmouse_down = true;
-                    ControlSystem::rmouse_up = false;
+                    input::rmouse_down = true;
+                    input::rmouse_up = false;
                     if (Iso.world->player) {
 
                         auto [pl_we, pl] = Iso.world->getHostPlayer();
@@ -796,13 +799,13 @@ int game::run(int argc, char *argv[]) {
                         pl->startThrow = ME_gettime();
                     }
                 } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
-                    ControlSystem::mmouse_down = true;
-                    ControlSystem::mmouse_up = false;
+                    input::mmouse_down = true;
+                    input::mmouse_up = false;
                 }
             } else if (windowEvent.type == SDL_MOUSEBUTTONUP) {
                 if (windowEvent.button.button == SDL_BUTTON_LEFT) {
-                    ControlSystem::lmouse_down = false;
-                    ControlSystem::lmouse_up = true;
+                    input::lmouse_down = false;
+                    input::lmouse_up = true;
 
                     if (Iso.world->player) {
 
@@ -894,8 +897,8 @@ int game::run(int argc, char *argv[]) {
                         }
                     }
                 } else if (windowEvent.button.button == SDL_BUTTON_RIGHT) {
-                    ControlSystem::rmouse_down = false;
-                    ControlSystem::rmouse_up = true;
+                    input::rmouse_down = false;
+                    input::rmouse_up = true;
 
                     // pickup and drop items
 
@@ -960,8 +963,8 @@ int game::run(int argc, char *argv[]) {
                     }
 
                 } else if (windowEvent.button.button == SDL_BUTTON_MIDDLE) {
-                    ControlSystem::mmouse_down = false;
-                    ControlSystem::rmouse_up = true;
+                    input::mmouse_down = false;
+                    input::rmouse_up = true;
                 }
             }
 
@@ -984,8 +987,8 @@ int game::run(int argc, char *argv[]) {
             if (Iso.globaldef.tick_world) updateFrameEarly();
 
             while (the<engine>().eng()->time.now - the<engine>().eng()->time.lastTickTime > (1000.0f / the<engine>().eng()->time.maxTps)) {
-                scripting::get_singleton_ptr()->update_tick();
-                scripting::get_singleton_ptr()->update();
+                the<scripting>().update_tick();
+                the<scripting>().update();
                 if (Iso.globaldef.tick_world) {
                     tick();
                 }
@@ -1018,7 +1021,7 @@ int game::run(int argc, char *argv[]) {
             the<engine>().eng()->target = the<engine>().eng()->realTarget;
         }
 
-        scripting::get_singleton_ptr()->update_render();
+        the<scripting>().update_render();
 
         // std::string test_text = "hello";
         // fontcache.ME_fontcache_push(test_text, {0.5, 0.5});
@@ -1151,8 +1154,8 @@ int game::run(int argc, char *argv[]) {
 
         tickProfiler();
 
-        INVOKE_ONCE(lua_bind::l_G = scripting::get_singleton_ptr()->L; lua_bind::imgui_init_lua(););
-        // INVOKE_ONCE(Scripting::get_singleton_ptr()->Lua->s_lua.dostring(R"(
+        INVOKE_ONCE(lua_bind::l_G = the<scripting>().L; lua_bind::imgui_init_lua(););
+        // INVOKE_ONCE(the<scripting>().Lua->s_lua.dostring(R"(
         //  -- Main window
         //  local Window = ImGui.new("Window", "example title")
         //  -- Inner elements
@@ -1179,7 +1182,7 @@ int game::run(int argc, char *argv[]) {
 
         Iso.ui->UIRendererDrawImGui();
 
-        fontcache.ME_fontcache_drawcmd();
+        the<fontcache>().ME_fontcache_drawcmd();
 
         // render fade in/out
         if (fadeInWaitFrames > 0) {
@@ -1243,10 +1246,12 @@ int game::exit() {
 
     ME_surface_DeleteGL3(this->surface);
 
-    fontcache.ME_fontcache_end();
+    the<fontcache>().ME_fontcache_end();
 
-    scripting::get_singleton_ptr()->end();
-    scripting::clean();
+    ME::modules::shutdown<fontcache>();
+
+    the<scripting>().end();
+    ME::modules::shutdown<scripting>();
 
     ReleaseGameData();
 
@@ -1265,9 +1270,6 @@ int game::exit() {
         delete p;
     }
 
-    global.audio.Shutdown();
-    ME_endwindow();
-
     the<engine>().end_eng(0);
 
     METADOT_INFO("Clean done...");
@@ -1278,35 +1280,35 @@ int game::exit() {
 void game::updateFrameEarly() {
 
     // handle controls
-    if (ControlSystem::DEBUG_UI->get()) {
+    if (input::DEBUG_UI->get()) {
         Iso.globaldef.ui_tweak ^= true;
         gameUI.visible_debugdraw = Iso.globaldef.ui_tweak;
     }
 
-    if (ControlSystem::CONSOLE_UI->get()) {
+    if (input::CONSOLE_UI->get()) {
         Iso.globaldef.draw_console ^= true;
     }
 
     if (Iso.globaldef.draw_frame_graph) {
-        if (ControlSystem::STATS_DISPLAY->get()) {
+        if (input::STATS_DISPLAY->get()) {
             Iso.globaldef.draw_frame_graph = false;
             Iso.globaldef.draw_debug_stats = false;
             Iso.globaldef.draw_chunk_state = false;
             Iso.globaldef.draw_detailed_material_info = false;
         }
     } else {
-        if (ControlSystem::STATS_DISPLAY->get()) {
+        if (input::STATS_DISPLAY->get()) {
             Iso.globaldef.draw_frame_graph = true;
             Iso.globaldef.draw_debug_stats = true;
 
-            if (ControlSystem::STATS_DISPLAY_DETAILED->get()) {
+            if (input::STATS_DISPLAY_DETAILED->get()) {
                 Iso.globaldef.draw_chunk_state = true;
                 Iso.globaldef.draw_detailed_material_info = true;
             }
         }
     }
 
-    if (ControlSystem::DEBUG_REFRESH->get()) {
+    if (input::DEBUG_REFRESH->get()) {
         for (int x = 0; x < Iso.world->width; x++) {
             for (int y = 0; y < Iso.world->height; y++) {
                 Iso.world->dirty[x + y * Iso.world->width] = true;
@@ -1316,7 +1318,7 @@ void game::updateFrameEarly() {
         }
     }
 
-    if (ControlSystem::DEBUG_RIGID->get()) {
+    if (input::DEBUG_RIGID->get()) {
         for (auto &cur : Iso.world->rigidBodies) {
             ME_ASSERT(cur);
             if (!cur->body->sleep()) {
@@ -1372,17 +1374,17 @@ void game::updateFrameEarly() {
         Iso.world->rigidBodies.clear();
     }
 
-    if (ControlSystem::DEBUG_UPDATE_WORLD_MESH->get()) {
+    if (input::DEBUG_UPDATE_WORLD_MESH->get()) {
         Iso.world->updateWorldMesh();
     }
 
-    if (ControlSystem::DEBUG_EXPLODE->get()) {
+    if (input::DEBUG_EXPLODE->get()) {
         int x = (int)((mx - GAME()->ofsX - GAME()->camX) / the<engine>().eng()->render_scale);
         int y = (int)((my - GAME()->ofsY - GAME()->camY) / the<engine>().eng()->render_scale);
         Iso.world->explosion(x, y, 30);
     }
 
-    if (ControlSystem::DEBUG_CARVE->get()) {
+    if (input::DEBUG_CARVE->get()) {
         // carve square
 
         int x = (int)((mx - GAME()->ofsX - GAME()->camX) / the<engine>().eng()->render_scale - 16);
@@ -1426,15 +1428,15 @@ void game::updateFrameEarly() {
         }
     }
 
-    if (ControlSystem::DEBUG_BRUSHSIZE_INC->get()) {
+    if (input::DEBUG_BRUSHSIZE_INC->get()) {
         gameUI.DebugDrawUI__brushSize = gameUI.DebugDrawUI__brushSize < 50 ? gameUI.DebugDrawUI__brushSize + 1 : gameUI.DebugDrawUI__brushSize;
     }
 
-    if (ControlSystem::DEBUG_BRUSHSIZE_DEC->get()) {
+    if (input::DEBUG_BRUSHSIZE_DEC->get()) {
         gameUI.DebugDrawUI__brushSize = gameUI.DebugDrawUI__brushSize > 1 ? gameUI.DebugDrawUI__brushSize - 1 : gameUI.DebugDrawUI__brushSize;
     }
 
-    if (ControlSystem::DEBUG_TOGGLE_PLAYER->get()) {
+    if (input::DEBUG_TOGGLE_PLAYER->get()) {
         if (Iso.world->player) {
 
             auto [pl_we, pl] = Iso.world->getHostPlayer();
@@ -1497,7 +1499,7 @@ void game::updateFrameEarly() {
         }
     }
 
-    if (ControlSystem::PAUSE->get()) {
+    if (input::PAUSE->get()) {
         if (this->state == EnumGameState::INGAME) {
             gameUI.visible_mainmenu ^= true;
         }
@@ -1514,7 +1516,7 @@ void game::updateFrameEarly() {
             auto [pl_we, pl] = Iso.world->getHostPlayer();
 
             if (pl->heldItem != NULL && pl->heldItem->getFlag(ItemFlags::ItemFlags_Fluid_Container)) {
-                if (ControlSystem::lmouse_down && pl->heldItem->carry.size() > 0) {
+                if (input::lmouse_down && pl->heldItem->carry.size() > 0) {
                     // shoot fluid from container
 
                     int x = (int)(pl_we->x + pl_we->hw / 2.0f + Iso.world->loadZone.x + 10 * (f32)cos((pl->holdAngle + 180) * 3.1415f / 180.0f));
@@ -1846,15 +1848,15 @@ void game::tick() {
         entity_update_event e{this};
         Iso.world->Reg().process_event(e);
 
-        if ((Iso.globaldef.tick_world && Iso.world->readyToMerge.size() == 0) || ControlSystem::DEBUG_TICK->get()) {
+        if ((Iso.globaldef.tick_world && Iso.world->readyToMerge.size() == 0) || input::DEBUG_TICK->get()) {
             Iso.world->tick();
         }
 
         // Tick Cam zoom
 
-        if (state == INGAME && (ControlSystem::ZOOM_IN->get() || ControlSystem::ZOOM_OUT->get())) {
-            f32 CamZoomIn = (f32)(ControlSystem::ZOOM_IN->get());
-            f32 CamZoomOut = (f32)(ControlSystem::ZOOM_OUT->get());
+        if (state == INGAME && (input::ZOOM_IN->get() || input::ZOOM_OUT->get())) {
+            f32 CamZoomIn = (f32)(input::ZOOM_IN->get());
+            f32 CamZoomOut = (f32)(input::ZOOM_OUT->get());
 
             f32 deltaScale = CamZoomIn - CamZoomOut;
             int oldScale = the<engine>().eng()->render_scale;
@@ -2410,15 +2412,15 @@ void game::tickPlayer() {
 
     if (Iso.world->player) {
 
-        if (ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) {
+        if (input::PLAYER_UP->get() && !input::DEBUG_DRAW->get()) {
             if (pl_we->ground) {
                 pl_we->vy = -4;
                 global.audio.PlayEvent("event:/Player/Jump");
             }
         }
 
-        pl_we->vy += (f32)(((ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) ? (pl_we->vy > -1 ? -0.8 : -0.35) : 0) + (ControlSystem::PLAYER_DOWN->get() ? 0.1 : 0));
-        if (ControlSystem::PLAYER_UP->get() && !ControlSystem::DEBUG_DRAW->get()) {
+        pl_we->vy += (f32)(((input::PLAYER_UP->get() && !input::DEBUG_DRAW->get()) ? (pl_we->vy > -1 ? -0.8 : -0.35) : 0) + (input::PLAYER_DOWN->get() ? 0.1 : 0));
+        if (input::PLAYER_UP->get() && !input::DEBUG_DRAW->get()) {
             global.audio.SetEventParameter("event:/Player/Fly", "Intensity", 1);
             for (int i = 0; i < 4; i++) {
                 CellData *p = new CellData(TilesCreateLava(), (f32)(pl_we->x + Iso.world->loadZone.x + pl_we->hw / 2 + rand() % 5 - 2 + pl_we->vx),
@@ -2438,14 +2440,14 @@ void game::tickPlayer() {
             global.audio.SetEventParameter("event:/Player/Wind", "Wind", 0);
         }
 
-        pl_we->vx += (f32)((ControlSystem::PLAYER_LEFT->get() ? (pl_we->vx > 0 ? -0.4 : -0.2) : 0) + (ControlSystem::PLAYER_RIGHT->get() ? (pl_we->vx < 0 ? 0.4 : 0.2) : 0));
-        if (!ControlSystem::PLAYER_LEFT->get() && !ControlSystem::PLAYER_RIGHT->get()) pl_we->vx *= (f32)(pl_we->ground ? 0.85 : 0.96);
+        pl_we->vx += (f32)((input::PLAYER_LEFT->get() ? (pl_we->vx > 0 ? -0.4 : -0.2) : 0) + (input::PLAYER_RIGHT->get() ? (pl_we->vx < 0 ? 0.4 : 0.2) : 0));
+        if (!input::PLAYER_LEFT->get() && !input::PLAYER_RIGHT->get()) pl_we->vx *= (f32)(pl_we->ground ? 0.85 : 0.96);
         if (pl_we->vx > 4.5) pl_we->vx = 4.5;
         if (pl_we->vx < -4.5) pl_we->vx = -4.5;
     } else {
         if (state == INGAME) {
-            GAME()->freeCamX += (f32)((ControlSystem::PLAYER_LEFT->get() ? -5 : 0) + (ControlSystem::PLAYER_RIGHT->get() ? 5 : 0));
-            GAME()->freeCamY += (f32)((ControlSystem::PLAYER_UP->get() ? -5 : 0) + (ControlSystem::PLAYER_DOWN->get() ? 5 : 0));
+            GAME()->freeCamX += (f32)((input::PLAYER_LEFT->get() ? -5 : 0) + (input::PLAYER_RIGHT->get() ? 5 : 0));
+            GAME()->freeCamY += (f32)((input::PLAYER_UP->get() ? -5 : 0) + (input::PLAYER_DOWN->get() ? 5 : 0));
         } else {
         }
     }
@@ -2835,7 +2837,7 @@ void game::renderEarly() {
         R_BlitRect(TexturePack_.loadingTexture, NULL, the<engine>().eng()->target, NULL);
 
         std::string test_text = "加载中...";
-        fontcache.ME_fontcache_push(test_text, {0.45, 0.45});
+        the<fontcache>().ME_fontcache_push(test_text, {0.45, 0.45});
 
     } else {
         // render entities with LERP
@@ -2888,14 +2890,14 @@ void game::renderEarly() {
             }
         }
 
-        if (ControlSystem::mmouse_down) {
+        if (input::mmouse_down) {
             int x = (int)((mx - GAME()->ofsX - GAME()->camX) / the<engine>().eng()->render_scale);
             int y = (int)((my - GAME()->ofsY - GAME()->camY) / the<engine>().eng()->render_scale);
             R_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - gameUI.DebugDrawUI__brushSize / 2.0f, y - gameUI.DebugDrawUI__brushSize / 2.0f,
                               x + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)), y + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)), {0xff, 0x40, 0x40, 0x90});
             R_Rectangle(TexturePack_.textureEntitiesLQ->target, x - gameUI.DebugDrawUI__brushSize / 2.0f, y - gameUI.DebugDrawUI__brushSize / 2.0f,
                         x + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)) + 1, y + (int)(ceil(gameUI.DebugDrawUI__brushSize / 2.0)) + 1, {0xff, 0x40, 0x40, 0xE0});
-        } else if (ControlSystem::DEBUG_DRAW->get()) {
+        } else if (input::DEBUG_DRAW->get()) {
             int x = (int)((mx - GAME()->ofsX - GAME()->camX) / the<engine>().eng()->render_scale);
             int y = (int)((my - GAME()->ofsY - GAME()->camY) / the<engine>().eng()->render_scale);
             R_RectangleFilled(TexturePack_.textureEntitiesLQ->target, x - gameUI.DebugDrawUI__brushSize / 2.0f, y - gameUI.DebugDrawUI__brushSize / 2.0f,
@@ -2933,7 +2935,7 @@ void game::renderLate() {
         if (Iso.globaldef.draw_shaders) {
 
             if (Iso.shaderworker->waterFlowPassShader->dirty && Iso.globaldef.water_showFlow) {
-                Iso.shaderworker->waterFlowPassShader->Activate();
+                Iso.shaderworker->waterFlowPassShader->activate();
                 Iso.shaderworker->waterFlowPassShader->Update(Iso.world->width, Iso.world->height);
                 R_SetBlendMode(TexturePack_.textureFlow, R_BLEND_SET);
                 R_BlitRect(TexturePack_.textureFlow, NULL, TexturePack_.textureFlowSpead->target, NULL);
@@ -2941,7 +2943,7 @@ void game::renderLate() {
                 Iso.shaderworker->waterFlowPassShader->dirty = false;
             }
 
-            Iso.shaderworker->waterShader->Activate();
+            Iso.shaderworker->waterShader->activate();
             f32 t = (the<engine>().eng()->time.now - the<engine>().eng()->time.startTime) / 1000.0;
             Iso.shaderworker->waterShader->Update(t, the<engine>().eng()->target->w * the<engine>().eng()->render_scale, the<engine>().eng()->target->h * the<engine>().eng()->render_scale,
                                                   TexturePack_.texture, r1.x, r1.y, r1.w, r1.h, the<engine>().eng()->render_scale, TexturePack_.textureFlowSpead, Iso.globaldef.water_overlay,
@@ -2978,7 +2980,7 @@ void game::renderLate() {
         R_BlitRect(TexturePack_.textureEntities, NULL, TexturePack_.worldTexture->target, NULL);
 
         if (Iso.globaldef.draw_shaders) {
-            Iso.shaderworker->newLightingShader->Activate();
+            Iso.shaderworker->newLightingShader->activate();
             // GameIsolate_.shaderworker->crtShader->Activate();
         }
 
@@ -3063,12 +3065,12 @@ void game::renderLate() {
         if (Iso.globaldef.draw_shaders) {
             R_Clear(TexturePack_.texture2Fire->target);
 
-            Iso.shaderworker->fireShader->Activate();
+            Iso.shaderworker->fireShader->activate();
             Iso.shaderworker->fireShader->Update(TexturePack_.textureFire);
             R_BlitRect(TexturePack_.textureFire, NULL, TexturePack_.texture2Fire->target, NULL);
             R_ActivateShaderProgram(0, NULL);
 
-            Iso.shaderworker->fire2Shader->Activate();
+            Iso.shaderworker->fire2Shader->activate();
             Iso.shaderworker->fire2Shader->Update(TexturePack_.texture2Fire);
             R_BlitRect(TexturePack_.texture2Fire, NULL, the<engine>().eng()->target, &r1);
             R_ActivateShaderProgram(0, NULL);
@@ -3548,7 +3550,7 @@ Drawing::drawText(target, buffVersion, font16, 4, HEIGHT - 32 + 13, 0xff, 0xff, 
 */
 }
 
-void game::renderTemperatureMap(World *world) {
+void game::renderTemperatureMap(world *world) {
 
     for (int x = 0; x < Iso.world->width; x++) {
         for (int y = 0; y < Iso.world->height; y++) {
@@ -3647,7 +3649,7 @@ void game::quitToMainMenu() {
 
     std::string wpStr = METADOT_RESLOC(std::format("saves/{0}", worldName).c_str());
 
-    Iso.world = create_scope<World>();
+    Iso.world = create_scope<world>();
     Iso.world->noSaveLoad = true;
     Iso.world->init(wpStr, (int)ceil(WINDOWS_MAX_WIDTH / RENDER_C_TEST / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * RENDER_C_TEST,
                     (int)ceil(WINDOWS_MAX_HEIGHT / RENDER_C_TEST / (f64)CHUNK_H) * CHUNK_H + CHUNK_H * RENDER_C_TEST, the<engine>().eng()->target, &global.audio, generator);

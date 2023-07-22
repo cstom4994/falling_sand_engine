@@ -190,7 +190,7 @@ void UntexturedShader::Update(float mvp[], GLfloat gldata[]) {
 
 #pragma endregion Shaders
 
-void ShaderWorkerSystem::create() {
+void shader_worker::create() {
 
     Timer timer;
     timer.start();
@@ -237,14 +237,14 @@ void ShaderWorkerSystem::create() {
 
     glGenBuffers(1, &this->untexturedShader->VBO);
 
-    this->crtShader->Init();
-    this->waterShader->Init();
-    this->waterFlowPassShader->Init();
-    this->newLightingShader->Init();
-    this->fireShader->Init();
-    this->fire2Shader->Init();
-    this->blurShader->Init();
-    this->untexturedShader->Init();
+    this->crtShader->init();
+    this->waterShader->init();
+    this->waterFlowPassShader->init();
+    this->newLightingShader->init();
+    this->fireShader->init();
+    this->fire2Shader->init();
+    this->blurShader->init();
+    this->untexturedShader->init();
 
     timer.stop();
 
@@ -253,11 +253,11 @@ void ShaderWorkerSystem::create() {
 
 #define SAFEUNLOADSHADER(x) \
     if (this->x) {          \
-        this->x->Unload();  \
+        this->x->unload();  \
         delete this->x;     \
     }
 
-void ShaderWorkerSystem::destory() {
+void shader_worker::destory() {
     SAFEUNLOADSHADER(crtShader);
     SAFEUNLOADSHADER(waterShader);
     SAFEUNLOADSHADER(waterFlowPassShader);
@@ -270,13 +270,13 @@ void ShaderWorkerSystem::destory() {
     METADOT_BUG("ShaderWorker destroyed");
 }
 
-void ShaderWorkerSystem::reload() {
+void shader_worker::reload() {
     this->destory();
     this->create();
 }
 
 #undef SAFEUNLOADSHADER
 
-void ShaderWorkerSystem::registerLua(lua_wrapper::State &s_lua) {}
+void shader_worker::registerLua(lua_wrapper::State &s_lua) {}
 
 }  // namespace ME

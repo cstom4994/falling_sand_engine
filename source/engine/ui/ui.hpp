@@ -93,7 +93,7 @@ struct UIElement {
 // static_assert(sizeof(UIElement) == 176);
 
 typedef struct UIData {
-    ref<ImGuiLayer> imgui;
+    ref<dbgui> imgui;
 
     // std::map<std::string, UIElement> elementLists = {};
     std::map<std::string, ref<UIElement>> elementLists = {};
@@ -102,9 +102,9 @@ typedef struct UIData {
     UIElement* onmoving = nullptr;
 } UIData;
 
-class UISystem : public IGameSystem {
+class gui : public IGameSystem {
 public:
-    REGISTER_SYSTEM(UISystem)
+    REGISTER_SYSTEM(gui)
 
     UIData* uidata = nullptr;
 

@@ -57,7 +57,7 @@ R_ShaderBlock ME_Shaders_LoadShaderProgram(u32* p, const char* vertex_shader_fil
 
 void ME_Shaders_FreeShader(u32 p) { R_FreeShaderProgram(p); }
 
-u32 ShaderBase::Init() {
+u32 shader_base::init() {
     this->shader = 0;
     this->block = ME_Shaders_LoadShaderProgram(&this->shader, this->vertex_shader_file.c_str(), this->fragment_shader_file.c_str());
     if (this->shader_name.empty()) {
@@ -68,9 +68,9 @@ u32 ShaderBase::Init() {
     return this->shader;
 }
 
-void ShaderBase::Unload() { ME_Shaders_FreeShader(this->shader); }
+void shader_base::unload() { ME_Shaders_FreeShader(this->shader); }
 
-void ShaderBase::Activate() { R_ActivateShaderProgram(this->shader, &this->block); }
+void shader_base::activate() { R_ActivateShaderProgram(this->shader, &this->block); }
 
 //--------------------------------------------------------------------------------------------------------------------------------//
 

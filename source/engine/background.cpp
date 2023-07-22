@@ -28,7 +28,7 @@ void BackgroundObject::Init() {
 }
 
 void NewBackgroundObject(std::string name, u32 solid, lua_wrapper::LuaRef table) {
-    auto &L = scripting::get_singleton_ptr()->s_lua;
+    auto &L = the<scripting>().s_lua;
     std::vector<lua_wrapper::LuaRef> b = table;
     std::vector<BackgroundLayerRef> Layers;
 
@@ -62,7 +62,7 @@ BackgroundObject *BackgroundSystem::Get(std::string name) {
 void BackgroundSystem::create() {
 
     // NewBackgroundObject("TEST_OVERWORLD");
-    auto &L = scripting::get_singleton_ptr()->s_lua;
+    auto &L = the<scripting>().s_lua;
 
     this->registerLua(L);
 
@@ -81,8 +81,8 @@ void BackgroundSystem::registerLua(lua_wrapper::State &s_lua) { s_lua["NewBackgr
 void BackgroundSystem::draw() {
     // 绘制背景贴图
     if (NULL == global.game->bg) global.game->bg = global.game->Iso.backgrounds->Get("TEST_OVERWORLD");
-    if (NULL != global.game->bg && !global.game->bg->layers.empty() && global.game->Iso.globaldef.draw_background && the<engine>().eng()->render_scale <= ME_ARRAY_SIZE(global.game->bg->layers[0]->surface) &&
-        global.game->Iso.world->loadZone.y > -5 * CHUNK_H) {
+    if (NULL != global.game->bg && !global.game->bg->layers.empty() && global.game->Iso.globaldef.draw_background &&
+        the<engine>().eng()->render_scale <= ME_ARRAY_SIZE(global.game->bg->layers[0]->surface) && global.game->Iso.world->loadZone.y > -5 * CHUNK_H) {
         R_SetShapeBlendMode(R_BLEND_SET);
         MEcolor col = {static_cast<u8>((global.game->bg->solid >> 16) & 0xff), static_cast<u8>((global.game->bg->solid >> 8) & 0xff), static_cast<u8>((global.game->bg->solid >> 0) & 0xff), 0xff};
         R_ClearColor(the<engine>().eng()->target, col);

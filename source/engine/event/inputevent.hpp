@@ -36,7 +36,7 @@ public:
     bool get();
 };
 
-class ControlSystem {
+class input {
 public:
     static bool lmouse_down;
     static bool mmouse_down;

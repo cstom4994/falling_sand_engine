@@ -38,43 +38,6 @@
 #include "engine/core/basic_types.h"
 #include "engine/core/macros.hpp"
 
-#define METADOT_INT8_MAX 0x7F
-#define METADOT_UINT8_MAX 0xFF
-#define METADOT_INT16_MAX 0x7FFF
-#define METADOT_UINT16_MAX 0xFFFF
-#define METADOT_INT32_MAX 0x7FFFFFFF
-#define METADOT_UINT32_MAX 0xFFFFFFFF
-#define METADOT_INT64_MAX 0x7FFFFFFFFFFFFFFF
-#define METADOT_UINT64_MAX 0xFFFFFFFFFFFFFFFF
-
-#define METADOT_OK 0
-#define METADOT_FAILED 1
-
-#ifdef ME_PLATFORM_WINDOWS
-#define METADOT_CDECL __cdecl
-#else
-#define METADOT_CDECL
-#endif
-
-#define ME_UNUSED(x) (void)x
-#define ME_ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-#define ME_KB 1024
-#define ME_MB (ME_KB * ME_KB)
-#define ME_GB (ME_MB * ME_MB)
-#define ME_SERIALIZE_CHECK(x)                          \
-    do {                                               \
-        if ((x) != SERIALIZE_SUCCESS) goto cute_error; \
-    } while (0)
-#define ME_STATIC_ASSERT(condition, error_message_string) static_assert(condition, error_message_string)
-#define ME_STRINGIZE_INTERNAL(...) #__VA_ARGS__
-#define ME_STRINGIZE(...) ME_STRINGIZE_INTERNAL(__VA_ARGS__)
-#define ME_OFFSET_OF(T, member) ((size_t)((uintptr_t)(&(((T *)0)->member))))
-#define ME_DEBUG_PRINTF(...)
-#define ME_ALIGN_TRUNCATE(v, n) ((v) & ~((n)-1))
-#define ME_ALIGN_FORWARD(v, n) ME_ALIGN_TRUNCATE((v) + (n)-1, (n))
-#define ME_ALIGN_TRUNCATE_PTR(p, n) ((void *)ME_ALIGN_TRUNCATE((uintptr_t)(p), n))
-#define ME_ALIGN_FORWARD_PTR(p, n) ((void *)ME_ALIGN_FORWARD((uintptr_t)(p), n))
-
 #define METADOT_CALLABLE(func_name) [](auto... args) -> decltype(auto) { return func_name(std::move(args)...); }
 
 #if defined(IGNORE_DEPRECATED_WARNING)

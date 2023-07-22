@@ -1662,7 +1662,7 @@ static int lz4_decompress(lua_State *L) {
     size_t p_len = in_len;
 
     LZ4F_decompressionContext_t ctx = NULL;
-    LZ4F_frameInfo_t info;
+    // LZ4F_frameInfo_t info;
     LZ4F_errorCode_t code;
 
     code = LZ4F_createDecompressionContext(&ctx, LZ4F_VERSION);

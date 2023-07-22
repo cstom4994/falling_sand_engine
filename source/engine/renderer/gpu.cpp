@@ -132,7 +132,7 @@ void draw_spinning_triangle(R_Target *screen) {
     gldata[19] = 1.0f;
     gldata[20] = 1.0f;
 
-    global.game->Iso.shaderworker->untexturedShader->Activate();
+    global.game->Iso.shaderworker->untexturedShader->activate();
     global.game->Iso.shaderworker->untexturedShader->Update(mvp, gldata);
 }
 

@@ -26,9 +26,7 @@ namespace ME {
 
 void ReleaseGameData() {
     for (auto b : GAME()->biome_container)
-        if (static_cast<bool>(b)) {
-            ME_DELETE(b, Biome);
-        }
+        if (static_cast<bool>(b)) ME_DELETE(b, Biome);
 }
 
 #pragma region Material
@@ -596,7 +594,7 @@ Structure::Structure(C_Surface *texture, Material mat) {
     this->tiles = tiles;
 }
 
-Structure Structures::makeTree(World world, int x, int y) {
+Structure Structures::makeTree(world world, int x, int y) {
     int w = 50 + rand() % 10;
     int h = 80 + rand() % 20;
     MaterialInstance *tiles = new MaterialInstance[w * h];
@@ -653,7 +651,7 @@ Structure Structures::makeTree(World world, int x, int y) {
     return Structure(w, h, tiles);
 }
 
-Structure Structures::makeTree1(World world, int x, int y) {
+Structure Structures::makeTree1(world world, int x, int y) {
     char buff[30];
     snprintf(buff, sizeof(buff), "data/assets/objects/tree%d.png", rand() % 8 + 1);
     std::string buffAsStdStr = buff;
@@ -807,7 +805,7 @@ PlacedStructure::PlacedStructure(Structure base, int x, int y) {
 //  return structs;
 // }
 
-std::vector<PlacedStructure> TestPhase1Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+std::vector<PlacedStructure> TestPhase1Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world) {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xff0000);
@@ -817,7 +815,7 @@ std::vector<PlacedStructure> TestPhase1Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> TestPhase2Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+std::vector<PlacedStructure> TestPhase2Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world) {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0x00ff00);
@@ -827,7 +825,7 @@ std::vector<PlacedStructure> TestPhase2Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> TestPhase3Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+std::vector<PlacedStructure> TestPhase3Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world) {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0x0000ff);
@@ -837,7 +835,7 @@ std::vector<PlacedStructure> TestPhase3Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> TestPhase4Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+std::vector<PlacedStructure> TestPhase4Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world) {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xffff00);
@@ -847,7 +845,7 @@ std::vector<PlacedStructure> TestPhase4Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> TestPhase5Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+std::vector<PlacedStructure> TestPhase5Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world) {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xff00ff);
@@ -857,7 +855,7 @@ std::vector<PlacedStructure> TestPhase5Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> TestPhase6Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+std::vector<PlacedStructure> TestPhase6Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world) {
     for (int x = 0; x < 10; x++) {
         for (int y = 0; y < 10; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0x00ffff);
@@ -867,7 +865,7 @@ std::vector<PlacedStructure> TestPhase6Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> TestPhase0Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, World *world) {
+std::vector<PlacedStructure> TestPhase0Populator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk *area, bool *dirty, int tx, int ty, int tw, int th, Chunk ch, world *world) {
     for (int x = 10; x < 20; x++) {
         for (int y = 10; y < 20; y++) {
             chunk[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xffffff);
@@ -877,7 +875,7 @@ std::vector<PlacedStructure> TestPhase0Populator::apply(MaterialInstance *chunk,
     return {};
 }
 
-std::vector<PlacedStructure> CavePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
+std::vector<PlacedStructure> CavePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, world *world) {
 
     if (ch->y < 0) return {};
     for (int x = 0; x < CHUNK_W; x++) {
@@ -908,7 +906,7 @@ std::vector<PlacedStructure> CavePopulator::apply(MaterialInstance *chunk, Mater
     return {};
 }
 
-std::vector<PlacedStructure> CobblePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
+std::vector<PlacedStructure> CobblePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, world *world) {
 
     if (ch->y < 0) return {};
 
@@ -995,7 +993,7 @@ std::vector<PlacedStructure> CobblePopulator::apply(MaterialInstance *chunk, Mat
     return {};
 }
 
-std::vector<PlacedStructure> OrePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
+std::vector<PlacedStructure> OrePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, world *world) {
 
     if (ch->y < 0) return {};
     for (int x = 0; x < CHUNK_W; x++) {
@@ -1019,7 +1017,7 @@ std::vector<PlacedStructure> OrePopulator::apply(MaterialInstance *chunk, Materi
     return {};
 }
 
-std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, World *world) {
+std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, MaterialInstance *layer2, Chunk **area, bool *dirty, int tx, int ty, int tw, int th, Chunk *ch, world *world) {
     if (ch->y < 0 || ch->y > 3) return {};
     int x = (rand() % (CHUNK_W / 2) + (CHUNK_W / 4)) * 1;
     if (area[1 + 2 * 3]->tiles[x + 0 * CHUNK_W].mat->id == GAME()->materials_list.SOFT_DIRT.id) return {};

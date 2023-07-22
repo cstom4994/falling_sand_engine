@@ -9,7 +9,7 @@
 
 namespace ME {
 
-class CrtShader : public ShaderBase {
+class CrtShader : public shader_base {
 public:
     bool enable;
 
@@ -18,7 +18,7 @@ public:
     ShaderBaseDecl();
 };
 
-class WaterFlowPassShader : public ShaderBase {
+class WaterFlowPassShader : public shader_base {
 public:
     bool dirty;
 
@@ -27,14 +27,14 @@ public:
     ShaderBaseDecl();
 };
 
-class WaterShader : public ShaderBase {
+class WaterShader : public shader_base {
 public:
     void Update(f32 t, int w, int h, R_Image *maskImg, int mask_x, int mask_y, int mask_w, int mask_h, int scale, R_Image *flowImg, int overlay, bool showFlow, bool pixelated);
 
     ShaderBaseDecl();
 };
 
-class NewLightingShader : public ShaderBase {
+class NewLightingShader : public shader_base {
 public:
     f32 lastLx;
     f32 lastLy;
@@ -59,28 +59,28 @@ public:
     ShaderBaseDecl();
 };
 
-class FireShader : public ShaderBase {
+class FireShader : public shader_base {
 public:
     void Update(R_Image *tex);
 
     ShaderBaseDecl();
 };
 
-class Fire2Shader : public ShaderBase {
+class Fire2Shader : public shader_base {
 public:
     void Update(R_Image *tex);
 
     ShaderBaseDecl();
 };
 
-class BlurShader : public ShaderBase {
+class BlurShader : public shader_base {
 public:
     void Update(R_Image *tex);
 
     ShaderBaseDecl();
 };
 
-class UntexturedShader : public ShaderBase {
+class UntexturedShader : public shader_base {
 public:
     GLuint VBO;
     GLuint modelViewProjection_loc;
@@ -91,7 +91,7 @@ public:
     ShaderBaseDecl();
 };
 
-class ShaderWorkerSystem : public IGameSystem {
+class shader_worker : public IGameSystem {
 public:
     CrtShader *crtShader = nullptr;
     WaterShader *waterShader = nullptr;
@@ -102,7 +102,7 @@ public:
     BlurShader *blurShader = nullptr;
     UntexturedShader *untexturedShader = nullptr;
 
-    REGISTER_SYSTEM(ShaderWorkerSystem)
+    REGISTER_SYSTEM(shader_worker)
 
     void create() override;
     void destory() override;

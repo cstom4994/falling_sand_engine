@@ -11,21 +11,21 @@ namespace ME {
 
 class ScriptingWorldGenerator : public WorldGenerator {
 
-    void generateChunk(World *world, Chunk *ch) override;
+    void generateChunk(world *world, Chunk *ch) override;
     std::vector<Populator *> getPopulators() override;
 };
 
 class MaterialTestGenerator : public WorldGenerator {
-    void generateChunk(World *world, Chunk *ch) override;
+    void generateChunk(world *world, Chunk *ch) override;
     std::vector<Populator *> getPopulators() override;
 };
 
 class DefaultGenerator : public WorldGenerator {
 
-    int getBaseHeight(World *world, int x, Chunk *ch);
-    int getHeight(World *world, int x, Chunk *ch);
+    int getBaseHeight(world *world, int x, Chunk *ch);
+    int getHeight(world *world, int x, Chunk *ch);
 
-    void generateChunk(World *world, Chunk *ch) override;
+    void generateChunk(world *world, Chunk *ch) override;
 
     std::vector<Populator *> getPopulators() override;
 };

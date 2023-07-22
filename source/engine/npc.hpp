@@ -28,7 +28,7 @@ public:
     int target = 0;
 
     // Get the Current Local State
-    void retrieveState(World &world, int bot);
+    void retrieveState(world &world, int bot);
 
     // Overloaded Operators
     void operator=(const State &rhs) {
@@ -143,7 +143,7 @@ public:
     bool tryInterrupt(State _state);  // Attempt an Interruption of the Bot
     std::string task = "Idle";        // Task Name
     std::stack<MEvec2> path;          // Movement Path
-    void executeTask(World &world);
+    void executeTask(world &world);
 
     // Memories / Brain
     std::deque<Memory> shorterm;   // Shortterm Sensory Memory

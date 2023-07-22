@@ -37,13 +37,13 @@ MEcolor menuActiveTabColor = {0.15, 0.15, 0.2};
 MEcolor brightWhite = {250.0f / 255.0f, 250.0f / 255.0f, 250.0f / 255.0f};
 MEcolor lightWhite = {200.0f / 255.0f, 200.0f / 255.0f, 200.0f / 255.0f};
 
-void UISystem::UIRendererInit() {
+void gui::UIRendererInit() {
     // UIData
     METADOT_INFO("Loading UIData");
     uidata = new UIData;
 
     METADOT_INFO("Loading ImGUI");
-    uidata->imgui = create_ref<ImGuiLayer>();
+    uidata->imgui = create_ref<dbgui>();
     uidata->imgui->Init();
 
     // Test element drawing
@@ -143,7 +143,7 @@ void UISystem::UIRendererInit() {
     uidata->elementLists.insert(std::make_pair("button_play", button_play));
 }
 
-void UISystem::UIRendererPostUpdate() {
+void gui::UIRendererPostUpdate() {
     uidata->imgui->NewFrame();
     // Update UI layout context
 
@@ -155,7 +155,7 @@ void UISystem::UIRendererPostUpdate() {
     }
 }
 
-void UISystem::UIRendererDraw() {
+void gui::UIRendererDraw() {
 
     // METADOT_SCOPE_BEGIN(UIRendererDraw);
 
@@ -253,7 +253,7 @@ void UISystem::UIRendererDraw() {
     // METADOT_SCOPE_END(UIRendererDraw);
 }
 
-void UISystem::UIRendererDrawImGui() {
+void gui::UIRendererDrawImGui() {
     ME_profiler_scope_auto("DrawImGui");
     uidata->imgui->Draw();
 }
@@ -263,10 +263,10 @@ f32 BoxDistence(MErect box, MEvec2 A) {
     return 0;
 }
 
-void UISystem::UIRendererUpdate() {
+void gui::UIRendererUpdate() {
 
     uidata->imgui->Update();
-    auto &l = scripting::get_singleton_ptr()->s_lua;
+    auto &l = the<scripting>().s_lua;
     lua_wrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
     OnGameGUIUpdate();
 
@@ -275,7 +275,7 @@ void UISystem::UIRendererUpdate() {
     bool ImGuiOnControl = ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard;
 
     // Mouse pos
-    int x = ControlSystem::mouse_x, y = ControlSystem::mouse_y;
+    int x = input::mouse_x, y = input::mouse_y;
 
     auto clear_state = [&]() {
         uidata->oninput = nullptr;
@@ -308,7 +308,7 @@ void UISystem::UIRendererUpdate() {
             // Resize window
             if (e.second->resizable.resizing || (e.second->resizable.resizable && !e.second->movable.moving && BoxDistence(rect, {(float)x, (float)y}) < 0.0f &&
                                                  abs(y - e.second->y - e.second->h) < 20.0f && abs(x - e.second->x - e.second->w) < 20.0f)) {
-                if (ControlSystem::lmouse_down && !ImGuiOnControl) {
+                if (input::lmouse_down && !ImGuiOnControl) {
                     if (!e.second->resizable.resizing) {
                         e.second->resizable.mx = x;
                         e.second->resizable.my = y;
@@ -327,7 +327,7 @@ void UISystem::UIRendererUpdate() {
             // Move window
             if (e.second->movable.moving ||
                 (uidata->onmoving == ((bool)uidata->onmoving ? e.second.get() : nullptr) && !e.second->resizable.resizing && BoxDistence(rect, {(float)x, (float)y}) < 0.0f)) {
-                if (ControlSystem::lmouse_down && !ImGuiOnControl) {  // && y - e.second->y < 15.0f
+                if (input::lmouse_down && !ImGuiOnControl) {  // && y - e.second->y < 15.0f
                     if (!e.second->movable.moving) {
                         e.second->movable.mx = x;
                         e.second->movable.my = y;
@@ -354,7 +354,7 @@ void UISystem::UIRendererUpdate() {
             // Pressed button
             if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) {
                 e.second->state = 1;
-                if (ControlSystem::lmouse_down && !ImGuiOnControl && NULL != e.second->cclass.button.func) {
+                if (input::lmouse_down && !ImGuiOnControl && NULL != e.second->cclass.button.func) {
                     e.second->state = 2;
                     e.second->cclass.button.func();
                     clear_state();
@@ -370,7 +370,7 @@ void UISystem::UIRendererUpdate() {
         if (e.second->type == ElementType::inputBoxElement) {
             if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) {
                 e.second->state = 1;
-                if (ControlSystem::lmouse_down && !ImGuiOnControl) {
+                if (input::lmouse_down && !ImGuiOnControl) {
                     e.second->state = 2;
                     uidata->oninput = e.second.get();
                 }
@@ -381,7 +381,7 @@ void UISystem::UIRendererUpdate() {
     }
 }
 
-void UISystem::UIRendererFree() {
+void gui::UIRendererFree() {
     uidata->imgui->End();
     uidata->imgui.reset();
 
@@ -395,7 +395,7 @@ void UISystem::UIRendererFree() {
     delete uidata;
 }
 
-bool UISystem::UIRendererInput(C_KeyboardEvent event) {
+bool gui::UIRendererInput(C_KeyboardEvent event) {
     if (event.type != SDL_KEYDOWN) return false;
     if (uidata->oninput != nullptr) {
         if (event.keysym.sym == SDLK_BACKSPACE) {
@@ -407,15 +407,15 @@ bool UISystem::UIRendererInput(C_KeyboardEvent event) {
             uidata->oninput = nullptr;
             return true;
         }
-        uidata->oninput->text += ControlSystem::SDLKeyToString(event.keysym.sym);
+        uidata->oninput->text += input::SDLKeyToString(event.keysym.sym);
         return true;
     }
     return false;
 }
 
-bool UISystem::UIIsMouseOnControls() {
+bool gui::UIIsMouseOnControls() {
     // Mouse pos
-    int x = ControlSystem::mouse_x, y = ControlSystem::mouse_y;
+    int x = input::mouse_x, y = input::mouse_y;
 
     for (auto &&e : uidata->elementLists) {
         MErect rect{.x = (float)e.second->x, .y = (float)e.second->y, .w = (float)e.second->w, .h = (float)e.second->h};
@@ -424,7 +424,7 @@ bool UISystem::UIIsMouseOnControls() {
     return false;
 }
 
-void UISystem::DrawPoint(MEvec3 pos, float size, Texture *texture, u8 r, u8 g, u8 b) {
+void gui::DrawPoint(MEvec3 pos, float size, Texture *texture, u8 r, u8 g, u8 b) {
     MEvec3 min = {pos.x - size, pos.y - size, 0};
     MEvec3 max = {pos.x + size, pos.y + size, 0};
 
@@ -435,14 +435,14 @@ void UISystem::DrawPoint(MEvec3 pos, float size, Texture *texture, u8 r, u8 g, u
     }
 }
 
-void UISystem::DrawLine(MEvec3 min, MEvec3 max, float thickness, u8 r, u8 g, u8 b) { R_Line(the<engine>().eng()->target, min.x, min.y, max.x, max.y, {r, g, b, 255}); }
+void gui::DrawLine(MEvec3 min, MEvec3 max, float thickness, u8 r, u8 g, u8 b) { R_Line(the<engine>().eng()->target, min.x, min.y, max.x, max.y, {r, g, b, 255}); }
 
-void UISystem::create() { UIRendererInit(); }
+void gui::create() { UIRendererInit(); }
 
-void UISystem::destory() { UIRendererFree(); }
+void gui::destory() { UIRendererFree(); }
 
-void UISystem::reload() {}
+void gui::reload() {}
 
-void UISystem::registerLua(lua_wrapper::State &s_lua) {}
+void gui::registerLua(lua_wrapper::State &s_lua) {}
 
 }  // namespace ME
