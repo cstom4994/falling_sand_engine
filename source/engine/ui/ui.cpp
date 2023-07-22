@@ -382,6 +382,7 @@ void gui::UIRendererUpdate() {
 }
 
 void gui::UIRendererFree() {
+
     uidata->imgui->End();
     uidata->imgui.reset();
 

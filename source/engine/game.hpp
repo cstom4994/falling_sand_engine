@@ -212,6 +212,7 @@ public:
     void renderOverlays();
     void updateMaterialSounds();
     void createTexture();
+    void deleteTexture();
     void renderEarly();
     void renderLate();
     void renderTemperatureMap(world *world);

@@ -23,6 +23,8 @@ public:
 
     phy::Body *body = nullptr;
 
+    bool is_cleaned = false;
+
     int matWidth = 0;
     int matHeight = 0;
     MaterialInstance *tiles = nullptr;

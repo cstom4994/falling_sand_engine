@@ -253,7 +253,7 @@ static void InitLua(scripting *lc) {
     lc->s_lua["R_CopyImageFromSurface"] = lua_wrapper::function(R_CopyImageFromSurface);
     lc->s_lua["R_GetTextureHandle"] = lua_wrapper::function(R_GetTextureHandle);
     lc->s_lua["R_GetTextureAttr"] = lua_wrapper::function(R_GetTextureAttr);
-    lc->s_lua["LoadTextureData"] = lua_wrapper::function(LoadTextureData);
+    lc->s_lua["LoadTexture"] = lua_wrapper::function(LoadTexture);
     // lc->s_lua["DestroyTexture"] = lua_wrapper::function(DestroyTexture);
     // lc->s_lua["CreateTexture"] = lua_wrapper::function(CreateTexture);
     lc->s_lua["metadot_buildnum"] = lua_wrapper::function(ME_buildnum);

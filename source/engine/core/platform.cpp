@@ -139,9 +139,11 @@ int ME_initwindow() {
     // create the window
     METADOT_INFO("Creating game window...");
 
-    the<engine>().eng()->window = SDL_CreateWindow(win_game, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, the<engine>().eng()->windowWidth, the<engine>().eng()->windowHeight, SDL_flags);
+    auto eng = the<engine>().eng();
 
-    if (the<engine>().eng()->window == nullptr) {
+    eng->window = SDL_CreateWindow(win_game, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, eng->windowWidth, eng->windowHeight, SDL_flags);
+
+    if (eng->window == nullptr) {
         METADOT_ERROR("Could not create SDL_Window: %s", SDL_GetError());
         return METADOT_FAILED;
     }
@@ -152,24 +154,24 @@ int ME_initwindow() {
     METADOT_INFO("Creating gpu target...");
 
     R_SetPreInitFlags(R_INIT_DISABLE_VSYNC);
-    R_SetInitWindow(SDL_GetWindowID(the<engine>().eng()->window));
+    R_SetInitWindow(SDL_GetWindowID(eng->window));
 
-    the<engine>().eng()->target = R_Init(the<engine>().eng()->windowWidth, the<engine>().eng()->windowHeight, SDL_flags);
+    eng->target = R_Init(eng->windowWidth, eng->windowHeight, SDL_flags);
 
-    if (the<engine>().eng()->target == NULL) {
+    if (eng->target == NULL) {
         METADOT_ERROR("Could not create R_Target: %s", SDL_GetError());
         return METADOT_FAILED;
     }
 
 #if defined(METADOT_ALLOW_HIGHDPI)
-    R_SetVirtualResolution(the<engine>().eng()->Target_.target, WIDTH * 2, HEIGHT * 2);
+    R_SetVirtualResolution(eng->Target_.target, WIDTH * 2, HEIGHT * 2);
 #endif
 
-    the<engine>().eng()->realTarget = the<engine>().eng()->target;
+    eng->realTarget = eng->target;
 
-    the<engine>().eng()->glContext = (C_GLContext *)the<engine>().eng()->target->context->context;
+    eng->glContext = (C_GLContext *)eng->target->context->context;
 
-    SDL_GL_MakeCurrent(the<engine>().eng()->window, the<engine>().eng()->glContext);
+    SDL_GL_MakeCurrent(eng->window, eng->glContext);
 
     auto metadot_gl_global_init = [](ME_gl_loader_fn loader_fp) {
         if (NULL == loader_fp) {
@@ -229,11 +231,11 @@ int ME_initwindow() {
 #if defined(_WIN32)
     SDL_SysWMinfo info{};
     SDL_VERSION(&info.version);
-    if (SDL_GetWindowWMInfo(the<engine>().eng()->window, &info)) {
+    if (SDL_GetWindowWMInfo(eng->window, &info)) {
         ME_ASSERT(IsWindow(info.info.win.window));
-        // the<engine>().eng()->wndh = info.info.win.window;
+        // eng->wndh = info.info.win.window;
     } else {
-        // the<engine>().eng()->wndh = NULL;
+        // eng->wndh = NULL;
     }
 #elif defined(__linux)
     global.HostData.wndh = 0;
@@ -260,7 +262,9 @@ void ME_endwindow() {
 
     if (NULL != the<engine>().eng()->target) R_FreeTarget(the<engine>().eng()->target);
     // if (NULL != the<engine>().eng()->realTarget) R_FreeTarget(the<engine>().eng()->realTarget);
+    if (the<engine>().eng()->glContext) SDL_GL_DeleteContext(the<engine>().eng()->glContext);
     if (the<engine>().eng()->window) SDL_DestroyWindow(the<engine>().eng()->window);
+
     R_Quit();
 }
 

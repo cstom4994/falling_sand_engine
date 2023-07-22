@@ -68,18 +68,18 @@ int DefaultGenerator::getBaseHeight(world *world, int x, Chunk *ch) {
         return 0;
     }
 
-    Biome *b = world->getBiomeAt(ch, x, ch->y * CHUNK_H);
+    int b = world->getBiomeAt(ch, x, ch->y * CHUNK_H);
 
-    if (b->id == Biome::biomeGetID("DEFAULT")) {
+    if (b == Biome::biomeGetID("DEFAULT")) {
         // return 0;
         return (int)(world->height / 2 + ((world->noise.GetPerlin((f32)(x / 10.0), 0, 15))) * 100);
-    } else if (b->id == Biome::biomeGetID("PLAINS")) {
+    } else if (b == Biome::biomeGetID("PLAINS")) {
         // return 10;
         return (int)(world->height / 2 + ((world->noise.GetPerlin((f32)(x / 10.0), 0, 15))) * 25);
-    } else if (b->id == Biome::biomeGetID("FOREST")) {
+    } else if (b == Biome::biomeGetID("FOREST")) {
         // return 20;
         return (int)(world->height / 2 + ((world->noise.GetPerlin((f32)(x / 10.0), 0, 15))) * 100);
-    } else if (b->id == Biome::biomeGetID("MOUNTAINS")) {
+    } else if (b == Biome::biomeGetID("MOUNTAINS")) {
         // return 30;
         return (int)(world->height / 2 + ((world->noise.GetPerlin((f32)(x / 10.0), 0, 15))) * 250);
     }
@@ -91,15 +91,15 @@ int DefaultGenerator::getHeight(world *world, int x, Chunk *ch) {
 
     int baseH = getBaseHeight(world, x, ch);
 
-    Biome *b = world->getBiomeAt(x, 0);
+    int b = world->getBiomeAt(x, 0);
 
-    if (b->id == Biome::biomeGetID("DEFAULT")) {
+    if (b == Biome::biomeGetID("DEFAULT")) {
         baseH += (int)(((world->noise.GetPerlin((f32)(x * 1), 0, 30) / 2.0) + 0.5) * 15 + (((world->noise.GetPerlin((f32)(x * 5), 0, 30) / 2.0) + 0.5) - 0.5) * 2);
-    } else if (b->id == Biome::biomeGetID("PLAINS")) {
+    } else if (b == Biome::biomeGetID("PLAINS")) {
         baseH += (int)(((world->noise.GetPerlin((f32)(x * 1), 0, 30) / 2.0) + 0.5) * 6 + ((world->noise.GetPerlin((f32)(x * 5), 0, 30) / 2.0) - 0.5) * 2);
-    } else if (b->id == Biome::biomeGetID("FOREST")) {
+    } else if (b == Biome::biomeGetID("FOREST")) {
         baseH += (int)(((world->noise.GetPerlin((f32)(x * 1), 0, 30) / 2.0) + 0.5) * 15 + ((world->noise.GetPerlin((f32)(x * 5), 0, 30) / 2.0) - 0.5) * 2);
-    } else if (b->id == Biome::biomeGetID("MOUNTAINS")) {
+    } else if (b == Biome::biomeGetID("MOUNTAINS")) {
         baseH += (int)(((world->noise.GetPerlin((f32)(x * 1), 0, 30) / 2.0) + 0.5) * 20 + ((world->noise.GetPerlin((f32)(x * 5), 0, 30) / 2.0) - 0.5) * 4);
     }
 
@@ -141,32 +141,32 @@ void DefaultGenerator::generateChunk(world *world, Chunk *ch) {
         for (int y = 0; y < CHUNK_H; y++) {
             background[x + y * CHUNK_W] = 0x00000000;
             int py = y + ch->y * CHUNK_W;
-            Biome *b = world->getBiomeAt(px, py);
+            int b = world->getBiomeAt(px, py);
 
             // std::cout << "DefaultGenerator generate " << ch->x << " " << ch->y << " Biome: " << b->name << std::endl;
 
-            if (b->id == Biome::biomeGetID("TEST_1")) {
+            if (b == Biome::biomeGetID("TEST_1")) {
                 prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xffe00000);
-            } else if (b->id == Biome::biomeGetID("TEST_2")) {
+            } else if (b == Biome::biomeGetID("TEST_2")) {
                 prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xff00ff00);
-            } else if (b->id == Biome::biomeGetID("TEST_3")) {
+            } else if (b == Biome::biomeGetID("TEST_3")) {
                 prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xff0000ff);
-            } else if (b->id == Biome::biomeGetID("TEST_4")) {
+            } else if (b == Biome::biomeGetID("TEST_4")) {
                 prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xffff00ff);
             }
 
-            if (b->id == Biome::biomeGetID("TEST_1_2")) {
+            if (b == Biome::biomeGetID("TEST_1_2")) {
                 prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xffFF6600);
-            } else if (b->id == Biome::biomeGetID("TEST_2_2")) {
+            } else if (b == Biome::biomeGetID("TEST_2_2")) {
                 prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xff00FFBF);
-            } else if (b->id == Biome::biomeGetID("TEST_3_2")) {
+            } else if (b == Biome::biomeGetID("TEST_3_2")) {
                 prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xff005DFF);
-            } else if (b->id == Biome::biomeGetID("TEST_4_2")) {
+            } else if (b == Biome::biomeGetID("TEST_4_2")) {
                 prop[x + y * CHUNK_W] = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xffC200FF);
             }
             // continue;
 
-            if (b->id == Biome::biomeGetID("DEFAULT")) {
+            if (b == Biome::biomeGetID("DEFAULT")) {
                 if (py > surf) {
                     int tx = (global.game->Iso.texturepack.caveBG->surface()->w + (px % global.game->Iso.texturepack.caveBG->surface()->w)) % global.game->Iso.texturepack.caveBG->surface()->w;
                     int ty = (global.game->Iso.texturepack.caveBG->surface()->h + (py % global.game->Iso.texturepack.caveBG->surface()->h)) % global.game->Iso.texturepack.caveBG->surface()->h;
@@ -187,7 +187,7 @@ void DefaultGenerator::generateChunk(world *world, Chunk *ch) {
                 }
 
                 layer2[x + y * CHUNK_W] = Tiles_NOTHING;
-            } else if (b->id == Biome::biomeGetID("PLAINS")) {
+            } else if (b == Biome::biomeGetID("PLAINS")) {
                 if (py > surf) {
                     int tx = (global.game->Iso.texturepack.caveBG->surface()->w + (px % global.game->Iso.texturepack.caveBG->surface()->h)) % global.game->Iso.texturepack.caveBG->surface()->h;
                     int ty = (global.game->Iso.texturepack.caveBG->surface()->h + (py % global.game->Iso.texturepack.caveBG->surface()->h)) % global.game->Iso.texturepack.caveBG->surface()->h;
@@ -210,7 +210,7 @@ void DefaultGenerator::generateChunk(world *world, Chunk *ch) {
                 }
 
                 layer2[x + y * CHUNK_W] = Tiles_NOTHING;
-            } else if (b->id == Biome::biomeGetID("MOUNTAINS")) {
+            } else if (b == Biome::biomeGetID("MOUNTAINS")) {
                 if (py > surf) {
                     int tx = (global.game->Iso.texturepack.caveBG->surface()->w + (px % global.game->Iso.texturepack.caveBG->surface()->h)) % global.game->Iso.texturepack.caveBG->surface()->h;
                     int ty = (global.game->Iso.texturepack.caveBG->surface()->h + (py % global.game->Iso.texturepack.caveBG->surface()->h)) % global.game->Iso.texturepack.caveBG->surface()->h;
@@ -233,7 +233,7 @@ void DefaultGenerator::generateChunk(world *world, Chunk *ch) {
                 }
 
                 layer2[x + y * CHUNK_W] = Tiles_NOTHING;
-            } else if (b->id == Biome::biomeGetID("FOREST")) {
+            } else if (b == Biome::biomeGetID("FOREST")) {
                 if (py > surf) {
                     int tx = (global.game->Iso.texturepack.caveBG->surface()->w + (px % global.game->Iso.texturepack.caveBG->surface()->h)) % global.game->Iso.texturepack.caveBG->surface()->h;
                     int ty = (global.game->Iso.texturepack.caveBG->surface()->h + (py % global.game->Iso.texturepack.caveBG->surface()->h)) % global.game->Iso.texturepack.caveBG->surface()->h;
@@ -275,7 +275,7 @@ void DefaultGenerator::generateChunk(world *world, Chunk *ch) {
             // Biome *b = world->getBiomeAt(px, py);
             Biome *b = BiomeGet("DEFAULT");
 
-            ME_ASSERT(b->id >= 0);
+            ME_ASSERT(b >= 0);
 
             // std::cout << "DefaultGenerator generate " << ch->x << " " << ch->y << " Biome: " << b->name << std::endl;
 

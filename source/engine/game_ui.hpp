@@ -54,6 +54,7 @@ void DrawDebugUI(game *game);
 
 void DebugDrawUI__Setup();
 void DebugDrawUI__Draw(game *game);
+void DebugDrawUI__End();
 
 void MainMenuUI__RefreshWorlds(game *game);
 void MainMenuUI__Setup();

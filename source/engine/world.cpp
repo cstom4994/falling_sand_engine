@@ -521,7 +521,8 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
 
     part.RemoveHoles(&shapes, &result2);
 
-    std::vector<std::vector<phy::Shape *>> polys2s = {};
+    polys2s.clear();
+
     std::vector<C_Surface *> polys2sSfcs = {};
     std::vector<bool> polys2sWeld = {};
     for (auto it = result2.begin(); it != result2.end(); it++) {
@@ -2220,13 +2221,13 @@ void world::tickObjectBounds() {
     for (int i = 0; i < rbs.size(); i++) {
         RigidBody *cur = rbs[i];
 
+        if (cur->is_cleaned) continue;
+
         // f32 x = cur->body->GetWorldCenter().x;
         // f32 y = cur->body->GetWorldCenter().y;
 
         auto [x, y] = cur->body->shape()->center();
-
         bool should_not_sleep = x >= tickZone.x && y >= tickZone.y && x < tickZone.x + tickZone.w && y < tickZone.y + tickZone.h;
-
         cur->body->setSleep(!should_not_sleep);
     }
 }
@@ -2633,23 +2634,25 @@ void world::queueLoadChunk(int cx, int cy, bool populate, bool render) {
 
     } else {
 
-        for (int x = -1; x <= 1; x++) {
-            for (int y = 0; y <= 0; y++) {
-                Chunk *chb = getChunk(cx + x, y);  // load chunk at ~x y
-                if (chb->pleaseDelete) {
-                    if (!chunkCache.count(chb->x)) {
-                        auto h = phmap::flat_hash_map<int, Chunk *>();
-                        // h.set_deleted_key(INT_MAX);
-                        // h.set_empty_key(INT_MIN);
-                        chunkCache[chb->x] = h;
-                    }
-                    auto a = &chunkCache[chb->x];
-                    chunkCache[chb->x][chb->y] = chb;
-                    chb->pleaseDelete = false;
-                    chb->generationPhase = -1;
-                }
-            }
-        }
+        // TODO: 23/7/22 不再进行队列预加载
+
+        // for (int x = -1; x <= 1; x++) {
+        //     for (int y = 0; y <= 0; y++) {
+        //         Chunk *chb = getChunk(cx + x, y);  // load chunk at ~x y
+        //         if (chb->pleaseDelete) {
+        //             if (!chunkCache.count(chb->x)) {
+        //                 auto h = phmap::flat_hash_map<int, Chunk *>();
+        //                 // h.set_deleted_key(INT_MAX);
+        //                 // h.set_empty_key(INT_MIN);
+        //                 chunkCache[chb->x] = h;
+        //             }
+        //             auto a = &chunkCache[chb->x];
+        //             chunkCache[chb->x][chb->y] = chb;
+        //             chb->pleaseDelete = false;
+        //             chb->generationPhase = -1;
+        //         }
+        //     }
+        // }
 
         // loadChunk(ch, populate, render);
 
@@ -2808,24 +2811,22 @@ void world::chunkSaveCache(Chunk *ch) {
 
 void world::generateChunk(Chunk *ch) { gen->generateChunk(this, ch); }
 
-Biome *world::getBiomeAt(Chunk *ch, int x, int y) {
+int world::getBiomeAt(Chunk *ch, int x, int y) {
 
-    if (ch->biomes[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W]->id != Biome::biomeGet("DEFAULT")->id) {
-        Biome *b = ch->biomes[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W];
+    if (ch->biomes_id[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W] != Biome::biomeGet("DEFAULT").id) {
+        int biome_id = ch->biomes_id[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W];
         if (ch->pleaseDelete) delete ch;
-        return b;
+        return biome_id;
     }
 
-    Biome *ret = getBiomeAt(x, y);
-
-    ch->biomes[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W] = ret;
-
+    int ret = getBiomeAt(x, y);
+    ch->biomes_id[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W] = ret;
     return ret;
 }
 
-Biome *world::getBiomeAt(int x, int y) {
+int world::getBiomeAt(int x, int y) {
 
-    Biome *ret = nullptr;
+    int ret = -1;
 
     // ret = Biome::biomeGet("DEFAULT");
     // return ret;
@@ -2835,11 +2836,11 @@ Biome *world::getBiomeAt(int x, int y) {
         int biomeCatNum = 3;
         int biomeCat = (int)(v * biomeCatNum);
         if (biomeCat == 0) {
-            ret = Biome::biomeGet("PLAINS");
+            ret = Biome::biomeGetID("PLAINS");
         } else if (biomeCat == 1) {
-            ret = Biome::biomeGet("MOUNTAINS");
+            ret = Biome::biomeGetID("MOUNTAINS");
         } else if (biomeCat == 2) {
-            ret = Biome::biomeGet("FOREST");
+            ret = Biome::biomeGetID("FOREST");
         }
     } else {
         noise.SetCellularDistanceFunction(FastNoise::CellularDistanceFunction::Natural);
@@ -2851,17 +2852,18 @@ Biome *world::getBiomeAt(int x, int y) {
         int biomeCat = (int)(v * biomeCatNum);
 
         if (biomeCat == 0) {
-            ret = v2 >= 0.5 ? Biome::biomeGet("TEST_1_2") : Biome::biomeGet("TEST_1");
+            ret = v2 >= 0.5 ? Biome::biomeGetID("TEST_1_2") : Biome::biomeGetID("TEST_1");
         } else if (biomeCat == 1) {
-            ret = v2 >= 0.5 ? Biome::biomeGet("TEST_2_2") : Biome::biomeGet("TEST_2");
+            ret = v2 >= 0.5 ? Biome::biomeGetID("TEST_2_2") : Biome::biomeGetID("TEST_2");
         } else if (biomeCat == 2) {
-            ret = v2 >= 0.5 ? Biome::biomeGet("TEST_3_2") : Biome::biomeGet("TEST_3");
+            ret = v2 >= 0.5 ? Biome::biomeGetID("TEST_3_2") : Biome::biomeGetID("TEST_3");
         } else if (biomeCat == 3) {
-            ret = v2 >= 0.5 ? Biome::biomeGet("TEST_4_2") : Biome::biomeGet("TEST_4");
+            ret = v2 >= 0.5 ? Biome::biomeGetID("TEST_4_2") : Biome::biomeGetID("TEST_4");
         }
     }
 
-    if (ret == nullptr) ret = Biome::biomeGet("DEFAULT");
+    // 查找失败 返回默认群系
+    if (ret == -1) ret = Biome::biomeGetID("DEFAULT");
 
     return ret;
 }
@@ -2874,7 +2876,7 @@ void world::addStructure(PlacedStructure str) {
             int dx = x + loadZone.x + str.x;
             int dy = y + loadZone.y + str.y;
             Chunk *ch = new Chunk;
-            ch->ChunkInit(floor(dx / CHUNK_W), floor(dy / CHUNK_H), (char *)worldName.c_str());
+            ch->ChunkInit(floor(dx / CHUNK_W), floor(dy / CHUNK_H), worldName);
             // if(ch.e)
             if (dx >= 0 && dy >= 0 && dx < width && dy < height) {
                 tiles[dx + dy * width] = str.base.tiles[x + y * str.base.w];
@@ -2928,16 +2930,22 @@ Chunk *world::getChunk(int cx, int cy) {
             return yy->second;
         }
     }
+
+    // METADOT_WARN(std::format("failed to load chunk {0}_{1} in chunkCache, so generate it", cx, cy).c_str());
+
     /*for (int i = 0; i < chunkCache.size(); i++) {
         if (chunkCache[i]->x == cx && chunkCache[i]->y == cy) return chunkCache[i];
     }*/
     Chunk *c = new Chunk;
-    c->ChunkInit(cx, cy, (char *)worldName.c_str());
+    c->ChunkInit(cx, cy, worldName);
     c->generationPhase = -1;
     c->pleaseDelete = true;
-    auto a = Biome::biomeGet("DEFAULT");
-    c->biomes.resize(CHUNK_W * CHUNK_H);
-    std::fill(c->biomes.begin(), c->biomes.end(), a);
+    int a = Biome::biomeGetID("DEFAULT");
+    if (c->biomes_id.size() != CHUNK_W * CHUNK_H) {
+        // c->biomes_id.clear();
+        // c->biomes_id.resize(CHUNK_W * CHUNK_H);
+    }
+    std::fill(c->biomes_id.begin(), c->biomes_id.end(), a);
     return c;
 }
 
@@ -3548,6 +3556,8 @@ world::~world() {
     tiles.clear();
     delete[] flowX;
     delete[] flowY;
+    delete[] prevFlowX;
+    delete[] prevFlowY;
     layer2.clear();
     background.clear();
 
@@ -3584,7 +3594,17 @@ world::~world() {
         delete v;
     }
     rigidBodies.clear();
+
+    staticBody->clean();
     delete staticBody;
+
+    for (auto &v : polys2s) {
+        for (auto &v1 : v) {
+            if (static_cast<bool>(v1)) delete v1;
+        }
+        v.clear();
+    }
+    polys2s.clear();
 
     worldMeshes.clear();
     worldTris.clear();
@@ -3596,6 +3616,9 @@ world::~world() {
 
     toLoad.clear();
 
+    for (auto &ch : readyToReadyToMerge) {
+        // delete v;
+    }
     readyToReadyToMerge.clear();
 
     for (auto &v : readyToMerge) {
@@ -3616,6 +3639,7 @@ world::~world() {
                 continue;
             }
             v2.second->ChunkDelete();
+            delete v2.second;
         }
         v.second.clear();
     }

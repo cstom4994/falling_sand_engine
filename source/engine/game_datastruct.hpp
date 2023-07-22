@@ -240,7 +240,7 @@ struct GameData {
     f32 freeCamX = 0;
     f32 freeCamY = 0;
 
-    std::vector<Biome *> biome_container;
+    std::map<std::string, Biome> biome_container;
     std::vector<Material *> materials_container;
     i32 materials_count;
     Material **materials_array;
@@ -346,12 +346,14 @@ public:
 class Biome {
 public:
     int id = -1;
-    std::string name;
-    explicit Biome(std::string name, int id) : name(std::move(name)), id(std::move(id)){};
+    explicit Biome(int id) : /*name(std::move(name)),*/ id(std::move(id)){};
+
+    Biome() = default;
+    Biome(const Biome &) = default;
 
 public:
-    static Biome *biomeGet(std::string name);
-    static ME_INLINE int biomeGetID(std::string name) { return biomeGet(name)->id; }
+    static Biome biomeGet(std::string name);
+    static ME_INLINE int biomeGetID(std::string name) { return biomeGet(name).id; }
     static void createBiome(std::string name, int id);
 };
 
@@ -360,7 +362,7 @@ struct meta::static_refl::TypeInfo<Biome> : TypeInfoBase<Biome> {
     static constexpr AttrList attrs = {};
     static constexpr FieldList fields = {
             Field{TSTR("id"), &Type::id},
-            Field{TSTR("name"), &Type::name},
+            // Field{TSTR("name"), &Type::name},
     };
 };
 
@@ -452,7 +454,7 @@ ImGui::Auto(var.mat, "Material");
 ME_GUI_DEFINE_END
 
 ME_GUI_DEFINE_BEGIN(template <>, ME::Biome)
-ImGui::Text("Name: %s", var.name.c_str());
+// ImGui::Text("Name: %s", var.name.c_str());
 ImGui::Text("ID: %d", var.id);
 ME_GUI_DEFINE_END
 

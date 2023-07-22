@@ -25,20 +25,22 @@ Texture::Texture(const std::string &path) {
     }
 }
 
-Texture::Texture(C_Surface *sur) noexcept {
+Texture::Texture(C_Surface *sur, bool init_image) noexcept {
     ME_ASSERT(sur);
-    this->m_surface = sur;
+    m_surface = sur;
 
-    // 复制surface到可渲染图像
-    this->m_image = R_CopyImageFromSurface(this->m_surface);
+    if (init_image) {
+        // 复制surface到可渲染图像
+        m_image = R_CopyImageFromSurface(m_surface);
 
-    // 设置默认过滤
-    R_SetImageFilter(this->m_image, R_FILTER_NEAREST);
+        // 设置默认过滤
+        R_SetImageFilter(m_image, R_FILTER_NEAREST);
+    }
 }
 
 Texture::~Texture() {
-    SDL_FreeSurface(this->m_surface);
-    R_FreeImage(this->m_image);
+    if (m_image) R_FreeImage(m_image);
+    SDL_FreeSurface(m_surface);
 }
 
 void InitTexture(TexturePack &tex) {
@@ -58,10 +60,10 @@ void InitTexture(TexturePack &tex) {
     tex.goldSolid = LoadTexture("data/assets/textures/solidGold.png");
     tex.iron = LoadTexture("data/assets/textures/iron.png");
     tex.obsidian = LoadTexture("data/assets/textures/obsidian.png");
-    tex.caveBG = LoadTexture("data/assets/backgrounds/testCave.png");
+    tex.caveBG = LoadTextureInternal("data/assets/backgrounds/testCave.png", SDL_PIXELFORMAT_ARGB8888, false);
 
     // Test aseprite
-    tex.testAse = LoadAsepriteTexture("data/assets/textures/Sprite-0003.ase");
+    tex.testAse = LoadAsepriteTexture("data/assets/textures/Sprite-0003.ase", false);
 
     tex.testVacuum = LoadTexture("data/assets/objects/testVacuum.png");
     tex.testBucket = LoadTexture("data/assets/objects/testBucket.png");
@@ -98,11 +100,9 @@ void EndTexture(TexturePack &tex) {
     tex.testHammer.reset();
 }
 
-TextureRef LoadTextureData(const std::string &path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
-
 TextureRef LoadTexture(const std::string &path) { return LoadTextureInternal(path, SDL_PIXELFORMAT_ARGB8888); }
 
-TextureRef LoadTextureInternal(const std::string &path, u32 pixelFormat) {
+TextureRef LoadTextureInternal(const std::string &path, u32 pixelFormat, bool init_image) {
 
     // 可以在这里找到SDL相关函数
     // https://wiki.libsdl.org/SDL_CreateRGBSurfaceFrom
@@ -149,7 +149,7 @@ TextureRef LoadTextureInternal(const std::string &path, u32 pixelFormat) {
 
     ME_ASSERT(loadedSurface_converted);
 
-    TextureRef tex = create_ref<Texture>(loadedSurface_converted);
+    TextureRef tex = create_ref<Texture>(loadedSurface_converted, init_image);
 
     stbi_image_free(data);
 
@@ -175,7 +175,7 @@ C_Surface *ScaleSurface(C_Surface *src, f32 x, f32 y) {
     return src;
 }
 
-TextureRef LoadAsepriteTexture(const std::string &path) {
+TextureRef LoadAsepriteTexture(const std::string &path, bool init_image) {
 
     ase_t *ase = cute_aseprite_load_from_file(METADOT_RESLOC(path), NULL);
     if (NULL == ase) {
@@ -211,7 +211,7 @@ TextureRef LoadAsepriteTexture(const std::string &path) {
 
     ME_ASSERT(surface_converted);
 
-    TextureRef tex = create_ref<Texture>(surface_converted);
+    TextureRef tex = create_ref<Texture>(surface_converted, init_image);
 
     cute_aseprite_free(ase);
 

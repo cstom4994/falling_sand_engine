@@ -16,6 +16,11 @@ OnGameGUIUpdate = function()
     DrawDebugUI(Game)
 end
 
+OnGameGUIEnd = function()
+    DebugUIEnd()
+end
+
+
 DrawMainMenuUI2 = function()
     imgui.SetNextWindowSize(200, 250, imgui.constant.Cond.FirstUseEver)
     imgui.Begin("Demo", true, imgui.constant.WindowFlags.ShowBorders)

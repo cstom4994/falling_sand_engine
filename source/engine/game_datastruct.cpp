@@ -25,8 +25,14 @@
 namespace ME {
 
 void ReleaseGameData() {
-    for (auto b : GAME()->biome_container)
-        if (static_cast<bool>(b)) ME_DELETE(b, Biome);
+    for (auto b : GAME()->biome_container) {
+        // if (static_cast<bool>(b)) ME_DELETE(b, Biome);
+    }
+
+    for (int j = 0; j < GAME()->materials_container.size(); j++) {
+        delete[] GAME()->materials_container[j]->interactions;
+        delete[] GAME()->materials_container[j]->nInteractions;
+    }
 }
 
 #pragma region Material

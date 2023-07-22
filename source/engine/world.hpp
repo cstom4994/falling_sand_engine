@@ -79,6 +79,8 @@ public:
         std::vector<std::vector<MEvec2>> worldMeshes;
         std::vector<std::vector<MEvec2>> worldTris;
 
+        std::vector<std::vector<phy::Shape *>> polys2s = {};
+
         std::vector<LoadChunkParams> toLoad;
         std::vector<std::future<Chunk *>> readyToReadyToMerge;
 
@@ -168,8 +170,8 @@ public:
     void writeChunkToDisk(Chunk *ch);
     void chunkSaveCache(Chunk *ch);
     void generateChunk(Chunk *ch);
-    Biome *getBiomeAt(int x, int y);
-    Biome *getBiomeAt(Chunk *ch, int x, int y);
+    int getBiomeAt(int x, int y);             // 返回群系ID
+    int getBiomeAt(Chunk *ch, int x, int y);  // 返回群系ID
     void addStructure(PlacedStructure str);
     MEvec2 getNearestPoint(f32 x, f32 y);
     std::vector<MEvec2> getPointsWithin(f32 x, f32 y, f32 w, f32 h);

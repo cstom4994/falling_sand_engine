@@ -14,17 +14,19 @@
 
 namespace ME {
 
-void Chunk::ChunkInit(int x, int y, char *worldName) {
+void Chunk::ChunkInit(int x, int y, const std::string &worldName) {
     this->x = x;
     this->y = y;
-    this->pack_filename = std::string(std::string(worldName) + "/chunks/c_" + std::to_string(x) + "_" + std::to_string(y) + ".pack");
+    pack_filename = std::string(worldName + "/chunks/c_" + std::to_string(x) + "_" + std::to_string(y) + ".pack");
 }
 
 void Chunk::ChunkDelete() {
     if (this->tiles) delete[] this->tiles;
     if (this->layer2) delete[] this->layer2;
     if (this->background) delete[] this->background;
-    if (!this->biomes.empty()) this->biomes.resize(0);
+
+    // 清空群系索引
+    this->biomes_id.clear();
 }
 
 void Chunk::ChunkLoadMeta() {

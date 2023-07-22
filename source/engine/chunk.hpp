@@ -53,17 +53,14 @@ struct Chunk {
     MaterialInstance *tiles = nullptr;
     MaterialInstance *layer2 = nullptr;
     u32 *background = nullptr;
-    std::vector<Biome *> biomes = {nullptr};
-    std::vector<phy::Shape *> polys = {};
+
+    // 区块群系优化为id查表
+    std::vector<int> biomes_id{};
+    std::vector<phy::Shape *> polys{};
     RigidBody *rb = nullptr;
 
-    Chunk() = default;
-    ~Chunk() = default;
-
-    MOVE_ONLY(Chunk);
-
     // Initialize a chunk
-    void ChunkInit(int x, int y, char *worldName);
+    void ChunkInit(int x, int y, const std::string &worldName);
     // Uninitialize a chunk
     void ChunkDelete();
     // Check chunk's meta data
@@ -105,7 +102,7 @@ struct ME::meta::static_refl::TypeInfo<ME::Chunk> : TypeInfoBase<Chunk> {
             Field{TSTR("tiles"), &Chunk::tiles},
             Field{TSTR("layer2"), &Chunk::layer2},
             Field{TSTR("background"), &Type::background},
-            Field{TSTR("biomes"), &Chunk::biomes},
+            Field{TSTR("biomes_id"), &Chunk::biomes_id},
             Field{TSTR("polys"), &Chunk::polys},
             Field{TSTR("rb"), &Chunk::rb},
     };

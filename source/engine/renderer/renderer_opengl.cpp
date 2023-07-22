@@ -92,6 +92,10 @@ static void FreeFormat(SDL_PixelFormat *format);
 
 static char shader_message[256];
 
+// 用于初始化纹理的空白缓冲区
+static unsigned char *zero_buffer = NULL;
+static unsigned int zero_buffer_size = 0;
+
 static_inline void fast_upload_texture(const void *pixels, MErect update_rect, u32 format, int alignment, int row_length) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, row_length);
@@ -1494,6 +1498,10 @@ void UnsetVirtualResolution(R_Renderer *renderer, R_Target *target) {
 }
 
 void Quit(R_Renderer *renderer) {
+
+    // 清理空白缓冲区
+    if (zero_buffer) ME_FREE(zero_buffer);
+
     FreeTarget(renderer, renderer->current_context_target);
     renderer->current_context_target = NULL;
 }
@@ -1734,8 +1742,6 @@ R_Image *CreateUninitializedImage(R_Renderer *renderer, u16 w, u16 h, R_FormatEn
 R_Image *CreateImage(R_Renderer *renderer, u16 w, u16 h, R_FormatEnum format) {
     R_Image *result;
     GLenum internal_format;
-    static unsigned char *zero_buffer = NULL;
-    static unsigned int zero_buffer_size = 0;
 
     if (format < 1) {
         R_PushErrorCode("R_CreateImage", R_ERROR_DATA_ERROR, "Unsupported image format (0x%x)", format);
@@ -1760,7 +1766,7 @@ R_Image *CreateImage(R_Renderer *renderer, u16 w, u16 h, R_FormatEnum format) {
         if (!isPowerOfTwo(h)) h = (u16)getNearestPowerOf2(h);
     }
 
-    // Initialize texture using a blank buffer
+    // 使用空白缓冲区初始化纹理
     if (zero_buffer_size < (unsigned int)(w * h * result->bytes_per_pixel)) {
         ME_FREE(zero_buffer);
         zero_buffer_size = w * h * result->bytes_per_pixel;

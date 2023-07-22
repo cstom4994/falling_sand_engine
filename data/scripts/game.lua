@@ -147,6 +147,9 @@ end
 
 OnGameEngineUnLoad = function()
     METADOT_BUG("OnGameEngineUnLoad called")
+
+    OnGameGUIEnd()
+
     EndFont()
     EndAudio()
     EndGraphics()

@@ -49,7 +49,10 @@ void engine::end_eng(int errorOcurred) {
     global.audio.Shutdown();
     ME_endwindow();
 
-    if (SDL_WasInit(SDL_INIT_EVERYTHING) != 0) SDL_Quit();
+    if (SDL_WasInit(SDL_INIT_EVERYTHING) != 0) {
+        METADOT_INFO("SDL quit");
+        SDL_Quit();
+    }
 
     if (errorOcurred) {
         METADOT_WARN("Engine finished with errors!");

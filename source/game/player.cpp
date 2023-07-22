@@ -17,6 +17,7 @@ RigidBody::RigidBody(phy::Body *body, std::string name) {
 
 RigidBody::~RigidBody() {
     // if (item) delete item;
+    // if (!is_cleaned) clean();
 }
 
 // bool RigidBody::set_surface(C_Surface *sur) {
@@ -53,9 +54,8 @@ void RigidBody::updateImage(std::optional<C_Surface *> image) {
 }
 
 void RigidBody::clean() {
-
+    is_cleaned = true;
     if (NULL != body->shape()) delete body->shape();
-
     if (NULL != this->tiles) delete[] this->tiles;
     // if (NULL != this->texture) R_FreeImage(this->get_texture());
     // if (NULL != this->surface) SDL_FreeSurface(this->get_surface());

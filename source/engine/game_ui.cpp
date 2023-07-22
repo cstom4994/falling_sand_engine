@@ -525,11 +525,9 @@ void MainMenuUI__DrawWorldLists(game *game) {
 
         struct tm *timeinfo = localtime(&meta.lastOpenedTime);
 
-        char *filenameAndTimestamp = new char[200];
-        snprintf(filenameAndTimestamp, 100, "%s (%d-%02d-%02d %02d:%02d:%02d)", worldName.c_str(), timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour,
-                 timeinfo->tm_min, timeinfo->tm_sec);
-
-        if (ImGui::Selectable(std::format("{0}\n{1}", meta.worldName, filenameAndTimestamp).c_str())) {
+        if (ImGui::Selectable(std::format("{0}\n{1} ({2}-{3:02}-{4:02} {5:02}:{6:02}:{7:02})", meta.worldName, worldName.c_str(), timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday,
+                                          timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec)
+                                      .c_str())) {
             METADOT_INFO("Selected world: ", worldName.c_str());
 
             gameUI.visible_mainmenu = false;
@@ -927,6 +925,12 @@ void DebugDrawUI__Draw(game *game) {
     ImGui::EndTabBar();
 
     ImGui::End();
+}
+
+void DebugDrawUI__End() {
+    if (!gameUI.DebugDrawUI__images.empty()) {
+        for (auto &i : gameUI.DebugDrawUI__images) R_FreeImage(i);
+    }
 }
 
 }  // namespace GameUI

@@ -18,7 +18,7 @@ private:
 
 public:
     Texture(const std::string &path);
-    Texture(C_Surface *sur) noexcept;
+    Texture(C_Surface *sur, bool init_image = true) noexcept;
     ~Texture();
 
     C_Surface *surface() const { return m_surface; }
@@ -59,10 +59,9 @@ void InitTexture(TexturePack &tex);
 void EndTexture(TexturePack &tex);
 
 TextureRef LoadTexture(const std::string &path);
-TextureRef LoadTextureInternal(const std::string &path, u32 pixelFormat);
+TextureRef LoadTextureInternal(const std::string &path, u32 pixelFormat, bool init_image = true);
 C_Surface *ScaleSurface(C_Surface *src, f32 x, f32 y);
-TextureRef LoadAsepriteTexture(const std::string &path);
-TextureRef LoadTextureData(const std::string &path);
+TextureRef LoadAsepriteTexture(const std::string &path, bool init_image = true);
 void RenderTextureRect(TextureRef tex, R_Target *target, int x, int y, MErect *clip = nullptr);
 
 }  // namespace ME

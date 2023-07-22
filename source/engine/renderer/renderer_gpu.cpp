@@ -168,9 +168,6 @@ static u32 gpu_init_windowID = 0;
 static R_InitFlagEnum gpu_preinit_flags = R_DEFAULT_INIT_FLAGS;
 static R_InitFlagEnum gpu_required_features = 0;
 
-static bool gpu_initialized_SDL_core = false;
-static bool gpu_initialized_SDL = false;
-
 void R_SetCurrentRenderer(R_RendererID id) {
     gpu_current_renderer = R_GetRenderer(id);
 
@@ -351,7 +348,7 @@ R_Target *R_GetWindowTarget(u32 windowID) {
     return NULL;
 }
 
-R_Target *R_Init(Uint16 w, Uint16 h, R_WindowFlagEnum SDL_flags) {
+R_Target *R_Init(u16 w, u16 h, R_WindowFlagEnum SDL_flags) {
     R_RendererID renderer_order;
 
     gpu_init_error_queue();
@@ -367,12 +364,12 @@ R_Target *R_Init(Uint16 w, Uint16 h, R_WindowFlagEnum SDL_flags) {
     return NULL;
 }
 
-R_Target *R_InitRenderer(Uint16 w, Uint16 h, R_WindowFlagEnum SDL_flags) {
+R_Target *R_InitRenderer(u16 w, u16 h, R_WindowFlagEnum SDL_flags) {
     // Search registry for this renderer and use that id
     return R_InitRendererByID(R_GetRendererID(), w, h, SDL_flags);
 }
 
-R_Target *R_InitRendererByID(R_RendererID renderer_request, Uint16 w, Uint16 h, R_WindowFlagEnum SDL_flags) {
+R_Target *R_InitRendererByID(R_RendererID renderer_request, u16 w, u16 h, R_WindowFlagEnum SDL_flags) {
     R_Renderer *renderer;
     R_Target *screen;
 
@@ -482,13 +479,13 @@ void R_SetDepthFunction(R_Target *target, R_ComparisonEnum compare_operation) {
     if (target != NULL) target->depth_function = compare_operation;
 }
 
-bool R_SetWindowResolution(Uint16 w, Uint16 h) {
+bool R_SetWindowResolution(u16 w, u16 h) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL || w == 0 || h == 0) return false;
 
     return SetWindowResolution(gpu_current_renderer, w, h);
 }
 
-void R_GetVirtualResolution(R_Target *target, Uint16 *w, Uint16 *h) {
+void R_GetVirtualResolution(R_Target *target, u16 *w, u16 *h) {
     // No checking here for NULL w or h...  Should we?
     if (target == NULL) {
         *w = 0;
@@ -499,7 +496,7 @@ void R_GetVirtualResolution(R_Target *target, Uint16 *w, Uint16 *h) {
     }
 }
 
-void R_SetVirtualResolution(R_Target *target, Uint16 w, Uint16 h) {
+void R_SetVirtualResolution(R_Target *target, u16 w, u16 h) {
     if (!CHECK_RENDERER) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL renderer");
     MAKE_CURRENT_IF_NONE(target);
     if (!CHECK_CONTEXT) RETURN_ERROR(R_ERROR_USER_ERROR, "NULL context");
@@ -516,7 +513,7 @@ void R_UnsetVirtualResolution(R_Target *target) {
     UnsetVirtualResolution(gpu_current_renderer, target);
 }
 
-void R_SetImageVirtualResolution(R_Image *image, Uint16 w, Uint16 h) {
+void R_SetImageVirtualResolution(R_Image *image, u16 w, u16 h) {
     if (gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL || w == 0 || h == 0) return;
 
     if (image == NULL) return;
@@ -594,16 +591,6 @@ void R_Quit(void) {
     gpu_num_window_mappings = 0;
 
     gpu_free_renderer_register();
-
-    if (gpu_initialized_SDL) {
-        SDL_QuitSubSystem(SDL_INIT_VIDEO);
-        gpu_initialized_SDL = 0;
-
-        if (gpu_initialized_SDL_core) {
-            SDL_Quit();
-            gpu_initialized_SDL_core = 0;
-        }
-    }
 }
 
 void R_PushErrorCode(const char *function, R_ErrorEnum error, const char *details, ...) {
@@ -1123,10 +1110,10 @@ MErect R_SetClipRect(R_Target *target, MErect rect) {
         return r;
     }
 
-    return SetClip(gpu_current_renderer, target, (i16)rect.x, (i16)rect.y, (Uint16)rect.w, (Uint16)rect.h);
+    return SetClip(gpu_current_renderer, target, (i16)rect.x, (i16)rect.y, (u16)rect.w, (u16)rect.h);
 }
 
-MErect R_SetClip(R_Target *target, i16 x, i16 y, Uint16 w, Uint16 h) {
+MErect R_SetClip(R_Target *target, i16 x, i16 y, u16 w, u16 h) {
     if (target == NULL || gpu_current_renderer == NULL || gpu_current_renderer->current_context_target == NULL) {
         MErect r = {0, 0, 0, 0};
         return r;

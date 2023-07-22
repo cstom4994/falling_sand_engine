@@ -43,16 +43,16 @@ static void load_lua(std::string luafile) {}
 
 #pragma endregion GameScriptingBind_1
 
-Biome *Biome::biomeGet(std::string name) {
+Biome Biome::biomeGet(std::string name) {
     for (auto t : GAME()->biome_container)
-        if (t->name == name) return t;
+        if (t.first == name) return t.second;
     return GAME()->biome_container[0];  // 没有找到指定生物群系则返回默认生物群系
 }
 
 void Biome::createBiome(std::string name, int id) {
     METADOT_BUG("[LUA] create_biome ", name, " = ", id);
-    Biome *b = alloc<Biome>::safe_malloc(name, id);
-    GAME()->biome_container.push_back(b);
+    // Biome *b = alloc<Biome>::safe_malloc(name, id);
+    GAME()->biome_container.insert(std::make_pair(name, Biome{id}));
 }
 
 void gameplay::create() {
@@ -91,6 +91,7 @@ void gameplay::registerLua(lua_wrapper::State &s_lua) {
 
     s_lua["DrawMainMenuUI"] = lua_wrapper::function(GameUI::MainMenuUI__Draw);
     s_lua["DrawDebugUI"] = lua_wrapper::function(GameUI::DebugDrawUI__Draw);
+    s_lua["DebugUIEnd"] = lua_wrapper::function(GameUI::DebugDrawUI__End);
 
     // ItemBinding::register_class(s_lua.state());
     RigidBodyBinding::register_class(s_lua.state());

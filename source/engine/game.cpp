@@ -246,6 +246,63 @@ int game::init(int argc, char *argv[]) {
     return this->run(argc, argv);
 }
 
+void game::deleteTexture() {
+
+    if (TexturePack_.textureLayer2) R_FreeImage(TexturePack_.textureLayer2);
+    if (TexturePack_.textureBackground) R_FreeImage(TexturePack_.textureBackground);
+    if (TexturePack_.textureCells) R_FreeImage(TexturePack_.textureCells);
+    if (TexturePack_.temperatureMap) R_FreeImage(TexturePack_.temperatureMap);
+    if (TexturePack_.loadingTexture) R_FreeImage(TexturePack_.loadingTexture);
+    if (TexturePack_.texture) R_FreeImage(TexturePack_.texture);
+    if (TexturePack_.emissionTexture) R_FreeImage(TexturePack_.emissionTexture);
+    if (TexturePack_.textureFlow) R_FreeImage(TexturePack_.textureFlow);
+    if (TexturePack_.textureFire) R_FreeImage(TexturePack_.textureFire);
+
+    if (TexturePack_.worldTexture) {
+        if (TexturePack_.worldTexture->target) R_FreeTarget(TexturePack_.worldTexture->target);
+        R_FreeImage(TexturePack_.worldTexture);
+    }
+    if (TexturePack_.lightingTexture) {
+        if (TexturePack_.lightingTexture->target) R_FreeTarget(TexturePack_.lightingTexture->target);
+        R_FreeImage(TexturePack_.lightingTexture);
+    }
+
+    if (TexturePack_.textureFlowSpead) {
+        if (TexturePack_.textureFlowSpead->target) R_FreeTarget(TexturePack_.textureFlowSpead->target);
+        R_FreeImage(TexturePack_.textureFlowSpead);
+    }
+
+    if (TexturePack_.texture2Fire) {
+        if (TexturePack_.texture2Fire->target) R_FreeTarget(TexturePack_.texture2Fire->target);
+        R_FreeImage(TexturePack_.texture2Fire);
+    }
+
+    if (TexturePack_.textureObjects) {
+        if (TexturePack_.textureObjects->target) R_FreeTarget(TexturePack_.textureObjects->target);
+        R_FreeImage(TexturePack_.textureObjects);
+    }
+    if (TexturePack_.textureObjectsLQ) {
+        if (TexturePack_.textureObjectsLQ->target) R_FreeTarget(TexturePack_.textureObjectsLQ->target);
+        R_FreeImage(TexturePack_.textureObjectsLQ);
+    }
+    if (TexturePack_.textureObjectsBack) {
+        if (TexturePack_.textureObjectsBack->target) R_FreeTarget(TexturePack_.textureObjectsBack->target);
+        R_FreeImage(TexturePack_.textureObjectsBack);
+    }
+    if (TexturePack_.textureEntities) {
+        if (TexturePack_.textureEntities->target) R_FreeTarget(TexturePack_.textureEntities->target);
+        R_FreeImage(TexturePack_.textureEntities);
+    }
+    if (TexturePack_.textureEntitiesLQ) {
+        if (TexturePack_.textureEntitiesLQ->target) R_FreeTarget(TexturePack_.textureEntitiesLQ->target);
+        R_FreeImage(TexturePack_.textureEntitiesLQ);
+    }
+    if (TexturePack_.backgroundImage) {
+        if (TexturePack_.backgroundImage->target) R_FreeTarget(TexturePack_.backgroundImage->target);
+        R_FreeImage(TexturePack_.backgroundImage);
+    }
+}
+
 void game::createTexture() {
 
     METADOT_LOG_SCOPE_FUNCTION(INFO);
@@ -254,26 +311,7 @@ void game::createTexture() {
     Timer timer;
     timer.start();
 
-    if (this->TexturePack_.loadingTexture) {
-        R_FreeImage(TexturePack_.loadingTexture);
-        R_FreeImage(TexturePack_.texture);
-        R_FreeImage(TexturePack_.worldTexture);
-        R_FreeImage(TexturePack_.lightingTexture);
-        R_FreeImage(TexturePack_.emissionTexture);
-        R_FreeImage(TexturePack_.textureFire);
-        R_FreeImage(TexturePack_.textureFlow);
-        R_FreeImage(TexturePack_.texture2Fire);
-        R_FreeImage(TexturePack_.textureLayer2);
-        R_FreeImage(TexturePack_.textureBackground);
-        R_FreeImage(TexturePack_.textureObjects);
-        R_FreeImage(TexturePack_.textureObjectsLQ);
-        R_FreeImage(TexturePack_.textureObjectsBack);
-        R_FreeImage(TexturePack_.textureCells);
-        R_FreeImage(TexturePack_.textureEntities);
-        R_FreeImage(TexturePack_.textureEntitiesLQ);
-        R_FreeImage(TexturePack_.temperatureMap);
-        R_FreeImage(TexturePack_.backgroundImage);
-    }
+    deleteTexture();
 
     // create textures
     loadingOnColor = 0xFFFFFFFF;
@@ -289,13 +327,16 @@ void game::createTexture() {
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "texture");
+
                 TexturePack_.texture = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.texture, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "worldTexture");
-                TexturePack_.worldTexture = R_CreateImage(Iso.world->width * Iso.globaldef.hd_objects_size, Iso.world->height * Iso.globaldef.hd_objects_size, R_FormatEnum::R_FORMAT_RGBA);
+
+                TexturePack_.worldTexture = R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 3),
+                                                          Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 3), R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.worldTexture, R_FILTER_NEAREST);
 
@@ -303,49 +344,58 @@ void game::createTexture() {
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "lightingTexture");
+
                 TexturePack_.lightingTexture = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.lightingTexture, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.lightingTexture);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "emissionTexture");
+
                 TexturePack_.emissionTexture = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.emissionTexture, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlow");
+
                 TexturePack_.textureFlow = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureFlow, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFlowSpead");
+
                 TexturePack_.textureFlowSpead = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureFlowSpead, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureFlowSpead);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureFire");
+
                 TexturePack_.textureFire = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureFire, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "texture2Fire");
+
                 TexturePack_.texture2Fire = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.texture2Fire, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.texture2Fire);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureLayer2");
+
                 TexturePack_.textureLayer2 = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureLayer2, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureBackground");
+
                 TexturePack_.textureBackground = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureBackground, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjects");
+
                 TexturePack_.textureObjects = R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1),
                                                             Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjects, R_FILTER_NEAREST);
@@ -353,12 +403,14 @@ void game::createTexture() {
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsLQ");
+
                 TexturePack_.textureObjectsLQ = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjectsLQ, R_FILTER_NEAREST);
                 R_LoadTarget(TexturePack_.textureObjectsLQ);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureObjectsBack");
+
                 TexturePack_.textureObjectsBack = R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1),
                                                                 Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
                 R_SetImageFilter(TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
@@ -366,12 +418,14 @@ void game::createTexture() {
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureCells");
+
                 TexturePack_.textureCells = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.textureCells, R_FILTER_NEAREST);
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntities");
+
                 TexturePack_.textureEntities = R_CreateImage(Iso.world->width * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1),
                                                              Iso.world->height * (Iso.globaldef.hd_objects ? Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
 
@@ -381,6 +435,7 @@ void game::createTexture() {
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "textureEntitiesLQ");
+
                 TexturePack_.textureEntitiesLQ = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_LoadTarget(TexturePack_.textureEntitiesLQ);
@@ -389,6 +444,7 @@ void game::createTexture() {
             },
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "temperatureMap");
+
                 TexturePack_.temperatureMap = R_CreateImage(Iso.world->width, Iso.world->height, R_FormatEnum::R_FORMAT_RGBA);
 
                 R_SetImageFilter(TexturePack_.temperatureMap, R_FILTER_NEAREST);
@@ -1243,6 +1299,8 @@ int game::exit() {
     for (backwardIterator = Iso.systemList.rbegin(); backwardIterator != Iso.systemList.rend(); backwardIterator++) {
         backwardIterator->get()->destory();
     }
+
+    deleteTexture();
 
     ME_surface_DeleteGL3(this->surface);
 
