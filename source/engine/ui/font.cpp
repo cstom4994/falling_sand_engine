@@ -184,8 +184,6 @@ ME_PRIVATE(GLuint) vao = 0;
 
 ME_PRIVATE(ve_fontcache) cache;
 
-ME_PRIVATE(ve_font_id) basic_font;
-
 void fontcache::ME_fontcache_drawcmd() {
 
     ME_profiler_scope_auto("RenderGUI.Font");
@@ -316,21 +314,25 @@ void test_font2( ve_font_id id )
 }
 #endif
 
-void fontcache::ME_fontcache_load(const void *data, size_t data_size) {
+font_index fontcache::ME_fontcache_load(const void *data, size_t data_size, f32 font_size) {
     ve_fontcache_init(&cache);
     ve_fontcache_configure_snap(&cache, this->screen_w, this->screen_h);
     // ME_PRIVATE(std::vector<u8>) buffer;
 
-    basic_font = ve_fontcache_load(&cache, data, data_size, 42.0f);
+    // 返回字体索引
+    return ve_fontcache_load(&cache, data, data_size, font_size);
 }
 
-void fontcache::ME_fontcache_push(std::string &text, MEvec2 pos) {
+// 将绘制字加入待绘制列表
+// pos 不是屏幕坐标也不是NDC
+// pos 以窗口左下角为原点 窗口空间为第一象限
+void fontcache::ME_fontcache_push(const std::string &text, const font_index font, const MEvec2 pos) {
 
     ME_profiler_scope_auto("RenderGUI.Font.Post");
 
     ve_fontcache_configure_snap(&cache, this->screen_w, this->screen_h);
 
-    ve_fontcache_draw_text(&cache, basic_font, text, pos.x, pos.y, 1.0f / this->screen_w, 1.0f / this->screen_h);
+    ve_fontcache_draw_text(&cache, font, text, pos.x, pos.y, 1.0f / this->screen_w, 1.0f / this->screen_h);
 
     // // ve_fontcache_configure_snap(&cache, this->screen_w, this->screen_h);
     // static float current_scroll = 0.1f;
@@ -622,9 +624,18 @@ void fontcache::ME_fontcache_push(std::string &text, MEvec2 pos) {
 #endif
 }
 
+void fontcache::ME_fontcache_push(const std::string &text, const font_index font, const f32 x, const f32 y) { ME_fontcache_push(text, font, calc_pos(x, y)); }
+
 void fontcache::resize(MEvec2 size) {
     screen_w = size.x;
     screen_h = size.y;
+}
+
+// 将屏幕窗口坐标转换为 fontcache 绘制坐标
+MEvec2 fontcache::calc_pos(f32 x, f32 y) const {
+    f32 tmpx = x / screen_w;
+    f32 tmpy = y / screen_h;
+    return MEvec2{tmpx, 1.0f - tmpy};
 }
 
 void test_plist() {

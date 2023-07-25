@@ -45,3 +45,4 @@ global_def.draw_console = false
 global_def.draw_pack_editor = false
 
 global_def.cell_iter = 3
+global_def.brush_size = 5

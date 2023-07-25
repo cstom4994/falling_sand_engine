@@ -40,7 +40,6 @@ public:
     std::vector<R_Image *> DebugDrawUI__images = {};
     std::vector<R_Image *> DebugDrawUI__tools_images = {};
     Material *DebugDrawUI__selectedMaterial = &GAME()->materials_list.GENERIC_AIR;
-    u8 DebugDrawUI__brushSize = 5;
 
     // OptionsUI
     int OptionsUI__item_current_idx = 0;
@@ -49,8 +48,6 @@ public:
 
     std::map<std::string, FMOD::Studio::Bus *> OptionsUI__busMap = {};
 };
-
-void DrawDebugUI(game *game);
 
 void DebugDrawUI__Setup();
 void DebugDrawUI__Draw(game *game);

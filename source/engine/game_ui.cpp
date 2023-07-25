@@ -290,7 +290,7 @@ void MainMenuUI__Draw(game *game) {
     if (!gameUI.visible_mainmenu) return;
 
     ImGui::SetNextWindowSize(ImVec2(200, 240));
-    ImGui::SetNextWindowPos(global.game->Iso.ui->uidata->imgui->NextWindows(ImGuiWindowTags::UI_MainMenu, ImVec2(100, 100)), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(global.game->Iso.ui->imgui->NextWindows(dbgui_tag::DBGUI_MAINMENU, ImVec2(100, 100)), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("MainMenu", NULL, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse)) {
         ImGui::End();
         return;
@@ -409,7 +409,8 @@ void MainMenuUI__DrawCreateWorldUI(game *game) {
 
         game->setGameState(LOADING, INGAME);
 
-        game->Iso.world.reset();
+        auto w_old = game->Iso.world.release();
+        delete w_old;
 
         WorldGenerator *generator;
 
@@ -539,7 +540,8 @@ void MainMenuUI__DrawWorldLists(game *game) {
             game->fadeOutCallback = [&, game, worldName]() {
                 game->setGameState(LOADING, INGAME);
 
-                game->Iso.world.reset();
+                auto w_old = game->Iso.world.release();
+                delete w_old;
 
                 game->Iso.world = create_scope<world>();
                 game->Iso.world->init(METADOT_RESLOC(std::format("saves/{0}", worldName).c_str()), (int)ceil(WINDOWS_MAX_WIDTH / 3 / (f64)CHUNK_W) * CHUNK_W + CHUNK_W * 3,
@@ -566,138 +568,6 @@ void MainMenuUI__DrawWorldLists(game *game) {
     // ImGui::EndChild();
 }
 
-void DrawDebugUI(game *game) {
-
-    ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-    if (ImGui::TreeNode(CC("渲染"))) {
-
-        ImGui::Checkbox(CC("绘制帧率图"), &global.game->Iso.globaldef.draw_frame_graph);
-        ImGui::Checkbox(CC("绘制调试状态"), &global.game->Iso.globaldef.draw_debug_stats);
-
-        ImGui::Checkbox(CC("绘制区域块状态"), &global.game->Iso.globaldef.draw_chunk_state);
-        ImGui::Checkbox(CC("绘制加载区域"), &global.game->Iso.globaldef.draw_load_zones);
-
-        ImGui::Checkbox(CC("材料工具"), &global.game->Iso.globaldef.draw_material_info);
-        ImGui::Indent(10.0f);
-        ImGui::Checkbox(CC("调试材料"), &global.game->Iso.globaldef.draw_detailed_material_info);
-        ImGui::Unindent(10.0f);
-
-        ImGui::SeparatorText(CC("物理"));
-        ImGui::Checkbox(CC("绘制物理调试"), &global.game->Iso.globaldef.draw_physics_debug);
-
-        ImGui::SeparatorText(CC("Box2D"));
-        ImGui::Checkbox("shape", &global.game->Iso.globaldef.draw_b2d_shape);
-        ImGui::Checkbox("joint", &global.game->Iso.globaldef.draw_b2d_joint);
-        ImGui::Checkbox("aabb", &global.game->Iso.globaldef.draw_b2d_aabb);
-        ImGui::Checkbox("pair", &global.game->Iso.globaldef.draw_b2d_pair);
-        ImGui::Checkbox("center of mass", &global.game->Iso.globaldef.draw_b2d_centerMass);
-
-        if (ImGui::TreeNode(CC("GLSL方法"))) {
-            if (ImGui::Button(CC("重新加载GLSL"))) {
-                global.game->Iso.shaderworker->reload();
-            }
-            ImGui::Checkbox(CC("绘制GLSL"), &global.game->Iso.globaldef.draw_shaders);
-
-            ImGui::SeparatorText(CC("光照"));
-            ImGui::SetNextItemWidth(80);
-            ImGui::SliderFloat(CC("质量"), &global.game->Iso.globaldef.lightingQuality, 0.0, 1.0, "", 0);
-            ImGui::Checkbox(CC("覆盖"), &global.game->Iso.globaldef.draw_light_overlay);
-            ImGui::Checkbox(CC("简单采样"), &global.game->Iso.globaldef.simpleLighting);
-            ImGui::Checkbox(CC("放射"), &global.game->Iso.globaldef.lightingEmission);
-            ImGui::Checkbox(CC("抖动"), &global.game->Iso.globaldef.lightingDithering);
-
-            ImGui::SeparatorText(CC("流体"));
-            const char *items[] = {"off", "flow map", "distortion"};
-            const char *combo_label = items[global.game->Iso.globaldef.water_overlay];
-            ImGui::SetNextItemWidth(80 + 24);
-            if (ImGui::BeginCombo("Overlay", combo_label, 0)) {
-                for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
-                    const bool is_selected = (global.game->Iso.globaldef.water_overlay == n);
-                    if (ImGui::Selectable(items[n], is_selected)) {
-                        global.game->Iso.globaldef.water_overlay = n;
-                    }
-
-                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-                    if (is_selected) {
-                        ImGui::SetItemDefaultFocus();
-                    }
-                }
-                ImGui::EndCombo();
-            }
-
-            ImGui::Checkbox(CC("显示流程"), &global.game->Iso.globaldef.water_showFlow);
-            ImGui::Checkbox(CC("像素化"), &global.game->Iso.globaldef.water_pixelated);
-
-            ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNode(CC("世界"))) {
-
-            ImGui::Checkbox("Draw Temperature Map", &global.game->Iso.globaldef.draw_temperature_map);
-
-            if (ImGui::Checkbox("Draw Background", &global.game->Iso.globaldef.draw_background)) {
-                for (int x = 0; x < game->Iso.world->width; x++) {
-                    for (int y = 0; y < game->Iso.world->height; y++) {
-                        game->Iso.world->dirty[x + y * game->Iso.world->width] = true;
-                        game->Iso.world->layer2Dirty[x + y * game->Iso.world->width] = true;
-                    }
-                }
-            }
-
-            if (ImGui::Checkbox("Draw Background Grid", &global.game->Iso.globaldef.draw_background_grid)) {
-                for (int x = 0; x < game->Iso.world->width; x++) {
-                    for (int y = 0; y < game->Iso.world->height; y++) {
-                        game->Iso.world->dirty[x + y * game->Iso.world->width] = true;
-                        game->Iso.world->layer2Dirty[x + y * game->Iso.world->width] = true;
-                    }
-                }
-            }
-
-            if (ImGui::Checkbox("HD Objects", &global.game->Iso.globaldef.hd_objects)) {
-                R_FreeTarget(game->TexturePack_.textureObjects->target);
-                R_FreeImage(game->TexturePack_.textureObjects);
-                R_FreeTarget(game->TexturePack_.textureObjectsBack->target);
-                R_FreeImage(game->TexturePack_.textureObjectsBack);
-                R_FreeTarget(game->TexturePack_.textureEntities->target);
-                R_FreeImage(game->TexturePack_.textureEntities);
-
-                game->TexturePack_.textureObjects =
-                        R_CreateImage(game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
-                                      game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(game->TexturePack_.textureObjects, R_FILTER_NEAREST);
-
-                game->TexturePack_.textureObjectsBack =
-                        R_CreateImage(game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
-                                      game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(game->TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
-
-                R_LoadTarget(game->TexturePack_.textureObjects);
-                R_LoadTarget(game->TexturePack_.textureObjectsBack);
-
-                game->TexturePack_.textureEntities =
-                        R_CreateImage(game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
-                                      game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
-                R_SetImageFilter(game->TexturePack_.textureEntities, R_FILTER_NEAREST);
-
-                R_LoadTarget(game->TexturePack_.textureEntities);
-            }
-
-            ImGui::TreePop();
-        }
-
-        ImGui::TreePop();
-    }
-
-    ImGui::SetNextItemOpen(true, ImGuiCond_Once);
-    if (ImGui::TreeNode(CC("模拟"))) {
-        ImGui::Checkbox(CC("处理世界"), &global.game->Iso.globaldef.tick_world);
-        ImGui::Checkbox(CC("处理Box2D"), &global.game->Iso.globaldef.tick_box2d);
-        ImGui::Checkbox(CC("处理温度"), &global.game->Iso.globaldef.tick_temperature);
-
-        ImGui::TreePop();
-    }
-}
-
 void DebugDrawUI__Setup() {
 
     gameUI.DebugDrawUI__images = {};
@@ -706,8 +576,8 @@ void DebugDrawUI__Setup() {
         C_Surface *surface = SDL_CreateRGBSurfaceWithFormat(0, 16, 16, 32, SDL_PIXELFORMAT_ARGB8888);
         for (int x = 0; x < surface->w; x++) {
             for (int y = 0; y < surface->h; y++) {
-                MaterialInstance m = TilesCreate(mat, x, y);
-                R_GET_PIXEL(surface, x, y) = m.color + (m.mat->alpha << 24);
+                MaterialInstance m = TilesCreate(mat->id, x, y);
+                ME_get_pixel(surface, x, y) = m.color + (m.mat->alpha << 24);
             }
         }
         gameUI.DebugDrawUI__images.push_back(R_CopyImageFromSurface(surface));
@@ -742,7 +612,7 @@ void DebugDrawUI__Draw(game *game) {
 
     ImGui::SetNextWindowSize(ImVec2(40 * width + 16 + 20, 70 + 5 * 40));
     ImGui::SetNextWindowPos(ImVec2(15, 25), ImGuiCond_FirstUseEver);
-    if (global.game->Iso.globaldef.ui_tweak) ImGui::SetNextWindowDockID(global.game->Iso.ui->uidata->imgui->GetMainDockID(), ImGuiCond_FirstUseEver);
+    if (global.game->Iso.globaldef.ui_tweak) ImGui::SetNextWindowDockID(global.game->Iso.ui->imgui->GetMainDockID(), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin("Debug", NULL, ImGuiWindowFlags_NoResize)) {
         ImGui::End();
         return;
@@ -754,7 +624,7 @@ void DebugDrawUI__Draw(game *game) {
 
         auto a = gameUI.DebugDrawUI__selIndex == -1 ? "None" : gameUI.DebugDrawUI__selectedMaterial->name;
         ImGui::Text("选择: %s", a.data());
-        ImGui::Text("放置大小: %d", gameUI.DebugDrawUI__brushSize);
+        ImGui::Text("放置大小: %d", global.game->Iso.globaldef.brush_size);
 
         ImGui::Separator();
 

@@ -91,6 +91,14 @@ public:
     ShaderBaseDecl();
 };
 
+class RayLightingShader : public shader_base {
+public:
+
+    void Update(R_Image *img, float x, float y);
+
+    ShaderBaseDecl();
+};
+
 class shader_worker : public IGameSystem {
 public:
     CrtShader *crtShader = nullptr;
@@ -101,6 +109,7 @@ public:
     Fire2Shader *fire2Shader = nullptr;
     BlurShader *blurShader = nullptr;
     UntexturedShader *untexturedShader = nullptr;
+    RayLightingShader *raylightingShader = nullptr;
 
     REGISTER_SYSTEM(shader_worker)
 

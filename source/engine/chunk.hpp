@@ -17,14 +17,15 @@
 #include "game_datastruct.hpp"
 #include "reflectionflat.hpp"
 
-#define CHUNK_DATABASE_FORMAT "ssiiiiiiiBB"
-
 namespace ME {
 
+// MaterialInstance并不会完全地存储在磁盘中
+// 这里选择部分数据
+// MaterialInstanceData是会存储在磁盘中的MaterialInstance数据结构
 typedef struct {
-    u16 index;
+    mat_instance_id index;
     u32 color;
-    i32 temperature;
+    mat_temperature temperature;
 } MaterialInstanceData;
 
 template <>
@@ -52,6 +53,8 @@ struct Chunk {
     bool hasTileCache = false;
     MaterialInstance *tiles = nullptr;
     MaterialInstance *layer2 = nullptr;
+
+    // TODO: 23/7/22 我在思考是否可以把区块的background数据换成一个整体的位图来存储，那样效率应该会更高
     u32 *background = nullptr;
 
     // 区块群系优化为id查表
@@ -70,6 +73,9 @@ struct Chunk {
     void ChunkRead();
     void ChunkWrite(MaterialInstance *tiles, MaterialInstance *layer2, u32 *background);
     bool ChunkHasFile();
+
+    // 粗略计算区块占用内存字节
+    u64 get_chunk_size();
 };
 
 class ChunkReadyToMerge {

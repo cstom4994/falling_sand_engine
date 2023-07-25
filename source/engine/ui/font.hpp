@@ -13,6 +13,8 @@
 
 namespace ME {
 
+using font_index = ve_font_id;
+
 class fontcache final : public module<fontcache> /*: public ME::props_auto_reg<ME_fontcache>*/ {
     // public:
     //     static void reg() {
@@ -24,11 +26,13 @@ class fontcache final : public module<fontcache> /*: public ME::props_auto_reg<M
 
 public:
     void ME_fontcache_drawcmd();
-    void ME_fontcache_load(const void* data, size_t data_size);
+    font_index ME_fontcache_load(const void* data, size_t data_size, f32 font_size = 42.0f);
     int ME_fontcache_init();
     int ME_fontcache_end();
-    void ME_fontcache_push(std::string& text, MEvec2 pos);
+    void ME_fontcache_push(const std::string& text, const font_index font, const MEvec2 pos);
+    void ME_fontcache_push(const std::string& text, const font_index font, const f32 x, const f32 y);
     void resize(MEvec2 size);
+    MEvec2 calc_pos(f32 x, f32 y) const;
 
 private:
     GLuint screen_w;

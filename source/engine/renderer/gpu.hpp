@@ -17,7 +17,7 @@
 #include "engine/utils/utility.hpp"
 #include "libs/glad/glad.h"
 
-#define R_GET_PIXEL(surface, x, y) *((u32 *)((u8 *)surface->pixels + ((y)*surface->pitch) + ((x) * sizeof(u32))))
+// #define ME_get_pixel(surface, x, y) *((u32 *)((u8 *)surface->pixels + ((y)*surface->pitch) + ((x) * sizeof(u32))))
 
 namespace ME {
 
@@ -37,6 +37,8 @@ typedef struct Camera {
     MEvec3 camPos;     // data from vol
     MEvec3 camOrient;  // data from vol
 } Camera;
+
+ME_INLINE auto ME_get_pixel(C_Surface *surface, int x, int y) -> u32 & { return *((u32 *)((u8 *)surface->pixels + ((y)*surface->pitch) + ((x) * sizeof(u32)))); }
 
 void ME_cam_push_matrix(Camera &cam, GLprogram shader, const char *uniform);
 

@@ -39,6 +39,8 @@ R_Image *RigidBody::image() const {
     return this->m_image;
 }
 
+void RigidBody::updateSurface(std::optional<C_Surface *> surface) { ME_ASSERT(0); }
+
 void RigidBody::updateImage(std::optional<C_Surface *> image) {
 
     // 先释放原有的Image

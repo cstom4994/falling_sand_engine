@@ -38,5 +38,6 @@ typedef SDL_Cursor C_Cursor;
 typedef SDL_GLContext C_GLContext;
 typedef SDL_Keycode C_Keycode;
 typedef SDL_KeyboardEvent C_KeyboardEvent;
+typedef SDL_Event C_Event;
 
 #endif

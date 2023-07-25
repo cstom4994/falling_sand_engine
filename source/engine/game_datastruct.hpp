@@ -103,10 +103,17 @@ enum PhysicsType {
 #define REACT_TEMPERATURE_BELOW 4  // temperature, id
 #define REACT_TEMPERATURE_ABOVE 5  // temperature, id
 
+// 一些材料数据类型
+using mat_id = u32;
+using mat_instance_id = mat_id;
+using world_background_col = u32;
+using mat_temperature = i16;
+
+// 材料相互作用数据
 struct MaterialInteraction {
     int type = INTERACT_NONE;
-    int data1 = 0;
-    int data2 = 0;
+    mat_temperature data1 = 0;  // 温度
+    mat_id data2 = 0;           // 材料索引ID
     int ofsX = 0;
     int ofsY = 0;
 };
@@ -120,11 +127,12 @@ struct meta::static_refl::TypeInfo<MaterialInteraction> : TypeInfoBase<MaterialI
     };
 };
 
+// 材料类型
 struct Material {
     std::string name;
     std::string index_name;
 
-    int id = 0;
+    mat_id id = 0;
     int physicsType = 0;
     u8 alpha = 0;
     f32 density = 0;
@@ -150,42 +158,14 @@ struct Material {
 
     int slipperyness = 1;
 
-    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor, u32 color);
-    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor)
+    Material(mat_id id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor, u32 color);
+    Material(mat_id id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor)
         : Material(id, name, index_name, physicsType, slipperyness, alpha, density, iterations, emit, emitColor, 0xffffffff) {}
-    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, u8 alpha, f32 density, int iterations)
+    Material(mat_id id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, u8 alpha, f32 density, int iterations)
         : Material(id, name, index_name, physicsType, slipperyness, alpha, density, iterations, 0, 0) {}
-    Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, f32 density, int iterations)
+    Material(mat_id id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, f32 density, int iterations)
         : Material(id, name, index_name, physicsType, slipperyness, 0xff, density, iterations) {}
     Material() : Material(0, "Air", "", PhysicsType::AIR, 4, 0, 0) {}
-};
-
-template <>
-struct meta::static_refl::TypeInfo<Material> : TypeInfoBase<Material> {
-    static constexpr AttrList attrs = {};
-    static constexpr FieldList fields = {
-            Field{TSTR("name"), &Material::name},
-            Field{TSTR("index_name"), &Material::index_name},
-            Field{TSTR("id"), &Material::id},
-            Field{TSTR("is_scriptable"), &Material::is_scriptable},
-            Field{TSTR("physicsType"), &Material::physicsType},
-            Field{TSTR("alpha"), &Material::alpha},
-            Field{TSTR("density"), &Material::density},
-            Field{TSTR("iterations"), &Material::iterations},
-            Field{TSTR("emit"), &Material::emit},
-            Field{TSTR("emitColor"), &Material::emitColor},
-            Field{TSTR("color"), &Material::color},
-            Field{TSTR("addTemp"), &Material::addTemp},
-            Field{TSTR("conductionSelf"), &Material::conductionSelf},
-            Field{TSTR("conductionOther"), &Material::conductionOther},
-            Field{TSTR("interact"), &Material::interact},
-            Field{TSTR("nInteractions"), &Material::nInteractions},
-            // Field{TSTR("interactions"), &Material::interactions},
-            Field{TSTR("react"), &Material::react},
-            Field{TSTR("nReactions"), &Material::nReactions},
-            // Field{TSTR("reactions"), &Material::reactions},
-            Field{TSTR("slipperyness"), &Material::slipperyness},
-    };
 };
 
 struct MaterialsList {
@@ -224,6 +204,33 @@ void InitMaterials();
 void RegisterMaterial(int s_id, std::string name, std::string index_name, int physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor, u32 color);
 void PushMaterials();
 
+// 材料实例
+class MaterialInstance {
+public:
+    mat_instance_id id = 0;
+    Material *mat;
+
+    u32 color;
+    mat_temperature temperature;
+    bool moved = false;
+    f32 fluidAmount = 2.0f;
+    f32 fluidAmountDiff = 0.0f;
+    u8 settleCount = 0;
+
+    MaterialInstance(Material *mat, u32 color, mat_temperature temperature);
+    MaterialInstance(Material *mat, u32 color) : MaterialInstance(mat, color, 0){};
+    MaterialInstance();
+    inline bool operator==(const MaterialInstance &other) { return this->mat->id == other.mat->id; }
+};
+
+static_assert(sizeof(MaterialInstance) == 40);
+
+template <>
+struct meta::static_refl::TypeInfo<MaterialInstance> : TypeInfoBase<MaterialInstance> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {};
+};
+
 struct GameData {
     i32 ofsX = 0;
     i32 ofsY = 0;
@@ -241,42 +248,20 @@ struct GameData {
     f32 freeCamY = 0;
 
     std::map<std::string, Biome> biome_container;
+
     std::vector<Material *> materials_container;
     i32 materials_count;
     Material **materials_array;
 
+    std::vector<MaterialInstance> mat_instance_container;
+    MaterialInstance *mat_instance_array;
+
+    // 材料数据结构
     MaterialsList materials_list;
 
     struct {
         std::unordered_map<std::string, meta::any_function> Functions;
     } HostData;
-};
-
-extern GameData g_game_data;
-
-ME_INLINE GameData *GAME() { return &g_game_data; }
-
-class MaterialInstance {
-public:
-    Material *mat;
-    u32 color;
-    i32 temperature;
-    u32 id = 0;
-    bool moved = false;
-    f32 fluidAmount = 2.0f;
-    f32 fluidAmountDiff = 0.0f;
-    u8 settleCount = 0;
-
-    MaterialInstance(Material *mat, u32 color, i32 temperature);
-    MaterialInstance(Material *mat, u32 color) : MaterialInstance(mat, color, 0){};
-    MaterialInstance() : MaterialInstance(&GAME()->materials_list.GENERIC_AIR, 0x000000, 0){};
-    inline bool operator==(const MaterialInstance &other) { return this->mat->id == other.mat->id; }
-};
-
-template <>
-struct meta::static_refl::TypeInfo<MaterialInstance> : TypeInfoBase<MaterialInstance> {
-    static constexpr AttrList attrs = {};
-    static constexpr FieldList fields = {};
 };
 
 extern MaterialInstance Tiles_NOTHING;
@@ -305,8 +290,8 @@ MaterialInstance TilesCreateIron(int x, int y);
 MaterialInstance TilesCreateObsidian(int x, int y);
 MaterialInstance TilesCreateSteam();
 MaterialInstance TilesCreateFire();
-MaterialInstance TilesCreate(Material *mat, int x, int y);
-MaterialInstance TilesCreate(int id, int x, int y);
+MaterialInstance TilesCreate(mat_id id, int x, int y);
+// MaterialInstance TilesCreate(mat_id id, int x, int y, int test);
 
 #pragma endregion Material
 
@@ -435,6 +420,38 @@ struct TreePopulator : public Populator {
 
 #pragma endregion Populators
 
+template <>
+struct meta::static_refl::TypeInfo<Material> : TypeInfoBase<Material> {
+    static constexpr AttrList attrs = {};
+    static constexpr FieldList fields = {
+            Field{TSTR("name"), &Material::name},
+            Field{TSTR("index_name"), &Material::index_name},
+            Field{TSTR("id"), &Material::id},
+            Field{TSTR("is_scriptable"), &Material::is_scriptable},
+            Field{TSTR("physicsType"), &Material::physicsType},
+            Field{TSTR("alpha"), &Material::alpha},
+            Field{TSTR("density"), &Material::density},
+            Field{TSTR("iterations"), &Material::iterations},
+            Field{TSTR("emit"), &Material::emit},
+            Field{TSTR("emitColor"), &Material::emitColor},
+            Field{TSTR("color"), &Material::color},
+            Field{TSTR("addTemp"), &Material::addTemp},
+            Field{TSTR("conductionSelf"), &Material::conductionSelf},
+            Field{TSTR("conductionOther"), &Material::conductionOther},
+            Field{TSTR("interact"), &Material::interact},
+            Field{TSTR("nInteractions"), &Material::nInteractions},
+            // Field{TSTR("interactions"), &Material::interactions},
+            Field{TSTR("react"), &Material::react},
+            Field{TSTR("nReactions"), &Material::nReactions},
+            // Field{TSTR("reactions"), &Material::reactions},
+            Field{TSTR("slipperyness"), &Material::slipperyness},
+    };
+};
+
+extern GameData g_game_data;
+
+ME_INLINE GameData *GAME() { return &g_game_data; }
+
 }  // namespace ME
 
 ME_GUI_DEFINE_BEGIN(template <>, ME::WorldEntity)
@@ -449,8 +466,8 @@ ME::meta::static_refl::TypeInfo<ME::Material>::ForEachVarOf(var, [](auto field, 
 ME_GUI_DEFINE_END
 
 ME_GUI_DEFINE_BEGIN(template <>, ME::MaterialInstance)
-ImGui::Text("MaterialInstance:\n%d", var.id);
-ImGui::Auto(var.mat, "Material");
+ImGui::Text("MaterialInstance: %d\n", var.id);
+ImGui::Auto(*var.mat, "Material");  // 这里 var.mat 是指针 所以用*操作符给auto
 ME_GUI_DEFINE_END
 
 ME_GUI_DEFINE_BEGIN(template <>, ME::Biome)

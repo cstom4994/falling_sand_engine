@@ -30,14 +30,14 @@ void ReleaseGameData() {
     }
 
     for (int j = 0; j < GAME()->materials_container.size(); j++) {
-        delete[] GAME()->materials_container[j]->interactions;
-        delete[] GAME()->materials_container[j]->nInteractions;
+        if (GAME()->materials_container[j]->interactions) delete[] GAME()->materials_container[j]->interactions;
+        if (GAME()->materials_container[j]->nInteractions) delete[] GAME()->materials_container[j]->nInteractions;
     }
 }
 
 #pragma region Material
 
-Material::Material(int id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor, u32 color) {
+Material::Material(mat_id id, std::string name, std::string index_name, PhysicsType physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor, u32 color) {
     this->name = name;
     this->index_name = index_name;
     this->id = id;
@@ -56,7 +56,7 @@ Material::Material(int id, std::string name, std::string index_name, PhysicsType
 // std::unordered_map<int, Material> GAME()->materials_list.ScriptableMaterials;
 
 struct ScriptableMaterialsId {
-    int id;
+    mat_id id;
     const char *index_name;
 };
 
@@ -116,6 +116,9 @@ void test() {
 
 void InitMaterials() {
 
+    Timer timer;
+    timer.start();
+
     test();
 
     GAME()->materials_list.GENERIC_AIR.conductionSelf = 0.8;
@@ -168,9 +171,7 @@ void InitMaterials() {
 
     Material *randMats = new Material[10];
     for (int i = 0; i < 10; i++) {
-        char buff[10];
-        snprintf(buff, sizeof(buff), "Mat_%d", i);
-        std::string buffAsStdStr = buff;
+        std::string name = std::format("Mat_{0}", i);
 
         u32 rgb = rand() % 255;
         rgb = (rgb << 8) + rand() % 255;
@@ -185,7 +186,7 @@ void InitMaterials() {
         } else if (type == PhysicsType::GAS) {
             dens = 3 + (rand() % 1000) / 1000.0;
         }
-        randMats[i] = Material(GAME()->materials_count++, buff, buff, (PhysicsType)type, 10, type == PhysicsType::SAND ? 255 : (rand() % 192 + 63), dens, rand() % 4 + 1, 0, 0, rgb);
+        randMats[i] = Material(GAME()->materials_count++, name, name, (PhysicsType)type, 10, type == PhysicsType::SAND ? 255 : (rand() % 192 + 63), dens, rand() % 4 + 1, 0, 0, rgb);
         REGISTER(randMats[i]);
     }
 
@@ -269,12 +270,22 @@ void InitMaterials() {
 
     // Just test
     // meta::static_refl::TypeInfo<Material>::fields.ForEach([](const auto &field) { METADOT_BUG("", field.name); });
+
+    timer.stop();
+
+    // 非常重要 检查材料ID与索引是否一致
+    ME_ASSERT(GAME()->materials_count == GAME()->materials_container.size());
+
+    METADOT_INFO(std::format("[GamePlay] A total of {0} materials are loaded in {1:.4f} ms", GAME()->materials_count, timer.get()).c_str());
 }
 
 void RegisterMaterial(int s_id, std::string name, std::string index_name, int physicsType, int slipperyness, u8 alpha, f32 density, int iterations, int emit, u32 emitColor, u32 color) {
     GAME()->materials_list.ScriptableMaterials.insert(
             std::make_pair(s_id, Material(GAME()->materials_count++, name, index_name, (PhysicsType)physicsType, slipperyness, alpha, density, iterations, emit, emitColor, color)));
     REGISTER(GAME()->materials_list.ScriptableMaterials[s_id]);
+
+    // 非常重要 检查材料ID与索引是否一致
+    ME_ASSERT(GAME()->materials_count == GAME()->materials_container.size());
 }
 
 void PushMaterials() {
@@ -282,16 +293,22 @@ void PushMaterials() {
         m.is_scriptable = true;
     }
     GAME()->materials_array = GAME()->materials_container.data();
+
+    // for (int i = 0; i < GAME()->materials_count; i++) {
+    //     GAME()->mat_instance_container.push_back(TilesCreate());
+    // }
 }
 
 #undef REGISTER
 
-MaterialInstance::MaterialInstance(Material *mat, u32 color, i32 temperature) {
-    // this->id = _curID++;
+MaterialInstance::MaterialInstance(Material *mat, u32 color, mat_temperature temperature) {
+    this->id = mat->id;
     this->mat = mat;
     this->color = color;
     this->temperature = temperature;
 }
+
+MaterialInstance::MaterialInstance() : MaterialInstance(&GAME()->materials_list.GENERIC_AIR, 0x000000, 0) {}
 
 MaterialInstance Tiles_NOTHING = MaterialInstance(&GAME()->materials_list.GENERIC_AIR, 0x000000);
 MaterialInstance Tiles_TEST_SOLID = MaterialInstance(&GAME()->materials_list.GENERIC_SOLID, 0xff0000);
@@ -313,7 +330,7 @@ MaterialInstance TilesCreateTestTexturedSand(int x, int y) {
     int tx = x % tex->w;
     int ty = y % tex->h;
 
-    u32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = ME_get_pixel(tex, tx, ty);
     return MaterialInstance(&GAME()->materials_list.ScriptableMaterials[1002], rgb);
 }
 
@@ -358,7 +375,7 @@ MaterialInstance TilesCreateSmoothStone(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    u32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = ME_get_pixel(tex, tx, ty);
 
     return MaterialInstance(&GAME()->materials_list.SMOOTH_STONE, rgb);
 }
@@ -369,7 +386,7 @@ MaterialInstance TilesCreateCobbleStone(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    u32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = ME_get_pixel(tex, tx, ty);
 
     return MaterialInstance(&GAME()->materials_list.COBBLE_STONE, rgb);
 }
@@ -380,7 +397,7 @@ MaterialInstance TilesCreateSmoothDirt(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    u32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = ME_get_pixel(tex, tx, ty);
 
     return MaterialInstance(&GAME()->materials_list.SMOOTH_DIRT, rgb);
 }
@@ -391,7 +408,7 @@ MaterialInstance TilesCreateCobbleDirt(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    u32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = ME_get_pixel(tex, tx, ty);
 
     return MaterialInstance(&GAME()->materials_list.COBBLE_DIRT, rgb);
 }
@@ -402,7 +419,7 @@ MaterialInstance TilesCreateSoftDirt(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    u32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = ME_get_pixel(tex, tx, ty);
 
     return MaterialInstance(&GAME()->materials_list.SOFT_DIRT, rgb);
 }
@@ -425,7 +442,7 @@ MaterialInstance TilesCreateCloud(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    u32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = ME_get_pixel(tex, tx, ty);
 
     return MaterialInstance(&GAME()->materials_list.CLOUD, rgb);
 }
@@ -436,7 +453,7 @@ MaterialInstance TilesCreateGold(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    u32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = ME_get_pixel(tex, tx, ty);
 
     return MaterialInstance(&GAME()->materials_list.GOLD_ORE, rgb);
 }
@@ -447,7 +464,7 @@ MaterialInstance TilesCreateIron(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    u32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = ME_get_pixel(tex, tx, ty);
 
     return MaterialInstance(&GAME()->materials_list.IRON_ORE, rgb);
 }
@@ -458,7 +475,7 @@ MaterialInstance TilesCreateObsidian(int x, int y) {
     int tx = (tex->w + (x % tex->w)) % tex->w;
     int ty = (tex->h + (y % tex->h)) % tex->h;
 
-    u32 rgb = R_GET_PIXEL(tex, tx, ty);
+    u32 rgb = ME_get_pixel(tex, tx, ty);
 
     return MaterialInstance(&GAME()->materials_list.OBSIDIAN, rgb);
 }
@@ -474,101 +491,103 @@ MaterialInstance TilesCreateFire() {
     return MaterialInstance(&GAME()->materials_list.FIRE, rgb);
 }
 
-MaterialInstance TilesCreate(Material *mat, int x, int y) {
-    if (mat->id == GAME()->materials_list.ScriptableMaterials[1001].id) {
+MaterialInstance TilesCreate(mat_id id, int x, int y) {
+    if (id == GAME()->materials_list.ScriptableMaterials[1001].id) {
         return TilesCreateTestSand();
-    } else if (mat->id == GAME()->materials_list.ScriptableMaterials[1002].id) {
+    } else if (id == GAME()->materials_list.ScriptableMaterials[1002].id) {
         return TilesCreateTestTexturedSand(x, y);
-    } else if (mat->id == GAME()->materials_list.ScriptableMaterials[1003].id) {
+    } else if (id == GAME()->materials_list.ScriptableMaterials[1003].id) {
         return TilesCreateTestLiquid();
-    } else if (mat->id == GAME()->materials_list.STONE.id) {
+    }
+    if (id == GAME()->materials_list.STONE.id) {
         return TilesCreateStone(x, y);
-    } else if (mat->id == GAME()->materials_list.GRASS.id) {
+    } else if (id == GAME()->materials_list.GRASS.id) {
         return TilesCreateGrass();
-    } else if (mat->id == GAME()->materials_list.DIRT.id) {
+    } else if (id == GAME()->materials_list.DIRT.id) {
         return TilesCreateDirt();
-    } else if (mat->id == GAME()->materials_list.SMOOTH_STONE.id) {
+    } else if (id == GAME()->materials_list.SMOOTH_STONE.id) {
         return TilesCreateSmoothStone(x, y);
-    } else if (mat->id == GAME()->materials_list.COBBLE_STONE.id) {
+    } else if (id == GAME()->materials_list.COBBLE_STONE.id) {
         return TilesCreateCobbleStone(x, y);
-    } else if (mat->id == GAME()->materials_list.SMOOTH_DIRT.id) {
+    } else if (id == GAME()->materials_list.SMOOTH_DIRT.id) {
         return TilesCreateSmoothDirt(x, y);
-    } else if (mat->id == GAME()->materials_list.COBBLE_DIRT.id) {
+    } else if (id == GAME()->materials_list.COBBLE_DIRT.id) {
         return TilesCreateCobbleDirt(x, y);
-    } else if (mat->id == GAME()->materials_list.SOFT_DIRT.id) {
+    } else if (id == GAME()->materials_list.SOFT_DIRT.id) {
         return TilesCreateSoftDirt(x, y);
-    } else if (mat->id == GAME()->materials_list.WATER.id) {
+    } else if (id == GAME()->materials_list.WATER.id) {
         return TilesCreateWater();
-    } else if (mat->id == GAME()->materials_list.LAVA.id) {
+    } else if (id == GAME()->materials_list.LAVA.id) {
         return TilesCreateLava();
-    } else if (mat->id == GAME()->materials_list.CLOUD.id) {
+    } else if (id == GAME()->materials_list.CLOUD.id) {
         return TilesCreateCloud(x, y);
-    } else if (mat->id == GAME()->materials_list.GOLD_ORE.id) {
+    } else if (id == GAME()->materials_list.GOLD_ORE.id) {
         return TilesCreateGold(x, y);
-    } else if (mat->id == GAME()->materials_list.GOLD_MOLTEN.id) {
+    } else if (id == GAME()->materials_list.GOLD_MOLTEN.id) {
         C_Surface *tex = global.game->Iso.texturepack.goldMolten->surface();
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        u32 rgb = R_GET_PIXEL(tex, tx, ty);
+        u32 rgb = ME_get_pixel(tex, tx, ty);
 
         return MaterialInstance(&GAME()->materials_list.GOLD_MOLTEN, rgb);
-    } else if (mat->id == GAME()->materials_list.GOLD_SOLID.id) {
+    } else if (id == GAME()->materials_list.GOLD_SOLID.id) {
         C_Surface *tex = global.game->Iso.texturepack.goldSolid->surface();
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        u32 rgb = R_GET_PIXEL(tex, tx, ty);
+        u32 rgb = ME_get_pixel(tex, tx, ty);
 
         return MaterialInstance(&GAME()->materials_list.GOLD_SOLID, rgb);
-    } else if (mat->id == GAME()->materials_list.IRON_ORE.id) {
+    } else if (id == GAME()->materials_list.IRON_ORE.id) {
         return TilesCreateIron(x, y);
-    } else if (mat->id == GAME()->materials_list.OBSIDIAN.id) {
+    } else if (id == GAME()->materials_list.OBSIDIAN.id) {
         return TilesCreateObsidian(x, y);
-    } else if (mat->id == GAME()->materials_list.STEAM.id) {
+    } else if (id == GAME()->materials_list.STEAM.id) {
         return TilesCreateSteam();
-    } else if (mat->id == GAME()->materials_list.FIRE.id) {
+    } else if (id == GAME()->materials_list.FIRE.id) {
         return TilesCreateFire();
-    } else if (mat->id == GAME()->materials_list.FLAT_COBBLE_STONE.id) {
+    } else if (id == GAME()->materials_list.FLAT_COBBLE_STONE.id) {
         C_Surface *tex = global.game->Iso.texturepack.flatCobbleStone->surface();
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        u32 rgb = R_GET_PIXEL(tex, tx, ty);
+        u32 rgb = ME_get_pixel(tex, tx, ty);
 
         return MaterialInstance(&GAME()->materials_list.FLAT_COBBLE_STONE, rgb);
-    } else if (mat->id == GAME()->materials_list.FLAT_COBBLE_DIRT.id) {
+    } else if (id == GAME()->materials_list.FLAT_COBBLE_DIRT.id) {
         C_Surface *tex = global.game->Iso.texturepack.flatCobbleDirt->surface();
 
         int tx = (tex->w + (x % tex->w)) % tex->w;
         int ty = (tex->h + (y % tex->h)) % tex->h;
 
-        u32 rgb = R_GET_PIXEL(tex, tx, ty);
+        u32 rgb = ME_get_pixel(tex, tx, ty);
 
         return MaterialInstance(&GAME()->materials_list.FLAT_COBBLE_DIRT, rgb);
     }
 
-    return MaterialInstance(mat, mat->color);
+    return MaterialInstance(GAME()->materials_array[id], GAME()->materials_array[id]->color);
+    // return TilesCreateStone(x, y);
 }
 
-MaterialInstance TilesCreate(int id, int x, int y) {
-    for (auto &[i, m] : GAME()->materials_list.ScriptableMaterials) {
-        if (i == id) {
-            C_Surface *tex = global.game->Iso.texturepack.flatCobbleDirt->surface();
-
-            int tx = (tex->w + (x % tex->w)) % tex->w;
-            int ty = (tex->h + (y % tex->h)) % tex->h;
-
-            u32 rgb = R_GET_PIXEL(tex, tx, ty);
-
-            return MaterialInstance(&m, rgb);
-        }
-    }
-    return TilesCreateStone(x, y);
-}
+// MaterialInstance TilesCreate(mat_id id, int x, int y, int test) {
+//     for (auto &[i, m] : GAME()->materials_list.ScriptableMaterials) {
+//         if (i == id) {
+//             C_Surface *tex = global.game->Iso.texturepack.flatCobbleDirt->surface();
+//
+//             int tx = (tex->w + (x % tex->w)) % tex->w;
+//             int ty = (tex->h + (y % tex->h)) % tex->h;
+//
+//             u32 rgb = ME_get_pixel(tex, tx, ty);
+//
+//             return MaterialInstance(&m, rgb);
+//         }
+//     }
+//     return TilesCreateStone(x, y);
+// }
 
 #pragma endregion Material
 
@@ -582,7 +601,7 @@ Structure::Structure(C_Surface *texture, Material mat) {
     MaterialInstance *tiles = new MaterialInstance[texture->w * texture->h];
     for (int x = 0; x < texture->w; x++) {
         for (int y = 0; y < texture->h; y++) {
-            u32 color = R_GET_PIXEL(texture, x, y);
+            u32 color = ME_get_pixel(texture, x, y);
             int alpha = 255;
             if (texture->format->format == SDL_PIXELFORMAT_ARGB8888) {
                 alpha = (color >> 24) & 0xff;
@@ -980,11 +999,11 @@ std::vector<PlacedStructure> CobblePopulator::apply(MaterialInstance *chunk, Mat
                         } else {
                             if (area[1 + 1 * 3]->tiles[(sdxx) + (sdyy)*CHUNK_W].mat->id == GAME()->materials_list.SMOOTH_STONE.id) {
 
-                                chunk[sdxx + sdyy * CHUNK_W] = TilesCreate(&GAME()->materials_list.FLAT_COBBLE_STONE, sx + dx, sy + dy);
+                                chunk[sdxx + sdyy * CHUNK_W] = TilesCreate(GAME()->materials_list.FLAT_COBBLE_STONE.id, sx + dx, sy + dy);
 
                             } else if (area[1 + 1 * 3]->tiles[(sdxx) + (sdyy)*CHUNK_W].mat->id == GAME()->materials_list.SMOOTH_DIRT.id) {
 
-                                chunk[sdxx + sdyy * CHUNK_W] = TilesCreate(&GAME()->materials_list.FLAT_COBBLE_DIRT, sx + dx, sy + dy);
+                                chunk[sdxx + sdyy * CHUNK_W] = TilesCreate(GAME()->materials_list.FLAT_COBBLE_DIRT.id, sx + dx, sy + dy);
                             }
                         }
                     }
@@ -1075,7 +1094,7 @@ std::vector<PlacedStructure> TreePopulator::apply(MaterialInstance *chunk, Mater
                 // bf.categoryBits = 0x0002;
                 // bf.maskBits = 0x0001;
                 // rb->body->GetFixtureList()[0].SetFilterData(bf);
-                if (((R_GET_PIXEL(tree_tex->surface(), texX, tree_tex->surface()->h - 1) >> 24) & 0xff) != 0x00) {
+                if (((ME_get_pixel(tree_tex->surface(), texX, tree_tex->surface()->h - 1) >> 24) & 0xff) != 0x00) {
                     rb->weldX = texX;
                     rb->weldY = tree_tex->surface()->h - 1;
                     break;

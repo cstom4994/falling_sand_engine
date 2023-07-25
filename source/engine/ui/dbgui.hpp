@@ -244,17 +244,14 @@ public:
     void draw() override;
 };
 
-enum ImGuiWindowTags {
-    UI_None = 0,
-    UI_MainMenu = 1 << 0,
-    UI_GCManager = 1 << 1,
-};
+ENUM_HPP_CLASS_DECL(dbgui_tag, u16, (DBGUI_NONE = 0)(DBGUI_MAINMENU = 1 << 0)(DBGUI_GC = 1 << 1));
+ENUM_HPP_REGISTER_TRAITS(dbgui_tag);
 
-enum EditorTags { Editor_Code = 0, Editor_Markdown = 1 };
+ENUM_HPP_CLASS_DECL(editor_tag, u16, (CODE)(MARKDOWN));
 
 class code_editor : public dbgui_base {
     struct EditorView {
-        EditorTags tags;
+        editor_tag tags;
 
         std::string file;
         std::string content;
@@ -300,7 +297,7 @@ public:
     void Draw();
     void Update();
 
-    ImVec2 NextWindows(ImGuiWindowTags tag, ImVec2 pos) const noexcept;
+    ImVec2 NextWindows(dbgui_tag tag, ImVec2 pos) const noexcept;
 
     ImGuiID GetMainDockID() const noexcept { return dockspace_id; }
 

@@ -75,8 +75,10 @@ struct GlobalDEF {
     bool draw_profiler;
     bool draw_console;
     bool draw_pack_editor;
+    bool draw_code_editor;
 
     int cell_iter;
+    int brush_size;
 };
 // METADOT_STRUCT(GlobalDEF, draw_frame_graph, draw_background, draw_background_grid, draw_load_zones, draw_physics_debug, draw_b2d_shape, draw_b2d_joint, draw_b2d_aabb, draw_b2d_pair,
 //                draw_b2d_centerMass, draw_chunk_state, draw_debug_stats, draw_material_info, draw_detailed_material_info, draw_uinode_bounds, draw_temperature_map, draw_cursor, ui_tweak,

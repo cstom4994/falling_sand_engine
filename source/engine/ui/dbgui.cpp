@@ -45,6 +45,114 @@ namespace ME {
 
 extern int test_wang();
 
+void DrawDebugUI(game *game) {
+
+    ImGui::SeparatorText(CC("渲染"));
+
+    ImGui::Checkbox(CC("绘制帧率图"), &global.game->Iso.globaldef.draw_frame_graph);
+    ImGui::Checkbox(CC("绘制调试状态"), &global.game->Iso.globaldef.draw_debug_stats);
+    ImGui::Checkbox(CC("绘制区域块状态"), &global.game->Iso.globaldef.draw_chunk_state);
+    ImGui::Checkbox(CC("绘制加载区域"), &global.game->Iso.globaldef.draw_load_zones);
+    ImGui::Checkbox(CC("材料工具"), &global.game->Iso.globaldef.draw_material_info);
+    ImGui::Checkbox(CC("调试材料"), &global.game->Iso.globaldef.draw_detailed_material_info);
+    ImGui::Checkbox(CC("绘制物理调试"), &global.game->Iso.globaldef.draw_physics_debug);
+    ImGui::Checkbox("shape", &global.game->Iso.globaldef.draw_b2d_shape);
+    ImGui::Checkbox("joint", &global.game->Iso.globaldef.draw_b2d_joint);
+    ImGui::Checkbox("aabb", &global.game->Iso.globaldef.draw_b2d_aabb);
+    ImGui::Checkbox("pair", &global.game->Iso.globaldef.draw_b2d_pair);
+    ImGui::Checkbox("center of mass", &global.game->Iso.globaldef.draw_b2d_centerMass);
+
+    ImGui::Checkbox("Draw Temperature Map", &global.game->Iso.globaldef.draw_temperature_map);
+
+    if (ImGui::Checkbox("Draw Background", &global.game->Iso.globaldef.draw_background)) {
+        for (int x = 0; x < game->Iso.world->width; x++) {
+            for (int y = 0; y < game->Iso.world->height; y++) {
+                game->Iso.world->dirty[x + y * game->Iso.world->width] = true;
+                game->Iso.world->layer2Dirty[x + y * game->Iso.world->width] = true;
+            }
+        }
+    }
+
+    if (ImGui::Checkbox("Draw Background Grid", &global.game->Iso.globaldef.draw_background_grid)) {
+        for (int x = 0; x < game->Iso.world->width; x++) {
+            for (int y = 0; y < game->Iso.world->height; y++) {
+                game->Iso.world->dirty[x + y * game->Iso.world->width] = true;
+                game->Iso.world->layer2Dirty[x + y * game->Iso.world->width] = true;
+            }
+        }
+    }
+
+    if (ImGui::Checkbox("HD Objects", &global.game->Iso.globaldef.hd_objects)) {
+        R_FreeTarget(game->TexturePack_.textureObjects->target);
+        R_FreeImage(game->TexturePack_.textureObjects);
+        R_FreeTarget(game->TexturePack_.textureObjectsBack->target);
+        R_FreeImage(game->TexturePack_.textureObjectsBack);
+        R_FreeTarget(game->TexturePack_.textureEntities->target);
+        R_FreeImage(game->TexturePack_.textureEntities);
+
+        game->TexturePack_.textureObjects =
+                R_CreateImage(game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
+                              game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+        R_SetImageFilter(game->TexturePack_.textureObjects, R_FILTER_NEAREST);
+
+        game->TexturePack_.textureObjectsBack =
+                R_CreateImage(game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
+                              game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+        R_SetImageFilter(game->TexturePack_.textureObjectsBack, R_FILTER_NEAREST);
+
+        R_LoadTarget(game->TexturePack_.textureObjects);
+        R_LoadTarget(game->TexturePack_.textureObjectsBack);
+
+        game->TexturePack_.textureEntities =
+                R_CreateImage(game->Iso.world->width * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1),
+                              game->Iso.world->height * (global.game->Iso.globaldef.hd_objects ? global.game->Iso.globaldef.hd_objects_size : 1), R_FormatEnum::R_FORMAT_RGBA);
+        R_SetImageFilter(game->TexturePack_.textureEntities, R_FILTER_NEAREST);
+
+        R_LoadTarget(game->TexturePack_.textureEntities);
+    }
+
+    ImGui::Checkbox(CC("处理世界"), &global.game->Iso.globaldef.tick_world);
+    ImGui::Checkbox(CC("处理Box2D"), &global.game->Iso.globaldef.tick_box2d);
+    ImGui::Checkbox(CC("处理温度"), &global.game->Iso.globaldef.tick_temperature);
+
+    if (ImGui::TreeNode(CC("GLSL方法"))) {
+        if (ImGui::Button(CC("重新加载GLSL"))) {
+            global.game->Iso.shaderworker->reload();
+        }
+        ImGui::Checkbox(CC("绘制GLSL"), &global.game->Iso.globaldef.draw_shaders);
+
+        ImGui::SetNextItemWidth(80);
+        ImGui::SliderFloat(CC("质量"), &global.game->Iso.globaldef.lightingQuality, 0.0, 1.0, "", 0);
+        ImGui::Checkbox(CC("覆盖"), &global.game->Iso.globaldef.draw_light_overlay);
+        ImGui::Checkbox(CC("简单采样"), &global.game->Iso.globaldef.simpleLighting);
+        ImGui::Checkbox(CC("放射"), &global.game->Iso.globaldef.lightingEmission);
+        ImGui::Checkbox(CC("抖动"), &global.game->Iso.globaldef.lightingDithering);
+
+        const char *items[] = {"off", "flow map", "distortion"};
+        const char *combo_label = items[global.game->Iso.globaldef.water_overlay];
+        ImGui::SetNextItemWidth(80 + 24);
+        if (ImGui::BeginCombo("Overlay", combo_label, 0)) {
+            for (int n = 0; n < IM_ARRAYSIZE(items); n++) {
+                const bool is_selected = (global.game->Iso.globaldef.water_overlay == n);
+                if (ImGui::Selectable(items[n], is_selected)) {
+                    global.game->Iso.globaldef.water_overlay = n;
+                }
+
+                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                if (is_selected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::Checkbox(CC("显示流程"), &global.game->Iso.globaldef.water_showFlow);
+        ImGui::Checkbox(CC("像素化"), &global.game->Iso.globaldef.water_pixelated);
+
+        ImGui::TreePop();
+    }
+}
+
 typedef struct ConsoleArgv {
     char **argv, *data;
     const char *error;
@@ -967,6 +1075,10 @@ int profiler_draw_frame(profiler_frame *_data, void *_buffer, size_t _bufferSize
         ImGui::Text("Lua MemoryUsage: %.2lf mb", ((f64)kb / 1024.0f));
         ImGui::Text("Lua Remaining: %.2lf mb", ((f64)bytes / 1024.0f));
 
+        ImGui::Text("Test: %ld", global.game->Iso.world->layer2.capacity());
+        ImGui::Text("Test: %ld", global.game->Iso.world->tiles.capacity());
+        ImGui::Text("Test: %ld", global.game->Iso.world->background.capacity());
+
         ImGui::EndTabItem();
     }
 
@@ -1190,8 +1302,8 @@ static int common_control_initialize() {
 
 #endif
 
-ImVec2 dbgui::NextWindows(ImGuiWindowTags tag, ImVec2 pos) const noexcept {
-    if (tag & UI_MainMenu) ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
+ImVec2 dbgui::NextWindows(dbgui_tag tag, ImVec2 pos) const noexcept {
+    if (tag == dbgui_tag::DBGUI_MAINMENU) ImGui::SetNextWindowViewport(ImGui::GetMainViewport()->ID);
     if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
         ImVec2 windowspos = ImGui::GetPlatformIO().Platform_GetWindowPos(ImGui::GetMainViewport());
         pos += windowspos;
@@ -1578,7 +1690,7 @@ void dbgui::Update() {
                     ImGui::Checkbox("Profiler", &global.game->Iso.globaldef.draw_profiler);
                     ImGui::Checkbox("控制台", &global.game->Iso.globaldef.draw_console);
                     ImGui::Checkbox("包编辑器", &global.game->Iso.globaldef.draw_pack_editor);
-                    ImGui::Checkbox("UI", &global.game->Iso.ui->uidata->elementLists["testElement1"]->visible);
+                    ImGui::Checkbox("脚本编辑器", &global.game->Iso.globaldef.draw_code_editor);
                     if (ImGui::Button("Meo")) {
                     }
                     ImGui::SameLine();
@@ -1601,9 +1713,7 @@ void dbgui::Update() {
             }
 
             if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_DESKTOP, "ui_debug"))) {
-                if (CollapsingHeader(ICON_LANG(ICON_FA_VECTOR_SQUARE, "ui_telemetry"))) {
-                    GameUI::DrawDebugUI(global.game);
-                }
+                DrawDebugUI(global.game);
 #define INSPECTSHADER(_c) ::ME::inspect_shader(#_c, global.game->Iso.shaderworker->_c->shader)
                 if (CollapsingHeader(CC("GLSL"))) {
                     ImGui::Indent();
@@ -1886,6 +1996,9 @@ void code_editor::init() {
 void code_editor::end() {}
 
 void code_editor::draw() {
+
+    if (!global.game->Iso.globaldef.draw_code_editor) return;
+
     auto cpos = text_editor.GetCursorPosition();
     if (ImGui::Begin(LANG("ui_scripts_editor"), NULL, ImGuiWindowFlags_MenuBar)) {
 
@@ -1896,7 +2009,7 @@ void code_editor::draw() {
                     // fileDialog.Open();
                     filebrowser = true;
                 }
-                if (view_editing && view_editing->tags == EditorTags::Editor_Code && ImGui::MenuItem(LANG("ui_save"))) {
+                if (view_editing && view_editing->tags == editor_tag::CODE && ImGui::MenuItem(LANG("ui_save"))) {
                     if (view_editing && view_contents.size()) {
                         auto textToSave = text_editor.GetText();
                         std::ofstream o(view_editing->file);
@@ -1913,7 +2026,7 @@ void code_editor::draw() {
                 ImGui::EndMenu();
             }
 
-            if (view_editing && view_editing->tags == EditorTags::Editor_Code && ImGui::BeginMenu(LANG("ui_edit"))) {
+            if (view_editing && view_editing->tags == editor_tag::CODE && ImGui::BeginMenu(LANG("ui_edit"))) {
                 bool ro = text_editor.IsReadOnly();
                 if (ImGui::MenuItem(LANG("ui_readonly_mode"), nullptr, &ro)) text_editor.SetReadOnly(ro);
                 ImGui::Separator();
@@ -1935,7 +2048,7 @@ void code_editor::draw() {
                 ImGui::EndMenu();
             }
 
-            if (view_editing && view_editing->tags == EditorTags::Editor_Code && ImGui::BeginMenu(LANG("ui_view"))) {
+            if (view_editing && view_editing->tags == editor_tag::CODE && ImGui::BeginMenu(LANG("ui_view"))) {
                 if (ImGui::MenuItem("Dark palette")) text_editor.SetPalette(TextEditor::GetDarkPalette());
                 if (ImGui::MenuItem("Light palette")) text_editor.SetPalette(TextEditor::GetLightPalette());
                 if (ImGui::MenuItem("Retro blue palette")) text_editor.SetPalette(TextEditor::GetRetroBluePalette());
@@ -1963,10 +2076,10 @@ void code_editor::draw() {
                         if (i.good()) {
                             if (extension == ".lua") {
                                 std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
-                                view_contents.push_back(EditorView{.tags = EditorTags::Editor_Code, .file = file, .content = str});
+                                view_contents.push_back(EditorView{.tags = editor_tag::CODE, .file = file, .content = str});
                             } else if (extension == ".md") {
                                 std::string str((std::istreambuf_iterator<char>(i)), std::istreambuf_iterator<char>());
-                                view_contents.push_back(EditorView{.tags = EditorTags::Editor_Markdown, .file = file, .content = str});
+                                view_contents.push_back(EditorView{.tags = editor_tag::MARKDOWN, .file = file, .content = str});
                             }
                         }
                     }
@@ -1986,7 +2099,7 @@ void code_editor::draw() {
                 view_editing = &view;
 
                 if (!view_editing->is_edited) {
-                    if (view.tags == EditorTags::Editor_Code) text_editor.SetText(view_editing->content);
+                    if (view.tags == editor_tag::CODE) text_editor.SetText(view_editing->content);
                     view_editing->is_edited = true;
                 }
 
@@ -1998,13 +2111,13 @@ void code_editor::draw() {
 
         if (view_editing && view_contents.size()) {
             switch (view_editing->tags) {
-                case Editor_Code:
+                case editor_tag::CODE:
                     ImGui::Text("%6d/%-6d %6d lines  | %s | %s | %s | %s", cpos.mLine + 1, cpos.mColumn + 1, text_editor.GetTotalLines(), text_editor.IsOverwrite() ? "Ovr" : "Ins",
                                 text_editor.CanUndo() ? "*" : " ", text_editor.GetLanguageDefinition().mName.c_str(), ME_fs_get_filename(view_editing->file.c_str()));
 
                     text_editor.Render("TextEditor");
                     break;
-                case Editor_Markdown:
+                case editor_tag::MARKDOWN:
                     ImGuiHelper::markdown(view_editing->content);
                     break;
                 default:

@@ -35,7 +35,7 @@ void MaterialTestGenerator::generateChunk(world *world, Chunk *ch) {
                 if (x < 8 || y < 8 || x >= CHUNK_H - 8 || (y >= CHUNK_W - 8 && (x < 60 || x >= 68))) {
                     prop[x + y * CHUNK_W] = TilesCreateCobbleDirt(px, py);
                 } else if (y > CHUNK_H * 0.75) {
-                    prop[x + y * CHUNK_W] = TilesCreate(mat, px, py);
+                    prop[x + y * CHUNK_W] = TilesCreate(mat->id, px, py);
                 } else {
                     prop[x + y * CHUNK_W] = Tiles_NOTHING;
                 }
@@ -170,8 +170,8 @@ void DefaultGenerator::generateChunk(world *world, Chunk *ch) {
                 if (py > surf) {
                     int tx = (global.game->Iso.texturepack.caveBG->surface()->w + (px % global.game->Iso.texturepack.caveBG->surface()->w)) % global.game->Iso.texturepack.caveBG->surface()->w;
                     int ty = (global.game->Iso.texturepack.caveBG->surface()->h + (py % global.game->Iso.texturepack.caveBG->surface()->h)) % global.game->Iso.texturepack.caveBG->surface()->h;
-                    background[x + y * CHUNK_W] =
-                            R_GET_PIXEL(global.game->Iso.texturepack.caveBG->surface(), tx % global.game->Iso.texturepack.caveBG->surface()->w, ty % global.game->Iso.texturepack.caveBG->surface()->h);
+                    background[x + y * CHUNK_W] = ME_get_pixel(global.game->Iso.texturepack.caveBG->surface(), tx % global.game->Iso.texturepack.caveBG->surface()->w,
+                                                               ty % global.game->Iso.texturepack.caveBG->surface()->h);
                     f64 thru = std::fmin(std::fmax(0, abs(surf - py) / 150.0), 1);
 
                     f64 n = (world->noise.GetPerlin(px * 4.0, py * 4.0, 2960) / 2.0 + 0.5) - 0.1;

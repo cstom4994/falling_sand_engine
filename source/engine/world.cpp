@@ -54,6 +54,8 @@ void world::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *a
     width = w;
     height = h;
 
+    METADOT_INFO("World size: {0}x{1}={2}"_f(w, h, w * h).c_str());
+
     world_sys.tickPool = create_scope<thread_pool>(16);
     world_sys.tickVisitedPool = create_scope<thread_pool>(16);
     world_sys.updateRigidBodyHitboxPool = create_scope<thread_pool>(16);
@@ -201,13 +203,13 @@ RigidBody *world::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, phy::
         rb->tiles = new MaterialInstance[rb->matWidth * rb->matHeight];
         for (int xx = 0; xx < rb->matWidth; xx++) {
             for (int yy = 0; yy < rb->matHeight; yy++) {
-                u32 pixel = R_GET_PIXEL(rb->get_surface(), xx, yy);
+                u32 pixel = ME_get_pixel(rb->get_surface(), xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
-                    MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &GAME()->materials_list.FIRE : &GAME()->materials_list.OBSIDIAN, xx + (int)x, yy + (int)y);
+                    MaterialInstance inst = TilesCreate((rand() % 250 == -1) ? GAME()->materials_list.FIRE.id : GAME()->materials_list.OBSIDIAN.id, xx + (int)x, yy + (int)y);
                     inst.color = pixel;
                     rb->tiles[xx + yy * rb->matWidth] = inst;
                 } else {
-                    MaterialInstance inst = TilesCreate(&GAME()->materials_list.GENERIC_AIR, xx + (int)x, yy + (int)y);
+                    MaterialInstance inst = TilesCreate(GAME()->materials_list.GENERIC_AIR.id, xx + (int)x, yy + (int)y);
                     rb->tiles[xx + yy * rb->matWidth] = inst;
                 }
             }
@@ -217,9 +219,9 @@ RigidBody *world::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, phy::
         //     for (int y = 0; y < rb->surface->h; y++) {
         //         MaterialInstance mat = rb->tiles[x + y * rb->surface->w];
         //         if (mat.mat->id == GAME()->materials_list.GENERIC_AIR.id) {
-        //             R_GET_PIXEL(rb->surface, x, y) = 0x00000000;
+        //             ME_get_pixel(rb->surface, x, y) = 0x00000000;
         //         } else {
-        //             R_GET_PIXEL(rb->surface, x, y) = (mat.mat->alpha << 24) + mat.color;
+        //             ME_get_pixel(rb->surface, x, y) = (mat.mat->alpha << 24) + mat.color;
         //         }
         //     }
         // }
@@ -261,7 +263,7 @@ RigidBody *world::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, 
         rb->tiles = new MaterialInstance[rb->matWidth * rb->matHeight];
         for (int xx = 0; xx < rb->matWidth; xx++) {
             for (int yy = 0; yy < rb->matHeight; yy++) {
-                u32 pixel = R_GET_PIXEL(rb->get_surface(), xx, yy);
+                u32 pixel = ME_get_pixel(rb->get_surface(), xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
                     MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &GAME()->materials_list.FIRE : &GAME()->materials_list.OBSIDIAN, xx + (int)x, yy + (int)y);
                     inst.color = pixel;
@@ -277,9 +279,9 @@ RigidBody *world::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, 
             for (int y = 0; y < rb->surface->h; y++) {
                 MaterialInstance mat = rb->tiles[x + y * rb->surface->w];
                 if (mat.mat->id == Materials::GENERIC_AIR.id) {
-                    R_GET_PIXEL(rb->surface, x, y) = 0x00000000;
+                    ME_get_pixel(rb->surface, x, y) = 0x00000000;
                 } else {
-                    R_GET_PIXEL(rb->surface, x, y) = (mat.mat->alpha << 24) + mat.color;
+                    ME_get_pixel(rb->surface, x, y) = (mat.mat->alpha << 24) + mat.color;
                 }
             }
         }*/
@@ -303,9 +305,9 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
         for (int y = 0; y < texture->h; y++) {
             MaterialInstance mat = rb->tiles[x + y * texture->w];
             if (mat.mat->id == GAME()->materials_list.GENERIC_AIR.id) {
-                R_GET_PIXEL(texture, x, y) = 0x00000000;
+                ME_get_pixel(texture, x, y) = 0x00000000;
             } else {
-                R_GET_PIXEL(texture, x, y) = (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
+                ME_get_pixel(texture, x, y) = (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
             }
         }
     }
@@ -316,7 +318,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
     int maxY = 0;
     for (int x = 0; x < texture->w; x++) {
         for (int y = 0; y < texture->h; y++) {
-            if (((R_GET_PIXEL(texture, x, y) >> 24) & 0xff) != 0x00) {
+            if (((ME_get_pixel(texture, x, y) >> 24) & 0xff) != 0x00) {
                 if (x < minX) minX = x;
                 if (x > maxX) maxX = x;
                 if (y < minY) minY = y;
@@ -377,7 +379,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
     bool foundAnything = false;
     for (int x = 0; x < texture->w; x++)
         for (int y = 0; y < texture->h; y++) {
-            bool f = ((R_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
+            bool f = ((ME_get_pixel(texture, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
             foundAnything = foundAnything || f;
         }
 
@@ -388,7 +390,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
 
     for (int y = 0; y < texture->h; y++) {
         for (int x = 0; x < texture->w; x++) {
-            data[x + y * texture->w] = ((R_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
+            data[x + y * texture->w] = ((ME_get_pixel(texture, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
             edgeSeen[x + y * texture->w] = false;
         }
     }
@@ -580,7 +582,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
 
                     for (int x = stx; x < enx; x++) {
                         for (int y = 0; y < texture->h; y++) {
-                            if (((R_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00) continue;
+                            if (((ME_get_pixel(texture, x, y) >> 24) & 0xff) == 0x00) continue;
 
                             int nb = 0;
 
@@ -605,7 +607,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
                                 }
                             }
 
-                            R_GET_PIXEL(polys2sSfcs[nb], x, y) = R_GET_PIXEL(texture, x, y);
+                            ME_get_pixel(polys2sSfcs[nb], x, y) = ME_get_pixel(texture, x, y);
                             if (x == rb->weldX && y == rb->weldY) polys2sWeld[nb] = true;
                         }
                     }
@@ -615,7 +617,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
         } else {
             for (int x = 0; x < texture->w; x++) {
                 for (int y = 0; y < texture->h; y++) {
-                    if (((R_GET_PIXEL(texture, x, y) >> 24) & 0xff) == 0x00) continue;
+                    if (((ME_get_pixel(texture, x, y) >> 24) & 0xff) == 0x00) continue;
 
                     int nb = 0;
 
@@ -639,7 +641,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
                         }
                     }
 
-                    R_GET_PIXEL(polys2sSfcs[nb], x, y) = R_GET_PIXEL(texture, x, y);
+                    ME_get_pixel(polys2sSfcs[nb], x, y) = ME_get_pixel(texture, x, y);
                     if (x == rb->weldX && y == rb->weldY) polys2sWeld[nb] = true;
                 }
             }
@@ -1153,7 +1155,7 @@ void world::tick() {
                                                 for (int xx = in.ofsX - in.data2; xx <= in.ofsX + in.data2; xx++) {
                                                     for (int yy = in.ofsY - in.data2; yy <= in.ofsY + in.data2; yy++) {
                                                         if (tiles[(x + xx) + (y + yy) * width].mat->id == belowTile.mat->id) {
-                                                            tiles[(x + xx) + (y + yy) * width] = TilesCreate(GAME()->materials_container[in.data1], x + xx, y + yy);
+                                                            tiles[(x + xx) + (y + yy) * width] = TilesCreate(GAME()->materials_container[in.data1]->id, x + xx, y + yy);
                                                             dirty[(x + xx) + (y + yy) * width] = true;
                                                             tickVisited[(x + xx) + (y + yy) * width] = true;
                                                         }
@@ -1163,7 +1165,7 @@ void world::tick() {
                                                 for (int xx = in.ofsX - in.data2; xx <= in.ofsX + in.data2; xx++) {
                                                     for (int yy = in.ofsY - in.data2; yy <= in.ofsY + in.data2; yy++) {
                                                         if ((xx == 0 && yy == 0) || tiles[(x + xx) + (y + yy) * width].mat->id == Tiles_NOTHING.mat->id) {
-                                                            tiles[(x + xx) + (y + yy) * width] = TilesCreate(GAME()->materials_container[in.data1], x + xx, y + yy);
+                                                            tiles[(x + xx) + (y + yy) * width] = TilesCreate(GAME()->materials_container[in.data1]->id, x + xx, y + yy);
                                                             dirty[(x + xx) + (y + yy) * width] = true;
                                                             tickVisited[(x + xx) + (y + yy) * width] = true;
                                                         }
@@ -1180,7 +1182,7 @@ void world::tick() {
                                             MaterialInteraction in = tile.mat->reactions[i];
                                             if (in.type == REACT_TEMPERATURE_BELOW) {
                                                 if (tile.temperature < in.data1) {
-                                                    tiles[index] = TilesCreate(GAME()->materials_container[in.data2], x, y);
+                                                    tiles[index] = TilesCreate(GAME()->materials_container[in.data2]->id, x, y);
                                                     tiles[index].temperature = tile.temperature;
                                                     dirty[index] = true;
                                                     tickVisited[index] = true;
@@ -1188,7 +1190,7 @@ void world::tick() {
                                                 }
                                             } else if (in.type == REACT_TEMPERATURE_ABOVE) {
                                                 if (tile.temperature > in.data1) {
-                                                    tiles[index] = TilesCreate(GAME()->materials_container[in.data2], x, y);
+                                                    tiles[index] = TilesCreate(GAME()->materials_container[in.data2]->id, x, y);
                                                     tiles[index].temperature = tile.temperature;
                                                     dirty[index] = true;
                                                     tickVisited[index] = true;
@@ -3373,7 +3375,7 @@ RigidBody *world::physicsCheck(int x, int y) {
             for (int yy = minY; yy <= maxY; yy++) {
                 for (int xx = minX; xx <= maxX; xx++) {
                     if (visited[xx + yy * width]) {
-                        R_GET_PIXEL(sfc, (unsigned long long)(xx)-minX, yy - minY) = cols[xx + yy * width];
+                        ME_get_pixel(sfc, (unsigned long long)(xx)-minX, yy - minY) = cols[xx + yy * width];
                         tiles[xx + yy * width] = Tiles_NOTHING;
                         dirty[xx + yy * width] = true;
                     }
@@ -3521,8 +3523,9 @@ WorldMeta WorldMeta::loadWorldMeta(std::string worldFileName, bool noSaveLoad) {
 }
 
 bool WorldMeta::save(std::string worldFileName) {
-    char *metaFilePath = new char[255];
-    snprintf(metaFilePath, 255, "%s/world.json", worldFileName.c_str());
+
+    std::string metaFilePath = std::format("{0}/world.json", worldFileName);
+
     if (this->worldName.empty()) this->worldName = "WorldName";
     if (this->lastOpenedVersion.empty()) this->lastOpenedVersion = std::to_string(ME_buildnum());
 
@@ -3547,7 +3550,7 @@ bool WorldMeta::save(std::string worldFileName) {
     METADOT_INFO(std::format("Saving world ({0})", metafile["metadata"]["worldName"].to<std::string>().c_str()).c_str());
     std::ofstream o(metaFilePath);
     o << metafile.print();
-    delete[] metaFilePath;
+
     return true;
 }
 

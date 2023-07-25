@@ -22,7 +22,6 @@ namespace ME {
 
 class game;
 class scripting;
-class UIData;
 
 struct I18N {
     void Init();

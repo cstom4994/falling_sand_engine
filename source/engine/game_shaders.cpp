@@ -188,6 +188,16 @@ void UntexturedShader::Update(float mvp[], GLfloat gldata[]) {
     glDisableVertexAttribArray(vertex_loc);
 }
 
+void RayLightingShader::Update(R_Image *img, float x, float y) {
+    int t0_loc = R_GetUniformLocation(shader, "t0");
+    int txrmap_loc = R_GetUniformLocation(shader, "txrmap");
+
+    float res[2] = {x, y};
+    R_SetUniformfv(t0_loc, 2, 1, res);
+
+    R_SetShaderImage(img, txrmap_loc, 1);
+}
+
 #pragma endregion Shaders
 
 void shader_worker::create() {
@@ -203,6 +213,7 @@ void shader_worker::create() {
     this->fire2Shader = new Fire2Shader;
     this->blurShader = new BlurShader;
     this->untexturedShader = new UntexturedShader;
+    this->raylightingShader = new RayLightingShader;
 
     this->crtShader->vertex_shader_file = ME_fs_get_path("data/shaders/common.vert");
     this->crtShader->fragment_shader_file = ME_fs_get_path("data/shaders/crt.frag");
@@ -220,6 +231,8 @@ void shader_worker::create() {
     this->blurShader->fragment_shader_file = ME_fs_get_path("data/shaders/gaussian_blur.frag");
     this->untexturedShader->vertex_shader_file = ME_fs_get_path("data/shaders/untextured.vert");
     this->untexturedShader->fragment_shader_file = ME_fs_get_path("data/shaders/untextured.frag");
+    this->raylightingShader->vertex_shader_file = ME_fs_get_path("data/shaders/common.vert");
+    this->raylightingShader->fragment_shader_file = ME_fs_get_path("data/shaders/raylighting.frag");
 
     this->waterFlowPassShader->dirty = false;
 

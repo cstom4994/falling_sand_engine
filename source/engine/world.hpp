@@ -107,13 +107,18 @@ public:
     FastNoise noise;
     Audio *audioEngine = nullptr;
 
+    // 这里应该不同于区块类储存的材料实例
+    // 这里储存的应该是世界改变的材料实例
     std::vector<MaterialInstance> tiles{};
+    std::vector<MaterialInstance> layer2{};
+
+    std::vector<u32> background{};
+
     f32 *flowX = nullptr;
     f32 *flowY = nullptr;
     f32 *prevFlowX = nullptr;
     f32 *prevFlowY = nullptr;
-    std::vector<MaterialInstance> layer2{};
-    std::vector<u32> background{};
+
     u16 width = 0;
     u16 height = 0;
     int tickCt = 0;

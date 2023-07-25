@@ -141,6 +141,8 @@ public:
     MEsurface_context *surface;
     int fontNormal;
 
+    font_index basic_font;
+
     i32 ent_prevLoadZoneX = 0;
     i32 ent_prevLoadZoneY = 0;
 

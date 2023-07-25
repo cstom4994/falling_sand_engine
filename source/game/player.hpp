@@ -56,6 +56,7 @@ public:
 
     R_Image *image() const;
 
+    void updateSurface(std::optional<C_Surface *> surface);
     void updateImage(std::optional<C_Surface *> image);
 
     void clean();

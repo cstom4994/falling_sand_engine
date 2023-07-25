@@ -338,7 +338,7 @@ void ME_set_vsync(bool vsync) {
 
 void ME_win_set_minimize_onlostfocus(bool minimize) { SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, minimize ? "1" : "0"); }
 
-void ME_win_set_windowtitle(const char *title) { SDL_SetWindowTitle(the<engine>().eng()->window, win_title_server); }
+void ME_win_set_windowtitle(const char *title) { SDL_SetWindowTitle(the<engine>().eng()->window, title); }
 
 char *ME_clipboard_get() {
     char *text = SDL_GetClipboardText();

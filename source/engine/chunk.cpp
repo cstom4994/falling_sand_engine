@@ -76,8 +76,6 @@ void Chunk::ChunkRead() {
     if (tiles == NULL) throw std::runtime_error("Failed to allocate memory for Chunk tiles array.");
     MaterialInstance *layer2 = new MaterialInstance[CHUNK_W * CHUNK_H];
     if (layer2 == NULL) throw std::runtime_error("Failed to allocate memory for Chunk layer2 array.");
-    // MaterialInstance *tiles = new MaterialInstance[CHUNK_W * CHUNK_H];
-    // MaterialInstance *layer2 = new MaterialInstance[CHUNK_W * CHUNK_H];
     u32 *background = new u32[CHUNK_W * CHUNK_H];
 
     std::string line;
@@ -86,7 +84,7 @@ void Chunk::ChunkRead() {
     if (myfile.is_open()) {
         int state = 0;
 
-        myfile.read((char *)&this->generationPhase, sizeof(int8_t));
+        myfile.read((char *)&this->generationPhase, sizeof(i8));
 
         this->hasMeta = true;
         state = 1;
@@ -126,6 +124,7 @@ void Chunk::ChunkRead() {
         int src_size;
         myfile.read((char *)&src_size, sizeof(int));
 
+        // 两层MaterialInstanceData包括tiles[]和layer2[]
         if (src_size != CHUNK_W * CHUNK_H * 2 * sizeof(MaterialInstanceData))
             throw std::runtime_error("Chunk src_size was different from expected: " + std::to_string(src_size) + " vs " + std::to_string(CHUNK_W * CHUNK_H * 2 * sizeof(MaterialInstanceData)));
 
@@ -333,6 +332,28 @@ void Chunk::ChunkWrite(MaterialInstance *tiles, MaterialInstance *layer2, u32 *b
 bool Chunk::ChunkHasFile() {
     struct stat buffer;
     return (stat(this->pack_filename.c_str(), &buffer) == 0);
+}
+
+u64 Chunk::get_chunk_size() {
+
+    // size_t biomes_vectorSize = sizeof(biomes_id);
+    size_t biomes_elementSize = sizeof(int);
+    size_t biomes_elementCount = biomes_id.size();
+    size_t biomes_totalSize = /*biomes_vectorSize +*/ biomes_elementSize * biomes_elementCount;
+
+    // size_t polys_vectorSize = sizeof(polys);
+    size_t polys_elementSize = sizeof(phy::Shape *);
+    size_t polys_elementCount = polys.size();
+    size_t polys_totalSize = /*polys_vectorSize +*/ polys_elementSize * polys_elementCount;
+
+    size_t total = sizeof(MaterialInstance) * CHUNK_W * CHUNK_H * 2;
+
+    total += sizeof(u32) * CHUNK_W * CHUNK_H;
+    total += biomes_totalSize + polys_totalSize;
+
+    total += sizeof(Chunk);
+
+    return total;
 }
 
 }  // namespace ME
