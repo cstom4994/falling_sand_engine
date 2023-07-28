@@ -52,7 +52,7 @@ int input::mouse_y = 0;
 
 void input::KeyEvent(C_KeyboardEvent event) {
 
-    if (global.game->Iso.ui->UIRendererInput(event)) return;
+    if (the<gui>().push_input(event)) return;
 
     for (auto &v : keyControls) {
         if (v->key == event.keysym.sym) {

@@ -3331,8 +3331,6 @@ void world::forLineCornered(int x0, int y0, int x1, int y1, std::function<bool(i
     }
 }
 
-bool world::isC2Ground(f32 x, f32 y) { return false; }
-
 bool world::isPlayerInWorld() { return player != 0; }
 
 std::tuple<WorldEntity *, Player *> world::getHostPlayer() {
@@ -3343,6 +3341,7 @@ std::tuple<WorldEntity *, Player *> world::getHostPlayer() {
         pl = registry.find_component<Player>(player);
         pl_we = registry.find_component<WorldEntity>(player);
     } catch (...) {
+        METADOT_ERROR("[Exception] world::getHostPlayer() failed");
     }
     return std::make_tuple(pl_we, pl);
 }

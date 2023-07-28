@@ -58,7 +58,6 @@ struct Iso_t {
     ref<BackgroundSystem> backgrounds;
     ref<gameplay> gameplayscript;
     ref<shader_worker> shaderworker;
-    ref<gui> ui;
 
     SystemList systemList = {};
 

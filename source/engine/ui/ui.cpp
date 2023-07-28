@@ -19,41 +19,51 @@
 
 namespace ME {
 
-void gui::UIRendererPostUpdate() { imgui->NewFrame(); }
+f32 box_distence(MErect box, MEvec2 A) {
+    if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;
+    return 0;
+}
 
-void gui::UIRendererDraw() {
+void gui::render_postupdate() { imgui->NewFrame(); }
+
+void gui::render() {
     // GUI边界检测 防止UI窗口移动到视图外
     for (auto& v : uis) {
         v->bounds->x = std::fmax(0, std::fmin(v->bounds->x, the<engine>().eng()->windowWidth - v->bounds->w));
         v->bounds->y = std::fmax(0, std::fmin(v->bounds->y, the<engine>().eng()->windowHeight - v->bounds->h));
     }
 
-    debugUI->draw(the<engine>().eng()->target, 0, 0);
+    auto* target = the<engine>().eng()->target;
+
+    debugUI->draw(target, 0, 0);
+
+    if (chiselUI != NULL) {
+        if (!chiselUI->visible) {
+            uis.erase(std::remove(uis.begin(), uis.end(), chiselUI), uis.end());
+            delete chiselUI;
+            chiselUI = NULL;
+        } else {
+            chiselUI->draw(target, 0, 0);
+        }
+    }
 }
 
-void gui::UIRendererDrawImGui() {
+void gui::render_imgui() {
     ME_profiler_scope_auto("DrawImGui");
     imgui->Draw();
 }
 
-f32 BoxDistence(MErect box, MEvec2 A) {
-    if (A.x >= box.x && A.x <= box.x + box.w && A.y >= box.y && A.y <= box.y + box.h) return -1.0f;
-    return 0;
-}
-
-void gui::UIRendererUpdate() {
+void gui::render_update() {
 
     imgui->Update();
-    auto& l = the<scripting>().s_lua;
-    lua_wrapper::LuaFunction OnGameGUIUpdate = l["OnGameGUIUpdate"];
-    OnGameGUIUpdate();
+    the<scripting>().fast_call_func("OnGameGUIUpdate")();
 
     if (global.game->state == LOADING) return;
 
     bool ImGuiOnControl = ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard;
 }
 
-bool gui::UIRendererInput(C_KeyboardEvent event) {
+bool gui::push_input(C_KeyboardEvent event) {
     if (event.type != SDL_KEYDOWN) return false;
     // if (uidata->oninput != nullptr) {
     //     if (event.keysym.sym == SDLK_BACKSPACE) {
@@ -67,17 +77,6 @@ bool gui::UIRendererInput(C_KeyboardEvent event) {
     //     }
     //     uidata->oninput->text += input::SDLKeyToString(event.keysym.sym);
     //     return true;
-    // }
-    return false;
-}
-
-bool gui::UIIsMouseOnControls() {
-    // Mouse pos
-    // int x = input::mouse_x, y = input::mouse_y;
-
-    // for (auto&& e : uidata->elementLists) {
-    //     MErect rect{.x = (float)e.second->x, .y = (float)e.second->y, .w = (float)e.second->w, .h = (float)e.second->h};
-    //     if (BoxDistence(rect, {(float)x, (float)y}) < 0.0f) return true;
     // }
     return false;
 }
@@ -105,7 +104,37 @@ void gui::DrawPoint(MEvec3 pos, float size, Texture* texture, u8 r, u8 g, u8 b) 
 
 void gui::DrawLine(MEvec3 min, MEvec3 max, float thickness, u8 r, u8 g, u8 b) { R_Line(the<engine>().eng()->target, min.x, min.y, max.x, max.y, {r, g, b, 255}); }
 
-void gui::create() {
+void gui::chisel_ui(RigidBody* cur) {
+
+    chiselUI = new UI(new MErect{0, 0, cur->get_surface()->w * 4.f + 10 + 10, cur->get_surface()->h * 4.f + 10 + 40});
+    chiselUI->bounds->x = the<engine>().eng()->windowWidth / 2 - chiselUI->bounds->w / 2;
+    chiselUI->bounds->y = the<engine>().eng()->windowHeight / 2 - chiselUI->bounds->h / 2;
+
+    UILabel* chiselUITitleLabel = new UILabel(new MErect{chiselUI->bounds->w / 2, 10, 1, 30}, "Chisel", global.game->basic_font, 0xffffff, ALIGN_CENTER);
+    chiselUI->children.push_back(chiselUITitleLabel);
+
+    chiselUI->background = new SolidBackground(0xC0505050);
+    chiselUI->drawBorder = true;
+
+    ChiselNode* chisel = new ChiselNode(new MErect{10, 40, chiselUI->bounds->w - 20, chiselUI->bounds->h - 10 - 40});
+    chisel->drawBorder = true;
+    chisel->rb = cur;
+    SDL_Surface* surf =
+            SDL_CreateRGBSurfaceWithFormat(cur->get_surface()->flags, cur->get_surface()->w, cur->get_surface()->h, cur->get_surface()->format->BitsPerPixel, cur->get_surface()->format->format);
+    SDL_BlitSurface(cur->get_surface(), NULL, surf, NULL);
+    chisel->surface = surf;
+    chisel->texture = R_CopyImageFromSurface(surf);
+    R_SetImageFilter(chisel->texture, R_FILTER_NEAREST);
+    chiselUI->children.push_back(chisel);
+
+    uis.push_back(chiselUI);
+}
+
+gui::gui() {}
+
+gui::~gui() noexcept {}
+
+void gui::init() {
     METADOT_INFO("Loading ImGUI");
     imgui = create_ref<dbgui>();
     imgui->Init();
@@ -120,27 +149,27 @@ void gui::create() {
     debugUI->drawBorder = true;
     debugUI->visible = true;
 
-    int mainMenuButtonsWidth = 250;
-    int mainMenuButtonsYOffset = 50;
-
-    UILabel* titleLabel = new UILabel(new MErect{100, 10, 1, 30}, "Debug", global.game->basic_font, 0xffffff, ALIGN_CENTER);
+    UILabel* titleLabel = new UILabel(new MErect{1, 20, 1, 30}, "喵喵", global.game->basic_font, 0xffffff, ALIGN_CENTER);
     debugUI->children.push_back(titleLabel);
 
-    // UIButton *mainMenuNewButton = new UIButton(new MErect{200 - mainMenuButtonsWidth / 2, 60 + mainMenuButtonsYOffset, mainMenuButtonsWidth, 40}, "New", basic_font, 0xffffff, ALIGN_CENTER);
-    // mainMenuNewButton->drawBorder = true;
-    // debugUI->children.push_back(mainMenuNewButton);
+    UIButton* button_play = new UIButton(new MErect{50, 50, 100, 30}, "New", global.game->basic_font, 0xffffff, ALIGN_CENTER);
+    button_play->drawBorder = true;
+
+    UILabel* button_play_title = new UILabel(new MErect{0, 0, 1, 30}, "button_play_title", global.game->basic_font, 0xffffff, ALIGN_CENTER);
+    button_play->children.push_back(button_play_title);
+    button_play->selectCallback = [] { METADOT_INFO("button_play->hoverCallback"); };
+
+    debugUI->children.push_back(button_play);
 
     uis.push_back(debugUI);
 }
 
-void gui::destory() {
+void gui::end() {
     imgui->End();
     imgui.reset();
 }
 
-void gui::reload() {}
-
-void gui::registerLua(lua_wrapper::State& s_lua) {}
+void gui::registerLua(lua_wrapper::State* p_lua) {}
 
 void UI::draw(R_Target* t, int transformX, int transformY) {
     if (!visible) return;
@@ -238,7 +267,7 @@ void UILabel::draw(R_Target* t, int transformX, int transformY) {
 
     // if (NULL != texture) R_Blit(texture, NULL, t, bounds->x + transformX + 1 - align * surface->w / 2 + surface->w * 0.5, bounds->y + transformY + 1 + surface->h * 0.5);
 
-    the<fontcache>().ME_fontcache_push(text, font, (f32)bounds->x + transformX, (f32)bounds->y + transformY);
+    the<fontcache>().push(text, font, (f32)bounds->x + transformX, (f32)bounds->y + transformY);
 
     UINode::draw(t, transformX, transformY);
 }
@@ -293,12 +322,12 @@ void UIButton::draw(R_Target* t, int transformX, int transformY) {
         }
     }
 
-    if (textureDisabled == NULL) {
+    if (textureDisabled == NULL && NULL != surfaceDisabled) {
         textureDisabled = R_CopyImageFromSurface(surfaceDisabled);
         R_SetImageFilter(textureDisabled, R_FILTER_NEAREST);
     }
 
-    if (texture == NULL) {
+    if (texture == NULL && NULL != surface) {
         texture = R_CopyImageFromSurface(surface);
         R_SetImageFilter(texture, R_FILTER_NEAREST);
     }
@@ -307,6 +336,9 @@ void UIButton::draw(R_Target* t, int transformX, int transformY) {
         R_Image* tex = disabled ? textureDisabled : texture;
 
         R_Blit(tex, NULL, t, bounds->x + transformX + 1 - align * surface->w / 2 + bounds->w / 2 + surface->w * 0.5, bounds->y + transformY + 1 + surface->h * 0.5);
+    }
+
+    if (!text.empty()) {
     }
 
     for (auto& c : children) {
@@ -594,6 +626,11 @@ bool ChiselNode::checkEvent(C_Event ev, R_Target* t, world* world, int transform
         return true;
     }
     return UINode::checkEvent(ev, t, world, transformX, transformY);
+}
+
+ChiselNode::~ChiselNode() noexcept {
+    if (this->texture) R_FreeImage(texture);
+    if (this->surface) SDL_FreeSurface(surface);
 }
 
 void MaterialNode::draw(R_Target* t, int transformX, int transformY) {

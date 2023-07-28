@@ -9,6 +9,10 @@
 
 namespace ME {
 
+namespace lua_wrapper {
+class State;
+}
+
 class module_not_initialized final : public exception {
 public:
     const char* what() const noexcept final { return "module not initialized"; }
@@ -52,6 +56,11 @@ public:
         }
         return *instance_;
     }
+
+    virtual void init(){};
+    virtual void end(){};
+    virtual void update(){};
+    virtual void registerLua(lua_wrapper::State* p_lua){};
 
 private:
     static std::unique_ptr<BaseT> instance_;

@@ -6,7 +6,6 @@
 #include <cstring>
 #include <iostream>
 
-#include "engine/core/base_memory_tracer.hpp"
 #include "engine/core/io/filesystem.h"
 #include "engine/utils/utility.hpp"
 #include "memory.h"
@@ -119,7 +118,7 @@ static ME_mem_alloc_alloc_info_t* ME_mem_alloc_alloc_head() {
 }
 
 #if 1
-void* ME_mem_alloc_leak_check_alloc(size_t size, const char* file, int line) {
+void* ME_mem_alloc_leak_check_alloc(size_t size, const char* file, int line, size_t* statistics) {
     ME_mem_alloc_alloc_info_t* mem = (ME_mem_alloc_alloc_info_t*)ME_MALLOC_FUNC(sizeof(ME_mem_alloc_alloc_info_t) + size);
 
     if (!mem) return 0;
@@ -134,18 +133,19 @@ void* ME_mem_alloc_leak_check_alloc(size_t size, const char* file, int line) {
     head->next = mem;
 
     g_allocation_metrics.total_allocated += size;
+    if (NULL != statistics) *statistics += size;
 
     return mem + 1;
 }
 
-void* ME_mem_alloc_leak_check_calloc(size_t count, size_t element_size, const char* file, int line) {
+void* ME_mem_alloc_leak_check_calloc(size_t count, size_t element_size, const char* file, int line, size_t* statistics) {
     size_t size = count * element_size;
-    void* mem = ME_mem_alloc_leak_check_alloc(size, file, line);
+    void* mem = ME_mem_alloc_leak_check_alloc(size, file, line, statistics);
     std::memset(mem, 0, size);
     return mem;
 }
 
-void ME_mem_alloc_leak_check_free(void* mem) {
+void ME_mem_alloc_leak_check_free(void* mem, size_t* statistics) {
     if (!mem) return;
 
     ME_mem_alloc_alloc_info_t* info = (ME_mem_alloc_alloc_info_t*)mem - 1;
@@ -153,6 +153,7 @@ void ME_mem_alloc_leak_check_free(void* mem) {
     info->next->prev = info->prev;
 
     g_allocation_metrics.total_free += info->size;
+    if (NULL != statistics) *statistics -= info->size;
 
     ME_FREE_FUNC(info);
 }
@@ -244,12 +245,9 @@ void ME_get_memory_leak() {
 
 #endif
 
-void ME_mem_init(int argc, char* argv[]) { ME_MEM_INIT(); }
+void ME_mem_init(int argc, char* argv[]) {}
 
-void ME_mem_end() {
-    ME_MEM_EXIT();
-    ME_mem_check_leaks(false);
-}
+void ME_mem_end() { ME_mem_check_leaks(false); }
 
 void ME_mem_rungc() {}
 

@@ -160,6 +160,7 @@ public:
     bool checkEvent(C_Event ev, R_Target* t, world* world, int transformX, int transformY);
 
     ChiselNode(MErect* bounds) : UINode(bounds){};
+    ~ChiselNode() noexcept;
 };
 
 class MaterialNode : public UINode {
@@ -186,34 +187,35 @@ public:
     }
 };
 
-class gui : public IGameSystem {
+class gui : public module<gui> {
 
 public:
     ref<dbgui> imgui;
 
     std::vector<UI*> uis;
     UI* debugUI = nullptr;
+    UI* chiselUI = nullptr;
 
 public:
-    REGISTER_SYSTEM(gui)
+    gui();
+    ~gui() noexcept;
 
-    void create() override;
-    void destory() override;
-    void reload() override;
-    void registerLua(lua_wrapper::State& s_lua) override;
+    void init() override;
+    void end() override;
+    void registerLua(lua_wrapper::State* p_lua) override;
 
-    void UIRendererPostUpdate();
-    void UIRendererUpdate();
-    void UIRendererDraw();
-    void UIRendererDrawImGui();
-    bool UIRendererInput(C_KeyboardEvent event);
+    void render_postupdate();
+    void render_update();
+    void render();
+    void render_imgui();
 
-    bool UIIsMouseOnControls();
-
+    bool push_input(C_KeyboardEvent event);
     bool push_event(C_Event event);
 
     void DrawPoint(MEvec3 pos, float size, Texture* texture, u8 r, u8 g, u8 b);
     void DrawLine(MEvec3 min, MEvec3 max, float thickness, u8 r, u8 g, u8 b);
+
+    void chisel_ui(RigidBody* cur);
 };
 
 }  // namespace ME

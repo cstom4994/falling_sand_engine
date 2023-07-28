@@ -79,9 +79,9 @@ struct alloc {
     }
 #endif
 
-void* ME_mem_alloc_leak_check_alloc(size_t size, const char* file, int line);
-void* ME_mem_alloc_leak_check_calloc(size_t count, size_t element_size, const char* file, int line);
-void ME_mem_alloc_leak_check_free(void* mem);
+void* ME_mem_alloc_leak_check_alloc(size_t size, const char* file, int line, size_t* statistics = NULL);
+void* ME_mem_alloc_leak_check_calloc(size_t count, size_t element_size, const char* file, int line, size_t* statistics = NULL);
+void ME_mem_alloc_leak_check_free(void* mem, size_t* statistics = NULL);
 int ME_mem_check_leaks(bool detailed);
 int ME_mem_bytes_inuse();
 

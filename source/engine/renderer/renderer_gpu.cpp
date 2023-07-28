@@ -605,9 +605,9 @@ void R_PushErrorCode(const char *function, R_ErrorEnum error, const char *detail
         vsnprintf(buf, R_ERROR_DETAILS_STRING_MAX, details, lst);
         va_end(lst);
 
-        METADOT_ERROR("%s: %s - %s", (function == NULL ? "NULL" : function), R_GetErrorString(error), buf);
+        METADOT_ERROR(std::format("[Render] {0}: {1} - {2}", (function == NULL ? "NULL" : function), R_GetErrorString(error), buf).c_str());
     } else
-        METADOT_ERROR("%s: %s", (function == NULL ? "NULL" : function), R_GetErrorString(error));
+        METADOT_ERROR(std::format("[Render] {0}: {1}", (function == NULL ? "NULL" : function), R_GetErrorString(error)).c_str());
 #endif
 
     if (gpu_num_error_codes < gpu_error_code_queue_size) {

@@ -201,7 +201,9 @@ u32 ME_draw_darken_color(u32 color, float brightness) {
 }
 
 void ME_draw_text(std::string text, MEcolor col, int x, int y, bool outline, MEcolor outline_col) {
-    ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
+
+    ImGuiViewport *viewport = ImGui::GetMainViewport();
+    ImDrawList *draw_list = ImGui::GetBackgroundDrawList(viewport);
 
     if (outline) {
 

@@ -25,6 +25,7 @@
 #include "engine/game.hpp"
 #include "engine/game_datastruct.hpp"
 #include "engine/game_ui.hpp"
+#include "engine/meta/metadesk/md.h"
 #include "engine/meta/reflection.hpp"
 #include "engine/meta/static_relfection.hpp"
 #include "engine/npc.hpp"
@@ -39,30 +40,80 @@
 #include "game/items.hpp"
 #include "game/player.hpp"
 #include "libs/glad/glad.h"
-#include "libs/imgui/font_awesome.h"
+
+#define INSPECTSHADER(_c) ::ME::inspect_shader(#_c, global.game->Iso.shaderworker->_c->shader)
 
 namespace ME {
 
 extern int test_wang();
 
+static MD_Arena *arena = 0;
+
+ME_PRIVATE(std::size_t) imgui_mem_usage = 0;
+
+auto CollapsingHeader = [](const char *name) -> bool {
+    ImGuiStyle &style = ImGui::GetStyle();
+    ImGui::PushStyleColor(ImGuiCol_Header, style.Colors[ImGuiCol_Button]);
+    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, style.Colors[ImGuiCol_ButtonHovered]);
+    ImGui::PushStyleColor(ImGuiCol_HeaderActive, style.Colors[ImGuiCol_ButtonActive]);
+    bool b = ImGui::CollapsingHeader(name);
+    ImGui::PopStyleColor(3);
+    return b;
+};
+
 void DrawDebugUI(game *game) {
 
-    ImGui::SeparatorText(CC("渲染"));
+    try {
 
-    ImGui::Checkbox(CC("绘制帧率图"), &global.game->Iso.globaldef.draw_frame_graph);
-    ImGui::Checkbox(CC("绘制调试状态"), &global.game->Iso.globaldef.draw_debug_stats);
-    ImGui::Checkbox(CC("绘制区域块状态"), &global.game->Iso.globaldef.draw_chunk_state);
-    ImGui::Checkbox(CC("绘制加载区域"), &global.game->Iso.globaldef.draw_load_zones);
-    ImGui::Checkbox(CC("材料工具"), &global.game->Iso.globaldef.draw_material_info);
-    ImGui::Checkbox(CC("调试材料"), &global.game->Iso.globaldef.draw_detailed_material_info);
-    ImGui::Checkbox(CC("绘制物理调试"), &global.game->Iso.globaldef.draw_physics_debug);
-    ImGui::Checkbox("shape", &global.game->Iso.globaldef.draw_b2d_shape);
-    ImGui::Checkbox("joint", &global.game->Iso.globaldef.draw_b2d_joint);
-    ImGui::Checkbox("aabb", &global.game->Iso.globaldef.draw_b2d_aabb);
-    ImGui::Checkbox("pair", &global.game->Iso.globaldef.draw_b2d_pair);
-    ImGui::Checkbox("center of mass", &global.game->Iso.globaldef.draw_b2d_centerMass);
+        const meta::r::scope cvar_scope = meta::r::local_scope_("cvar").typedef_<GlobalDEF>("GlobalDEF");
 
-    ImGui::Checkbox("Draw Temperature Map", &global.game->Iso.globaldef.draw_temperature_map);
+        for (const auto &[type_name, type] : cvar_scope.get_typedefs()) {
+            if (!type.is_class()) {
+                continue;
+            }
+
+            const meta::r::class_type &class_type = type.as_class();
+            const meta::r::metadata_map &class_metadata = class_type.get_metadata();
+
+            if (CollapsingHeader(type_name.c_str())) {
+                for (const meta::r::member &member : class_type.get_members()) {
+                    const meta::r::metadata_map &member_metadata = member.get_metadata();
+
+                    auto f = [&]<typename T>(T arg) {
+                        if (member.get_type().get_value_type() == meta::r::resolve_type<T>()) {
+                            auto f = member.get(global.game->Iso.globaldef);
+                            if (T *s = f.try_as<T>()) {
+                                if (member_metadata.find("imgui") != member_metadata.end()) {
+                                    auto editor_ui_type = member_metadata.at("imgui").as<std::string>();
+                                    if (editor_ui_type == "float_range") {
+                                        T t = *s;
+                                        ImGui::SliderFloat(member.get_name().c_str(), (float *)&t, member_metadata.at("min").as<float>(), member_metadata.at("max").as<float>(), "", 0);
+                                        if (t != *s) member.try_set(global.game->Iso.globaldef, t);
+                                    }
+                                } else {
+                                    T t = *s;
+                                    ImGui::Auto(t, member.get_name().c_str());
+                                    if (t != *s) member.try_set(global.game->Iso.globaldef, t);
+                                }
+                                ImGui::Text("    [%s]", member_metadata.at("info").as<std::string>().c_str());
+                            } else {
+                                ImGui::TextColored({1.0f, 0.0f, 0.0f, 1.0f}, "(error) %s", member.get_name().c_str());
+                            }
+                        }
+                    };
+
+                    using cvar_types_t = std::tuple<CVAR_TYPES()>;
+
+                    cvar_types_t ctt;
+                    std::apply([&](auto &&...args) { (f(args), ...); }, ctt);
+                }
+            }
+        }
+    } catch (const std::exception ex) {
+        METADOT_ERROR(std::format("[Exception] {0}", ex.what()).c_str());
+    }
+
+    ImGui::Separator();
 
     if (ImGui::Checkbox("Draw Background", &global.game->Iso.globaldef.draw_background)) {
         for (int x = 0; x < game->Iso.world->width; x++) {
@@ -111,22 +162,11 @@ void DrawDebugUI(game *game) {
         R_LoadTarget(game->TexturePack_.textureEntities);
     }
 
-    ImGui::Checkbox(CC("处理世界"), &global.game->Iso.globaldef.tick_world);
-    ImGui::Checkbox(CC("处理Box2D"), &global.game->Iso.globaldef.tick_box2d);
-    ImGui::Checkbox(CC("处理温度"), &global.game->Iso.globaldef.tick_temperature);
+    if (CollapsingHeader(CC("GLSL"))) {
 
-    if (ImGui::TreeNode(CC("GLSL方法"))) {
         if (ImGui::Button(CC("重新加载GLSL"))) {
             global.game->Iso.shaderworker->reload();
         }
-        ImGui::Checkbox(CC("绘制GLSL"), &global.game->Iso.globaldef.draw_shaders);
-
-        ImGui::SetNextItemWidth(80);
-        ImGui::SliderFloat(CC("质量"), &global.game->Iso.globaldef.lightingQuality, 0.0, 1.0, "", 0);
-        ImGui::Checkbox(CC("覆盖"), &global.game->Iso.globaldef.draw_light_overlay);
-        ImGui::Checkbox(CC("简单采样"), &global.game->Iso.globaldef.simpleLighting);
-        ImGui::Checkbox(CC("放射"), &global.game->Iso.globaldef.lightingEmission);
-        ImGui::Checkbox(CC("抖动"), &global.game->Iso.globaldef.lightingDithering);
 
         const char *items[] = {"off", "flow map", "distortion"};
         const char *combo_label = items[global.game->Iso.globaldef.water_overlay];
@@ -146,10 +186,15 @@ void DrawDebugUI(game *game) {
             ImGui::EndCombo();
         }
 
-        ImGui::Checkbox(CC("显示流程"), &global.game->Iso.globaldef.water_showFlow);
-        ImGui::Checkbox(CC("像素化"), &global.game->Iso.globaldef.water_pixelated);
+        ImGui::SeparatorText(CC("Shaders"));
 
-        ImGui::TreePop();
+        INSPECTSHADER(newLightingShader);
+        INSPECTSHADER(fireShader);
+        INSPECTSHADER(fire2Shader);
+        INSPECTSHADER(waterShader);
+        INSPECTSHADER(waterFlowPassShader);
+        INSPECTSHADER(untexturedShader);
+        INSPECTSHADER(blurShader);
     }
 }
 
@@ -437,6 +482,8 @@ void console::draw_internal_display() noexcept {
 
     int x = 10, y = 10;
 
+    if (global.game->Iso.globaldef.ui_tweak) y += 10;
+
     ImDrawList *draw_list = ImGui::GetBackgroundDrawList();
 
     for (auto &a : log_list) {
@@ -569,7 +616,7 @@ bool console::eval(std::string &cmd) {
 }
 
 void console::display_full(bool *bInteractingWithTextbox) noexcept {
-    ImGui::Begin(ICON_LANG(ICON_FA_TERMINAL, "ui_console"));
+    ImGui::Begin(LANG("ui_console"));
     display(bInteractingWithTextbox);
     ImGui::End();
 }
@@ -1058,15 +1105,6 @@ int profiler_draw_frame(profiler_frame *_data, void *_buffer, size_t _bufferSize
         ImGui::Text("GPU MemTotalAvailable: %.2lf mb", (f64)(cur_avail_mem_kb / 1024.0f));
         ImGui::Text("GPU MemCurrentUsage: %.2lf mb", (f64)((total_mem_kb - cur_avail_mem_kb) / 1024.0f));
 
-        // #if defined(ME_DEBUG)
-        //         ImGui::Dummy(ImVec2(0.0f, 10.0f));
-        //         ImGui::Text("GC:\n");
-        //         for (auto [name, size] : allocation_metrics::MemoryDebugMap) {
-        //             ImGui::Text("%s", Format("   {0} {1}", name, size).c_str());
-        //         }
-        //         // ImGui::Auto(allocation_metrics::MemoryDebugMap, "map");
-        // #endif
-
         auto L = the<scripting>().L;
         lua_gc(L, LUA_GCCOLLECT, 0);
         lua_Integer kb = lua_gc(L, LUA_GCCOUNT, 0);
@@ -1074,6 +1112,8 @@ int profiler_draw_frame(profiler_frame *_data, void *_buffer, size_t _bufferSize
 
         ImGui::Text("Lua MemoryUsage: %.2lf mb", ((f64)kb / 1024.0f));
         ImGui::Text("Lua Remaining: %.2lf mb", ((f64)bytes / 1024.0f));
+
+        ImGui::Text("ImGui MemoryUsage: %.2lf mb", ((f64)imgui_mem_usage / 1048576.0));
 
         ImGui::Text("Test: %ld", global.game->Iso.world->layer2.capacity());
         ImGui::Text("Test: %ld", global.game->Iso.world->tiles.capacity());
@@ -1253,12 +1293,12 @@ inline void ImGuiInitStyle(const float pixel_ratio, const float dpi_scaling) {
     colors[ImGuiCol_TitleBgCollapsed] = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};
 
     // Rounding
-    // style.WindowPadding = ImVec2(4.0f, 4.0f);
-    // style.FramePadding = ImVec2(6.0f, 4.0f);
-    // style.WindowRounding = 10.0f;
-    // style.ChildRounding = 4.0f;
-    // style.FrameRounding = 4.0f;
-    // style.GrabRounding = 4.0f;
+    style.WindowPadding = ImVec2(4.0f, 4.0f);
+    style.FramePadding = ImVec2(6.0f, 4.0f);
+    style.WindowRounding = 8.0f;
+    style.ChildRounding = 2.0f;
+    style.FrameRounding = 2.0f;
+    style.GrabRounding = 2.0f;
 }
 
 #if defined(ME_IMM32)
@@ -1329,8 +1369,9 @@ dbgui::dbgui() {
 ME_imgui_imm imguiIMMCommunication{};
 #endif
 
-ME_PRIVATE(void *) ImGuiMalloc(size_t sz, void *user_data) { return ME_MALLOC(sz); }
-ME_PRIVATE(void) ImGuiFree(void *ptr, void *user_data) { ME_FREE(ptr); }
+ME_PRIVATE(void *) ImGuiMalloc(size_t sz, void *user_data) { return ME_mem_alloc_leak_check_alloc((sz), (char *)__FILE__, __LINE__, &imgui_mem_usage); }
+
+ME_PRIVATE(void) ImGuiFree(void *ptr, void *user_data) { ME_mem_alloc_leak_check_free(ptr, &imgui_mem_usage); }
 
 void dbgui::Init() {
 
@@ -1350,34 +1391,13 @@ void dbgui::Init() {
     io.IniFilename = "imgui.ini";
 
     ImFontConfig config;
-    config.OversampleH = 3;
-    config.OversampleV = 3;
-    config.PixelSnapH = 1;
+    // config.OversampleH = 3;
+    // config.OversampleV = 3;
+    // config.PixelSnapH = 1;
 
     f32 scale = 1.0f;
 
     io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fusion-pixel-12px-monospaced.ttf"), 12.0f * scale, &config, io.Fonts->GetGlyphRangesChineseFull());
-
-    {
-        // Font Awesome
-        static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-        ImFontConfig icons_config;
-        icons_config.MergeMode = true;
-        config.OversampleH = 2;
-        config.OversampleV = 2;
-        icons_config.PixelSnapH = true;
-        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fa-solid-900.ttf"), 13.0f * scale, &icons_config, icons_ranges);
-    }
-    {
-        // Font Awesome
-        static const ImWchar icons_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-        ImFontConfig icons_config;
-        icons_config.MergeMode = true;
-        config.OversampleH = 2;
-        config.OversampleV = 2;
-        icons_config.PixelSnapH = true;
-        io.Fonts->AddFontFromFileTTF(METADOT_RESLOC("data/assets/fonts/fa-regular-400.ttf"), 13.0f * scale, &icons_config, icons_ranges);
-    }
 
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
     ImGuiStyle &style = ImGui::GetStyle();
@@ -1456,6 +1476,7 @@ void dbgui::Init() {
 void dbgui::End() {
     for (auto &gui : dbgui_list) {
         gui->end();
+        delete gui;
     }
 
     RendererShutdownFunction();
@@ -1490,16 +1511,6 @@ void dbgui::Draw() {
     }
 }
 
-auto CollapsingHeader = [](const char *name) -> bool {
-    ImGuiStyle &style = ImGui::GetStyle();
-    ImGui::PushStyleColor(ImGuiCol_Header, style.Colors[ImGuiCol_Button]);
-    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, style.Colors[ImGuiCol_ButtonHovered]);
-    ImGui::PushStyleColor(ImGuiCol_HeaderActive, style.Colors[ImGuiCol_ButtonActive]);
-    bool b = ImGui::CollapsingHeader(name);
-    ImGui::PopStyleColor(3);
-    return b;
-};
-
 void dbgui::Update() {
 
     ImGuiIO &io = ImGui::GetIO();
@@ -1527,7 +1538,7 @@ void dbgui::Update() {
         ImGui::SetNextWindowPos({viewport->Size.x - DockSpaceSize.x - 8.0f, 8.0f}, ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowViewport(viewport->ID);
 
-        window_flags |= ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoSavedSettings;
+        window_flags |= ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoSavedSettings;
         dockspace_flags |= ImGuiDockNodeFlags_PassthruCentralNode;
 
         ImGui::Begin("Engine", NULL, window_flags);
@@ -1538,13 +1549,33 @@ void dbgui::Update() {
         } else {
             ME_ASSERT(0);
         }
+
+        if (ImGui::BeginMainMenuBar()) {
+
+            ImGui::TextColored(ImVec4(0.19f, 1.f, 0.196f, 1.f), METADOT_NAME);
+
+            if (ImGui::BeginMenu("File")) {
+                ImGui::EndMenu();
+            }
+
+            char fpsText[50];
+            snprintf(fpsText, sizeof(fpsText), "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, the<engine>().eng()->time.feelsLikeFps);
+            // ME_draw_text(fpsText, {255, 255, 255, 255}, the<engine>().eng()->windowWidth - ImGui::CalcTextSize(fpsText).x, 0);
+
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() - ImGui::CalcTextSize(fpsText).x - ImGui::GetScrollX());
+
+            ImGui::Text(fpsText);
+
+            ImGui::EndMainMenuBar();
+        }
+
         ImGui::End();
 
         ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         if (ImGui::Begin(LANG("ui_tweaks"))) {
             ImGui::BeginTabBar("ui_tweaks_tabbar");
 
-            if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_SPIDER, "ui_test"))) {
+            if (ImGui::BeginTabItem(LANG("ui_test"))) {
                 ImGui::BeginTabBar(CC("测试#haha"));
 
                 if (ImGui::BeginTabItem(CC("测试"))) {
@@ -1702,6 +1733,38 @@ void dbgui::Update() {
                         extern int test_mdplot();
                         test_mdplot();
                     }
+                    if (ImGui::Button("Metadesk")) {
+
+                        // setup the global arena
+                        arena = MD_ArenaAlloc();
+
+                        MD_String8 example_code = MD_S8Lit(
+                                "@struct Vec3:\n"
+                                "{\n"
+                                "  x: F32,\n"
+                                "  y: F32,\n"
+                                "  z: F32,\n"
+                                "}\n\n");
+                        MD_ParseResult parse = MD_ParseWholeString(arena, MD_S8Lit("Generated Test Code"), example_code);
+
+                        // Iterate through each top-level node
+                        for (MD_EachNode(node, parse.node->first_child)) {
+                            printf("/ %.*s\n", MD_S8VArg(node->string));
+
+                            // Print the name of each of the node's tags
+                            for (MD_EachNode(tag, node->first_tag)) {
+                                printf("|-- Tag %.*s\n", MD_S8VArg(tag->string));
+                            }
+
+                            // Print the name of each of the node's children
+                            for (MD_EachNode(child, node->first_child)) {
+                                printf("|-- Child %.*s\n", MD_S8VArg(child->string));
+                            }
+                        }
+
+                        // print the results
+                        MD_PrintDebugDumpFromNode(stdout, parse.node, MD_GenerateFlags_All);
+                    }
                     ImGui::EndTabItem();
                 }
                 if (ImGui::BeginTabItem(CC("自动序列测试"))) {
@@ -1712,21 +1775,8 @@ void dbgui::Update() {
                 ImGui::EndTabItem();
             }
 
-            if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_DESKTOP, "ui_debug"))) {
+            if (ImGui::BeginTabItem(LANG("ui_debug"))) {
                 DrawDebugUI(global.game);
-#define INSPECTSHADER(_c) ::ME::inspect_shader(#_c, global.game->Iso.shaderworker->_c->shader)
-                if (CollapsingHeader(CC("GLSL"))) {
-                    ImGui::Indent();
-                    INSPECTSHADER(newLightingShader);
-                    INSPECTSHADER(fireShader);
-                    INSPECTSHADER(fire2Shader);
-                    INSPECTSHADER(waterShader);
-                    INSPECTSHADER(waterFlowPassShader);
-                    INSPECTSHADER(untexturedShader);
-                    INSPECTSHADER(blurShader);
-                    ImGui::Unindent();
-                }
-#undef INSPECTSHADER
                 ImGui::EndTabItem();
             }
 
@@ -1737,7 +1787,7 @@ void dbgui::Update() {
         ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         if (ImGui::Begin(LANG("ui_inspecting"), NULL)) {
             ImGui::BeginTabBar("ui_inspect");
-            if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_HASHTAG, "ui_scene"))) {
+            if (ImGui::BeginTabItem(LANG("ui_scene"))) {
                 if (CollapsingHeader(LANG("ui_chunk"))) {
                     static bool check_rigidbody = false;
                     ImGui::Checkbox(CC("只查看刚体有效"), &check_rigidbody);
@@ -1806,7 +1856,7 @@ void dbgui::Update() {
                 ImGui::EndTabItem();
             }
 
-            if (ImGui::BeginTabItem(ICON_LANG(ICON_FA_PROJECT_DIAGRAM, "ui_system"))) {
+            if (ImGui::BeginTabItem(LANG("ui_system"))) {
                 if (ImGui::BeginTable("ui_system_table", 4,
                                       ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_NoSavedSettings)) {
                     ImGui::TableSetupColumn("Priority", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, 0);
@@ -1852,7 +1902,7 @@ void dbgui::Update() {
         ImGui::End();
 
         ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
-        if (ImGui::Begin(ICON_LANG(ICON_FA_INFO, "ui_info"))) {
+        if (ImGui::Begin(LANG("ui_info"))) {
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
@@ -1865,67 +1915,6 @@ void dbgui::Update() {
             ImGui::Text("Shader versions supported: %d to %d\n", renderer->min_shader_version, renderer->max_shader_version);
             ImGui::Text("Platform: %s\n", ME_metadata().platform.c_str());
             ImGui::Text("Compiler: %s %s (with cpp %s)\n", ME_metadata().compiler.c_str(), ME_metadata().compiler_version.c_str(), ME_metadata().cpp.c_str());
-
-            //                MarkdownData TickInfoPanel;
-            //                TickInfoPanel.data = R"(
-            // Info &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Data &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; | Comments &nbsp;
-            //:-----------|:------------|:--------
-            // TickCount | {0} | Nothing
-            // DeltaTime | {1} | Nothing
-            // TPS | {2} | Nothing
-            // Mspt | {3} | Nothing
-            // Delta | {4} | Nothing
-            // STDTime | {5} | Nothing
-            // CSTDTime | {6} | Nothing)";
-            //
-            //                 time_t rawtime;
-            //                 rawtime = time(NULL);
-            //                 struct tm *timeinfo = localtime(&rawtime);
-            //
-            //                 TickInfoPanel.data = std::format(TickInfoPanel.data, Time.tickCount, Time.deltaTime, Time.tps, Time.mspt, Time.now - Time.lastTickTime, ME_gettime(), rawtime);
-            //
-            //                 ImGui::Auto(TickInfoPanel);
-
-            // ImGui::Text("\nnow: %d-%02d-%02d %02d:%02d:%02d", timeinfo->tm_year + 1900, timeinfo->tm_mon + 1, timeinfo->tm_mday, timeinfo->tm_hour, timeinfo->tm_min, timeinfo->tm_sec);
-            //  ImGui::Text("_curID %d", MaterialInstance::_curID);
-
-            ImGui::Dummy(ImVec2(0.0f, 20.0f));
-            ImGui::Separator();
-
-            if (ImGui::BeginTable("ui_cvars_table", 4, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_Resizable)) {
-                ImGui::TableSetupColumn("ID", ImGuiTableColumnFlags_DefaultSort | ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoHide, 0.0f, 0);
-                ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, 0.0f, 1);
-                ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_NoSort | ImGuiTableColumnFlags_WidthFixed, 0.0f, 2);
-                ImGui::TableSetupColumn("Action", ImGuiTableColumnFlags_None, 0.0f, 3);
-
-                ImGui::TableHeadersRow();
-
-                int n;
-                auto ShowCVar = [&](const char *name, auto &value) {
-                    ImGui::TableNextRow(ImGuiTableRowFlags_None);
-
-                    if (ImGui::TableSetColumnIndex(0)) ImGui::Text("%d", n++);
-                    if (ImGui::TableSetColumnIndex(1)) ImGui::TextUnformatted(name);
-                    if (ImGui::TableSetColumnIndex(2)) {
-                        if constexpr (std::is_same_v<decltype(value), bool>) {
-                            ImGui::TextUnformatted(BOOL_STRING(value));
-                        } else {
-                            ImGui::TextUnformatted(std::to_string(value).c_str());
-                        }
-                    }
-                    if (ImGui::TableSetColumnIndex(3)) {
-                        if (ImGui::SmallButton("Reset")) {
-                        }
-                        ImGui::SameLine();
-                        if (ImGui::SmallButton("Edit")) {
-                        }
-                    }
-                };
-
-                // meta::dostruct::for_each(global.game->Iso.globaldef, ShowCVar);
-
-                ImGui::EndTable();
-            }
         }
         ImGui::End();
     }

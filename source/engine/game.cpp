@@ -138,9 +138,6 @@ int game::init(int argc, char *argv[]) {
     Iso.gameplayscript = create_ref<gameplay>(2);
     Iso.systemList.push_back(Iso.gameplayscript);
 
-    Iso.ui = create_ref<gui>(4);
-    Iso.systemList.push_back(Iso.ui);
-
     Iso.shaderworker = create_ref<shader_worker>(6, SystemFlags::Render);
     Iso.systemList.push_back(Iso.shaderworker);
 
@@ -155,10 +152,10 @@ int game::init(int argc, char *argv[]) {
     for (auto &s : Iso.systemList) {
         s->registerLua(the<scripting>().s_lua);
         s->create();
-        // if (!s->getFlag(SystemFlags::ImGui)) {
-        //     s->Create();
-        // }
     }
+
+    ME::modules::initialize<gui>();
+    the<gui>().init();
 
     ME_pack_result pack_result = ME_create_file_pack_reader(METADOT_RESLOC("data/resources.pack"), 0, 0, &this->Iso.pack_reader);
 
@@ -220,10 +217,10 @@ int game::init(int argc, char *argv[]) {
 
     the<fontcache>().resize({(float)the<engine>().eng()->windowWidth, (float)the<engine>().eng()->windowHeight});
 
-    the<fontcache>().ME_fontcache_init();
+    the<fontcache>().init();
 
     auto ui_font = get_assets(".\\fonts\\fusion-pixel.ttf");
-    basic_font = the<fontcache>().ME_fontcache_load(ui_font.data, ui_font.size, 24.0f);
+    basic_font = the<fontcache>().load(ui_font.data, ui_font.size, 24.0f);
 
     ME_profiler_graph_init(&this->fps, GRAPH_RENDER_FPS, "Frame Time");
     ME_profiler_graph_init(&this->cpuGraph, GRAPH_RENDER_MS, "CPU Time");
@@ -302,7 +299,6 @@ void game::deleteTexture() {
 void game::createTexture() {
 
     METADOT_LOG_SCOPE_FUNCTION(INFO);
-    METADOT_INFO("Creating world textures...");
 
     Timer timer;
     timer.start();
@@ -525,7 +521,7 @@ int game::run(int argc, char *argv[]) {
         GAME()->plPosY = GAME()->freeCamY;
     }
 
-    SDL_Event windowEvent;
+    C_Event windowEvent;
 
     the<engine>().eng()->render_scale = 3;
     GAME()->ofsX = (int)(-CHUNK_W * 4);
@@ -572,7 +568,7 @@ int game::run(int argc, char *argv[]) {
                 }
             }
 
-            if (Iso.ui->push_event(windowEvent)) continue;
+            if (the<gui>().push_event(windowEvent)) continue;
 
             if (windowEvent.type == SDL_MOUSEWHEEL) {
 
@@ -581,7 +577,7 @@ int game::run(int argc, char *argv[]) {
                 input::mouse_x = windowEvent.motion.x;
                 input::mouse_y = windowEvent.motion.y;
 
-                if (input::DEBUG_DRAW->get() && !Iso.ui->UIIsMouseOnControls()) {
+                if (input::DEBUG_DRAW->get()) {
                     // draw material
 
                     int x = (int)((windowEvent.motion.x - GAME()->ofsX - GAME()->camX) / the<engine>().eng()->render_scale);
@@ -616,7 +612,7 @@ int game::run(int argc, char *argv[]) {
                     lastDrawMY = 0;
                 }
 
-                if (input::mmouse_down && !Iso.ui->UIIsMouseOnControls()) {
+                if (input::mmouse_down) {
                     // erase material
 
                     // erase from world
@@ -714,7 +710,7 @@ int game::run(int argc, char *argv[]) {
 
                         auto [pl_we, pl] = Iso.world->getHostPlayer();
 
-                        if (!Iso.ui->UIIsMouseOnControls() && pl && pl->heldItem != NULL) {
+                        if (pl && pl->heldItem != NULL) {
                             if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Vacuum)) {
                                 pl->holdtype = Vacuum;
                             } else if (pl->heldItem->getFlag(ItemFlags::ItemFlags_Hammer)) {
@@ -778,9 +774,8 @@ int game::run(int argc, char *argv[]) {
                                     }
 
                                     if (connect) {
-
-                                        // previously: open chisel ui
-
+                                        // 凿子界面
+                                        the<gui>().chisel_ui(cur);
                                         break;
                                     }
                                 }
@@ -1152,7 +1147,7 @@ int game::run(int argc, char *argv[]) {
                 }
 
                 // Draw Tooltop window
-                if (tile.mat->id != GAME()->materials_list.GENERIC_AIR.id && !Iso.ui->UIIsMouseOnControls()) {
+                if (tile.mat->id != GAME()->materials_list.GENERIC_AIR.id) {
 
                     ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.11f, 0.11f, 0.11f, 0.4f));
                     ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.00f, 1.00f, 1.00f, 0.2f));
@@ -1230,9 +1225,9 @@ int game::run(int argc, char *argv[]) {
             w.render();
         }
 
-        Iso.ui->UIRendererDrawImGui();
+        the<gui>().render_imgui();
 
-        the<fontcache>().ME_fontcache_drawcmd();
+        the<fontcache>().drawcmd();
 
         // render fade in/out
         if (fadeInWaitFrames > 0) {
@@ -1298,9 +1293,12 @@ int game::exit() {
 
     ME_surface_DeleteGL3(this->surface);
 
-    the<fontcache>().ME_fontcache_end();
+    the<fontcache>().end();
 
     ME::modules::shutdown<fontcache>();
+
+    the<gui>().end();
+    ME::modules::shutdown<gui>();
 
     the<scripting>().end();
     ME::modules::shutdown<scripting>();
@@ -1720,6 +1718,10 @@ bool game::onWindowResize(WindowResizeEvent &e) {
     R_SetWindowResolution(e.GetWidth(), e.GetHeight());
     R_ResetProjection(the<engine>().eng()->realTarget);
     ResolutionChanged(e.GetWidth(), e.GetHeight());
+
+    // fontcache
+    the<fontcache>().resize({(float)the<engine>().eng()->windowWidth, (float)the<engine>().eng()->windowHeight});
+
     return true;
 }
 
@@ -2816,7 +2818,7 @@ void game::updateFrameLate() {
 
 void game::renderEarly() {
 
-    Iso.ui->UIRendererPostUpdate();
+    the<gui>().render_postupdate();
 
     if (state == LOADING) {
         if (the<engine>().eng()->time.now - the<engine>().eng()->time.lastLoadingTick > 20) {
@@ -2889,7 +2891,7 @@ void game::renderEarly() {
         R_BlitRect(TexturePack_.loadingTexture, NULL, the<engine>().eng()->target, NULL);
 
         std::string test_text = "加载中...";
-        the<fontcache>().ME_fontcache_push(test_text, basic_font, {0.45, 0.45});
+        the<fontcache>().push(test_text, basic_font, {0.45, 0.45});
 
     } else {
         // render entities with LERP
@@ -3141,9 +3143,9 @@ void game::renderLate() {
 
 void game::renderOverlays() {
 
-    char fpsText[50];
-    snprintf(fpsText, sizeof(fpsText), "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, the<engine>().eng()->time.feelsLikeFps);
-    ME_draw_text(fpsText, {255, 255, 255, 255}, the<engine>().eng()->windowWidth - ImGui::CalcTextSize(fpsText).x, 0);
+    // char fpsText[50];
+    // snprintf(fpsText, sizeof(fpsText), "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, the<engine>().eng()->time.feelsLikeFps);
+    // ME_draw_text(fpsText, {255, 255, 255, 255}, the<engine>().eng()->windowWidth - ImGui::CalcTextSize(fpsText).x, 0);
 
     MErect r1 = MErect{(f32)(GAME()->ofsX + GAME()->camX), (f32)(GAME()->ofsY + GAME()->camY), (f32)(Iso.world->width * the<engine>().eng()->render_scale),
                        (f32)(Iso.world->height * the<engine>().eng()->render_scale)};
@@ -3550,8 +3552,8 @@ ReadyToMerge ({17})
     R_SetShapeBlendMode(R_BLEND_NORMAL);
 
     // Update UI
-    Iso.ui->UIRendererUpdate();
-    Iso.ui->UIRendererDraw();
+    the<gui>().render_update();
+    the<gui>().render();
 
     /*
 
@@ -3625,8 +3627,6 @@ void game::ResolutionChanged(int newWidth, int newHeight) {
 
     accLoadX -= (newWidth - prevWidth) / 2.0f / the<engine>().eng()->render_scale;
     accLoadY -= (newHeight - prevHeight) / 2.0f / the<engine>().eng()->render_scale;
-
-    METADOT_INFO("Ticking chunk...");
 
     Timer timer;
     timer.start();

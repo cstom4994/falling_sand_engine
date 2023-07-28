@@ -241,8 +241,6 @@ static void InitLua(scripting *lc) {
     ME_preload_auto(lc->L, ffi_module_open, "ffi");
     ME_preload_auto(lc->L, luaopen_lbind, "lbind");
 
-#define REGISTER_LUAFUNC(_f) lc->s_lua[#_f] = lua_wrapper::function(_f)
-
     lc->s_lua["METADOT_RESLOC"] = lua_wrapper::function([](const char *a) { return METADOT_RESLOC(a); });
     lc->s_lua["GetSurfaceFromTexture"] = lua_wrapper::function([](TextureRef tex) { return tex->surface(); });
     lc->s_lua["GetWindowH"] = lua_wrapper::function([]() { return the<engine>().eng()->windowHeight; });
@@ -259,8 +257,6 @@ static void InitLua(scripting *lc) {
     lc->s_lua["metadot_buildnum"] = lua_wrapper::function(ME_buildnum);
     lc->s_lua["metadot_metadata"] = lua_wrapper::function(ME_metadata);
     lc->s_lua["add_packagepath"] = lua_wrapper::function(add_packagepath);
-
-#undef REGISTER_LUAFUNC
 
     script_runfile("data/scripts/init.lua");
 }
@@ -289,21 +285,6 @@ void script_runfile(const char *filePath) {
     }
 }
 
-#if 0
-{
-
-#define VAR_HERE() int, float, std::string
-    using Type_Tuple = std::tuple<VAR_HERE()>;
-
-    Type_Tuple tpt;
-    std::apply([&](auto &&...args) {
-        (printf("this type %s\n", typeid(args).name()), ...);
-    },
-               tpt);
-
-}
-#endif
-
 void scripting::init() {
     Timer timer;
     timer.start();
@@ -325,8 +306,8 @@ void scripting::update() {
     OnUpdate();
 }
 
-void scripting::update_render() { this->fast_call_func("OnRender"); }
+void scripting::update_render() { this->fast_call_func("OnRender")(); }
 
-void scripting::update_tick() { this->fast_call_func("OnGameTickUpdate"); }
+void scripting::update_tick() { this->fast_call_func("OnGameTickUpdate")(); }
 
 }  // namespace ME

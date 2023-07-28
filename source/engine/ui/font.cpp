@@ -184,7 +184,7 @@ ME_PRIVATE(GLuint) vao = 0;
 
 ME_PRIVATE(ve_fontcache) cache;
 
-void fontcache::ME_fontcache_drawcmd() {
+void fontcache::drawcmd() {
 
     ME_profiler_scope_auto("RenderGUI.Font");
 
@@ -314,7 +314,7 @@ void test_font2( ve_font_id id )
 }
 #endif
 
-font_index fontcache::ME_fontcache_load(const void *data, size_t data_size, f32 font_size) {
+font_index fontcache::load(const void *data, size_t data_size, f32 font_size) {
     ve_fontcache_init(&cache);
     ve_fontcache_configure_snap(&cache, this->screen_w, this->screen_h);
     // ME_PRIVATE(std::vector<u8>) buffer;
@@ -326,7 +326,7 @@ font_index fontcache::ME_fontcache_load(const void *data, size_t data_size, f32 
 // 将绘制字加入待绘制列表
 // pos 不是屏幕坐标也不是NDC
 // pos 以窗口左下角为原点 窗口空间为第一象限
-void fontcache::ME_fontcache_push(const std::string &text, const font_index font, const MEvec2 pos) {
+void fontcache::push(const std::string &text, const font_index font, const MEvec2 pos) {
 
     ME_profiler_scope_auto("RenderGUI.Font.Post");
 
@@ -624,7 +624,7 @@ void fontcache::ME_fontcache_push(const std::string &text, const font_index font
 #endif
 }
 
-void fontcache::ME_fontcache_push(const std::string &text, const font_index font, const f32 x, const f32 y) { ME_fontcache_push(text, font, calc_pos(x, y)); }
+void fontcache::push(const std::string &text, const font_index font, const f32 x, const f32 y) { push(text, font, calc_pos(x, y)); }
 
 void fontcache::resize(MEvec2 size) {
     screen_w = size.x;
@@ -716,7 +716,7 @@ void test_plist() {
     }
 }
 
-int fontcache::ME_fontcache_init() {
+void fontcache::init() {
 
     fontcache_shader_render_glyph = ME_font_compile_shader(vs_source_shared, fs_source_render_glyph);
     fontcache_shader_blit_atlas = ME_font_compile_shader(vs_source_shared, fs_source_blit_atlas);
@@ -725,27 +725,21 @@ int fontcache::ME_fontcache_init() {
     setup_fbo();
 
 #ifndef VE_FONTCACHE_DEBUGPRINT
-    const int numGlyphs = 1024;
-    {
-        auto start = std::chrono::high_resolution_clock::now();
-        for (int i = 0; i < numGlyphs; i++) {
-            // ve_fontcache_cache_glyph(&cache, id, 0x3091);
-            // ve_fontcache_cache_glyph(&cache, id, 'o');
-        }
-        ve_fontcache_flush_drawlist(&cache);
-        auto finish = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double, std::milli> elapsed = finish - start;
-        METADOT_BUG(std::format("[UI] fontcache_cache_glyph() benchmark: total {0:.6f} ms for {1} glyphs, per-glyph {2} ms", elapsed.count(), numGlyphs, elapsed.count() / numGlyphs).c_str());
-    }
+    // const int numGlyphs = 1024;
+    //{
+    //     Timer timer;
+    //     timer.start();
+    //     for (int i = 0; i < numGlyphs; i++) {
+    //         // ve_fontcache_cache_glyph(&cache, id, 0x3091);
+    //         // ve_fontcache_cache_glyph(&cache, id, 'o');
+    //     }
+    //     ve_fontcache_flush_drawlist(&cache);
+    //     timer.stop();
+    //     METADOT_BUG(std::format("[UI] fontcache_cache_glyph() benchmark: total {0:.6f} ms for {1} glyphs, per-glyph {2} ms", timer.get(), numGlyphs, timer.get() / numGlyphs).c_str());
+    // }
 #endif  // VE_FONTCACHE_DEBUGPRINT
-
-    return 0;
 }
 
-int fontcache::ME_fontcache_end() {
-
-    ve_fontcache_shutdown(&cache);
-    return 0;
-}
+void fontcache::end() { ve_fontcache_shutdown(&cache); }
 
 }  // namespace ME

@@ -24,7 +24,6 @@
 #include "engine/game_datastruct.hpp"
 #include "engine/scripting/scripting.hpp"
 #include "engine/ui/imgui_impl.hpp"
-#include "libs/imgui/font_awesome.h"
 #include "libs/imgui/text_editor.h"
 
 namespace ME {
@@ -33,7 +32,6 @@ class Material;
 class WorldMeta;
 
 #define LANG(_c) global.I18N.Get(_c).c_str()
-#define ICON_LANG(_i, _c) std::string(std::string(_i) + " " + global.I18N.Get(_c)).c_str()
 
 #define ME_DESIRED_FRAME_RATE 30.0f
 #define ME_MINIMUM_FRAME_RATE 20.0f

@@ -188,7 +188,6 @@ public:
     RigidBody *physicsCheck(int x, int y);
     void physicsCheck_flood(int x, int y, bool *visited, int *count, u32 *cols, int *minX, int *maxX, int *minY, int *maxY);
     void saveWorld();
-    bool isC2Ground(f32 x, f32 y);
     bool isPlayerInWorld();
     std::tuple<WorldEntity *, Player *> getHostPlayer();
 };
