@@ -10,14 +10,9 @@
 
 namespace ME {
 
-RigidBody::RigidBody(phy::Body *body, std::string name) {
+RigidBody::RigidBody(b2Body *body, std::string name) {
     this->name = std::string(name);
     this->body = body;
-}
-
-RigidBody::~RigidBody() {
-    // if (item) delete item;
-    // if (!is_cleaned) clean();
 }
 
 // bool RigidBody::set_surface(C_Surface *sur) {
@@ -57,10 +52,21 @@ void RigidBody::updateImage(std::optional<C_Surface *> image) {
 
 void RigidBody::clean() {
     is_cleaned = true;
-    if (NULL != body->shape()) delete body->shape();
+
+    if (NULL != body && global.game->Iso.world.get() && global.game->Iso.world->b2world.get()) {
+        // global.game->Iso.world->b2world->DestroyBody(body);
+    }
+
     if (NULL != this->tiles) delete[] this->tiles;
     // if (NULL != this->texture) R_FreeImage(this->get_texture());
     // if (NULL != this->surface) SDL_FreeSurface(this->get_surface());
+}
+
+void RigidBody::chunk_clean() {
+    if (this->m_image) {
+        R_FreeImage(m_image);
+        // SDL_FreeSurface(chunk->rb->get_surface());
+    }
 }
 
 void Player::render(WorldEntity *we, R_Target *target, int ofsX, int ofsY) {
@@ -96,15 +102,14 @@ MEvec2 rotate_point2(f32 cx, f32 cy, f32 angle, MEvec2 p);
 void Player::setItemInHand(WorldEntity *we, Item *item, world *world) {
     RigidBody *r;
     if (heldItem != NULL) {
-        phy::Rectangle *ps = new phy::Rectangle;
-        // ps.SetAsBox(1, 1);
-        ps->set(1.0f, 1.0f);
+        b2PolygonShape ps;
+        ps.SetAsBox(1, 1);
 
         f32 angle = holdAngle;
 
         MEvec2 pt = rotate_point2(0, 0, angle * 3.1415 / 180.0, {(f32)(heldItem->texture->surface()->w / 2.0), (f32)(heldItem->texture->surface()->h / 2.0)});
 
-        r = world->makeRigidBody(phy::Body::BodyType::Dynamic, we->x + we->hw / 2 + world->loadZone.x - pt.x + 16 * cos((holdAngle + 180) * 3.1415f / 180.0f),
+        r = world->makeRigidBody(b2_dynamicBody, we->x + we->hw / 2 + world->loadZone.x - pt.x + 16 * cos((holdAngle + 180) * 3.1415f / 180.0f),
                                  we->y + we->hh / 2 + world->loadZone.y - pt.y + 16 * sin((holdAngle + 180) * 3.1415f / 180.0f), angle, ps, 1, 0.3, heldItem->texture);
 
         //  0 -> -w/2 -h/2
@@ -119,16 +124,12 @@ void Player::setItemInHand(WorldEntity *we, Item *item, world *world) {
 
         strength += time / 1000.0 * 30;
 
-        // r->body->SetLinearVelocity({(f32)(strength * (f32)cos((holdAngle + 180) * 3.1415f / 180.0f)), (f32)(strength * (f32)sin((holdAngle + 180) * 3.1415f / 180.0f)) - 10});
+        r->body->SetLinearVelocity({(f32)(strength * (f32)cos((holdAngle + 180) * 3.1415f / 180.0f)), (f32)(strength * (f32)sin((holdAngle + 180) * 3.1415f / 180.0f)) - 10});
 
-        r->body->velocity() = {(f32)(strength * (f32)cos((holdAngle + 180) * 3.1415f / 180.0f)), (f32)(strength * (f32)sin((holdAngle + 180) * 3.1415f / 180.0f)) - 10};
-
-        // TODO:  23/7/17 物理相关性实现
-
-        // b2Filter bf = {};
-        // bf.categoryBits = 0x0001;
-        //// bf.maskBits = 0x0000;
-        // r->body->GetFixtureList()[0].SetFilterData(bf);
+        b2Filter bf = {};
+        bf.categoryBits = 0x0001;
+        // bf.maskBits = 0x0000;
+        r->body->GetFixtureList()[0].SetFilterData(bf);
 
         r->item = heldItem;
         world->rigidBodies.push_back(r);

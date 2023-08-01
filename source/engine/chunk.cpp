@@ -342,7 +342,7 @@ u64 Chunk::get_chunk_size() {
     size_t biomes_totalSize = /*biomes_vectorSize +*/ biomes_elementSize * biomes_elementCount;
 
     // size_t polys_vectorSize = sizeof(polys);
-    size_t polys_elementSize = sizeof(phy::Shape *);
+    size_t polys_elementSize = sizeof(b2PolygonShape);
     size_t polys_elementCount = polys.size();
     size_t polys_totalSize = /*polys_vectorSize +*/ polys_elementSize * polys_elementCount;
 

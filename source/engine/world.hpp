@@ -13,7 +13,7 @@
 #include "engine/core/const.h"
 #include "engine/core/macros.hpp"
 #include "engine/ecs/ecs.hpp"
-#include "engine/physics/inc/physics2d.h"
+#include "engine/physics/box2d/inc/box2d.h"
 #include "engine/utils/utility.hpp"
 #include "game/player.hpp"
 #include "game_basic.hpp"
@@ -61,7 +61,7 @@ struct WorldSystem {
 };
 
 class world {
-    using PhyBodytype = phy::Body::BodyType;
+    // using PhyBodytype = phy::Body::BodyType;
 
 public:
     std::string worldName = "";
@@ -79,7 +79,7 @@ public:
         std::vector<std::vector<MEvec2>> worldMeshes;
         std::vector<std::vector<MEvec2>> worldTris;
 
-        std::vector<std::vector<phy::Shape *>> polys2s = {};
+        std::vector<std::vector<b2PolygonShape>> polys2s = {};
 
         std::vector<LoadChunkParams> toLoad;                // 需要加载的区块的列表
         std::vector<std::future<Chunk *>> toLoadAsyncList;  // 区块生成加载异步对象列表
@@ -140,8 +140,8 @@ public:
     MErect lastMeshZone{};
     MErect lastMeshLoadZone{};
 
-    MEvec2 gravity{};
-    scope<phy::PhysicsSystem> phy = nullptr;
+    b2Vec2 gravity{};
+    ME::scope<b2World> b2world = nullptr;
     RigidBody *staticBody = nullptr;
     WorldGenerator *gen = nullptr;
 
@@ -163,8 +163,8 @@ public:
     void tickChunkGeneration();
     void addCell(CellData *cell);
     void explosion(int x, int y, int radius);
-    RigidBody *makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, phy::Shape *shape, f32 density, f32 friction, TextureRef texture);
-    RigidBody *makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<phy::Shape *> shape, f32 density, f32 friction, TextureRef texture);
+    RigidBody *makeRigidBody(b2BodyType type, f32 x, f32 y, f32 angle, b2PolygonShape shape, f32 density, f32 friction, TextureRef texture);
+    RigidBody *makeRigidBodyMulti(b2BodyType type, f32 x, f32 y, f32 angle, std::vector<b2PolygonShape> shape, f32 density, f32 friction, TextureRef texture);
     void updateRigidBodyHitbox(RigidBody *rb);
     void updateChunkMesh(Chunk *chunk);
     void updateWorldMesh();

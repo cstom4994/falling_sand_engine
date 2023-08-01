@@ -12,6 +12,7 @@
 #include "engine/core/core.hpp"
 #include "engine/meta/reflection.hpp"
 #include "engine/meta/static_relfection.hpp"
+#include "engine/physics/box2d/inc/box2d.h"
 #include "game/player.hpp"
 #include "game_basic.hpp"
 #include "game_datastruct.hpp"
@@ -59,7 +60,7 @@ struct Chunk {
 
     // 区块群系优化为id查表
     std::vector<int> biomes_id{};
-    std::vector<phy::Shape *> polys{};
+    std::vector<b2PolygonShape> polys{};
     RigidBody *rb = nullptr;
 
     // Initialize a chunk
@@ -114,12 +115,8 @@ struct ME::meta::static_refl::TypeInfo<ME::Chunk> : TypeInfoBase<Chunk> {
     };
 };
 
-ME_GUI_DEFINE_BEGIN(template <>, ME::phy::Shape)
-ImGui::Auto("ME::phy::Shape");
-ME_GUI_DEFINE_END
-
-ME_GUI_DEFINE_BEGIN(template <>, ME::phy::Polygon)
-ImGui::Auto("ME::phy::Polygon");
+ME_GUI_DEFINE_BEGIN(template <>, b2PolygonShape)
+ImGui::Auto("b2PolygonShape");
 ME_GUI_DEFINE_END
 
 #endif

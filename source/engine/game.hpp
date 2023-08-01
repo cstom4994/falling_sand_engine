@@ -28,7 +28,7 @@
 #include "engine/event/inputevent.hpp"
 #include "engine/game_utils/rng.h"
 #include "engine/meta/reflection.hpp"
-#include "engine/physics/inc/physics2d.h"
+#include "engine/physics/box2d/inc/box2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/scripting.hpp"
 #include "engine/ui/dbgui.hpp"
@@ -128,7 +128,7 @@ public:
     EnumGameState state = LOADING;
     EnumGameState stateAfterLoad = MAIN_MENU;
 
-    // ME_debugdraw *debugDraw;
+    ME_debugdraw *debugDraw;
     // fontcache fontcache;
 
     MEsurface_context *surface;

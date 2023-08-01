@@ -12,6 +12,7 @@
 
 #include "engine/core/core.hpp"
 #include "engine/core/sdl_wrapper.h"
+#include "engine/physics/box2d/inc/box2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/renderer/shaders.hpp"
 #include "engine/utils/utility.hpp"
@@ -296,11 +297,12 @@ private:
 
 public:
     enum {
-        e_shapeBit = 0x0001,        ///< draw shapes
-        e_jointBit = 0x0002,        ///< draw joint connections
-        e_aabbBit = 0x0004,         ///< draw axis aligned bounding boxes
-        e_pairBit = 0x0008,         ///< draw broad-phase pairs
-        e_centerOfMassBit = 0x0010  ///< draw center of mass frame
+        e_shapeBit = 0x0001,         ///< draw shapes
+        e_jointBit = 0x0002,         ///< draw joint connections
+        e_aabbBit = 0x0004,          ///< draw axis aligned bounding boxes
+        e_pairBit = 0x0008,          ///< draw broad-phase pairs
+        e_centerOfMassBit = 0x0010,  ///< draw center of mass frame
+        e_particleBit = 0x0012
     };
 
     R_Target *target;
@@ -319,18 +321,19 @@ public:
     void AppendFlags(u32 flags) { m_drawFlags |= flags; }
     void ClearFlags(u32 flags) { m_drawFlags &= ~flags; }
 
-    MEvec2 transform(const MEvec2 &pt);
+    b2Vec2 transform(const b2Vec2 &pt);
 
-    void DrawPolygon(const MEvec2 *vertices, i32 vertexCount, const MEcolor &color);
-    void DrawSolidPolygon(const MEvec2 *vertices, i32 vertexCount, const MEcolor &color);
-    void DrawCircle(const MEvec2 &center, float radius, const MEcolor &color);
-    void DrawSolidCircle(const MEvec2 &center, float radius, const MEvec2 &axis, const MEcolor &color);
-    void DrawSegment(const MEvec2 &p1, const MEvec2 &p2, const MEcolor &color);
-    // void DrawTransform(const PTransform &xf);
-    void DrawPoint(const MEvec2 &p, float size, const MEcolor &color);
+    void DrawPolygon(const b2Vec2 *vertices, i32 vertexCount, const MEcolor &color);
+    void DrawSolidPolygon(const b2Vec2 *vertices, i32 vertexCount, const MEcolor &color);
+    void DrawCircle(const b2Vec2 &center, float radius, const MEcolor &color);
+    void DrawSolidCircle(const b2Vec2 &center, float radius, const b2Vec2 &axis, const MEcolor &color);
+    void DrawSegment(const b2Vec2 &p1, const b2Vec2 &p2, const MEcolor &color);
+    void DrawTransform(const b2Transform &xf);
+    void DrawPoint(const b2Vec2 &p, float size, const MEcolor &color);
     void DrawString(int x, int y, const char *string, ...);
-    void DrawString(const MEvec2 &p, const char *string, ...);
-    void DrawAABB(MEvec4 *aabb, const MEcolor &color);
+    void DrawString(const b2Vec2 &p, const char *string, ...);
+    void DrawAABB(b2AABB *aabb, const MEcolor &color);
+    void DrawParticles(const b2Vec2 *centers, float32 radius, const b2ParticleColor *colors, int32 count);
 };
 #endif
 

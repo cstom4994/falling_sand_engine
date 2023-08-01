@@ -1614,31 +1614,31 @@ void dbgui::Update() {
                 if (ImGui::Button("调用回溯")) print_callstack();
                 ImGui::SameLine();
 
-#if 0
+#if 1
 
-                    if (ImGui::Button("NPC")) {
+                if (ImGui::Button("NPC")) {
 
-                        MEvec4 pl_transform{-global.game->Iso.world->loadZone.x + global.game->Iso.world->tickZone.x + global.game->Iso.world->tickZone.w / 2.0f,
-                                            -global.game->Iso.world->loadZone.y + global.game->Iso.world->tickZone.y + global.game->Iso.world->tickZone.h / 2.0f, 10, 20};
+                    MEvec4 pl_transform{-global.game->Iso.world->loadZone.x + global.game->Iso.world->tickZone.x + global.game->Iso.world->tickZone.w / 2.0f,
+                                        -global.game->Iso.world->loadZone.y + global.game->Iso.world->tickZone.y + global.game->Iso.world->tickZone.h / 2.0f, 10, 20};
 
-                        b2PolygonShape sh;
-                        sh.SetAsBox(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
-                        RigidBody *rb = global.game->Iso.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.x + pl_transform.z / 2.0f - 0.5,
-                                                                                       pl_transform.y + pl_transform.w / 2.0f - 0.5, 0, sh, 1, 1, NULL);
-                        rb->body->SetGravityScale(0);
-                        rb->body->SetLinearDamping(0);
-                        rb->body->SetAngularDamping(0);
+                    b2PolygonShape sh;
+                    sh.SetAsBox(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
+                    RigidBody *rb = global.game->Iso.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.x + pl_transform.z / 2.0f - 0.5, pl_transform.y + pl_transform.w / 2.0f - 0.5, 0,
+                                                                          sh, 1, 1, NULL);
+                    rb->body->SetGravityScale(0);
+                    rb->body->SetLinearDamping(0);
+                    rb->body->SetAngularDamping(0);
 
-                        auto npc = global.game->Iso.world->Reg().create_entity();
-                        ecs::entity_filler(npc)
-                                .component<Controlable>()
-                                .component<WorldEntity>(true, pl_transform.x, pl_transform.y, 0.0f, 0.0f, (int)pl_transform.z, (int)pl_transform.w, rb, std::string("NPC"))
-                                .component<Bot>(1);
+                    auto npc = global.game->Iso.world->Reg().create_entity();
+                    ecs::entity_filler(npc)
+                            .component<Controlable>()
+                            .component<WorldEntity>(true, pl_transform.x, pl_transform.y, 0.0f, 0.0f, (int)pl_transform.z, (int)pl_transform.w, rb, std::string("NPC"))
+                            .component<Bot>(1);
 
-                        auto npc_bot = global.game->Iso.world->Reg().find_component<Bot>(npc);
-                        // npc_bot->setItemInHand(global.game->GameIsolate_.world->Reg().find_component<WorldEntity>(global.game->GameIsolate_.world->player), i3,
-                        // global.game->GameIsolate_.world.get());
-                    }
+                    auto npc_bot = global.game->Iso.world->Reg().find_component<Bot>(npc);
+                    // npc_bot->setItemInHand(global.game->GameIsolate_.world->Reg().find_component<WorldEntity>(global.game->GameIsolate_.world->player), i3,
+                    // global.game->GameIsolate_.world.get());
+                }
 #endif
                 ImGui::SameLine();
                 if (ImGui::Button("Audio")) {

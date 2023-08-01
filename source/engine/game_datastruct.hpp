@@ -13,7 +13,6 @@
 #include "engine/core/sdl_wrapper.h"
 #include "engine/ecs/ecs.hpp"
 #include "engine/meta/static_relfection.hpp"
-#include "engine/physics/inc/physics2d.h"
 #include "engine/renderer/renderer_gpu.h"
 #include "engine/scripting/lua_wrapper.hpp"
 #include "engine/utils/type.hpp"

@@ -4,6 +4,7 @@
 #define ME_PLAYER_HPP
 
 #include "engine/game_datastruct.hpp"
+#include "engine/physics/box2d/inc/box2d.h"
 #include "engine/physics/physics_math.hpp"
 #include "game/items.hpp"
 
@@ -21,7 +22,7 @@ private:
 public:
     std::string name;
 
-    phy::Body *body = nullptr;
+    b2Body *body = nullptr;
 
     bool is_cleaned = false;
 
@@ -45,8 +46,8 @@ public:
     Item *item = nullptr;
 
 public:
-    RigidBody(phy::Body *body, std::string name = "unknown");
-    ~RigidBody();
+    RigidBody(b2Body *body, std::string name = "unknown");
+    ~RigidBody() = default;
 
     // bool set_surface(C_Surface *sur);
     C_Surface *get_surface() const;
@@ -60,6 +61,7 @@ public:
     void updateImage(std::optional<C_Surface *> image);
 
     void clean();
+    void chunk_clean();
 };
 
 template <>

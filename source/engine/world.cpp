@@ -144,58 +144,47 @@ void world::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *a
         }
     }
 
-    gravity = MEvec2(0, 20);
-    phy = create_scope<phy::PhysicsSystem>();
+    gravity = b2Vec2(0, 20);
+    b2world = ME::create_scope<b2World>(gravity);
 
     struct gameplay_feature {};
     registry.assign_feature<gameplay_feature>().add_system<ControableSystem>().add_system<NpcSystem>().add_system<WorldEntitySystem>();
 
-    phy::Rectangle *nothingShape = new phy::Rectangle;
-    // nothingShape.SetAsBox(0, 0);
-    nothingShape->set(0.001f, 0.001f);
-    this->staticBody = makeRigidBody(PhyBodytype::Static, 0, 0, 0, nothingShape, 0, 0, global.game->Iso.texturepack.cloud);
+    b2PolygonShape nothingShape;
+    nothingShape.SetAsBox(0, 0);
+    this->staticBody = makeRigidBody(b2_staticBody, 0, 0, 0, nothingShape, 0, 0, global.game->Iso.texturepack.cloud);
 
     updateWorldMesh();
 
-    phy::Rectangle *dynamicBox3 = new phy::Rectangle;
-    // dynamicBox3.SetAsBox(10.0f, 2.0f, {10, -10}, 0);
-    dynamicBox3->set(10.0f, 2.0f);
-    RigidBody *rb = makeRigidBody(PhyBodytype::Dynamic, 300, 300, 0, dynamicBox3, 1, .3, LoadTexture("data/assets/objects/testObject3.png"));
+    b2PolygonShape dynamicBox3;
+    dynamicBox3.SetAsBox(10.0f, 2.0f, {10, -10}, 0);
+    RigidBody *rb = makeRigidBody(b2_dynamicBody, 300, 300, 0, dynamicBox3, 1, .3, LoadTexture("data/assets/objects/testObject3.png"));
 
     rigidBodies.push_back(rb);
     updateRigidBodyHitbox(rb);
 
     // b2PolygonShape dynamicBox4;
     // dynamicBox4.SetAsBox(64.0f, 64.0f, {32, -32}, 0);
-    // // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 200, 0, dynamicBox4, 1, .3, LoadTexture("data/assets/objects/pumpkin_01.png"));
-    // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 0, 0, dynamicBox4, 1, .3, LoadAsepriteTexture("data/assets/textures/Sprite-0003.ase")->surface);
+    // RigidBody *rb2 = makeRigidBody(b2_dynamicBody, 400, 0, 0, dynamicBox4, 1, .3, LoadAsepriteTexture("data/assets/textures/Sprite-0003.ase"));
 
     // rigidBodies.push_back(rb2);
     // updateRigidBodyHitbox(rb2);
 }
 
-RigidBody *world::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, phy::Shape *shape, f32 density, f32 friction, TextureRef texture) {
+RigidBody *world::makeRigidBody(b2BodyType type, f32 x, f32 y, f32 angle, b2PolygonShape shape, f32 density, f32 friction, TextureRef texture) {
 
-    // b2BodyDef bodyDef;
-    // bodyDef.type = type;
-    // bodyDef.position.Set(x, y);
-    // bodyDef.angle = angle * PI / 180;
-    // b2Body *body = b2world->CreateBody(&bodyDef);
+    b2BodyDef bodyDef;
+    bodyDef.type = type;
+    bodyDef.position.Set(x, y);
+    bodyDef.angle = angle * PI / 180;
+    b2Body *body = b2world->CreateBody(&bodyDef);
 
-    phy::Body *body = phy->world().createBody();
-    body->setType(type);
-    body->position() = {x, y};
-    body->rotation() = angle * PI / 180;
+    b2FixtureDef fixtureDef;
+    fixtureDef.shape = &shape;
+    fixtureDef.density = density;
+    fixtureDef.friction = friction;
 
-    // b2FixtureDef fixtureDef;
-    // fixtureDef.shape = &shape;
-    // fixtureDef.density = density;
-    // fixtureDef.friction = friction;
-    // body->CreateFixture(&fixtureDef);
-
-    body->setShape(shape);
-    body->setMass(1);
-    body->setFriction(friction);
+    body->CreateFixture(&fixtureDef);
 
     RigidBody *rb = new RigidBody(body);
     rb->setTexture(texture);
@@ -236,15 +225,13 @@ RigidBody *world::makeRigidBody(PhyBodytype type, f32 x, f32 y, f32 angle, phy::
     return rb;
 }
 
-RigidBody *world::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, std::vector<phy::Shape *> shape, f32 density, f32 friction, TextureRef texture) {
+RigidBody *world::makeRigidBodyMulti(b2BodyType type, f32 x, f32 y, f32 angle, std::vector<b2PolygonShape> shape, f32 density, f32 friction, TextureRef texture) {
 
-    return this->makeRigidBody(type, x, y, angle, shape[0], density, friction, texture);
-
-#if 0
+#if 1
 
     b2BodyDef bodyDef;
     bodyDef.type = type;
-    bodyDef.position.set(x, y);
+    bodyDef.position.Set(x, y);
     bodyDef.angle = angle * PI / 180;
     b2Body *body = b2world->CreateBody(&bodyDef);
 
@@ -258,21 +245,21 @@ RigidBody *world::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, 
     }
 
     RigidBody *rb = new RigidBody(body);
-    rb->set_surface(texture);
+    rb->setTexture(texture);
     if (texture != NULL) {
         rb->matWidth = rb->get_surface()->w;
         rb->matHeight = rb->get_surface()->h;
-        rb->real_tiles = new MaterialInstance[rb->matWidth * rb->matHeight];
+        rb->tiles = new MaterialInstance[rb->matWidth * rb->matHeight];
         for (int xx = 0; xx < rb->matWidth; xx++) {
             for (int yy = 0; yy < rb->matHeight; yy++) {
                 u32 pixel = ME_get_pixel(rb->get_surface(), xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
-                    MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &GAME()->materials_list.FIRE : &GAME()->materials_list.OBSIDIAN, xx + (int)x, yy + (int)y);
+                    MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? GAME()->materials_list.FIRE.id : GAME()->materials_list.OBSIDIAN.id, xx + (int)x, yy + (int)y);
                     inst.color = pixel;
-                    rb->real_tiles[xx + yy * rb->matWidth] = inst;
+                    rb->tiles[xx + yy * rb->matWidth] = inst;
                 } else {
-                    MaterialInstance inst = TilesCreate(&GAME()->materials_list.GENERIC_AIR, xx + (int)x, yy + (int)y);
-                    rb->real_tiles[xx + yy * rb->matWidth] = inst;
+                    MaterialInstance inst = TilesCreate(GAME()->materials_list.GENERIC_AIR.id, xx + (int)x, yy + (int)y);
+                    rb->tiles[xx + yy * rb->matWidth] = inst;
                 }
             }
         }
@@ -288,8 +275,10 @@ RigidBody *world::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, 
             }
         }*/
 
-        rb->set_texture(R_CopyImageFromSurface(rb->get_surface()));
-        R_SetImageFilter(rb->get_texture(), R_FILTER_NEAREST);
+        // rb->set_texture(R_CopyImageFromSurface(rb->get_surface()));
+        // R_SetImageFilter(rb->get_texture(), R_FILTER_NEAREST);
+
+        rb->updateImage({});
     }
     // rigidBodies.push_back(rb);
     return rb;
@@ -298,28 +287,28 @@ RigidBody *world::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, 
 
 void world::updateRigidBodyHitbox(RigidBody *rb) {
 
-    C_Surface *texture = rb->get_surface();
+    C_Surface *sfc = rb->get_surface();
 
-    if (static_cast<bool>(texture)) return;
+    if (static_cast<bool>(sfc)) return;
 
-    for (int x = 0; x < texture->w; x++) {
-        for (int y = 0; y < texture->h; y++) {
-            MaterialInstance mat = rb->tiles[x + y * texture->w];
+    for (int x = 0; x < sfc->w; x++) {
+        for (int y = 0; y < sfc->h; y++) {
+            MaterialInstance mat = rb->tiles[x + y * sfc->w];
             if (mat.mat->id == GAME()->materials_list.GENERIC_AIR.id) {
-                ME_get_pixel(texture, x, y) = 0x00000000;
+                ME_get_pixel(sfc, x, y) = 0x00000000;
             } else {
-                ME_get_pixel(texture, x, y) = (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
+                ME_get_pixel(sfc, x, y) = (mat.mat->alpha << 24) + (mat.color & 0x00ffffff);
             }
         }
     }
 
-    int minX = texture->w;
+    int minX = sfc->w;
     int maxX = 0;
-    int minY = texture->h;
+    int minY = sfc->h;
     int maxY = 0;
-    for (int x = 0; x < texture->w; x++) {
-        for (int y = 0; y < texture->h; y++) {
-            if (((ME_get_pixel(texture, x, y) >> 24) & 0xff) != 0x00) {
+    for (int x = 0; x < sfc->w; x++) {
+        for (int y = 0; y < sfc->h; y++) {
+            if (((ME_get_pixel(sfc, x, y) >> 24) & 0xff) != 0x00) {
                 if (x < minX) minX = x;
                 if (x > maxX) maxX = x;
                 if (y < minY) minY = y;
@@ -330,27 +319,26 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
     maxX++;
     maxY++;
 
-    if (static_cast<bool>(texture)) {
+    if (static_cast<bool>(sfc)) {
         // TODO: 23/7/15 修复
-        // C_Surface *sf = SDL_CreateRGBSurfaceWithFormat(texture->flags, maxX - minX, maxY - minY, texture->format->BitsPerPixel, texture->format->format);
-        // C_Rect src = {minX, minY, maxX - minX, maxY - minY};
-        // SDL_SetSurfaceBlendMode(texture, SDL_BlendMode::SDL_BLENDMODE_NONE);
-        // SDL_BlitSurface(texture, &src, sf, NULL);
-        // SDL_FreeSurface(texture);
+        C_Surface *sf = SDL_CreateRGBSurfaceWithFormat(sfc->flags, maxX - minX, maxY - minY, sfc->format->BitsPerPixel, sfc->format->format);
+        C_Rect src = {minX, minY, maxX - minX, maxY - minY};
+        SDL_SetSurfaceBlendMode(sfc, SDL_BlendMode::SDL_BLENDMODE_NONE);
+        SDL_BlitSurface(sfc, &src, sf, NULL);
+        SDL_FreeSurface(sfc);
 
         if (static_cast<bool>(rb->get_surface())) {
             if (rb->get_surface()->w <= 1 || rb->get_surface()->h <= 1) {
-                // b2world->DestroyBody(rb->body);
-                phy->world().removeBody(rb->body);
+                b2world->DestroyBody(rb->body);
                 rigidBodies.erase(std::remove(rigidBodies.begin(), rigidBodies.end(), rb), rigidBodies.end());
                 return;
             }
-            // rb->set_surface(sf);
-            // texture = rb->get_surface();
 
-            // rb->updateImage(sf);
-            // rb->setTexture(create_ref<Texture>(sf));
-            // texture = rb->get_surface();
+            // rb->set_surface(sf);
+
+            auto tex = create_ref<Texture>(sf);
+            rb->setTexture(tex);
+            sfc = rb->get_surface();
 
         } else {
             ME_ASSERT(0);
@@ -359,8 +347,8 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
         return;
     }
 
-    f32 s = sin(rb->body->rotation());
-    f32 c = cos(rb->body->rotation());
+    f32 s = sin(rb->body->GetAngle());
+    f32 c = cos(rb->body->GetAngle());
 
     // translate point back to origin:
     minX -= 0;
@@ -371,33 +359,33 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
     f32 ynew = minX * s + minY * c;
 
     // translate point back:
-    rb->body->SetTransform({rb->body->position().x + xnew, rb->body->position().y + ynew}, rb->body->rotation());
+    rb->body->SetTransform(b2Vec2(rb->body->GetPosition().x + xnew, rb->body->GetPosition().y + ynew), rb->body->GetAngle());
 
     // If it is a single pixel rigid body, it will be deconstructed.
     if (maxX == 1 || maxY == 1) return;
 
-    if (!static_cast<bool>(texture) && !static_cast<bool>(rb->get_surface()) &&
+    if (!static_cast<bool>(sfc) && !static_cast<bool>(rb->get_surface()) &&
         // !static_cast<bool>(xnew) &&
         // !static_cast<bool>(ynew) &&
         1)
         return;
 
     bool foundAnything = false;
-    for (int x = 0; x < texture->w; x++)
-        for (int y = 0; y < texture->h; y++) {
-            bool f = ((ME_get_pixel(texture, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
+    for (int x = 0; x < sfc->w; x++)
+        for (int y = 0; y < sfc->h; y++) {
+            bool f = ((ME_get_pixel(sfc, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
             foundAnything = foundAnything || f;
         }
 
     if (!foundAnything) return;
 
-    u8 *data = new u8[texture->w * texture->h];
-    bool *edgeSeen = new bool[texture->w * texture->h];
+    u8 *data = new u8[sfc->w * sfc->h];
+    bool *edgeSeen = new bool[sfc->w * sfc->h];
 
-    for (int y = 0; y < texture->h; y++) {
-        for (int x = 0; x < texture->w; x++) {
-            data[x + y * texture->w] = ((ME_get_pixel(texture, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
-            edgeSeen[x + y * texture->w] = false;
+    for (int y = 0; y < sfc->h; y++) {
+        for (int x = 0; x < sfc->w; x++) {
+            data[x + y * sfc->w] = ((ME_get_pixel(sfc, x, y) >> 24) & 0xff) == 0x00 ? 0 : 1;
+            edgeSeen[x + y * sfc->w] = false;
         }
     }
 
@@ -411,30 +399,30 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
     while (true) {
         inn++;
 
-        int lookX = lookIndex % texture->w;
-        int lookY = lookIndex / texture->w;
+        int lookX = lookIndex % sfc->w;
+        int lookY = lookIndex / sfc->w;
         if (inn == 1) {
-            lookX = texture->w / 2;
-            lookY = texture->h / 2;
+            lookX = sfc->w / 2;
+            lookY = sfc->h / 2;
         }
 
         int edgeX = -1;
         int edgeY = -1;
-        int size = texture->w * texture->h;
+        int size = sfc->w * sfc->h;
         for (int i = lookIndex; i < size; i++) {
             if (data[i] != 0) {
 
                 int numBorders = 0;
                 // if (i % texture->w - 1 >= 0) numBorders += data[(i % texture->w - 1) + i / texture->w * texture->w];
                 // if (i / texture->w - 1 >= 0) numBorders += data[(i % texture->w)+(i / texture->w - 1) * texture->w];
-                if (i % texture->w + 1 < texture->w) numBorders += data[(i % texture->w + 1) + i / texture->w * texture->w];
-                if (i / texture->w + 1 < texture->h) numBorders += data[(i % texture->w) + (i / texture->w + 1) * texture->w];
-                if (i / texture->w + 1 < texture->h && i % texture->w + 1 < texture->w) numBorders += data[(i % texture->w + 1) + (i / texture->w + 1) * texture->w];
+                if (i % sfc->w + 1 < sfc->w) numBorders += data[(i % sfc->w + 1) + i / sfc->w * sfc->w];
+                if (i / sfc->w + 1 < sfc->h) numBorders += data[(i % sfc->w) + (i / sfc->w + 1) * sfc->w];
+                if (i / sfc->w + 1 < sfc->h && i % sfc->w + 1 < sfc->w) numBorders += data[(i % sfc->w + 1) + (i / sfc->w + 1) * sfc->w];
 
                 // int val = value(i % texture->w, i / texture->w, texture->w, height, data);
                 if (numBorders != 3) {
-                    edgeX = i % texture->w;
-                    edgeY = i / texture->w;
+                    edgeX = i % sfc->w;
+                    edgeY = i / sfc->w;
                     break;
                 }
             }
@@ -449,20 +437,20 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
         lookX = edgeX;
         lookY = edgeY;
 
-        lookIndex = lookX + lookY * texture->w + 1;
+        lookIndex = lookX + lookY * sfc->w + 1;
 
-        if (edgeSeen[lookX + lookY * texture->w]) {
+        if (edgeSeen[lookX + lookY * sfc->w]) {
             inn--;
             continue;
         }
 
-        int val = MarchingSquares::value(lookX, lookY, texture->w, texture->h, data);
+        int val = MarchingSquares::value(lookX, lookY, sfc->w, sfc->h, data);
         if (val == 0 || val == 15) {
             inn--;
             continue;
         }
 
-        MarchingSquares::Result r = MarchingSquares::FindPerimeter(lookX, lookY, texture->w, texture->h, data);
+        MarchingSquares::Result r = MarchingSquares::FindPerimeter(lookX, lookY, sfc->w, sfc->h, data);
         results.push_back(r);
 
         std::vector<MEvec2> worldMesh;
@@ -479,12 +467,12 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
                     int ily = (int)(lastY - iy * (r.directions[i].y < 0 ? -1 : 1));
 
                     if (ilx < 0) ilx = 0;
-                    if (ilx >= texture->w) ilx = texture->w - 1;
+                    if (ilx >= sfc->w) ilx = sfc->w - 1;
 
                     if (ily < 0) ily = 0;
-                    if (ily >= texture->h) ily = texture->h - 1;
+                    if (ily >= sfc->h) ily = sfc->h - 1;
 
-                    int ind = ilx + ily * texture->w;
+                    int ind = ilx + ily * sfc->w;
                     if (ind >= size) {
                         continue;
                     }
@@ -551,15 +539,16 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
         // Ps::MarchingSquares ms = Ps::MarchingSquares(texture);
         // worldMesh = ms.extract_simple(2);
 
-        std::vector<phy::Shape *> polys2;
+        std::vector<b2PolygonShape> polys2;
 
         int n = 0;
         std::for_each(result.begin(), result.end(), [&](TPPLPoly cur) {
             if ((cur[0].x == cur[1].x && cur[1].x == cur[2].x) || (cur[0].y == cur[1].y && cur[1].y == cur[2].y)) return;
 
-            phy::Polygon *sh = new phy::Polygon;
-            // sh.Set(vec, 3);
-            sh->append({{(f32)cur[0].x, (f32)cur[0].y}, {(f32)cur[1].x, (f32)cur[1].y}, {(f32)cur[2].x, (f32)cur[2].y}});
+            b2Vec2 vec[3] = {{(f32)cur[0].x, (f32)cur[0].y}, {(f32)cur[1].x, (f32)cur[1].y}, {(f32)cur[2].x, (f32)cur[2].y}};
+            b2PolygonShape sh;
+            sh.Set(vec, 3);
+
             polys2.push_back(sh);
             n++;
         });
@@ -567,7 +556,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
         if (polys2.size() > 0) {
             polys2s.push_back(polys2);
 
-            polys2sSfcs.push_back(SDL_CreateRGBSurfaceWithFormat(texture->flags, texture->w, texture->h, texture->format->BitsPerPixel, texture->format->format));
+            polys2sSfcs.push_back(SDL_CreateRGBSurfaceWithFormat(sfc->flags, sfc->w, sfc->h, sfc->format->BitsPerPixel, sfc->format->format));
 
             polys2sWeld.push_back(false);
         }
@@ -576,10 +565,10 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
     if (polys2s.size() > 0) {
         std::vector<std::future<void>> poolResults = {};
 
-        if (texture->w > 10) {
+        if (sfc->w > 10) {
             int nThreads = world_sys.updateRigidBodyHitboxPool->n_idle();
-            int div = texture->w / nThreads;
-            int rem = texture->w % nThreads;
+            int div = sfc->w / nThreads;
+            int rem = sfc->w % nThreads;
 
             for (int thr = 0; thr < nThreads; thr++) {
                 poolResults.push_back(world_sys.updateRigidBodyHitboxPool->push([&, thr, div, rem](int id) {
@@ -587,8 +576,8 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
                     int enx = stx + div + (thr == nThreads - 1 ? rem : 0);
 
                     for (int x = stx; x < enx; x++) {
-                        for (int y = 0; y < texture->h; y++) {
-                            if (((ME_get_pixel(texture, x, y) >> 24) & 0xff) == 0x00) continue;
+                        for (int y = 0; y < sfc->h; y++) {
+                            if (((ME_get_pixel(sfc, x, y) >> 24) & 0xff) == 0x00) continue;
 
                             int nb = 0;
 
@@ -598,7 +587,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
                             for (int b = 0; b < polys2s.size(); b++) {
                                 // for each triangle in the mesh
                                 for (int i = 0; i < polys2s[b].size(); i++) {
-
+#if 0
                                     // 确保是计算对象为三角形
                                     if (((phy::Polygon *)polys2s[b][i])->vertices().size() != 3) continue;
 
@@ -606,6 +595,10 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
                                     auto centroid = phy::GeometryAlgorithm2D::triangleCentroid(((phy::Polygon *)polys2s[b][i])->vertices()[0], ((phy::Polygon *)polys2s[b][i])->vertices()[1],
                                                                                                ((phy::Polygon *)polys2s[b][i])->vertices()[2]);
                                     int dst = abs(x - centroid.x) + abs(y - centroid.y);
+#else
+                                    int dst = abs(x - polys2s[b][i].m_centroid.x) + abs(y - polys2s[b][i].m_centroid.y);
+#endif
+
                                     if (dst < nearestDist) {
                                         nearestDist = dst;
                                         nb = b;
@@ -613,7 +606,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
                                 }
                             }
 
-                            ME_get_pixel(polys2sSfcs[nb], x, y) = ME_get_pixel(texture, x, y);
+                            ME_get_pixel(polys2sSfcs[nb], x, y) = ME_get_pixel(sfc, x, y);
                             if (x == rb->weldX && y == rb->weldY) polys2sWeld[nb] = true;
                         }
                     }
@@ -621,9 +614,9 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
             }
 
         } else {
-            for (int x = 0; x < texture->w; x++) {
-                for (int y = 0; y < texture->h; y++) {
-                    if (((ME_get_pixel(texture, x, y) >> 24) & 0xff) == 0x00) continue;
+            for (int x = 0; x < sfc->w; x++) {
+                for (int y = 0; y < sfc->h; y++) {
+                    if (((ME_get_pixel(sfc, x, y) >> 24) & 0xff) == 0x00) continue;
 
                     int nb = 0;
 
@@ -633,6 +626,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
                     for (int b = 0; b < polys2s.size(); b++) {
                         // for each triangle in the mesh
                         for (int i = 0; i < polys2s[b].size(); i++) {
+#if 0
                             // 确保是计算对象为三角形
                             if (((phy::Polygon *)polys2s[b][i])->vertices().size() != 3) continue;
 
@@ -640,6 +634,9 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
                             auto centroid = phy::GeometryAlgorithm2D::triangleCentroid(((phy::Polygon *)polys2s[b][i])->vertices()[0], ((phy::Polygon *)polys2s[b][i])->vertices()[1],
                                                                                        ((phy::Polygon *)polys2s[b][i])->vertices()[2]);
                             int dst = abs(x - centroid.x) + abs(y - centroid.y);
+#else
+                            int dst = abs(x - polys2s[b][i].m_centroid.x) + abs(y - polys2s[b][i].m_centroid.y);
+#endif
                             if (dst < nearestDist) {
                                 nearestDist = dst;
                                 nb = b;
@@ -647,7 +644,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
                         }
                     }
 
-                    ME_get_pixel(polys2sSfcs[nb], x, y) = ME_get_pixel(texture, x, y);
+                    ME_get_pixel(polys2sSfcs[nb], x, y) = ME_get_pixel(sfc, x, y);
                     if (x == rb->weldX && y == rb->weldY) polys2sWeld[nb] = true;
                 }
             }
@@ -658,19 +655,16 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
         }
 
         for (int b = 0; b < polys2s.size(); b++) {
-            std::vector<phy::Shape *> polys2 = polys2s[b];
+            std::vector<b2PolygonShape> polys2 = polys2s[b];
 
             // TODO: 23/7/18 修改 polys2sSfcs 为 Texture
-            auto sfc = create_ref<Texture>(polys2sSfcs[b]);
+            auto tex = create_ref<Texture>(polys2sSfcs[b]);
 
-            RigidBody *rbn = makeRigidBodyMulti(PhyBodytype::Dynamic, 0, 0, rb->body->rotation(), polys2, /*rb->body->GetFixtureList()[0].GetDensity()*/ 0.1f,
-                                                /*rb->body->GetFixtureList()[0].GetFriction()*/ 0.1f, sfc);
-            rbn->body->SetTransform({rb->body->position().x, rb->body->position().y}, rb->body->rotation());
+            RigidBody *rbn = makeRigidBodyMulti(b2_dynamicBody, 0, 0, rb->body->GetAngle(), polys2, rb->body->GetFixtureList()[0].GetDensity(), rb->body->GetFixtureList()[0].GetFriction(), tex);
 
-            // rbn->body->SetLinearVelocity(rb->body->GetLinearVelocity());
-            // rbn->body->SetAngularVelocity(rb->body->GetAngularVelocity());
-            rbn->body->velocity() = rb->body->velocity();
-            rbn->body->angularVelocity() = rb->body->angularVelocity();
+            rbn->body->SetTransform(b2Vec2(rb->body->GetPosition().x, rb->body->GetPosition().y), rb->body->GetAngle());
+            rbn->body->SetLinearVelocity(rb->body->GetLinearVelocity());
+            rbn->body->SetAngularVelocity(rb->body->GetAngularVelocity());
 
             rbn->outline = shapes;
             rbn->texNeedsUpdate = true;
@@ -678,30 +672,25 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
 
             bool weld = polys2sWeld[b];
             rbn->back = weld;
+
             if (weld) {
-
-                // TODO: 23/7/17 暂时未实现物理引擎活叶
-
-                // b2WeldJointDef weldJ;
-                // weldJ.bodyA = rbn->body;
-                // weldJ.bodyB = staticBody->body;
-                // weldJ.localAnchorA = -rbn->body->position();
-
-                // b2world->CreateJoint(&weldJ);
-
-                // rbn->weldX = rb->weldX;
-                // rbn->weldY = rb->weldY;
-
-                // b2Filter bf = {};
-                // bf.categoryBits = 0x0002;
-                // bf.maskBits = 0x0000;
-                // for (b2Fixture *f = rbn->body->GetFixtureList(); f; f = f->GetNext()) {
-                //     f->SetFilterData(bf);
-                // }
+                b2WeldJointDef weldJ;
+                weldJ.bodyA = rbn->body;
+                weldJ.bodyB = staticBody->body;
+                weldJ.localAnchorA = -rbn->body->GetPosition();
+                b2world->CreateJoint(&weldJ);
+                rbn->weldX = rb->weldX;
+                rbn->weldY = rb->weldY;
+                b2Filter bf = {};
+                bf.categoryBits = 0x0002;
+                bf.maskBits = 0x0000;
+                for (b2Fixture *f = rbn->body->GetFixtureList(); f; f = f->GetNext()) {
+                    f->SetFilterData(bf);
+                }
             } else {
-                // for (b2Fixture *f = rbn->body->GetFixtureList(); f; f = f->GetNext()) {
-                //     f->SetFilterData(rb->body->GetFixtureList()[0].GetFilterData());
-                // }
+                for (b2Fixture *f = rbn->body->GetFixtureList(); f; f = f->GetNext()) {
+                    f->SetFilterData(rb->body->GetFixtureList()[0].GetFilterData());
+                }
             }
 
             rbn->item = rb->item;
@@ -718,8 +707,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
         }
     }
 
-    // b2world->DestroyBody(rb->body);
-    phy->world().removeBody(rb->body);
+    b2world->DestroyBody(rb->body);
 
     rigidBodies.erase(std::remove(rigidBodies.begin(), rigidBodies.end(), rb), rigidBodies.end());
 
@@ -938,34 +926,36 @@ found : {};
             cur[0].y += 0.01f;
         }
 
+        std::vector<b2Vec2> vec = {{(f32)cur[0].x, (f32)cur[0].y}, {(f32)cur[1].x, (f32)cur[1].y}, {(f32)cur[2].x, (f32)cur[2].y}};
         // worldTris.push_back(vec);
-        phy::Polygon *sh = new phy::Polygon;
-        // sh.Set(&vec[0], 3);
-        sh->append({{(f32)cur[0].x, (f32)cur[0].y}, {(f32)cur[1].x, (f32)cur[1].y}, {(f32)cur[2].x, (f32)cur[2].y}});
+        b2PolygonShape sh;
+        sh.Set(&vec[0], 3);
+
         chunk->polys.push_back(sh);
     });
 
 #pragma endregion
 
-    // Texture *texture = LoadTexture("data/assets/objects/testObject3.png");
+    // TODO: 世界区块的box2d碰撞
 
-    // if (chunk->rb) {
-    //     delete[] chunk->rb->tiles;
-    //     if (chunk->rb->get_texture()) {
-    //         R_FreeImage(chunk->rb->get_texture());
-    //         SDL_FreeSurface(chunk->rb->get_surface());
-    //     }
-    //     delete chunk->rb;
-    // }
-    // chunk->rb = makeRigidBodyMulti(b2_staticBody, chunk->x * CHUNK_W + loadZone.x, chunk->y * CHUNK_H + loadZone.y, 0, chunk->polys, 1, 0.3, texture->surface);
+    auto texture = LoadTexture("data/assets/objects/testObject3.png");
 
-    // for (b2Fixture *f = chunk->rb->body->GetFixtureList(); f; f = f->GetNext()) {
-    //     b2Filter bf = {};
-    //     bf.categoryBits = 0x0001;
-    //     f->SetFilterData(bf);
-    // }
+    if (chunk->rb) {
+        delete[] chunk->rb->tiles;
 
-    // worldRigidBodies.push_back(chunk->rb);
+        chunk->rb->chunk_clean();
+
+        delete chunk->rb;
+    }
+    chunk->rb = makeRigidBodyMulti(b2_staticBody, chunk->x * CHUNK_W + loadZone.x, chunk->y * CHUNK_H + loadZone.y, 0, chunk->polys, 1, 0.3, texture);
+
+    for (b2Fixture *f = chunk->rb->body->GetFixtureList(); f; f = f->GetNext()) {
+        b2Filter bf = {};
+        bf.categoryBits = 0x0001;
+        f->SetFilterData(bf);
+    }
+
+    worldRigidBodies.push_back(chunk->rb);
 }
 
 void world::updateWorldMesh() {
@@ -987,13 +977,13 @@ void world::updateWorldMesh() {
     int maxChY = (int)std::ceil((meshZone.y + meshZone.h - loadZone.y) / CHUNK_H);
 
     for (int i = 0; i < worldRigidBodies.size(); i++) {
-        phy->world().removeBody(worldRigidBodies[i]->body);
+        b2world->DestroyBody(worldRigidBodies[i]->body);
     }
     worldRigidBodies.clear();
 
     if (meshZone.w == 0 || meshZone.h == 0) return;
 
-    METADOT_BUG(std::format("updateWorldMesh {0}/{1} {2}/{3}", minChX, maxChX, minChY, maxChY).c_str());
+    // METADOT_BUG(std::format("updateWorldMesh {0}/{1} {2}/{3}", minChX, maxChX, minChY, maxChY).c_str());
 
     for (int cx = minChX; cx <= maxChX; cx++) {
         for (int cy = minChY; cy <= maxChY; cy++) {
@@ -2214,7 +2204,7 @@ void world::tickObjectsMesh() {
             std::erase_if(rigidBodies, [&](auto c) { return cur == c; });
             continue;
         };
-        if (cur->needsUpdate && !cur->body->sleep()) {
+        if (cur->needsUpdate && cur->body->IsEnabled()) {
             updateRigidBodyHitbox(cur);
         }
     }
@@ -2232,12 +2222,9 @@ void world::tickObjectBounds() {
 
         if (cur->is_cleaned) continue;
 
-        // f32 x = cur->body->GetWorldCenter().x;
-        // f32 y = cur->body->GetWorldCenter().y;
-
-        auto [x, y] = cur->body->shape()->center();
-        bool should_not_sleep = x >= tickZone.x && y >= tickZone.y && x < tickZone.x + tickZone.w && y < tickZone.y + tickZone.h;
-        cur->body->setSleep(!should_not_sleep);
+        f32 x = cur->body->GetWorldCenter().x;
+        f32 y = cur->body->GetWorldCenter().y;
+        cur->body->SetEnabled(x >= tickZone.x && y >= tickZone.y && x < tickZone.x + tickZone.w && y < tickZone.y + tickZone.h);
     }
 }
 
@@ -2252,12 +2239,10 @@ void world::tickObjects() {
     for (int i = 0; i < rbs.size(); i++) {
         RigidBody *cur = rbs[i];
 
-        // f32 x = cur->body->GetWorldCenter().x;
-        // f32 y = cur->body->GetWorldCenter().y;
+        f32 x = cur->body->GetWorldCenter().x;
+        f32 y = cur->body->GetWorldCenter().y;
 
-        auto [x, y] = (cur->body->shape())->center();
-
-        if (!cur->body->sleep()) {
+        if (cur->body->IsEnabled()) {
             if (x - 100 < minX) minX = (int)x - 100;
             if (y - 100 < minY) minY = (int)y - 100;
             if (x + 100 > maxX) maxX = (int)x + 100;
@@ -2281,31 +2266,24 @@ void world::tickObjects() {
     i32 velocityIterations = 5;
     i32 positionIterations = 2;
 
-#if 0
+#if 1
 
-    registry.for_each_component<WorldEntity>([this](ecs::entity, WorldEntity &we) {
-        we.rb->body->SetTransform({we.x + loadZone.x + we.hw / 2.0f - 0.5f, we.y + loadZone.y + we.hh / 2.0f - 1.5f}, 0);
-        // we.rb->body->SetLinearVelocity({(f32)(we.vx * 1.0), (f32)(we.vy * 1.0)});
-        we.rb->body->velocity() = {(f32)(we.vx * 1.0), (f32)(we.vy * 1.0)};
+    registry.for_each_component<WorldEntity>([this](ME::ecs::entity, WorldEntity &we) {
+        we.rb->body->SetTransform(b2Vec2(we.x + loadZone.x + we.hw / 2 - 0.5, we.y + loadZone.y + we.hh / 2 - 1.5), 0);
+        we.rb->body->SetLinearVelocity({(f32)(we.vx * 1.0), (f32)(we.vy * 1.0)});
     });
 
-    // b2world->Step(timeStep, velocityIterations, positionIterations);
+    b2world->Step(timeStep, velocityIterations, positionIterations);
 
-    // phy->step(240.0f);
-
-    registry.for_each_component<WorldEntity>([this](ecs::entity, WorldEntity &we) {
-        /*cur->x = cur->rb->body->position().x + 0.5 - cur->hw / 2 - loadZone.x;
-        cur->y = cur->rb->body->position().y + 1.5 - cur->hh / 2 - loadZone.y;*/
+    registry.for_each_component<WorldEntity>([this](ME::ecs::entity, WorldEntity &we) {
+        /*cur->x = cur->rb->body->GetPosition().x + 0.5 - cur->hw / 2 - loadZone.x;
+        cur->y = cur->rb->body->GetPosition().y + 1.5 - cur->hh / 2 - loadZone.y;*/
         // cur->rb->body->SetTransform(b2Vec2(cur->x + loadZone.x + cur->hw / 2 - 0.5, cur->y + loadZone.y + cur->hh / 2 - 1.5), 0);
         // cur->rb->body->SetLinearVelocity({ cur->vx * 25, cur->vy * (cur->vy > 0 ? 0 : 25) });
 
         // 将物理引擎的速度参数同步到对象
-
-        // we.vx = we.rb->body->GetLinearVelocity().x / 1.0;
-        // we.vy = we.rb->body->GetLinearVelocity().y / 1.0;
-
-        we.vx = we.rb->body->velocity().x;
-        we.vy = we.rb->body->velocity().y;
+        we.vx = we.rb->body->GetLinearVelocity().x / 1.0;
+        we.vy = we.rb->body->GetLinearVelocity().y / 1.0;
     });
 
 #endif
@@ -2604,7 +2582,7 @@ void world::tickChunks() {
 
             for (int i = 0; i < rigidBodies.size(); i++) {
                 RigidBody cur = *rigidBodies[i];
-                cur.body->SetTransform({cur.body->position().x + changeX, cur.body->position().y + changeY}, cur.body->rotation());
+                cur.body->SetTransform(b2Vec2(cur.body->GetPosition().x + changeX, cur.body->GetPosition().y + changeY), cur.body->GetAngle());
             }
         }
 
@@ -3248,8 +3226,8 @@ void world::tickEntities(R_Target *t) {
 
         // cur->render(t, loadZone.x, loadZone.y);
 
-        cur->rb->body->SetTransform({cur->x + loadZone.x + cur->hw / 2.0f - 0.5f, cur->y + loadZone.y + cur->hh / 2.0f - 1.5f}, 0);
-        cur->rb->body->velocity() = {cur->vx * 25, cur->vy * 25};
+        cur->rb->body->SetTransform(b2Vec2(cur->x + loadZone.x + cur->hw / 2 - 0.5, cur->y + loadZone.y + cur->hh / 2 - 1.5), 0);
+        cur->rb->body->SetLinearVelocity({cur->vx * 25, cur->vy * 25});
 
         return false;
     };
@@ -3388,23 +3366,17 @@ RigidBody *world::physicsCheck(int x, int y) {
             if (static_cast<bool>(cols)) delete[] cols;
 
             // audioEngine.PlayEvent("event:/Player/Impact");
-            phy::Rectangle *s = new phy::Rectangle;
-            // s.SetAsBox(1, 1);
-            s->set(1.0f, 1.0f);
 
             auto tex = create_ref<Texture>(sfc);
 
-            RigidBody *rb = makeRigidBody(PhyBodytype::Dynamic, (f32)minX, (f32)minY, 0, s, 1, (f32)0.3, tex);
-
-            // TODO:  23/7/17 物理相关性实现
-
-            // b2Filter bf = {};
-            // bf.categoryBits = 0x0001;
-            // bf.maskBits = 0xffff;
-            // rb->body->GetFixtureList()[0].SetFilterData(bf);
-
-            // rb->body->SetLinearVelocity({(f32)((rand() % 100) / 100.0 - 0.5), (f32)((rand() % 100) / 100.0 - 0.5)});
-            rb->body->velocity() = {(f32)((rand() % 100) / 100.0 - 0.5), (f32)((rand() % 100) / 100.0 - 0.5)};
+            b2PolygonShape s;
+            s.SetAsBox(1, 1);
+            RigidBody *rb = makeRigidBody(b2_dynamicBody, (f32)minX, (f32)minY, 0, s, 1, (f32)0.3, tex);
+            b2Filter bf = {};
+            bf.categoryBits = 0x0001;
+            bf.maskBits = 0xffff;
+            rb->body->GetFixtureList()[0].SetFilterData(bf);
+            rb->body->SetLinearVelocity({(f32)((rand() % 100) / 100.0 - 0.5), (f32)((rand() % 100) / 100.0 - 0.5)});
 
             rigidBodies.push_back(rb);
             updateRigidBodyHitbox(rb);
@@ -3593,8 +3565,8 @@ world::~world() {
     delete[] tickVisited1;
     delete[] tickVisited2;
 
-    auto phy_ptr = phy.release();
-    delete phy_ptr;
+    auto b2world_ptr = b2world.release();
+    delete b2world_ptr;
 
     for (auto &v : rigidBodies) {
         delete v;
@@ -3606,7 +3578,7 @@ world::~world() {
 
     for (auto &v : polys2s) {
         for (auto &v1 : v) {
-            if (static_cast<bool>(v1)) delete v1;
+            // if (static_cast<bool>(v1)) delete v1;
         }
         v.clear();
     }

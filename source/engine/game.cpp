@@ -156,7 +156,7 @@ int game::init(int argc, char *argv[]) {
     // register & set up materials
     METADOT_INFO("Setting up materials...");
     movingTiles = new u16[GAME()->materials_count];
-    // debugDraw = new ME_debugdraw(the<engine>().eng()->target);
+    debugDraw = new ME_debugdraw(the<engine>().eng()->target);
 
     // Play sound effects when the game starts
     global.audio.PlayEvent("event:/Music/Title");
@@ -632,17 +632,17 @@ int game::run(int argc, char *argv[]) {
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
                         if (!static_cast<bool>(cur->get_surface())) continue;
-                        if (!cur->body->sleep()) {
-                            f32 s = sin(-cur->body->rotation());
-                            f32 c = cos(-cur->body->rotation());
+                        if (cur->body->IsEnabled()) {
+                            f32 s = sin(-cur->body->GetAngle());
+                            f32 c = cos(-cur->body->GetAngle());
                             bool upd = false;
                             for (f32 xx = -3; xx <= 3; xx += 0.5) {
                                 for (f32 yy = -3; yy <= 3; yy += 0.5) {
                                     if (abs(xx) + abs(yy) == 6) continue;
                                     // rotate point
 
-                                    f32 tx = x + xx - cur->body->position().x;
-                                    f32 ty = y + yy - cur->body->position().y;
+                                    f32 tx = x + xx - cur->body->GetPosition().x;
+                                    f32 ty = y + yy - cur->body->GetPosition().y;
 
                                     int ntx = (int)(tx * c - ty * s);
                                     int nty = (int)(tx * s + ty * c);
@@ -726,17 +726,17 @@ int game::run(int argc, char *argv[]) {
                                     RigidBody *cur = rbs[i];
 
                                     bool connect = false;
-                                    if (!cur->body->sleep()) {
-                                        f32 s = sin(-cur->body->rotation());
-                                        f32 c = cos(-cur->body->rotation());
+                                    if (cur->body->IsEnabled()) {
+                                        f32 s = sin(-cur->body->GetAngle());
+                                        f32 c = cos(-cur->body->GetAngle());
                                         bool upd = false;
                                         for (f32 xx = -3; xx <= 3; xx += 0.5) {
                                             for (f32 yy = -3; yy <= 3; yy += 0.5) {
                                                 if (abs(xx) + abs(yy) == 6) continue;
                                                 // rotate point
 
-                                                f32 tx = x + xx - cur->body->position().x;
-                                                f32 ty = y + yy - cur->body->position().y;
+                                                f32 tx = x + xx - cur->body->GetPosition().x;
+                                                f32 ty = y + yy - cur->body->GetPosition().y;
 
                                                 int ntx = (int)(tx * c - ty * s);
                                                 int nty = (int)(tx * s + ty * c);
@@ -789,23 +789,17 @@ int game::run(int argc, char *argv[]) {
                                 // 物体被镐子破坏后 形成物理掉落物
                                 if (n > 0) {
                                     global.audio.PlayEvent("event:/Player/Impact");
-                                    phy::Rectangle *s = new phy::Rectangle;
-                                    // s.SetAsBox(1, 1);
-                                    s->set(1.0f, 1.0f);
 
                                     auto tex = create_ref<Texture>(sfc);
 
-                                    RigidBody *rb = Iso.world->makeRigidBody(phy::Body::BodyType::Dynamic, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
-
-                                    // TODO:  23/7/17 物理相关性实现
-
-                                    // b2Filter bf = {};
-                                    // bf.categoryBits = 0x0001;
-                                    // bf.maskBits = 0xffff;
-                                    // rb->body->GetFixtureList()[0].SetFilterData(bf);
-
-                                    // rb->body->SetLinearVelocity({(f32)((rand() % 100) / 100.0 - 0.5), (f32)((rand() % 100) / 100.0 - 0.5)});
-                                    rb->body->velocity() = {(f32)((rand() % 100) / 100.0 - 0.5), (f32)((rand() % 100) / 100.0 - 0.5)};
+                                    b2PolygonShape s;
+                                    s.SetAsBox(1, 1);
+                                    RigidBody *rb = Iso.world->makeRigidBody(b2_dynamicBody, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
+                                    b2Filter bf = {};
+                                    bf.categoryBits = 0x0001;
+                                    bf.maskBits = 0xffff;
+                                    rb->body->GetFixtureList()[0].SetFilterData(bf);
+                                    rb->body->SetLinearVelocity({(f32)((rand() % 100) / 100.0 - 0.5), (f32)((rand() % 100) / 100.0 - 0.5)});
 
                                     Iso.world->rigidBodies.push_back(rb);
                                     Iso.world->updateRigidBodyHitbox(rb);
@@ -940,17 +934,17 @@ int game::run(int argc, char *argv[]) {
 
                         bool connect = false;
                         if (!static_cast<bool>(cur->get_surface())) continue;  // skip if it does not have surface
-                        if (!cur->body->sleep()) {
-                            f32 s = sin(-cur->body->rotation());
-                            f32 c = cos(-cur->body->rotation());
+                        if (cur->body->IsEnabled()) {
+                            f32 s = sin(-cur->body->GetAngle());
+                            f32 c = cos(-cur->body->GetAngle());
                             bool upd = false;
                             for (f32 xx = -3; xx <= 3; xx += 0.5) {
                                 for (f32 yy = -3; yy <= 3; yy += 0.5) {
                                     if (abs(xx) + abs(yy) == 6) continue;
                                     // rotate point
 
-                                    f32 tx = x + xx - cur->body->position().x;
-                                    f32 ty = y + yy - cur->body->position().y;
+                                    f32 tx = x + xx - cur->body->GetPosition().x;
+                                    f32 ty = y + yy - cur->body->GetPosition().y;
 
                                     int ntx = (int)(tx * c - ty * s);
                                     int nty = (int)(tx * s + ty * c);
@@ -971,8 +965,6 @@ int game::run(int argc, char *argv[]) {
 
                                 pl->setItemInHand(Iso.world->Reg().find_component<WorldEntity>(Iso.world->player), Item::makeItem(ItemFlags::ItemFlags_Rigidbody, cur), Iso.world.get());
 
-                                // GameIsolate_.world->b2world->DestroyBody(cur->body);
-                                Iso.world->phy->world().removeBody(cur->body);
                                 Iso.world->rigidBodies.erase(std::remove(Iso.world->rigidBodies.begin(), Iso.world->rigidBodies.end(), cur), Iso.world->rigidBodies.end());
 
                                 swapped = true;
@@ -1107,13 +1099,13 @@ int game::run(int argc, char *argv[]) {
 
                     for (size_t i = 0; i < rbs->size(); i++) {
                         RigidBody *cur = (*rbs)[i];
-                        if (!cur->body->sleep() && static_cast<bool>(cur->get_surface())) {
-                            f32 s = sin(-cur->body->rotation());
-                            f32 c = cos(-cur->body->rotation());
+                        if (cur->body->IsEnabled() && static_cast<bool>(cur->get_surface())) {
+                            f32 s = sin(-cur->body->GetAngle());
+                            f32 c = cos(-cur->body->GetAngle());
                             bool upd = false;
 
-                            f32 tx = msx - cur->body->position().x;
-                            f32 ty = msy - cur->body->position().y;
+                            f32 tx = msx - cur->body->GetPosition().x;
+                            f32 ty = msy - cur->body->GetPosition().y;
 
                             int ntx = (int)(tx * c - ty * s);
                             int nty = (int)(tx * s + ty * c);
@@ -1257,7 +1249,7 @@ int game::exit() {
 
     delete[] objectDelete;
 
-    // delete debugDraw;
+    delete debugDraw;
     delete[] movingTiles;
 
     ME_DELETE(Iso.updateDirtyPool, thread_pool);
@@ -1319,15 +1311,15 @@ void game::updateFrameEarly() {
     if (input::DEBUG_RIGID->get()) {
         for (auto &cur : Iso.world->rigidBodies) {
             ME_ASSERT(cur);
-            if (!cur->body->sleep()) {
-                f32 s = sin(cur->body->rotation());
-                f32 c = cos(cur->body->rotation());
+            if (cur->body->IsEnabled()) {
+                f32 s = sin(cur->body->GetAngle());
+                f32 c = cos(cur->body->GetAngle());
                 bool upd = false;
 
                 for (int xx = 0; xx < cur->matWidth; xx++) {
                     for (int yy = 0; yy < cur->matHeight; yy++) {
-                        int tx = xx * c - yy * s + cur->body->position().x;
-                        int ty = xx * s + yy * c + cur->body->position().y;
+                        int tx = xx * c - yy * s + cur->body->GetPosition().x;
+                        int ty = xx * s + yy * c + cur->body->GetPosition().y;
 
                         MaterialInstance tt = cur->tiles[xx + yy * cur->matWidth];
                         if (tt.mat->id != GAME()->materials_list.GENERIC_AIR.id) {
@@ -1366,8 +1358,7 @@ void game::updateFrameEarly() {
                 }
             }
 
-            // GameIsolate_.world->b2world->DestroyBody(cur->body);
-            Iso.world->phy->world().removeBody(cur->body);
+            Iso.world->b2world->DestroyBody(cur->body);
         }
         Iso.world->rigidBodies.clear();
     }
@@ -1403,22 +1394,19 @@ void game::updateFrameEarly() {
             }
         }
         if (n > 0) {
-            phy::Rectangle *s = new phy::Rectangle;
-            // s.SetAsBox(1, 1);
-            s->set(1.0f, 1.0f);
 
             auto tex = create_ref<Texture>(sfc);
 
-            RigidBody *rb = Iso.world->makeRigidBody(phy::Body::BodyType::Dynamic, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
-            for (int tx = 0; tx < tex->surface()->w; tx++) {
-
-                // TODO:  23/7/17 物理相关性实现
-
-                // b2Filter bf = {};
-                // bf.categoryBits = 0x0002;
-                // bf.maskBits = 0x0001;
-                // rb->body->GetFixtureList()[0].SetFilterData(bf);
+            b2PolygonShape s;
+            s.SetAsBox(1, 1);
+            RigidBody *rb = Iso.world->makeRigidBody(b2_dynamicBody, (f32)x, (f32)y, 0, s, 1, (f32)0.3, tex);
+            for (int tx = 0; tx < sfc->w; tx++) {
+                b2Filter bf = {};
+                bf.categoryBits = 0x0002;
+                bf.maskBits = 0x0001;
+                rb->body->GetFixtureList()[0].SetFilterData(bf);
             }
+
             Iso.world->rigidBodies.push_back(rb);
             Iso.world->updateRigidBodyHitbox(rb);
 
@@ -1443,8 +1431,9 @@ void game::updateFrameEarly() {
             GAME()->freeCamY = pl_we->y - pl_we->hh / 2.0f;
             // GameIsolate_.world->worldEntities.erase(std::remove(GameIsolate_.world->worldEntities.begin(), GameIsolate_.world->worldEntities.end(), GameIsolate_.world->player),
             //                                         GameIsolate_.world->worldEntities.end());
-            // GameIsolate_.world->b2world->DestroyBody(pl_we->rb->body);
-            Iso.world->phy->world().removeBody(pl_we->rb->body);
+
+            Iso.world->b2world->DestroyBody(pl_we->rb->body);
+
             Iso.world->Reg().destroy_entity(Iso.world->player);
             // delete GameIsolate_.world->player;
             Iso.world->player = 0;
@@ -1452,16 +1441,12 @@ void game::updateFrameEarly() {
 
             MEvec4 pl_transform{-Iso.world->loadZone.x + Iso.world->tickZone.x + Iso.world->tickZone.w / 2.0f, -Iso.world->loadZone.y + Iso.world->tickZone.y + Iso.world->tickZone.h / 2.0f, 10, 20};
 
-            phy::Rectangle *sh = new phy::Rectangle;
-            // sh.SetAsBox(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
-            sh->set(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
-            RigidBody *rb = Iso.world->makeRigidBody(phy::Body::BodyType::Kinematic, pl_transform.x + pl_transform.z / 2.0f - 0.5, pl_transform.y + pl_transform.w / 2.0f - 0.5, 0, sh, 1, 1, NULL);
-
-            // 阻尼实现
-
-            // rb->body->SetGravityScale(0);
-            // rb->body->SetLinearDamping(0);
-            // rb->body->SetAngularDamping(0);
+            b2PolygonShape sh;
+            sh.SetAsBox(pl_transform.z / 2.0f + 1, pl_transform.w / 2.0f);
+            RigidBody *rb = Iso.world->makeRigidBody(b2BodyType::b2_kinematicBody, pl_transform.x + pl_transform.z / 2.0f - 0.5, pl_transform.y + pl_transform.w / 2.0f - 0.5, 0, sh, 1, 1, NULL);
+            rb->body->SetGravityScale(0);
+            rb->body->SetLinearDamping(0);
+            rb->body->SetAngularDamping(0);
 
             Item *i3 = new Item();
             i3->setFlag(ItemFlags::ItemFlags_Vacuum);
@@ -1473,12 +1458,10 @@ void game::updateFrameEarly() {
             // R_SetImageFilter(i3->image, R_FILTER_NEAREST);
             i3->pivotX = 6;
 
-            // TODO:  23/7/17 物理相关性实现
-
-            // b2Filter bf = {};
-            // bf.categoryBits = 0x0001;
-            //// bf.maskBits = 0x0000;
-            // rb->body->GetFixtureList()[0].SetFilterData(bf);
+            b2Filter bf = {};
+            bf.categoryBits = 0x0001;
+            // bf.maskBits = 0x0000;
+            rb->body->GetFixtureList()[0].SetFilterData(bf);
 
             auto player = Iso.world->Reg().create_entity();
             ecs::entity_filler(player)
@@ -1604,17 +1587,17 @@ void game::updateFrameEarly() {
             }
 
             bool connect = false;
-            if (!cur->body->sleep()) {
-                f32 s = sin(-cur->body->rotation());
-                f32 c = cos(-cur->body->rotation());
+            if (cur->body->IsEnabled()) {
+                f32 s = sin(-cur->body->GetAngle());
+                f32 c = cos(-cur->body->GetAngle());
                 bool upd = false;
                 for (f32 xx = -3; xx <= 3; xx += 0.5) {
                     for (f32 yy = -3; yy <= 3; yy += 0.5) {
                         if (abs(xx) + abs(yy) == 6) continue;
                         // rotate point
 
-                        f32 tx = x + xx - cur->body->position().x;
-                        f32 ty = y + yy - cur->body->position().y;
+                        f32 tx = x + xx - cur->body->GetPosition().x;
+                        f32 ty = y + yy - cur->body->GetPosition().y;
 
                         int ntx = (int)(tx * c - ty * s);
                         int nty = (int)(tx * s + ty * c);
@@ -1729,9 +1712,9 @@ void game::tick() {
             RigidBody *cur = Iso.world->rigidBodies[i];
             if (cur == nullptr) continue;
             if (cur->get_surface() == nullptr) continue;
-            if (cur->body->sleep()) continue;
+            if (!cur->body->IsEnabled()) continue;
 
-            auto [x, y] = cur->body->position();
+            auto [x, y] = cur->body->GetPosition();
 
             // draw
 
@@ -1755,7 +1738,7 @@ void game::tick() {
                 cur->texNeedsUpdate = false;
             }
 
-            R_BlitRectX(cur->image(), NULL, tgt, &r, cur->body->rotation() * 180 / (f32)M_PI, 0, 0, R_FLIP_NONE);
+            R_BlitRectX(cur->image(), NULL, tgt, &r, cur->body->GetAngle() * 180 / (f32)M_PI, 0, 0, R_FLIP_NONE);
 
             // draw outline
 
@@ -1768,7 +1751,7 @@ void game::tick() {
                     for (int j = 0; j < l.GetNumPoints(); j++) {
                         vec[j] = {(f32)l.GetPoint(j).x / the<engine>().eng()->render_scale, (f32)l.GetPoint(j).y / the<engine>().eng()->render_scale};
                     }
-                    ME_draw_polygon(tgtLQ, col, vec, (int)x, (int)y, the<engine>().eng()->render_scale, l.GetNumPoints(), cur->body->rotation(), 0, 0);
+                    ME_draw_polygon(tgtLQ, col, vec, (int)x, (int)y, the<engine>().eng()->render_scale, l.GetNumPoints(), cur->body->GetAngle(), 0, 0);
                     delete[] vec;
                 }
                 R_SetShapeBlendMode(R_BLEND_NORMAL);
@@ -1777,8 +1760,8 @@ void game::tick() {
             // 液体置换
             // 当 rigidBody 碰撞到液体时 会将液体挤开轮廓
 
-            f32 s = std::sin(cur->body->rotation());
-            f32 c = std::cos(cur->body->rotation());
+            f32 s = std::sin(cur->body->GetAngle());
+            f32 c = std::cos(cur->body->GetAngle());
 
             std::vector<std::pair<int, int>> checkDirs = {{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
@@ -1811,8 +1794,8 @@ void game::tick() {
                             // objectDelete[wxd + wyd * Iso.world->width] = true;
                             Iso.world->dirty[wxd + wyd * Iso.world->width] = true;
 
-                            cur->body->velocity() = {cur->body->velocity().x * (f32)0.99, cur->body->velocity().y * (f32)0.99};
-                            cur->body->angularVelocity() = cur->body->angularVelocity() * (f32)0.98;
+                            cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (f32)0.99, cur->body->GetLinearVelocity().y * (f32)0.99});
+                            cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (f32)0.98);
                             break;
                         } else if (Iso.world->real_tiles[wxd + wyd * Iso.world->width].mat->physicsType == PhysicsType::SOUP) {
                             Iso.world->addCell(new CellData(Iso.world->real_tiles[wxd + wyd * Iso.world->width], (f32)wxd, (f32)(wyd - 3), (f32)((rand() % 10 - 5) / 10.0f),
@@ -1821,8 +1804,8 @@ void game::tick() {
                             // objectDelete[wxd + wyd * Iso.world->width] = true;
                             Iso.world->dirty[wxd + wyd * Iso.world->width] = true;
 
-                            cur->body->velocity() = {cur->body->velocity().x * (f32)0.998, cur->body->velocity().y * (f32)0.998};
-                            cur->body->angularVelocity() = cur->body->angularVelocity() * (f32)0.99;
+                            cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (f32)0.998, cur->body->GetLinearVelocity().y * (f32)0.998});
+                            cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (f32)0.99);
 
                             break;
                         }
@@ -1914,12 +1897,12 @@ void game::tick() {
             RigidBody *cur = Iso.world->rigidBodies[i];
             if (cur == nullptr) continue;
             if (cur->get_surface() == nullptr) continue;
-            if (cur->body->sleep()) continue;
+            if (!cur->body->IsEnabled()) continue;
 
-            auto [x, y] = cur->body->position();
+            auto [x, y] = cur->body->GetPosition();
 
-            f32 s = std::sin(cur->body->rotation());
-            f32 c = std::cos(cur->body->rotation());
+            f32 s = std::sin(cur->body->GetAngle());
+            f32 c = std::cos(cur->body->GetAngle());
 
             std::vector<std::pair<int, int>> checkDirs = {{0, 0}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}};
             for (int tx = 0; tx < cur->matWidth; tx++) {
@@ -2614,17 +2597,17 @@ void game::tickPlayer() {
                         for (size_t i = 0; i < rbs->size(); i++) {
                             RigidBody *cur = (*rbs)[i];
                             if (!static_cast<bool>(cur->get_surface())) continue;
-                            if (!cur->body->sleep()) {
-                                f32 s = sin(-cur->body->rotation());
-                                f32 c = cos(-cur->body->rotation());
+                            if (cur->body->IsEnabled()) {
+                                f32 s = sin(-cur->body->GetAngle());
+                                f32 c = cos(-cur->body->GetAngle());
                                 bool upd = false;
                                 for (int xx = -rad; xx <= rad; xx++) {
                                     for (int yy = -rad; yy <= rad; yy++) {
                                         if ((yy == -rad || yy == rad) && (xx == -rad || x == rad)) continue;
                                         // rotate point
 
-                                        f32 tx = x + xx - cur->body->position().x;
-                                        f32 ty = y + yy - cur->body->position().y;
+                                        f32 tx = x + xx - cur->body->GetPosition().x;
+                                        f32 ty = y + yy - cur->body->GetPosition().y;
 
                                         int ntx = (int)(tx * c - ty * s);
                                         int nty = (int)(tx * s + ty * c);
@@ -3201,17 +3184,17 @@ void game::renderOverlays() {
 
         // 绘制物理调试信息
 
-        // GameIsolate_.world->b2world->SetDebugDraw(debugDraw);
-        // debugDraw->scale = the<engine>().eng()->render_scale;
-        // debugDraw->xOfs = GAME()->ofsX + GAME()->camX;
-        // debugDraw->yOfs = GAME()->ofsY + GAME()->camY;
-        // debugDraw->SetFlags(0);
-        // if (GameIsolate_.globaldef.draw_b2d_shape) debugDraw->AppendFlags(ME_debugdraw::e_shapeBit);
-        // if (GameIsolate_.globaldef.draw_b2d_joint) debugDraw->AppendFlags(ME_debugdraw::e_jointBit);
-        // if (GameIsolate_.globaldef.draw_b2d_aabb) debugDraw->AppendFlags(ME_debugdraw::e_aabbBit);
-        // if (GameIsolate_.globaldef.draw_b2d_pair) debugDraw->AppendFlags(ME_debugdraw::e_pairBit);
-        // if (GameIsolate_.globaldef.draw_b2d_centerMass) debugDraw->AppendFlags(ME_debugdraw::e_centerOfMassBit);
-        // GameIsolate_.world->b2world->ME_debugdraw();
+        Iso.world->b2world->SetDebugDraw(debugDraw);
+        debugDraw->scale = the<engine>().eng()->render_scale;
+        debugDraw->xOfs = GAME()->ofsX + GAME()->camX;
+        debugDraw->yOfs = GAME()->ofsY + GAME()->camY;
+        debugDraw->SetFlags(0);
+        if (Iso.globaldef.draw_b2d_shape) debugDraw->AppendFlags(ME_debugdraw::e_shapeBit);
+        if (Iso.globaldef.draw_b2d_joint) debugDraw->AppendFlags(ME_debugdraw::e_jointBit);
+        if (Iso.globaldef.draw_b2d_aabb) debugDraw->AppendFlags(ME_debugdraw::e_aabbBit);
+        if (Iso.globaldef.draw_b2d_pair) debugDraw->AppendFlags(ME_debugdraw::e_pairBit);
+        if (Iso.globaldef.draw_b2d_centerMass) debugDraw->AppendFlags(ME_debugdraw::e_centerOfMassBit);
+        Iso.world->b2world->DebugDraw();
     }
 
     // Drawing::drawText("fps",
@@ -3283,7 +3266,7 @@ void game::renderOverlays() {
 
         int rbCt = 0;
         for (auto &r : Iso.world->rigidBodies) {
-            if (!r->body->sleep()) rbCt++;
+            if (r->body->IsEnabled()) rbCt++;
         }
 
         int rbTriACt = 0;
@@ -3291,23 +3274,20 @@ void game::renderOverlays() {
 
         // 物理引擎相关信息
 
-        // for (size_t i = 0; i < GameIsolate_.world->rigidBodies.size(); i++) {
-        //     RigidBody cur = *GameIsolate_.world->rigidBodies[i];
-
-        //    b2Fixture *fix = cur.body->GetFixtureList();
-        //    while (fix) {
-        //        b2Shape *shape = fix->GetShape();
-
-        //        switch (shape->GetType()) {
-        //            case b2Shape::Type::e_polygon:
-        //                rbTriCt++;
-        //                if (cur.body->IsEnabled()) rbTriACt++;
-        //                break;
-        //        }
-
-        //        fix = fix->GetNext();
-        //    }
-        //}
+        for (size_t i = 0; i < Iso.world->rigidBodies.size(); i++) {
+            RigidBody cur = *Iso.world->rigidBodies[i];
+            b2Fixture *fix = cur.body->GetFixtureList();
+            while (fix) {
+                b2Shape *shape = fix->GetShape();
+                switch (shape->GetType()) {
+                    case b2Shape::Type::e_polygon:
+                        rbTriCt++;
+                        if (cur.body->IsEnabled()) rbTriACt++;
+                        break;
+                }
+                fix = fix->GetNext();
+            }
+        }
 
         int rbTriWCt = 0;
 
