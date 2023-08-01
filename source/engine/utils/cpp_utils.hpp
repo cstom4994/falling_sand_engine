@@ -528,8 +528,6 @@ constexpr auto operator""_f() {
     return [=]<typename... T>(T... args) { return std::format(F.str, args...); };
 }
 
-class exception : public std::exception {};
-
 template <typename V, typename Alloc = std::allocator<V>>
 using vector = std::vector<V, Alloc>;
 

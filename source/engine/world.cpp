@@ -105,6 +105,8 @@ void world::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *a
 
     rigidBodies.reserve(1);
 
+    // 重置为世界大小
+
     dirty = new bool[width * height];
     layer2Dirty = new bool[width * height];
     backgroundDirty = new bool[width * height];
@@ -122,17 +124,17 @@ void world::init(std::string worldPath, u16 w, u16 h, R_Target *target, Audio *a
         }
     }
 
-    tiles.resize(w * h);
-    flowX = new f32[w * h];
-    flowY = new f32[w * h];
-    prevFlowX = new f32[w * h];
-    prevFlowY = new f32[w * h];
-    layer2.resize(w * h);
-    background.resize(w * h);
+    real_tiles.resize(width * height);
+    flowX = new f32[width * height];
+    flowY = new f32[width * height];
+    prevFlowX = new f32[width * height];
+    prevFlowY = new f32[width * height];
+    real_layer2.resize(width * height);
+    background.resize(width * height);
     for (int x = 0; x < width; x++) {
         for (int y = 0; y < height; y++) {
             setTile(x, y, Tiles_NOTHING);
-            layer2[x + y * width] = Tiles_NOTHING;
+            real_layer2[x + y * width] = Tiles_NOTHING;
             background[x + y * width] = 0x00000000;
             flowX[x + y * width] = 0;
             flowY[x + y * width] = 0;
@@ -260,17 +262,17 @@ RigidBody *world::makeRigidBodyMulti(PhyBodytype type, f32 x, f32 y, f32 angle, 
     if (texture != NULL) {
         rb->matWidth = rb->get_surface()->w;
         rb->matHeight = rb->get_surface()->h;
-        rb->tiles = new MaterialInstance[rb->matWidth * rb->matHeight];
+        rb->real_tiles = new MaterialInstance[rb->matWidth * rb->matHeight];
         for (int xx = 0; xx < rb->matWidth; xx++) {
             for (int yy = 0; yy < rb->matHeight; yy++) {
                 u32 pixel = ME_get_pixel(rb->get_surface(), xx, yy);
                 if (((pixel >> 24) & 0xff) != 0x00) {
                     MaterialInstance inst = TilesCreate(rand() % 250 == -1 ? &GAME()->materials_list.FIRE : &GAME()->materials_list.OBSIDIAN, xx + (int)x, yy + (int)y);
                     inst.color = pixel;
-                    rb->tiles[xx + yy * rb->matWidth] = inst;
+                    rb->real_tiles[xx + yy * rb->matWidth] = inst;
                 } else {
                     MaterialInstance inst = TilesCreate(&GAME()->materials_list.GENERIC_AIR, xx + (int)x, yy + (int)y);
-                    rb->tiles[xx + yy * rb->matWidth] = inst;
+                    rb->real_tiles[xx + yy * rb->matWidth] = inst;
                 }
             }
         }
@@ -298,8 +300,7 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
 
     C_Surface *texture = rb->get_surface();
 
-    // if (static_cast<bool>(texture))
-    //     return;
+    if (static_cast<bool>(texture)) return;
 
     for (int x = 0; x < texture->w; x++) {
         for (int y = 0; y < texture->h; y++) {
@@ -346,6 +347,11 @@ void world::updateRigidBodyHitbox(RigidBody *rb) {
             }
             // rb->set_surface(sf);
             // texture = rb->get_surface();
+
+            // rb->updateImage(sf);
+            // rb->setTexture(create_ref<Texture>(sf));
+            // texture = rb->get_surface();
+
         } else {
             ME_ASSERT(0);
         }
@@ -733,6 +739,7 @@ void world::updateChunkMesh(Chunk *chunk) {
     if (chunk->rb != nullptr) b2world->DestroyBody(chunk->rb->body);
     */
 
+    // 区块坐标转化为世界坐标
     int chTx = chunk->x * CHUNK_W + loadZone.x;
     int chTy = chunk->y * CHUNK_H + loadZone.y;
 
@@ -746,7 +753,7 @@ void world::updateChunkMesh(Chunk *chunk) {
     for (int x = 0; x < CHUNK_W; x++) {
         for (int y = 0; y < CHUNK_H; y++) {
 
-            Material *mat = tiles[(x + chTx) + (y + chTy) * width].mat;
+            Material *mat = real_tiles[(x + chTx) + (y + chTy) * width].mat;
             if (mat != nullptr && mat->physicsType == PhysicsType::SOLID) {
                 foundAnything = true;
                 goto found;
@@ -768,7 +775,7 @@ found : {};
 
     for (int y = 0; y < CHUNK_H; y++) {
         for (int x = 0; x < CHUNK_W; x++) {
-            data[x + y * CHUNK_W] = tiles[(x + chTx) + (y + chTy) * width].mat->physicsType == PhysicsType::SOLID;
+            data[x + y * CHUNK_W] = real_tiles[(x + chTx) + (y + chTy) * width].mat->physicsType == PhysicsType::SOLID;
             edgeSeen[x + y * CHUNK_W] = false;
         }
     }
@@ -980,39 +987,44 @@ void world::updateWorldMesh() {
     int maxChY = (int)std::ceil((meshZone.y + meshZone.h - loadZone.y) / CHUNK_H);
 
     for (int i = 0; i < worldRigidBodies.size(); i++) {
-        // b2world->DestroyBody(worldRigidBodies[i]->body);
         phy->world().removeBody(worldRigidBodies[i]->body);
     }
     worldRigidBodies.clear();
 
     if (meshZone.w == 0 || meshZone.h == 0) return;
 
+    METADOT_BUG(std::format("updateWorldMesh {0}/{1} {2}/{3}", minChX, maxChX, minChY, maxChY).c_str());
+
     for (int cx = minChX; cx <= maxChX; cx++) {
         for (int cy = minChY; cy <= maxChY; cy++) {
             updateChunkMesh(getChunk(cx, cy));
         }
     }
+
+    // 更新区块mesh后同步
+    lastMeshZone = meshZone;
+    lastMeshLoadZone = loadZone;
 }
 
 MaterialInstance world::getTile(int x, int y) {
     if (x < 0 || x >= width || y < 0 || y >= height) return Tiles_TEST_SOLID;
-    return tiles[x + y * width];
+    return real_tiles[x + y * width];
 }
 
 void world::setTile(int x, int y, MaterialInstance type) {
     if (x < 0 || x >= width || y < 0 || y >= height) return;
-    tiles[x + y * width] = type;
+    real_tiles[x + y * width] = type;
     dirty[x + y * width] = true;
 }
 
 MaterialInstance world::getTileLayer2(int x, int y) {
     if (x < 0 || x >= width || y < 0 || y >= height) return Tiles_TEST_SOLID;
-    return layer2[x + y * width];
+    return real_layer2[x + y * width];
 }
 
 void world::setTileLayer2(int x, int y, MaterialInstance type) {
     if (x < 0 || x >= width || y < 0 || y >= height) return;
-    layer2[x + y * width] = type;
+    real_layer2[x + y * width] = type;
     layer2Dirty[x + y * width] = true;
 }
 
@@ -1037,9 +1049,9 @@ void world::tick() {
 
 // #define DEBUG_FRICTION
 // #define DO_REVERSE
-#define DO_MULTITHREADING
+#define DO_MULTITHREADING 1
 
-#ifdef DO_MULTITHREADING
+#if DO_MULTITHREADING
     bool whichTickVisited = false;
     memset(tickVisited1, false, (size_t)width * height);
 #endif
@@ -1057,10 +1069,10 @@ void world::tick() {
             int chOfsX = tk % 2;              // 0 1 0 1
             int chOfsY = 1 - ((tk % 4) / 2);  // 1 1 0 0
 
-#ifdef DO_MULTITHREADING
+#if DO_MULTITHREADING
             std::vector<std::future<std::vector<CellData *>>> results = {};
 #endif
-#ifdef DO_MULTITHREADING
+#if DO_MULTITHREADING
             bool *tickVisited = whichTickVisited ? tickVisited2 : tickVisited1;
             std::future<void> tickVisitedDone = world_sys.tickVisitedPool->push([&](int id) { memset(whichTickVisited ? tickVisited1 : tickVisited2, false, (size_t)width * height); });
 #else
@@ -1071,7 +1083,7 @@ void world::tick() {
             for (int cx = tickZone.x + chOfsX * CHUNK_W; cx < (tickZone.x + tickZone.w); cx += CHUNK_W * 2) {
                 for (int cy = tickZone.y + chOfsY * CHUNK_H; cy < (tickZone.y + tickZone.h); cy += CHUNK_H * 2) {
 
-#ifdef DO_MULTITHREADING
+#if DO_MULTITHREADING
                     results.push_back(world_sys.tickPool->push([&, cx, cy](int id) {
                         std::vector<CellData *> parts = {};
 
@@ -1088,11 +1100,11 @@ void world::tick() {
 
                                 if (tickVisited[index]) continue;
 
-                                if (iter >= tiles[index].mat->iterations) {
+                                if (iter >= real_tiles[index].mat->iterations) {
                                     tickVisited[index] = true;
                                     continue;
                                 }
-                                MaterialInstance tile = tiles[index];
+                                MaterialInstance tile = real_tiles[index];
 
                                 int type = tile.mat->physicsType;
 
@@ -1109,7 +1121,7 @@ void world::tick() {
                                         p->temporary = true;
                                         p->lifetime = 30;
                                         p->fadeTime = 10;
-#ifdef DO_MULTITHREADING
+#if DO_MULTITHREADING
                                         parts.push_back(p);
 #else
                                     cells.push_back(p);
@@ -1118,17 +1130,17 @@ void world::tick() {
 
                                     if (rand() % 150 == 0) {
                                         // tiles[index] = TilesCreateSteam();
-                                        tiles[index] = Tiles_NOTHING;
+                                        real_tiles[index] = Tiles_NOTHING;
                                         dirty[index] = true;
                                         tickVisited[index] = true;
                                     } else {
                                         bool foundAny = false;
                                         for (int xx = -2; xx <= 2; xx++) {
                                             for (int yy = -2; yy <= 2; yy++) {
-                                                if (tiles[(x + xx) + (y + yy) * width].mat->physicsType == PhysicsType::SOLID) {
+                                                if (real_tiles[(x + xx) + (y + yy) * width].mat->physicsType == PhysicsType::SOLID) {
                                                     foundAny = true;
                                                     if (rand() % 500 == 0) {
-                                                        tiles[(x + xx) + (y + yy) * width] = TilesCreateFire();
+                                                        real_tiles[(x + xx) + (y + yy) * width] = TilesCreateFire();
                                                         dirty[(x + xx) + (y + yy) * width] = true;
                                                         tickVisited[(x + xx) + (y + yy) * width] = true;
                                                     }
@@ -1136,7 +1148,7 @@ void world::tick() {
                                             }
                                         }
                                         if (!foundAny && rand() % 120 == 0) {
-                                            tiles[index] = Tiles_NOTHING;
+                                            real_tiles[index] = Tiles_NOTHING;
                                             dirty[index] = true;
                                             tickVisited[index] = true;
                                         }
@@ -1145,7 +1157,7 @@ void world::tick() {
 
                                 if (type == PhysicsType::SAND) {
                                     // active[index] = true;
-                                    MaterialInstance belowTile = tiles[x + (y + 1) * width];
+                                    MaterialInstance belowTile = real_tiles[x + (y + 1) * width];
                                     int below = belowTile.mat->physicsType;
 
                                     if (tile.mat->interact && belowTile.mat->id >= 0 && belowTile.mat->id < GAME()->materials_count && tile.mat->nInteractions[belowTile.mat->id] > 0) {
@@ -1154,8 +1166,8 @@ void world::tick() {
                                             if (in.type == INTERACT_TRANSFORM_MATERIAL) {
                                                 for (int xx = in.ofsX - in.data2; xx <= in.ofsX + in.data2; xx++) {
                                                     for (int yy = in.ofsY - in.data2; yy <= in.ofsY + in.data2; yy++) {
-                                                        if (tiles[(x + xx) + (y + yy) * width].mat->id == belowTile.mat->id) {
-                                                            tiles[(x + xx) + (y + yy) * width] = TilesCreate(GAME()->materials_container[in.data1]->id, x + xx, y + yy);
+                                                        if (real_tiles[(x + xx) + (y + yy) * width].mat->id == belowTile.mat->id) {
+                                                            real_tiles[(x + xx) + (y + yy) * width] = TilesCreate(GAME()->materials_container[in.data1]->id, x + xx, y + yy);
                                                             dirty[(x + xx) + (y + yy) * width] = true;
                                                             tickVisited[(x + xx) + (y + yy) * width] = true;
                                                         }
@@ -1164,8 +1176,8 @@ void world::tick() {
                                             } else if (in.type == INTERACT_SPAWN_MATERIAL) {
                                                 for (int xx = in.ofsX - in.data2; xx <= in.ofsX + in.data2; xx++) {
                                                     for (int yy = in.ofsY - in.data2; yy <= in.ofsY + in.data2; yy++) {
-                                                        if ((xx == 0 && yy == 0) || tiles[(x + xx) + (y + yy) * width].mat->id == Tiles_NOTHING.mat->id) {
-                                                            tiles[(x + xx) + (y + yy) * width] = TilesCreate(GAME()->materials_container[in.data1]->id, x + xx, y + yy);
+                                                        if ((xx == 0 && yy == 0) || real_tiles[(x + xx) + (y + yy) * width].mat->id == Tiles_NOTHING.mat->id) {
+                                                            real_tiles[(x + xx) + (y + yy) * width] = TilesCreate(GAME()->materials_container[in.data1]->id, x + xx, y + yy);
                                                             dirty[(x + xx) + (y + yy) * width] = true;
                                                             tickVisited[(x + xx) + (y + yy) * width] = true;
                                                         }
@@ -1182,16 +1194,16 @@ void world::tick() {
                                             MaterialInteraction in = tile.mat->reactions[i];
                                             if (in.type == REACT_TEMPERATURE_BELOW) {
                                                 if (tile.temperature < in.data1) {
-                                                    tiles[index] = TilesCreate(GAME()->materials_container[in.data2]->id, x, y);
-                                                    tiles[index].temperature = tile.temperature;
+                                                    real_tiles[index] = TilesCreate(GAME()->materials_container[in.data2]->id, x, y);
+                                                    real_tiles[index].temperature = tile.temperature;
                                                     dirty[index] = true;
                                                     tickVisited[index] = true;
                                                     react = true;
                                                 }
                                             } else if (in.type == REACT_TEMPERATURE_ABOVE) {
                                                 if (tile.temperature > in.data1) {
-                                                    tiles[index] = TilesCreate(GAME()->materials_container[in.data2]->id, x, y);
-                                                    tiles[index].temperature = tile.temperature;
+                                                    real_tiles[index] = TilesCreate(GAME()->materials_container[in.data2]->id, x, y);
+                                                    real_tiles[index].temperature = tile.temperature;
                                                     dirty[index] = true;
                                                     tickVisited[index] = true;
                                                     react = true;
@@ -1204,9 +1216,9 @@ void world::tick() {
                                     bool canMoveBelow = (below == PhysicsType::AIR || (below != PhysicsType::SOLID && belowTile.mat->density < tile.mat->density));
                                     if (!canMoveBelow) continue;
 
-                                    MaterialInstance belowLTile = tiles[(x - 1) + (y + 1) * width];
+                                    MaterialInstance belowLTile = real_tiles[(x - 1) + (y + 1) * width];
                                     int belowL = belowLTile.mat->physicsType;
-                                    MaterialInstance belowRTile = tiles[(x + 1) + (y + 1) * width];
+                                    MaterialInstance belowRTile = real_tiles[(x + 1) + (y + 1) * width];
                                     int belowR = belowRTile.mat->physicsType;
 
                                     bool canMoveBelowL = (belowL == PhysicsType::AIR || (belowL != PhysicsType::SOLID && belowLTile.mat->density < tile.mat->density));
@@ -1216,13 +1228,13 @@ void world::tick() {
                                         if (belowTile.mat->physicsType == PhysicsType::AIR && getTile(x, y + 2).mat->physicsType == PhysicsType::AIR &&
                                             getTile(x, y + 3).mat->physicsType == PhysicsType::AIR && getTile(x, y + 4).mat->physicsType == PhysicsType::AIR) {
                                             setTile(x, y, belowTile);
-#ifdef DO_MULTITHREADING
+#if DO_MULTITHREADING
                                             parts.push_back(new CellData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
 #else
                                         cells.push_back(new CellData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
 #endif
                                         } else {
-                                            tiles[index] = belowTile;
+                                            real_tiles[index] = belowTile;
                                             dirty[index] = true;
                                             // setTile(x, y, belowTile);
                                             // setTile(x, y + 1, tile);
@@ -1232,7 +1244,7 @@ void world::tick() {
                                                 tile.color = 0xffffffff;
 #endif
                                             }
-                                            tiles[(x) + (y + 1) * width] = tile;
+                                            real_tiles[(x) + (y + 1) * width] = tile;
                                             dirty[(x) + (y + 1) * width] = true;
                                             tickVisited[x + (y + 1) * width] = true;
                                         }
@@ -1240,23 +1252,23 @@ void world::tick() {
                                         int selfTrasmitMovementChance = 2;
 
                                         if (rand() % selfTrasmitMovementChance == 0) {
-                                            if (x > 0 && tiles[(x - 1) + (y + 1) * width].mat->physicsType == PhysicsType::SAND) {
+                                            if (x > 0 && real_tiles[(x - 1) + (y + 1) * width].mat->physicsType == PhysicsType::SAND) {
                                                 int otherTransmitMovementChance = 2;
                                                 if (rand() % otherTransmitMovementChance == 0) {
-                                                    tiles[(x - 1) + (y + 1) * width].moved = true;
+                                                    real_tiles[(x - 1) + (y + 1) * width].moved = true;
 #ifdef DEBUG_FRICTION
-                                                    tiles[(x - 1) + (y + 1) * width].color = 0xff00ffff;
+                                                    real_tiles[(x - 1) + (y + 1) * width].color = 0xff00ffff;
                                                     dirty[(x - 1) + (y + 1) * width] = true;
 #endif
                                                 }
                                             }
 
-                                            if (x < width - 1 && tiles[(x + 1) + (y + 1) * width].mat->physicsType == PhysicsType::SAND) {
+                                            if (x < width - 1 && real_tiles[(x + 1) + (y + 1) * width].mat->physicsType == PhysicsType::SAND) {
                                                 int otherTransmitMovementChance = 2;
                                                 if (rand() % otherTransmitMovementChance == 0) {
-                                                    tiles[(x + 1) + (y + 1) * width].moved = true;
+                                                    real_tiles[(x + 1) + (y + 1) * width].moved = true;
 #ifdef DEBUG_FRICTION
-                                                    tiles[(x + 1) + (y + 1) * width].color = 0xff00ffff;
+                                                    real_tiles[(x + 1) + (y + 1) * width].color = 0xff00ffff;
                                                     dirty[(x + 1) + (y + 1) * width] = true;
 #endif
                                                 }
@@ -1274,7 +1286,7 @@ void world::tick() {
 
                                     if (tile.fluidAmount < FLUID_MinValue) {
                                         tile.fluidAmount = 0.0f;
-                                        tiles[index] = tile;
+                                        real_tiles[index] = tile;
                                         continue;
                                     }
 
@@ -1292,7 +1304,7 @@ void world::tick() {
                                             nt.fluidAmount = amt;
                                             nt.fluidAmountDiff = 0;
                                             nt.moved = false;
-#ifdef DO_MULTITHREADING
+#if DO_MULTITHREADING
                                             parts.push_back(new CellData(nt, x, y + 1, (rand() % 10 - 5) / 30.0f, -((rand() % 2) + 3) / 10.0f + 1.0f, 0, 0.1f));
 #else
                                         cells.push_back(new CellData(nt, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
@@ -1307,7 +1319,7 @@ void world::tick() {
                                     f32 startValue = tile.fluidAmount;
                                     f32 remainingValue = tile.fluidAmount;
 
-                                    MaterialInstance bottom = tiles[(x) + (y + 1) * width];
+                                    MaterialInstance bottom = real_tiles[(x) + (y + 1) * width];
 
                                     bool airBelow = bottom.mat->physicsType == PhysicsType::AIR;
                                     if ((airBelow && iter <= 2) || (bottom.mat->id == tile.mat->id)) {
@@ -1323,31 +1335,31 @@ void world::tick() {
                                             remainingValue -= flow;
                                             tile.fluidAmountDiff -= flow;
                                             if (bottom.mat->physicsType == PhysicsType::AIR) {
-                                                tiles[(x) + (y + 1) * width] = MaterialInstance(tile.mat, tile.color, tile.temperature);
-                                                tiles[(x) + (y + 1) * width].fluidAmount = 0.0f;
+                                                real_tiles[(x) + (y + 1) * width] = MaterialInstance(tile.mat, tile.color, tile.temperature);
+                                                real_tiles[(x) + (y + 1) * width].fluidAmount = 0.0f;
                                             }
-                                            tiles[(x) + (y + 1) * width].fluidAmountDiff += flow;
+                                            real_tiles[(x) + (y + 1) * width].fluidAmountDiff += flow;
                                             // tiles[(x)+(y + 1) * width].moved = true;
                                         }
                                         flowY[index] += flow;
                                     } else if (iter == 0 && bottom.mat->physicsType == PhysicsType::SOUP && (bottom.mat->id != tile.mat->id)) {
                                         if (rand() % 10 == 0) {
-                                            tiles[index] = bottom;
-                                            tiles[(x) + (y + 1) * width] = tile;
+                                            real_tiles[index] = bottom;
+                                            real_tiles[(x) + (y + 1) * width] = tile;
                                             continue;
                                         }
                                     }
 
                                     if (remainingValue < FLUID_MinValue) {
                                         tile.fluidAmountDiff -= remainingValue;
-                                        tiles[index] = tile;
+                                        real_tiles[index] = tile;
                                         continue;
                                     }
 
-                                    MaterialInstance left = tiles[(x - 1) + (y)*width];
+                                    MaterialInstance left = real_tiles[(x - 1) + (y)*width];
                                     bool canMoveLeft = (left.mat->physicsType == PhysicsType::AIR || (left.mat->id == tile.mat->id)) && !airBelow;
 
-                                    MaterialInstance right = tiles[(x + 1) + (y)*width];
+                                    MaterialInstance right = real_tiles[(x + 1) + (y)*width];
                                     bool canMoveRight = (right.mat->physicsType == PhysicsType::AIR || (right.mat->id == tile.mat->id)) && !airBelow;
 
                                     if (canMoveLeft) {
@@ -1363,10 +1375,10 @@ void world::tick() {
                                             remainingValue -= flow;
                                             tile.fluidAmountDiff -= flow;
                                             if (left.mat->physicsType == PhysicsType::AIR) {
-                                                tiles[(x - 1) + (y)*width] = MaterialInstance(tile.mat, tile.color, tile.temperature);
-                                                tiles[(x - 1) + (y)*width].fluidAmount = 0.0f;
+                                                real_tiles[(x - 1) + (y)*width] = MaterialInstance(tile.mat, tile.color, tile.temperature);
+                                                real_tiles[(x - 1) + (y)*width].fluidAmount = 0.0f;
                                             }
-                                            tiles[(x - 1) + (y)*width].fluidAmountDiff += flow;
+                                            real_tiles[(x - 1) + (y)*width].fluidAmountDiff += flow;
                                             // tiles[(x - 1) + (y)*width].moved = true;
                                         }
                                         flowX[index] -= flow;
@@ -1374,7 +1386,7 @@ void world::tick() {
 
                                     if (remainingValue < FLUID_MinValue) {
                                         tile.fluidAmountDiff -= remainingValue;
-                                        tiles[index] = tile;
+                                        real_tiles[index] = tile;
                                         continue;
                                     }
 
@@ -1391,10 +1403,10 @@ void world::tick() {
                                             remainingValue -= flow;
                                             tile.fluidAmountDiff -= flow;
                                             if (right.mat->physicsType == PhysicsType::AIR) {
-                                                tiles[(x + 1) + (y)*width] = MaterialInstance(tile.mat, tile.color, tile.temperature);
-                                                tiles[(x + 1) + (y)*width].fluidAmount = 0.0f;
+                                                real_tiles[(x + 1) + (y)*width] = MaterialInstance(tile.mat, tile.color, tile.temperature);
+                                                real_tiles[(x + 1) + (y)*width].fluidAmount = 0.0f;
                                             }
-                                            tiles[(x + 1) + (y)*width].fluidAmountDiff += flow;
+                                            real_tiles[(x + 1) + (y)*width].fluidAmountDiff += flow;
                                             // tiles[(x + 1) + (y)*width].moved = true;
                                         }
                                         flowX[index] += flow;
@@ -1402,11 +1414,11 @@ void world::tick() {
 
                                     if (remainingValue < FLUID_MinValue) {
                                         tile.fluidAmountDiff -= remainingValue;
-                                        tiles[index] = tile;
+                                        real_tiles[index] = tile;
                                         continue;
                                     }
 
-                                    MaterialInstance top = tiles[(x) + (y - 1) * width];
+                                    MaterialInstance top = real_tiles[(x) + (y - 1) * width];
 
                                     if (top.mat->physicsType == PhysicsType::AIR || (top.mat->id == tile.mat->id)) {
                                         f32 dstFl = top.mat->physicsType == PhysicsType::SOUP ? top.fluidAmount : 0.0f;
@@ -1421,24 +1433,24 @@ void world::tick() {
                                             remainingValue -= flow;
                                             tile.fluidAmountDiff -= flow;
                                             if (top.mat->physicsType == PhysicsType::AIR) {
-                                                tiles[(x) + (y - 1) * width] = MaterialInstance(tile.mat, tile.color, tile.temperature);
-                                                tiles[(x) + (y - 1) * width].fluidAmount = 0.0f;
+                                                real_tiles[(x) + (y - 1) * width] = MaterialInstance(tile.mat, tile.color, tile.temperature);
+                                                real_tiles[(x) + (y - 1) * width].fluidAmount = 0.0f;
                                             }
-                                            tiles[(x) + (y - 1) * width].fluidAmountDiff += flow;
+                                            real_tiles[(x) + (y - 1) * width].fluidAmountDiff += flow;
                                             // tiles[(x)+(y - 1) * width].moved = true;
                                         }
                                         flowY[index] -= flow;
                                     } else if (iter == 0 && top.mat->physicsType == PhysicsType::SOUP && (top.mat->id != tile.mat->id)) {
                                         if (rand() % 10 == 0) {
-                                            tiles[index] = top;
-                                            tiles[(x) + (y - 1) * width] = tile;
+                                            real_tiles[index] = top;
+                                            real_tiles[(x) + (y - 1) * width] = tile;
                                             continue;
                                         }
                                     }
 
                                     if (remainingValue < FLUID_MinValue) {
                                         tile.fluidAmountDiff -= remainingValue;
-                                        tiles[index] = tile;
+                                        real_tiles[index] = tile;
                                         continue;
                                     }
 
@@ -1449,16 +1461,16 @@ void world::tick() {
                                         }
                                     } else {
                                         dirty[index] = true;
-                                        if (top.mat->physicsType == PhysicsType::SOUP) tiles[(x) + (y - 1) * width].moved = false;
-                                        if (bottom.mat->physicsType == PhysicsType::SOUP) tiles[(x) + (y + 1) * width].moved = false;
-                                        if (left.mat->physicsType == PhysicsType::SOUP) tiles[(x - 1) + (y)*width].moved = false;
-                                        if (right.mat->physicsType == PhysicsType::SOUP) tiles[(x + 1) + (y)*width].moved = false;
+                                        if (top.mat->physicsType == PhysicsType::SOUP) real_tiles[(x) + (y - 1) * width].moved = false;
+                                        if (bottom.mat->physicsType == PhysicsType::SOUP) real_tiles[(x) + (y + 1) * width].moved = false;
+                                        if (left.mat->physicsType == PhysicsType::SOUP) real_tiles[(x - 1) + (y)*width].moved = false;
+                                        if (right.mat->physicsType == PhysicsType::SOUP) real_tiles[(x + 1) + (y)*width].moved = false;
                                     }
 
-                                    tiles[index] = tile;
+                                    real_tiles[index] = tile;
 
                                     // active[index] = true;
-                                    MaterialInstance belowTile = tiles[(x) + (y + 1) * width];
+                                    MaterialInstance belowTile = real_tiles[(x) + (y + 1) * width];
                                     int below = belowTile.mat->physicsType;
 
                                     // if(tile.mat->interact && belowTile.mat->id >= 0 && belowTile.mat->id < GAME()->materials_count && tile.mat->nInteractions[belowTile.mat->id] > 0) {
@@ -1515,16 +1527,16 @@ void world::tick() {
                                     // }
 
                                     if (tile.mat->id == GAME()->materials_list.WATER.id && belowTile.mat->id == GAME()->materials_list.LAVA.id) {
-                                        tiles[index] = TilesCreateSteam();
+                                        real_tiles[index] = TilesCreateSteam();
                                         dirty[index] = true;
-                                        tiles[(x) + (y + 1) * width] = TilesCreateObsidian(x, y + 1);
+                                        real_tiles[(x) + (y + 1) * width] = TilesCreateObsidian(x, y + 1);
                                         dirty[(x) + (y + 1) * width] = true;
                                         tickVisited[(x) + (y + 1) * width] = true;
 
                                         for (int xx = -1; xx <= 1; xx++) {
                                             for (int yy = 0; yy <= 2; yy++) {
-                                                if (tiles[(x + xx) + (y + yy) * width].mat->id == GAME()->materials_list.LAVA.id) {
-                                                    tiles[(x + xx) + (y + yy) * width] = TilesCreateObsidian(x + xx, y + yy);
+                                                if (real_tiles[(x + xx) + (y + yy) * width].mat->id == GAME()->materials_list.LAVA.id) {
+                                                    real_tiles[(x + xx) + (y + yy) * width] = TilesCreateObsidian(x + xx, y + yy);
                                                     dirty[(x + xx) + (y + yy) * width] = true;
                                                     tickVisited[(x + xx) + (y + yy) * width] = true;
                                                 }
@@ -1549,7 +1561,7 @@ void world::tick() {
                                     //     if(belowTile.mat->physicsType == PhysicsType::AIR && getTile(x, y + 2).mat->physicsType == PhysicsType::AIR && getTile(x, y + 3).mat->physicsType ==
                                     //     PhysicsType::AIR && getTile(x, y + 4).mat->physicsType == PhysicsType::AIR) {
                                     //         setTile(x, y, belowTile);
-                                    //         #ifdef DO_MULTITHREADING
+                                    //         #if DO_MULTITHREADING
                                     //         parts.push_back(new CellData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
                                     //         #else
                                     //         cells.push_back(new CellData(tile, x, y + 1, (rand() % 10 - 5) / 20.0f, -((rand() % 2) + 3) / 10.0f + 1.5f, 0, 0.1f));
@@ -1566,16 +1578,16 @@ void world::tick() {
                                     // }
                                 } else if (type == PhysicsType::GAS) {
                                     // active[index] = true;
-                                    int above = tiles[(x) + (y - 1) * width].mat->physicsType;
+                                    int above = real_tiles[(x) + (y - 1) * width].mat->physicsType;
 
-                                    int aboveL = tiles[(x - 1) + (y - 1) * width].mat->physicsType;
-                                    int aboveR = tiles[(x + 1) + (y - 1) * width].mat->physicsType;
+                                    int aboveL = real_tiles[(x - 1) + (y - 1) * width].mat->physicsType;
+                                    int aboveR = real_tiles[(x + 1) + (y - 1) * width].mat->physicsType;
 
                                     if (above == 0 && !((aboveL == 0 || aboveR == 0) && rand() % 2 == 0)) {
-                                        tiles[index] = getTile(x, y - 1);
+                                        real_tiles[index] = getTile(x, y - 1);
                                         dirty[index] = true;
 
-                                        tiles[(x) + (y - 1) * width] = tile;
+                                        real_tiles[(x) + (y - 1) * width] = tile;
                                         dirty[(x) + (y - 1) * width] = true;
 
                                         tickVisited[(x) + (y - 1) * width] = true;
@@ -1593,15 +1605,15 @@ void world::tick() {
 
                                 if (tickVisited[index]) continue;
 
-                                MaterialInstance tile = tiles[index];
+                                MaterialInstance tile = real_tiles[index];
 
                                 int type = tile.mat->physicsType;
 
                                 if (type == PhysicsType::SAND) {
                                     // active[index] = true;
-                                    MaterialInstance belowLTile = tiles[(x - 1) + (y + 1) * width];
+                                    MaterialInstance belowLTile = real_tiles[(x - 1) + (y + 1) * width];
                                     int belowL = belowLTile.mat->physicsType;
-                                    MaterialInstance belowRTile = tiles[(x + 1) + (y + 1) * width];
+                                    MaterialInstance belowRTile = real_tiles[(x + 1) + (y + 1) * width];
                                     int belowR = belowRTile.mat->physicsType;
 
                                     bool canMoveBelowL = (belowL == PhysicsType::AIR || (belowL != PhysicsType::SOLID && belowLTile.mat->density < tile.mat->density));
@@ -1616,8 +1628,8 @@ void world::tick() {
                                         int drop = 0;
 
                                         for (int pil = 0; pil < 10; pil++) {
-                                            int pilChL = tiles[(x - 1) + (y + 1 + pil) * width].mat->physicsType;
-                                            int pilChR = tiles[(x + 1) + (y + 1 + pil) * width].mat->physicsType;
+                                            int pilChL = real_tiles[(x - 1) + (y + 1 + pil) * width].mat->physicsType;
+                                            int pilChR = real_tiles[(x + 1) + (y + 1 + pil) * width].mat->physicsType;
 
                                             if (pilChL == PhysicsType::AIR || pilChR == PhysicsType::AIR) {
                                                 drop++;
@@ -1632,9 +1644,9 @@ void world::tick() {
                                             if (chance < 1000) {
                                                 if (rand() % chance == 0) {
                                                     stoppedByFriction = false;
-                                                    tiles[(x) + (y)*width].moved = true;
+                                                    real_tiles[(x) + (y)*width].moved = true;
 #ifdef DEBUG_FRICTION
-                                                    tiles[(x) + (y)*width].color = 0xff0000ff;
+                                                    real_tiles[(x) + (y)*width].color = 0xff0000ff;
                                                     dirty[(x) + (y)*width] = true;
 #endif
                                                 }
@@ -1643,9 +1655,9 @@ void world::tick() {
                                     }
 
                                     if (stoppedByFriction || !(canMoveBelowL || canMoveBelowR)) {
-                                        tiles[(x) + (y)*width].moved = false;
+                                        real_tiles[(x) + (y)*width].moved = false;
 #ifdef DEBUG_FRICTION
-                                        tiles[(x) + (y)*width].color = 0xff000000;
+                                        real_tiles[(x) + (y)*width].color = 0xff000000;
                                         dirty[(x) + (y)*width] = true;
 #endif
                                         continue;
@@ -1657,12 +1669,12 @@ void world::tick() {
                                         int selfTrasmitMovementChance = 2;
 
                                         if (rand() % selfTrasmitMovementChance == 0) {
-                                            if (tiles[(x) + (y + 1) * width].mat->physicsType == PhysicsType::SAND) {
+                                            if (real_tiles[(x) + (y + 1) * width].mat->physicsType == PhysicsType::SAND) {
                                                 int otherTransmitMovementChance = 2;
                                                 if (rand() % otherTransmitMovementChance == 0) {
-                                                    tiles[(x) + (y + 1) * width].moved = true;
+                                                    real_tiles[(x) + (y + 1) * width].moved = true;
 #ifdef DEBUG_FRICTION
-                                                    tiles[(x) + (y + 1) * width].color = 0xffff00ff;
+                                                    real_tiles[(x) + (y + 1) * width].color = 0xffff00ff;
                                                     dirty[(x) + (y + 1) * width] = true;
 #endif
                                                 }
@@ -1671,14 +1683,14 @@ void world::tick() {
                                     }
 
                                     if (shouldMove && canMoveBelowL && (!canMoveBelowR || rand() % 2 == 0)) {
-                                        if (tiles[(x - 1) + y * width].mat->physicsType == PhysicsType::AIR) {
-                                            tiles[(x - 1) + y * width] = belowLTile;
+                                        if (real_tiles[(x - 1) + y * width].mat->physicsType == PhysicsType::AIR) {
+                                            real_tiles[(x - 1) + y * width] = belowLTile;
                                             dirty[(x - 1) + y * width] = true;
                                             tickVisited[(x - 1) + (y)*width] = true;
-                                            tiles[index] = Tiles_NOTHING;
+                                            real_tiles[index] = Tiles_NOTHING;
                                             dirty[index] = true;
                                         } else {
-                                            tiles[index] = belowLTile;
+                                            real_tiles[index] = belowLTile;
                                             dirty[index] = true;
                                             tickVisited[index] = true;
                                         }
@@ -1689,19 +1701,19 @@ void world::tick() {
                                             tile.color = 0xff000000;
 #endif
                                         }
-                                        tiles[(x - 1) + (y + 1) * width] = tile;
+                                        real_tiles[(x - 1) + (y + 1) * width] = tile;
                                         dirty[(x - 1) + (y + 1) * width] = true;
                                         tickVisited[(x - 1) + (y + 1) * width] = true;
 
                                     } else if (shouldMove && canMoveBelowR) {
 
-                                        if (tiles[(x + 1) + y * width].mat->physicsType == PhysicsType::AIR) {
-                                            tiles[(x + 1) + y * width] = belowRTile;
+                                        if (real_tiles[(x + 1) + y * width].mat->physicsType == PhysicsType::AIR) {
+                                            real_tiles[(x + 1) + y * width] = belowRTile;
                                             dirty[(x + 1) + y * width] = true;
-                                            tiles[index] = Tiles_NOTHING;
+                                            real_tiles[index] = Tiles_NOTHING;
                                             dirty[index] = true;
                                         } else {
-                                            tiles[index] = belowRTile;
+                                            real_tiles[index] = belowRTile;
                                             dirty[index] = true;
                                             tickVisited[index] = true;
                                         }
@@ -1712,14 +1724,14 @@ void world::tick() {
                                             tile.color = 0xff000000;
 #endif
                                         }
-                                        tiles[(x + 1) + (y + 1) * width] = tile;
+                                        real_tiles[(x + 1) + (y + 1) * width] = tile;
                                         dirty[(x + 1) + (y + 1) * width] = true;
                                         tickVisited[(x + 1) + (y + 1) * width] = true;
 
                                     } else {
-                                        tiles[(x) + (y)*width].moved = false;
+                                        real_tiles[(x) + (y)*width].moved = false;
 #ifdef DEBUG_FRICTION
-                                        tiles[(x) + (y)*width].color = 0xff000000;
+                                        real_tiles[(x) + (y)*width].color = 0xff000000;
                                         dirty[(x) + (y)*width] = true;
 #endif
                                     }
@@ -1728,11 +1740,11 @@ void world::tick() {
                                     tile.fluidAmount += tile.fluidAmountDiff;
                                     tile.fluidAmountDiff = 0.0f;
                                     if (tile.fluidAmount < FLUID_MinValue) {
-                                        tiles[index] = Tiles_NOTHING;
+                                        real_tiles[index] = Tiles_NOTHING;
                                         dirty[index] = true;
                                         tickVisited[index] = true;
                                     } else {
-                                        tiles[index] = tile;
+                                        real_tiles[index] = tile;
                                         /*uint8_t c = (1.0f - tile.fluidAmount / 8.0f) * 255;
                                     int rgb = c;
                                     rgb = (rgb << 8) + c;
@@ -1796,21 +1808,21 @@ void world::tick() {
                                 }*/
                                 } else if (type == PhysicsType::GAS) {
                                     // active[index] = true;
-                                    int aboveL = tiles[(x - 1) + (y - 1) * width].mat->physicsType;
-                                    int aboveR = tiles[(x + 1) + (y - 1) * width].mat->physicsType;
+                                    int aboveL = real_tiles[(x - 1) + (y - 1) * width].mat->physicsType;
+                                    int aboveR = real_tiles[(x + 1) + (y - 1) * width].mat->physicsType;
 
                                     if (aboveL == 0 && !(aboveR == 0 && rand() % 2 == 0)) {
-                                        tiles[index] = tiles[(x - 1) + (y - 1) * width];
+                                        real_tiles[index] = real_tiles[(x - 1) + (y - 1) * width];
                                         dirty[index] = true;
 
-                                        tiles[(x - 1) + (y - 1) * width] = tile;
+                                        real_tiles[(x - 1) + (y - 1) * width] = tile;
                                         dirty[(x - 1) + (y - 1) * width] = true;
                                         tickVisited[(x - 1) + (y - 1) * width] = true;
                                     } else if (aboveR == 0) {
-                                        tiles[index] = tiles[(x + 1) + (y - 1) * width];
+                                        real_tiles[index] = real_tiles[(x + 1) + (y - 1) * width];
                                         dirty[index] = true;
 
-                                        tiles[(x + 1) + (y - 1) * width] = tile;
+                                        real_tiles[(x + 1) + (y - 1) * width] = tile;
                                         dirty[(x + 1) + (y - 1) * width] = true;
                                         tickVisited[(x + 1) + (y - 1) * width] = true;
                                     }
@@ -1827,7 +1839,7 @@ void world::tick() {
 
                                 if (tickVisited[index]) continue;
 
-                                MaterialInstance tile = tiles[index];
+                                MaterialInstance tile = real_tiles[index];
 
                                 int type = tile.mat->physicsType;
 
@@ -1860,27 +1872,27 @@ void world::tick() {
                                 } else if (type == PhysicsType::GAS) {
                                     // active[index] = true;
 
-                                    int l = tiles[(x - 1) + (y)*width].mat->physicsType;
-                                    int r = tiles[(x + 1) + (y)*width].mat->physicsType;
+                                    int l = real_tiles[(x - 1) + (y)*width].mat->physicsType;
+                                    int r = real_tiles[(x + 1) + (y)*width].mat->physicsType;
 
                                     if (l == 0 && !(r == 0 && rand() % 2 == 0)) {
-                                        tiles[index] = getTile(x - 1, y);
+                                        real_tiles[index] = getTile(x - 1, y);
                                         dirty[index] = true;
 
-                                        tiles[(x - 1) + (y)*width] = tile;
+                                        real_tiles[(x - 1) + (y)*width] = tile;
                                         dirty[(x - 1) + (y)*width] = true;
                                         tickVisited[(x - 1) + (y)*width] = true;
                                     } else if (r == 0) {
-                                        tiles[index] = getTile(x + 1, y);
+                                        real_tiles[index] = getTile(x + 1, y);
                                         dirty[index] = true;
 
-                                        tiles[(x + 1) + (y)*width] = tile;
+                                        real_tiles[(x + 1) + (y)*width] = tile;
                                         dirty[(x + 1) + (y)*width] = true;
                                         tickVisited[(x + 1) + (y)*width] = true;
                                     } else {
                                         if (tile.mat->id == GAME()->materials_list.STEAM.id) {
                                             if (rand() % 10 == 0) {
-                                                tiles[index] = TilesCreateWater();
+                                                real_tiles[index] = TilesCreateWater();
                                                 dirty[index] = true;
                                             }
                                         }
@@ -1889,14 +1901,14 @@ void world::tick() {
                             }
                         }
 
-#ifdef DO_MULTITHREADING
+#if DO_MULTITHREADING
                         return parts;
                     }));
 #endif
                 }
             }
 
-#ifdef DO_MULTITHREADING
+#if DO_MULTITHREADING
 
             for (int i = 0; i < results.size(); i++) {
 
@@ -1965,11 +1977,11 @@ void world::tickTemperature() {
             //  }
             //}
             f32 factor = 0;
-#define FN(xa, ya)                                                                                                                   \
-    if (tiles[(x + xa) + (y + ya) * width].temperature != 0) {                                                                       \
-        factor = abs(tiles[(x + xa) + (y + ya) * width].temperature) / 64 * tiles[(x + xa) + (y + ya) * width].mat->conductionOther; \
-        v += tiles[(x + xa) + (y + ya) * width].temperature * factor;                                                                \
-        n += factor;                                                                                                                 \
+#define FN(xa, ya)                                                                                                                             \
+    if (real_tiles[(x + xa) + (y + ya) * width].temperature != 0) {                                                                            \
+        factor = abs(real_tiles[(x + xa) + (y + ya) * width].temperature) / 64 * real_tiles[(x + xa) + (y + ya) * width].mat->conductionOther; \
+        v += real_tiles[(x + xa) + (y + ya) * width].temperature * factor;                                                                     \
+        n += factor;                                                                                                                           \
     }
             FN(-1, -1);
             FN(-1, 0);
@@ -1984,10 +1996,10 @@ void world::tickTemperature() {
 #undef FN
 
             if (v != 0) {
-                newTemps[x + y * width] =
-                        tiles[x + y * width].mat->addTemp + (v / n * tiles[x + y * width].mat->conductionSelf) + (tiles[x + y * width].temperature * (1 - tiles[x + y * width].mat->conductionSelf));
+                newTemps[x + y * width] = real_tiles[x + y * width].mat->addTemp + (v / n * real_tiles[x + y * width].mat->conductionSelf) +
+                                          (real_tiles[x + y * width].temperature * (1 - real_tiles[x + y * width].mat->conductionSelf));
             } else {
-                newTemps[x + y * width] = tiles[x + y * width].mat->addTemp + tiles[x + y * width].temperature;
+                newTemps[x + y * width] = real_tiles[x + y * width].mat->addTemp + real_tiles[x + y * width].temperature;
             }
         }
     }
@@ -1995,7 +2007,7 @@ void world::tickTemperature() {
 
     for (int y = (tickZone.y + tickZone.h) - 1; y >= tickZone.y; y--) {
         for (int x = tickZone.x; x < (tickZone.x + tickZone.w); x++) {
-            tiles[x + y * width].temperature = newTemps[x + y * width];
+            real_tiles[x + y * width].temperature = newTemps[x + y * width];
         }
     }
     // copy
@@ -2026,11 +2038,6 @@ void world::renderCells(unsigned char **texture) {
 }
 
 void world::tickCells() {
-
-    /*C_Rect* fr = new C_Rect{ 0, 0, width, height };
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_RenderClear(renderer);
-    delete fr;*/
 
     auto func = [&](CellData *cur) {
         if (cur->temporary && cur->lifetime <= 0) {
@@ -2080,9 +2087,9 @@ void world::tickCells() {
                 return true;
             }
 
-            if (!cur->phase && tiles[(int)(cur->x) + (int)(cur->y) * width].mat->physicsType != PhysicsType::AIR) {
+            if (!cur->phase && real_tiles[(int)(cur->x) + (int)(cur->y) * width].mat->physicsType != PhysicsType::AIR) {
                 bool allowCollision = true;
-                bool isObject = tiles[(int)(cur->x) + (int)(cur->y) * width].mat->physicsType == PhysicsType::OBJECT;
+                bool isObject = real_tiles[(int)(cur->x) + (int)(cur->y) * width].mat->physicsType == PhysicsType::OBJECT;
 
                 switch (cur->inObjectState) {
                     case 0:  // first frame of particle's life
@@ -2104,7 +2111,7 @@ void world::tickCells() {
                         return true;
                     }
 
-                    if (tiles[(int)(lx) + (int)(ly)*width].mat->physicsType != PhysicsType::AIR) {
+                    if (real_tiles[(int)(lx) + (int)(ly)*width].mat->physicsType != PhysicsType::AIR) {
                         /*for (int y = 0; y < 40; y++) {
                             if (tiles[(int)(cur->x) + (int)(cur->y - y) * width].mat->physicsType == PhysicsType::AIR) {
                                 tiles[(int)(cur->x) + (int)(cur->y - y) * width] = cur->tile;
@@ -2126,14 +2133,14 @@ void world::tickCells() {
                                 if ((-X / 2 <= x) && (x <= X / 2) && (-Y / 2 <= y) && (y <= Y / 2)) {
                                     // printf("%d, %d", x, y);
                                     // DO STUFF
-                                    if (tiles[(int)(cur->x + x) + (int)(cur->y + y) * width].mat->physicsType == PhysicsType::AIR) {
-                                        tiles[(int)(cur->x + x) + (int)(cur->y + y) * width] = cur->tile;
+                                    if (real_tiles[(int)(cur->x + x) + (int)(cur->y + y) * width].mat->physicsType == PhysicsType::AIR) {
+                                        real_tiles[(int)(cur->x + x) + (int)(cur->y + y) * width] = cur->tile;
                                         dirty[(int)(cur->x + x) + (int)(cur->y + y) * width] = true;
                                         succeeded = true;
                                         break;
-                                    } else if (cur->tile.mat->physicsType == PhysicsType::SOUP && cur->tile.mat == tiles[(int)(cur->x + x) + (int)(cur->y + y) * width].mat) {
+                                    } else if (cur->tile.mat->physicsType == PhysicsType::SOUP && cur->tile.mat == real_tiles[(int)(cur->x + x) + (int)(cur->y + y) * width].mat) {
 
-                                        tiles[(int)(cur->x + x) + (int)(cur->y + y) * width].fluidAmount += cur->tile.fluidAmount;
+                                        real_tiles[(int)(cur->x + x) + (int)(cur->y + y) * width].fluidAmount += cur->tile.fluidAmount;
                                         dirty[(int)(cur->x + x) + (int)(cur->y + y) * width] = true;
                                         succeeded = true;
                                         break;
@@ -2160,7 +2167,7 @@ void world::tickCells() {
                             return false;
                         }
                     } else {
-                        tiles[(int)(lx) + (int)(ly)*width] = cur->tile;
+                        real_tiles[(int)(lx) + (int)(ly)*width] = cur->tile;
                         dirty[(int)(lx) + (int)(ly)*width] = true;
                         cur->killCallback();
                         delete cur;
@@ -2248,7 +2255,7 @@ void world::tickObjects() {
         // f32 x = cur->body->GetWorldCenter().x;
         // f32 y = cur->body->GetWorldCenter().y;
 
-        auto [x, y] = cur->body->shape()->center();
+        auto [x, y] = (cur->body->shape())->center();
 
         if (!cur->body->sleep()) {
             if (x - 100 < minX) minX = (int)x - 100;
@@ -2274,6 +2281,8 @@ void world::tickObjects() {
     i32 velocityIterations = 5;
     i32 positionIterations = 2;
 
+#if 0
+
     registry.for_each_component<WorldEntity>([this](ecs::entity, WorldEntity &we) {
         we.rb->body->SetTransform({we.x + loadZone.x + we.hw / 2.0f - 0.5f, we.y + loadZone.y + we.hh / 2.0f - 1.5f}, 0);
         // we.rb->body->SetLinearVelocity({(f32)(we.vx * 1.0), (f32)(we.vy * 1.0)});
@@ -2298,6 +2307,8 @@ void world::tickObjects() {
         we.vx = we.rb->body->velocity().x;
         we.vy = we.rb->body->velocity().y;
     });
+
+#endif
 }
 
 void world::addCell(CellData *cell) { cells.push_back(cell); }
@@ -2338,6 +2349,7 @@ void world::explosion(int cx, int cy, int radius) {
         }
     }
 
+    // 预计在下一个世界tick重新计算mesh
     lastMeshZone = {};
 }
 
@@ -2345,52 +2357,40 @@ void world::frame() {
 
     while (toLoad.size() > 0) {
         LoadChunkParams para = toLoad[0];
-
-        // std::future<ChunkReadyToMerge> fut = ;
-        // fut.wait();
-        // readyToMerge.push_back(fut.get());
-        // std::vector<std::future<ChunkReadyToMerge>> readyToReadyToMerge;
-
-        readyToReadyToMerge.push_back(std::async(&world::loadChunk, this, getChunk(para.x, para.y), para.populate, true));
-
-        // std::thread t(&World::loadChunk, this, para.x, para.y, para.populate);
-        // t.join();
+        toLoadAsyncList.push_back(std::async(static_cast<Chunk *(world::*)(LoadChunkParams)>(&world::loadChunk), this, para));
         toLoad.erase(toLoad.begin());
     }
 
-    for (int i = 0; i < readyToReadyToMerge.size(); i++) {
-        if (future_is_ready(readyToReadyToMerge[i])) {
-            Chunk *merge = readyToReadyToMerge[i].get();
+    for (int i = 0; i < toLoadAsyncList.size(); i++) {
 
-            for (int j = 0; j < readyToMerge.size(); j++) {
-                if (readyToMerge[j] == merge) {
-                    readyToMerge.erase(readyToMerge.begin() + j);
-                    j--;
-                }
-            }
+        // 判断区块是否已经生成或加载好了
+        if (future_is_ready(toLoadAsyncList[i])) {
+            Chunk *merge = toLoadAsyncList[i].get();
+
+            // 保障合并列表的唯一性
+            std::erase(readyToMerge, merge);
 
             readyToMerge.push_back(merge);
+
+            // 初始化 chunkCache 的列
             if (!chunkCache.count(merge->x)) {
                 auto h = phmap::flat_hash_map<int, Chunk *>();
                 // h.set_deleted_key(INT_MAX);
                 // h.set_empty_key(INT_MIN);
                 chunkCache[merge->x] = h;
             }
+
+            // 将区块合并对象复制到 chunkCache
             chunkCache[merge->x][merge->y] = merge;
+
             needToTickGeneration = true;
-            readyToReadyToMerge.erase(readyToReadyToMerge.begin() + i);
+
+            // 清除区块生成加载异步对象
+            toLoadAsyncList.erase(toLoadAsyncList.begin() + i);
             i--;
         }
     }
-    /*if (readyToReadyToMerge.size() > 0) {
-        if (readyToReadyToMerge[0]._Is_ready()) {
-            ChunkReadyToMerge merge = readyToReadyToMerge[0].get();
-            readyToMerge.push_back(merge);
-        }
-        readyToReadyToMerge.erase(readyToReadyToMerge.begin());
-    }*/
 
-    int rtm = (int)readyToMerge.size();
     int n = 0;
 
     while (readyToMerge.size() > 0 && n++ < 16) {
@@ -2403,9 +2403,9 @@ void world::frame() {
                 int ty = merge->y * CHUNK_H + loadZone.y + y;
                 if (tx < 0 || tx >= width || ty < 0 || ty >= height) continue;
 
-                tiles[tx + ty * width] = merge->tiles[x + y * CHUNK_W];
+                real_tiles[tx + ty * width] = merge->tiles[x + y * CHUNK_W];
                 dirty[tx + ty * width] = true;
-                layer2[tx + ty * width] = merge->layer2[x + y * CHUNK_W];
+                real_layer2[tx + ty * width] = merge->layer2[x + y * CHUNK_W];
                 layer2Dirty[tx + ty * width] = true;
                 background[tx + ty * width] = merge->background[x + y * CHUNK_W];
                 backgroundDirty[tx + ty * width] = true;
@@ -2431,7 +2431,7 @@ void world::tickChunkGeneration() {
             Chunk *m = p2.second;
 
             // Check should we unload chunk
-            if (abs(m->x - cenX) >= CHUNK_UNLOAD_DIST || abs(m->y - cenY) >= CHUNK_UNLOAD_DIST) {
+            if (std::abs(m->x - cenX) >= CHUNK_UNLOAD_DIST || std::abs(m->y - cenY) >= CHUNK_UNLOAD_DIST) {
                 unloadChunk(m);
                 continue;
             }
@@ -2494,9 +2494,9 @@ void world::tickChunks() {
                     int oldX = (revX ? (width - x - 1) : x);
                     int newX = oldX + changeX;
                     if (newX >= 0 && newX < width) {
-                        tiles[newX + newY * width] = tiles[oldX + oldY * width];
+                        real_tiles[newX + newY * width] = real_tiles[oldX + oldY * width];
                         background[newX + newY * width] = background[oldX + oldY * width];
-                        layer2[newX + newY * width] = layer2[oldX + oldY * width];
+                        real_layer2[newX + newY * width] = real_layer2[oldX + oldY * width];
                     }
                 }
             }
@@ -2669,7 +2669,7 @@ void world::queueLoadChunk(int cx, int cy, bool populate, bool render) {
         needToTickGeneration = true;
         */
 
-        readyToReadyToMerge.push_back(std::async(&world::loadChunk, this, ch, populate, render));
+        toLoadAsyncList.push_back(std::async(static_cast<Chunk *(world::*)(Chunk *, bool, bool)>(&world::loadChunk), this, ch, populate, render));
     }
 
     for (int x = 0; x < CHUNK_W; x++) {
@@ -2681,13 +2681,15 @@ void world::queueLoadChunk(int cx, int cy, bool populate, bool render) {
             if (ty < 0) continue;
             if (ty >= height) break;
 
-            tiles[tx + ty * width] = Tiles_TEST_SOLID;
+            real_tiles[tx + ty * width] = Tiles_TEST_SOLID;
             // dirty[tx + ty * width] = true;
         }
     }
 
     // loadChunk(cx, cy, populate);
 }
+
+Chunk *world::loadChunk(LoadChunkParams para) { return loadChunk(getChunk(para.x, para.y), para.populate, true); }
 
 Chunk *world::loadChunk(Chunk *ch, bool populate, bool render) {
 
@@ -2803,9 +2805,9 @@ void world::chunkSaveCache(Chunk *ch) {
             int tx = ch->x * CHUNK_W + loadZone.x + x;
             int ty = ch->y * CHUNK_H + loadZone.y + y;
             if (tx < 0 || tx >= width || ty < 0 || ty >= height) continue;
-            if (tiles[tx + ty * width] == Tiles_TEST_SOLID) continue;
-            ch->tiles[x + y * CHUNK_W] = tiles[tx + ty * width];
-            ch->layer2[x + y * CHUNK_W] = layer2[tx + ty * width];
+            if (real_tiles[tx + ty * width] == Tiles_TEST_SOLID) continue;
+            ch->tiles[x + y * CHUNK_W] = real_tiles[tx + ty * width];
+            ch->layer2[x + y * CHUNK_W] = real_layer2[tx + ty * width];
             ch->background[x + y * CHUNK_W] = background[tx + ty * width];
         }
     }
@@ -2815,10 +2817,15 @@ void world::generateChunk(Chunk *ch) { gen->generateChunk(this, ch); }
 
 int world::getBiomeAt(Chunk *ch, int x, int y) {
 
-    if (ch->biomes_id[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W] != Biome::biomeGet("DEFAULT").id) {
-        int biome_id = ch->biomes_id[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W];
-        if (ch->pleaseDelete) delete ch;
-        return biome_id;
+    try {
+        if (ch->biomes_id.at((x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W) != Biome::biomeGet("DEFAULT").id) {
+            int biome_id = ch->biomes_id[(x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W];
+            if (ch->pleaseDelete) delete ch;
+            return biome_id;
+        }
+    } catch (const std::out_of_range &ex) {
+        METADOT_ERROR(std::format("[Exception] ch->biomes_id[{0}] {1}", (x - ch->x * CHUNK_W) + (y - ch->y * CHUNK_H) * CHUNK_W, ex.what()).c_str());
+        return Biome::biomeGet("DEFAULT").id;
     }
 
     int ret = getBiomeAt(x, y);
@@ -2881,7 +2888,7 @@ void world::addStructure(PlacedStructure str) {
             ch->ChunkInit(floor(dx / CHUNK_W), floor(dy / CHUNK_H), worldName);
             // if(ch.e)
             if (dx >= 0 && dy >= 0 && dx < width && dy < height) {
-                tiles[dx + dy * width] = str.base.tiles[x + y * str.base.w];
+                real_tiles[dx + dy * width] = str.base.tiles[x + y * str.base.w];
                 dirty[dx + dy * width] = true;
             }
         }
@@ -2961,13 +2968,8 @@ void world::populateChunk(Chunk *ch, int phase, bool render) {
     int aw = 1 + (phase * 2);
     int ah = 1 + (phase * 2);
 
+    // TODO: 23/7/31 优化
     Chunk **chs = new Chunk *[aw * ah];
-
-    // for (int cx = ax; cx < ax + aw; cx++) {
-    //     for (int cy = ay; cy < ay + ah; cy++) {
-    //         ChunkInit(chs[cy + cx], 0, 0, (char *)"Chunks");
-    //     }
-    // }
 
     bool *dirtyChunk = new bool[aw * ah]();
 
@@ -3008,12 +3010,10 @@ void world::populateChunk(Chunk *ch, int phase, bool render) {
                 if (x != aw / 2 && y != ah / 2) {
                     chs[x + y * aw]->ChunkWrite(chs[x + y * aw]->tiles, chs[x + y * aw]->layer2, chs[x + y * aw]->background);
                     if (render) {
-                        for (int i = 0; i < readyToMerge.size(); i++) {
-                            if (readyToMerge[i] == chs[x + y * aw]) {
-                                readyToMerge.erase(readyToMerge.begin() + i);
-                                i--;
-                            }
-                        }
+                        // 保证 chs[x + y * aw] 的唯一性
+                        std::erase(readyToMerge, chs[x + y * aw]);
+
+                        // 加入合并列表
                         readyToMerge.push_back(chs[x + y * aw]);
                     }
                 }
@@ -3021,21 +3021,15 @@ void world::populateChunk(Chunk *ch, int phase, bool render) {
         }
     }
 
-    // delete chs;
     if (render) {
-        for (int i = 0; i < readyToMerge.size(); i++) {
-            if (readyToMerge[i] == ch) {
-                readyToMerge.erase(readyToMerge.begin() + i);
-                i--;
-            }
-        }
+        // 保证 ch 的唯一性
+        std::erase(readyToMerge, ch);
+        // 加入合并列表
         readyToMerge.push_back(ch);
     }
 }
 
 void world::tickEntities(R_Target *t) {
-
-    C_Rect fr = {0, 0, width, height};
 
     auto func = [&](WorldEntity *cur) {
         int nIntersect = 0;
@@ -3047,8 +3041,8 @@ void world::tickEntities(R_Target *t) {
                 int sy = (cur->y + yy) + loadZone.y;
                 if (sx < 0 || sy < 0 || sx >= width || sy >= height) continue;
 
-                if (tiles[sx + sy * width].mat->physicsType == PhysicsType::SOLID || tiles[sx + sy * width].mat->physicsType == PhysicsType::SAND ||
-                    tiles[sx + sy * width].mat->physicsType == PhysicsType::OBJECT) {
+                if (real_tiles[sx + sy * width].mat->physicsType == PhysicsType::SOLID || real_tiles[sx + sy * width].mat->physicsType == PhysicsType::SAND ||
+                    real_tiles[sx + sy * width].mat->physicsType == PhysicsType::OBJECT) {
                     nIntersect++;
                     avInX += (xx - cur->hw / 2);
                     avInY += (yy - cur->hh / 2);
@@ -3074,16 +3068,16 @@ void world::tickEntities(R_Target *t) {
                         int sx = (nx + xx) + loadZone.x;
                         int sy = (ny + yy) + loadZone.y;
                         if (sx >= 0 && sy >= 0 && sx < width && sy < height) {
-                            if (tiles[sx + sy * width].mat->physicsType == PhysicsType::SOLID || tiles[sx + sy * width].mat->physicsType == PhysicsType::SAND ||
-                                tiles[sx + sy * width].mat->physicsType == PhysicsType::OBJECT) {
+                            if (real_tiles[sx + sy * width].mat->physicsType == PhysicsType::SOLID || real_tiles[sx + sy * width].mat->physicsType == PhysicsType::SAND ||
+                                real_tiles[sx + sy * width].mat->physicsType == PhysicsType::OBJECT) {
                                 if (yy == cur->hh - 1) {
                                     for (int xx1 = 0; xx1 < cur->hw; xx1++) {
                                         for (int yy1 = 0; yy1 < cur->hh; yy1++) {
                                             int sx1 = (nx + xx1) + loadZone.x;
                                             int sy1 = (ny + yy1) + loadZone.y - 1;
                                             if (sx1 >= 0 && sy1 >= 0 && sx1 < width && sy1 < height) {
-                                                if (tiles[sx1 + sy1 * width].mat->physicsType == PhysicsType::SOLID || tiles[sx1 + sy1 * width].mat->physicsType == PhysicsType::SAND ||
-                                                    tiles[sx1 + sy1 * width].mat->physicsType == PhysicsType::OBJECT) {
+                                                if (real_tiles[sx1 + sy1 * width].mat->physicsType == PhysicsType::SOLID || real_tiles[sx1 + sy1 * width].mat->physicsType == PhysicsType::SAND ||
+                                                    real_tiles[sx1 + sy1 * width].mat->physicsType == PhysicsType::OBJECT) {
                                                     collide = true;
                                                 }
                                             }
@@ -3093,10 +3087,10 @@ void world::tickEntities(R_Target *t) {
                                         ny--;
                                     }
                                 } else {
-                                    MaterialInstance tp = tiles[sx + sy * width];
+                                    MaterialInstance tp = real_tiles[sx + sy * width];
                                     if (tp.mat->physicsType == PhysicsType::SAND) {
                                         addCell(new CellData(tp, sx, sy, (rand() % 10 - 5) / 10.0f + 0.5f, (rand() % 10 - 5) / 10.0f, 0, 0.1f));
-                                        tiles[sx + sy * width] = Tiles_NOTHING;
+                                        real_tiles[sx + sy * width] = Tiles_NOTHING;
                                         dirty[sx + sy * width] = true;
 
                                         cur->vx *= 0.99;
@@ -3129,16 +3123,16 @@ void world::tickEntities(R_Target *t) {
                         int sx = (nx + xx) + loadZone.x;
                         int sy = (ny + yy) + loadZone.y;
                         if (sx >= 0 && sy >= 0 && sx < width && sy < height) {
-                            if (tiles[sx + sy * width].mat->physicsType == PhysicsType::SOLID || tiles[sx + sy * width].mat->physicsType == PhysicsType::SAND ||
-                                tiles[sx + sy * width].mat->physicsType == PhysicsType::OBJECT) {
+                            if (real_tiles[sx + sy * width].mat->physicsType == PhysicsType::SOLID || real_tiles[sx + sy * width].mat->physicsType == PhysicsType::SAND ||
+                                real_tiles[sx + sy * width].mat->physicsType == PhysicsType::OBJECT) {
                                 if (yy == cur->hh - 1) {
                                     for (int xx1 = 0; xx1 < cur->hw; xx1++) {
                                         for (int yy1 = 0; yy1 < cur->hh; yy1++) {
                                             int sx1 = (nx + xx1) + loadZone.x;
                                             int sy1 = (ny + yy1) + loadZone.y - 1;
                                             if (sx1 >= 0 && sy1 >= 0 && sx1 < width && sy1 < height) {
-                                                if (tiles[sx1 + sy1 * width].mat->physicsType == PhysicsType::SOLID || tiles[sx1 + sy1 * width].mat->physicsType == PhysicsType::SAND ||
-                                                    tiles[sx1 + sy1 * width].mat->physicsType == PhysicsType::OBJECT) {
+                                                if (real_tiles[sx1 + sy1 * width].mat->physicsType == PhysicsType::SOLID || real_tiles[sx1 + sy1 * width].mat->physicsType == PhysicsType::SAND ||
+                                                    real_tiles[sx1 + sy1 * width].mat->physicsType == PhysicsType::OBJECT) {
                                                     collide = true;
                                                 }
                                             }
@@ -3148,10 +3142,10 @@ void world::tickEntities(R_Target *t) {
                                         ny--;
                                     }
                                 } else {
-                                    MaterialInstance tp = tiles[sx + sy * width];
+                                    MaterialInstance tp = real_tiles[sx + sy * width];
                                     if (tp.mat->physicsType == PhysicsType::SAND) {
                                         addCell(new CellData(tp, sx, sy, (rand() % 10 - 5) / 10.0f - 0.5f, (rand() % 10 - 5) / 10.0f, 0, 0.1f));
-                                        tiles[sx + sy * width] = Tiles_NOTHING;
+                                        real_tiles[sx + sy * width] = Tiles_NOTHING;
                                         dirty[sx + sy * width] = true;
 
                                         cur->vx *= 0.99;
@@ -3188,8 +3182,8 @@ void world::tickEntities(R_Target *t) {
                         int sx = (nx + xx) + loadZone.x;
                         int sy = (ny + yy) + loadZone.y;
                         if (sx >= 0 && sy >= 0 && sx < width && sy < height) {
-                            if (tiles[sx + sy * width].mat->physicsType == PhysicsType::SOLID || tiles[sx + sy * width].mat->physicsType == PhysicsType::SAND ||
-                                tiles[sx + sy * width].mat->physicsType == PhysicsType::OBJECT) {
+                            if (real_tiles[sx + sy * width].mat->physicsType == PhysicsType::SOLID || real_tiles[sx + sy * width].mat->physicsType == PhysicsType::SAND ||
+                                real_tiles[sx + sy * width].mat->physicsType == PhysicsType::OBJECT) {
                                 collide = true;
                             }
                         }
@@ -3216,12 +3210,12 @@ void world::tickEntities(R_Target *t) {
                         int sx = (nx + xx) + loadZone.x;
                         int sy = (ny + yy) + loadZone.y;
                         if (sx >= 0 && sy >= 0 && sx < width && sy < height) {
-                            if (tiles[sx + sy * width].mat->physicsType == PhysicsType::SOLID || tiles[sx + sy * width].mat->physicsType == PhysicsType::SAND ||
-                                tiles[sx + sy * width].mat->physicsType == PhysicsType::OBJECT) {
-                                MaterialInstance tp = tiles[sx + sy * width];
+                            if (real_tiles[sx + sy * width].mat->physicsType == PhysicsType::SOLID || real_tiles[sx + sy * width].mat->physicsType == PhysicsType::SAND ||
+                                real_tiles[sx + sy * width].mat->physicsType == PhysicsType::OBJECT) {
+                                MaterialInstance tp = real_tiles[sx + sy * width];
                                 if (tp.mat->physicsType == PhysicsType::SAND) {
                                     addCell(new CellData(tp, sx, sy, (rand() % 10 - 5) / 10.0f, (rand() % 10 - 5) / 10.0f - 0.5f, 0, 0.1f));
-                                    tiles[sx + sy * width] = Tiles_NOTHING;
+                                    real_tiles[sx + sy * width] = Tiles_NOTHING;
                                     dirty[sx + sy * width] = true;
 
                                     cur->vy *= 0.99;
@@ -3243,13 +3237,18 @@ void world::tickEntities(R_Target *t) {
             }
         }
 
+        // 速度过快
+        if (std::fabs(cur->vx) >= 1024.0f || std::fabs(cur->vy) >= 1024.0f) {
+            return true;
+        }
+
+        // 速度衰减
         cur->vx *= 0.99;
         cur->vy *= 0.99;
 
         // cur->render(t, loadZone.x, loadZone.y);
 
         cur->rb->body->SetTransform({cur->x + loadZone.x + cur->hw / 2.0f - 0.5f, cur->y + loadZone.y + cur->hh / 2.0f - 1.5f}, 0);
-        // cur->rb->body->SetLinearVelocity({cur->vx * 25, cur->vy * 25});
         cur->rb->body->velocity() = {cur->vx * 25, cur->vy * 25};
 
         return false;
@@ -3257,6 +3256,10 @@ void world::tickEntities(R_Target *t) {
 
     // worldEntities.erase(std::remove_if(worldEntities.begin(), worldEntities.end(), func), worldEntities.end());
     registry.for_each_component<WorldEntity>([&](ecs::entity e, WorldEntity &we) {
+        if (global.game->Iso.globaldef.debug_entities_test) {
+            R_Rectangle(this->target, we.x, we.y, we.x + we.hw, we.y + we.hh, {0xff, 0xff, 0xff, 0xff});
+        }
+
         bool destroy = func(&we);
         if (destroy) {
             if ((ecs::exists<Player>{})(e)) this->player = 0;
@@ -3375,7 +3378,7 @@ RigidBody *world::physicsCheck(int x, int y) {
                 for (int xx = minX; xx <= maxX; xx++) {
                     if (visited[xx + yy * width]) {
                         ME_get_pixel(sfc, (unsigned long long)(xx)-minX, yy - minY) = cols[xx + yy * width];
-                        tiles[xx + yy * width] = Tiles_NOTHING;
+                        real_tiles[xx + yy * width] = Tiles_NOTHING;
                         dirty[xx + yy * width] = true;
                     }
                 }
@@ -3415,7 +3418,7 @@ RigidBody *world::physicsCheck(int x, int y) {
             for (int yy = minY; yy <= maxY; yy++) {
                 for (int xx = minX; xx <= maxX; xx++) {
                     if (visited[xx + yy * width]) {
-                        tiles[xx + yy * width] = Tiles_NOTHING;
+                        real_tiles[xx + yy * width] = Tiles_NOTHING;
                         dirty[xx + yy * width] = true;
                     }
                 }
@@ -3444,7 +3447,7 @@ void world::physicsCheck_flood(int x, int y, bool *visited, int *count, u32 *col
         (*count)++;
         // setTile(x, y, MaterialInstance(&Materials::GENERIC_SOLID, 0xff00ffff));
 
-        cols[x + y * width] = tiles[x + y * width].color;
+        cols[x + y * width] = real_tiles[x + y * width].color;
 
         physicsCheck_flood(x + 1, y, visited, count, cols, minX, maxX, minY, maxY);
         physicsCheck_flood(x, y + 1, visited, count, cols, minX, maxX, minY, maxY);
@@ -3459,6 +3462,7 @@ void world::saveWorld() {
 
     // std::vector<std::future<void>> results = {};
 
+    // TODO: 23/7/31 修复 phmap 相关
     for (auto &p : this->chunkCache) {
         if (p.first == INT_MIN) continue;
         for (auto &p2 : p.second) {
@@ -3555,12 +3559,12 @@ bool WorldMeta::save(std::string worldFileName) {
 
 world::~world() {
 
-    tiles.clear();
+    real_tiles.clear();
     delete[] flowX;
     delete[] flowY;
     delete[] prevFlowX;
     delete[] prevFlowY;
-    layer2.clear();
+    real_layer2.clear();
     background.clear();
 
     for (auto &v : cells) {
@@ -3618,10 +3622,10 @@ world::~world() {
 
     toLoad.clear();
 
-    for (auto &ch : readyToReadyToMerge) {
+    for (auto &ch : toLoadAsyncList) {
         // delete v;
     }
-    readyToReadyToMerge.clear();
+    toLoadAsyncList.clear();
 
     for (auto &v : readyToMerge) {
         v->ChunkDelete();

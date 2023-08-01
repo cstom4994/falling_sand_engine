@@ -74,12 +74,6 @@ struct Iso_t {
 struct TexturePack_t {
     R_Image *backgroundImage = nullptr;
 
-    R_Image *loadingTexture = nullptr;
-    std::vector<u8> pixelsLoading;
-    u8 *pixelsLoading_ar = nullptr;
-    int loadingScreenW = 0;
-    int loadingScreenH = 0;
-
     R_Image *worldTexture = nullptr;
     R_Image *lightingTexture = nullptr;
 
@@ -222,6 +216,7 @@ public:
     int getAimSurface(int dist);
     void quitToMainMenu();
     ME_assets_handle_t get_assets(std::string path);
+    void renderFade();
 };
 
 }  // namespace ME

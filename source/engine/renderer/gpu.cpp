@@ -746,7 +746,7 @@ void inspect_vertex_array(const char *label, GLuint vao) {
     ImGui::PopID();
 }
 
-#if 0
+#if 1
 
 ME_debugdraw::ME_debugdraw(R_Target *target) {
     this->target = target;
@@ -759,14 +759,14 @@ void ME_debugdraw::Create() {}
 
 void ME_debugdraw::Destroy() {}
 
-PVec2 ME_debugdraw::transform(const PVec2 &pt) {
+MEvec2 ME_debugdraw::transform(const MEvec2 &pt) {
     float x = ((pt.x) * scale + xOfs);
     float y = ((pt.y) * scale + yOfs);
-    return PVec2(x, y);
+    return MEvec2(x, y);
 }
 
-void ME_debugdraw::DrawPolygon(const PVec2 *vertices, i32 vertexCount, const MEcolor &color) {
-    PVec2 *verts = new PVec2[vertexCount];
+void ME_debugdraw::DrawPolygon(const MEvec2 *vertices, i32 vertexCount, const MEcolor &color) {
+    MEvec2 *verts = new MEvec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) {
         verts[i] = transform(vertices[i]);
@@ -778,8 +778,8 @@ void ME_debugdraw::DrawPolygon(const PVec2 *vertices, i32 vertexCount, const MEc
     delete[] verts;
 }
 
-void ME_debugdraw::DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, const MEcolor &color) {
-    PVec2 *verts = new PVec2[vertexCount];
+void ME_debugdraw::DrawSolidPolygon(const MEvec2 *vertices, i32 vertexCount, const MEcolor &color) {
+    MEvec2 *verts = new MEvec2[vertexCount];
 
     for (int i = 0; i < vertexCount; i++) {
         verts[i] = transform(vertices[i]);
@@ -794,52 +794,52 @@ void ME_debugdraw::DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, cons
     delete[] verts;
 }
 
-void ME_debugdraw::DrawCircle(const PVec2 &center, float radius, const MEcolor &color) {
-    PVec2 tr = transform(center);
+void ME_debugdraw::DrawCircle(const MEvec2 &center, float radius, const MEcolor &color) {
+    MEvec2 tr = transform(center);
     R_Circle(target, tr.x, tr.y, radius * scale, color);
 }
 
-void ME_debugdraw::DrawSolidCircle(const PVec2 &center, float radius, const PVec2 &axis, const MEcolor &color) {
-    PVec2 tr = transform(center);
+void ME_debugdraw::DrawSolidCircle(const MEvec2 &center, float radius, const MEvec2 &axis, const MEcolor &color) {
+    MEvec2 tr = transform(center);
     R_CircleFilled(target, tr.x, tr.y, radius * scale, color);
 }
 
-void ME_debugdraw::DrawSegment(const PVec2 &p1, const PVec2 &p2, const MEcolor &color) {
-    PVec2 tr1 = transform(p1);
-    PVec2 tr2 = transform(p2);
+void ME_debugdraw::DrawSegment(const MEvec2 &p1, const MEvec2 &p2, const MEcolor &color) {
+    MEvec2 tr1 = transform(p1);
+    MEvec2 tr2 = transform(p2);
     R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, color);
 }
 
-void ME_debugdraw::DrawTransform(const PTransform &xf) {
-    const float k_axisScale = 8.0f;
-    PVec2 p1 = xf.p, p2;
-    PVec2 tr1 = transform(p1), tr2;
+// void ME_debugdraw::DrawTransform(const PTransform &xf) {
+//     const float k_axisScale = 8.0f;
+//     MEvec2 p1 = xf.p, p2;
+//     MEvec2 tr1 = transform(p1), tr2;
+//
+//     p2 = p1 + k_axisScale * xf.q.GetXAxis();
+//     tr2 = transform(p2);
+//     R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, {0xff, 0x00, 0x00, 0xcc});
+//
+//     p2 = p1 + k_axisScale * xf.q.GetYAxis();
+//     tr2 = transform(p2);
+//     R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, {0x00, 0xff, 0x00, 0xcc});
+// }
 
-    p2 = p1 + k_axisScale * xf.q.GetXAxis();
-    tr2 = transform(p2);
-    R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, {0xff, 0x00, 0x00, 0xcc});
-
-    p2 = p1 + k_axisScale * xf.q.GetYAxis();
-    tr2 = transform(p2);
-    R_Line(target, tr1.x, tr1.y, tr2.x, tr2.y, {0x00, 0xff, 0x00, 0xcc});
-}
-
-void ME_debugdraw::DrawPoint(const PVec2 &p, float size, const MEcolor &color) {
-    PVec2 tr = transform(p);
+void ME_debugdraw::DrawPoint(const MEvec2 &p, float size, const MEcolor &color) {
+    MEvec2 tr = transform(p);
     R_CircleFilled(target, tr.x, tr.y, 2, color);
 }
 
 void ME_debugdraw::DrawString(int x, int y, const char *string, ...) {}
 
-void ME_debugdraw::DrawString(const PVec2 &p, const char *string, ...) {}
+void ME_debugdraw::DrawString(const MEvec2 &p, const char *string, ...) {}
 
-void ME_debugdraw::DrawAABB(b2AABB *aabb, const MEcolor &color) {
-    PVec2 tr1 = transform(aabb->lowerBound);
-    PVec2 tr2 = transform(aabb->upperBound);
-    R_Line(target, tr1.x, tr1.y, tr2.x, tr1.y, color);
-    R_Line(target, tr2.x, tr1.y, tr2.x, tr2.y, color);
-    R_Line(target, tr2.x, tr2.y, tr1.x, tr2.y, color);
-    R_Line(target, tr1.x, tr2.y, tr1.x, tr1.y, color);
+void ME_debugdraw::DrawAABB(MEvec4 *aabb, const MEcolor &color) {
+    // MEvec2 tr1 = transform(aabb->lowerBound);
+    // MEvec2 tr2 = transform(aabb->upperBound);
+    // R_Line(target, tr1.x, tr1.y, tr2.x, tr1.y, color);
+    // R_Line(target, tr2.x, tr1.y, tr2.x, tr2.y, color);
+    // R_Line(target, tr2.x, tr2.y, tr1.x, tr2.y, color);
+    // R_Line(target, tr1.x, tr2.y, tr1.x, tr1.y, color);
 }
 
 #endif

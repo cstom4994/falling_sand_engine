@@ -51,7 +51,8 @@ void InitGlobalDEF(GlobalDEF* s, bool open_debugui) {
             .member_("draw_pack_editor", &GlobalDEF::draw_pack_editor, {.metadata{{"info", "是否显示包编辑器"s}}})
             .member_("draw_code_editor", &GlobalDEF::draw_code_editor, {.metadata{{"info", "是否显示脚本编辑器"s}}})
             .member_("cell_iter", &GlobalDEF::cell_iter, {.metadata{{"info", "Cell迭代次数"s}}})
-            .member_("brush_size", &GlobalDEF::brush_size, {.metadata{{"info", "编辑器笔刷大小"s}}});
+            .member_("brush_size", &GlobalDEF::brush_size, {.metadata{{"info", "编辑器笔刷大小"s}}})
+            .member_("debug_entities_test", &GlobalDEF::debug_entities_test, {.metadata{{"info", "是否启用实体调试"s}}});
 
     auto GlobalDEF = the<scripting>().s_lua["global_def"];
 

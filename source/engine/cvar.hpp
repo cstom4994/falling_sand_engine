@@ -82,6 +82,8 @@ struct GlobalDEF {
 
     int cell_iter;
     int brush_size;
+
+    bool debug_entities_test;
 };
 
 void InitGlobalDEF(GlobalDEF* s, bool openDebugUIs);
@@ -170,7 +172,7 @@ struct Translator<C<F, E...>> {
 
             return c;
 
-        } catch (std::exception& e) {
+        } catch (exception::exception_cvar& e) {
             throw e.what();
         }
     }
@@ -391,7 +393,7 @@ template <typename... A>
 std::string cvar::FunctionCommand<R, FA...>::ArgsConverter<T...>::Call(std::queue<std::string> s, std::function<R(FA...)> func, A... args) const {
     try {
         return CallToString<R, FA...>(func, args...);
-    } catch (std::exception& e) {
+    } catch (exception::exception_cvar& e) {
         throw e.what();
     }
 }
@@ -418,7 +420,7 @@ std::string cvar::FunctionCommand<R, FA...>::ArgsConverter<C, Next...>::Call(std
     try {
         C val = Translator<C>::Parse(arg);
         return next.Call(stack, func, args..., val);
-    } catch (std::exception& e) {
+    } catch (exception::exception_cvar& e) {
         throw e.what();
     }
 }
@@ -441,7 +443,7 @@ std::string cvar::FunctionCommand<R, FA...>::GetReturnType() const {
 template <typename R, typename... FA>
 std::string cvar::FunctionCommand<R, FA...>::Call(std::queue<std::string> cmd) const {
     if (cmd.size() != sizeof...(FA)) {
-        // throw std::exception(GetName(), sizeof...(FA), cmd.size());
+        // throw exception_cvar(GetName(), sizeof...(FA), cmd.size());
     }
     return converter.Call(cmd, func);
 }
@@ -469,11 +471,11 @@ std::string cvar::VariableCommand<T>::Call(std::queue<std::string> cmd) const {
     if (cmd.empty())
         return Translator<T>::to_str(variable);
     else if (cmd.size() > 1) {
-        // throw std::exception(GetName(), 1, cmd.size());
+        // throw exception_cvar(GetName(), 1, cmd.size());
     } else {
         try {
             variable = Translator<T>::Parse(cmd.front());
-        } catch (std::exception& e) {
+        } catch (exception::exception_cvar& e) {
             throw e.what();
         }
     }

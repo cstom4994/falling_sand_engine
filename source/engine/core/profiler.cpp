@@ -661,17 +661,17 @@ void ME_profiler_graph_init(profiler_graph *fps, int style, const char *name) {
 }
 
 void ME_profiler_graph_update(profiler_graph *fps, float frameTime) {
-    fps->head = (fps->head + 1) % GRAPH_HISTORY_COUNT;
+    fps->head = (fps->head + 1) % TraceTimeNum;
     fps->values[fps->head] = frameTime;
 }
 
 float ME_profiler_graph_avg(profiler_graph *fps) {
     int i;
     float avg = 0;
-    for (i = 0; i < GRAPH_HISTORY_COUNT; i++) {
+    for (i = 0; i < TraceTimeNum; i++) {
         avg += fps->values[i];
     }
-    return avg / (float)GRAPH_HISTORY_COUNT;
+    return avg / (float)TraceTimeNum;
 }
 
 void ME_profiler_graph_render(MEsurface_context *surface, float x, float y, profiler_graph *fps) {
@@ -692,29 +692,29 @@ void ME_profiler_graph_render(MEsurface_context *surface, float x, float y, prof
     ME_surface_BeginPath(surface);
     ME_surface_MoveTo(surface, x, y + h);
     if (fps->style == GRAPH_RENDER_FPS) {
-        for (i = 0; i < GRAPH_HISTORY_COUNT; i++) {
-            float v = 1.0f / (0.00001f + fps->values[(fps->head + i) % GRAPH_HISTORY_COUNT]);
+        for (i = 0; i < TraceTimeNum; i++) {
+            float v = 1.0f / (0.00001f + fps->values[(fps->head + i) % TraceTimeNum]);
             float vx, vy;
             if (v > 250.0f) v = 250.0f;
-            vx = x + ((float)i / (GRAPH_HISTORY_COUNT - 1)) * w;
+            vx = x + ((float)i / (TraceTimeNum - 1)) * w;
             vy = y + h - ((v / 250.0f) * h);
             ME_surface_LineTo(surface, vx, vy);
         }
     } else if (fps->style == GRAPH_RENDER_PERCENT) {
-        for (i = 0; i < GRAPH_HISTORY_COUNT; i++) {
-            float v = fps->values[(fps->head + i) % GRAPH_HISTORY_COUNT] * 1.0f;
+        for (i = 0; i < TraceTimeNum; i++) {
+            float v = fps->values[(fps->head + i) % TraceTimeNum] * 1.0f;
             float vx, vy;
             if (v > 100.0f) v = 100.0f;
-            vx = x + ((float)i / (GRAPH_HISTORY_COUNT - 1)) * w;
+            vx = x + ((float)i / (TraceTimeNum - 1)) * w;
             vy = y + h - ((v / 100.0f) * h);
             ME_surface_LineTo(surface, vx, vy);
         }
     } else {
-        for (i = 0; i < GRAPH_HISTORY_COUNT; i++) {
-            float v = fps->values[(fps->head + i) % GRAPH_HISTORY_COUNT] * 1000.0f;
+        for (i = 0; i < TraceTimeNum; i++) {
+            float v = fps->values[(fps->head + i) % TraceTimeNum] * 1000.0f;
             float vx, vy;
             if (v > 20.0f) v = 20.0f;
-            vx = x + ((float)i / (GRAPH_HISTORY_COUNT - 1)) * w;
+            vx = x + ((float)i / (TraceTimeNum - 1)) * w;
             vy = y + h - ((v / 20.0f) * h);
             ME_surface_LineTo(surface, vx, vy);
         }

@@ -40,7 +40,13 @@ int engine::init_eng() {
     return METADOT_OK;
 }
 
-void engine::update_post() { update_time(); }
+void engine::update_post() {
+    ME_profiler_begin_frame();
+
+    // 更新帧时间
+    m_eng.time.now = ME_gettime();
+    m_eng.time.deltaTime = m_eng.time.now - m_eng.time.lastTime;
+}
 
 void engine::update_end() { process_tick_time(); }
 
@@ -101,11 +107,6 @@ bool engine::init_screen(int windowWidth, int windowHeight, int scale, int maxFP
     m_eng.maxFPS = maxFPS;
     m_eng.render_scale = scale;
     return METADOT_OK;
-}
-
-void engine::update_time() {
-    m_eng.time.now = ME_gettime();
-    m_eng.time.deltaTime = m_eng.time.now - m_eng.time.lastTime;
 }
 
 void engine::process_tick_time() {

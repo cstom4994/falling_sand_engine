@@ -10,6 +10,7 @@
 #include <string>
 
 #include "engine/core/basic_types.h"
+#include "engine/core/const.h"
 #include "engine/core/core.hpp"
 #include "engine/core/platform.h"
 
@@ -233,7 +234,6 @@ public:
 
 }  // namespace profiler
 
-#define GRAPH_HISTORY_COUNT 100
 #define GPU_QUERY_COUNT 5
 
 enum GraphrenderStyle {
@@ -245,7 +245,7 @@ enum GraphrenderStyle {
 struct profiler_graph {
     int style;
     char name[32];
-    float values[GRAPH_HISTORY_COUNT];
+    float values[TraceTimeNum];
     int head;
 };
 typedef struct profiler_graph profiler_graph;

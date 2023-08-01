@@ -47,25 +47,22 @@ typedef struct engine_data {
     R_Target* target;
 
     struct {
-        i32 feelsLikeFps;
-        i64 lastTime;
-        i64 lastCheckTime;
-        i64 lastTickTime;
-        i64 lastLoadingTick;
-        i64 now;
-        i64 startTime;
-        i64 deltaTime;
-
-        i32 tickCount;
-
-        f32 mspt;
-        i32 tpsTrace[TraceTimeNum];
-        f32 tps;
-        u32 maxTps;
-
-        u16 frameTimesTrace[TraceTimeNum];
-        u32 frameCount;
-        f32 framesPerSecond;
+        i64 startTime;                      // 程序启动时间
+        i32 feelsLikeFps;                   // 感知 FPS
+        i64 lastTime;                       // 帧最后确定时间
+        i64 lastCheckTime;                  // 帧信息最后检查时间
+        i64 lastTickTime;                   // 最后tick时间
+        i64 lastLoadingTick;                // 加载界面最后tick时间
+        i64 now;                            // 当前帧开始时间
+        i64 deltaTime;                      // 帧用时
+        i32 tickCount;                      // 当前tick次数
+        f32 mspt;                           // 目标每tick用时
+        i32 tpsTrace[TraceTimeNum];         // tps记录
+        f32 tps;                            // 当前每秒tick次数
+        u32 maxTps;                         // 每秒目标tick次数
+        u16 frameTimesTrace[TraceTimeNum];  // 帧用时记录
+        u32 frameCount;                     // 帧次数
+        f32 framesPerSecond;                // 循环帧数
     } time;
 
 } engine_data;
@@ -92,7 +89,6 @@ public:
 
     int init_eng();
     void update_post();
-    void update_time();
     void update_end();
     void end_eng(int errorOcurred);
     void draw_splash();
@@ -111,7 +107,6 @@ private:
 
     bool m_initialized_engine = false;
 
-    // ƽ̨
     int m_argc;
     char** m_argv;
 };

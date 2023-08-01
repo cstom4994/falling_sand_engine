@@ -297,7 +297,7 @@ void DefaultGenerator::generateChunk(world *world, Chunk *ch) {
                 prop[x + y * CHUNK_W] = Tiles_NOTHING;
             }
 
-            layer2[x + y * CHUNK_W] = Tiles_NOTHING;
+            real_layer2[x + y * CHUNK_W] = Tiles_NOTHING;
         }
     }
 

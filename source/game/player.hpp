@@ -74,7 +74,7 @@ struct meta::static_refl::TypeInfo<RigidBody> : TypeInfoBase<RigidBody> {
             Field{TSTR("weldY"), &Type::weldY},
             Field{TSTR("back"), &Type::back},
             Field{TSTR("hover"), &Type::hover},
-            // Field{TSTR("item"), &Type::item},
+            Field{TSTR("item"), &Type::item},
     };
 };
 

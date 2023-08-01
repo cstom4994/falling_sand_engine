@@ -8,9 +8,9 @@
 #include <map>
 #include <string>
 
+#include "engine/core/base_memory.h"
 #include "engine/core/core.hpp"
 #include "engine/core/dbgtools.h"
-#include "engine/core/base_memory.h"
 #include "engine/utils/utility.hpp"
 
 // #define STB_DS_IMPLEMENTATION
@@ -253,7 +253,7 @@ auto TEST() -> void {
 
     METADOT_INFO(f.get_result_type().info->name());
 
-    f.invoke({});
+    f.invoke();
 }
 
 extern int test_reflection();

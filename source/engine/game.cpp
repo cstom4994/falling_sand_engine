@@ -63,41 +63,26 @@ GameData g_game_data;
 
 Global global;
 
-//// Prints any ME message to the console
-// void (*g_engine_message_callback)(MEmessageType, MEmessageSeverity, const char *);
-//
-// void ME_message_callback(MEmessageType type, MEmessageSeverity severity, const char *message) {
-//     switch (severity) {
-//         case ME_MESSAGE_NOTE:
-//             METADOT_INFO(std::format("[Global] {0}, {1}", meta::static_refl::TypeInfo<MEmessageType>::fields.NameOfValue(type), message).c_str());
-//             break;
-//         case ME_MESSAGE_ERROR:
-//             METADOT_ERROR(std::format("[Global] {0}, {1}", meta::static_refl::TypeInfo<MEmessageType>::fields.NameOfValue(type), message).c_str());
-//             break;
-//         case ME_MESSAGE_FATAL:
-//             METADOT_WARN(std::format("[Global] {0}, {1}", meta::static_refl::TypeInfo<MEmessageType>::fields.NameOfValue(type), message).c_str());
-//             break;
-//     }
-// }
-
 bool game::initialize(int argc, char *argv[]) {
-    // Initialize promise handle
-    // cpp::promise::handleUncaughtException(
-    //        [](cpp::promise::Promise &d) { d.fail([](long n, int m) { METADOT_BUG("UncaughtException parameters = %d %d", (int)n, m); }).fail([]() { METADOT_ERROR("UncaughtException"); }); });
 
-    // Start memory management including GC
+    // 内存初始化
     ME_mem_init(argc, argv);
 
+    // Job模块
     job::init();
 
+    // 帧检查器
     ME_profiler_init();
-    ME_profiler_register_thread("Application thread");
+    ME_profiler_register_thread("Main thread");  // 注册主线程
 
-    // Global game target
+    // 全局 game 对象
     global.game = this;
     METADOT_INFO(std::format("{0} {1}", METADOT_NAME, METADOT_VERSION_TEXT).c_str());
 
-    this->init(argc, argv);
+    try {
+        this->init(argc, argv);
+    } catch (...) {
+    }
 
     return true;
 }
@@ -106,7 +91,7 @@ void game::shutdown() noexcept {
     global.game = nullptr;
     ME_profiler_shutdown();
 
-    // Stop memory setting and GC
+    // 内存停机
     ME_mem_end();
 }
 
@@ -117,7 +102,7 @@ void game::frame_render() {}
 void game::frame_finalize() {}
 
 int game::init(int argc, char *argv[]) {
-    // Parse args
+    // 解析命令行参数
     int ret = ParseRunArgs(argc, argv);
     if (ret == METADOT_FAILED) return METADOT_FAILED;
     if (ret == RUNNER_EXIT) return METADOT_OK;
@@ -172,9 +157,6 @@ int game::init(int argc, char *argv[]) {
     METADOT_INFO("Setting up materials...");
     movingTiles = new u16[GAME()->materials_count];
     // debugDraw = new ME_debugdraw(the<engine>().eng()->target);
-
-    // global.audio.LoadEvent("event:/World/Explode");
-    // global.audio.LoadEvent("event:/Music/Title");
 
     // Play sound effects when the game starts
     global.audio.PlayEvent("event:/Music/Title");
@@ -245,7 +227,6 @@ void game::deleteTexture() {
     if (TexturePack_.textureBackground) R_FreeImage(TexturePack_.textureBackground);
     if (TexturePack_.textureCells) R_FreeImage(TexturePack_.textureCells);
     if (TexturePack_.temperatureMap) R_FreeImage(TexturePack_.temperatureMap);
-    if (TexturePack_.loadingTexture) R_FreeImage(TexturePack_.loadingTexture);
     if (TexturePack_.texture) R_FreeImage(TexturePack_.texture);
     if (TexturePack_.emissionTexture) R_FreeImage(TexturePack_.emissionTexture);
     if (TexturePack_.textureFlow) R_FreeImage(TexturePack_.textureFlow);
@@ -310,13 +291,13 @@ void game::createTexture() {
     loadingOffColor = 0x000000FF;
 
     std::vector<std::function<void(void)>> Funcs = {
-            [&]() {
-                METADOT_LOG_SCOPE_F(INFO, "loadingTexture");
-                TexturePack_.loadingTexture = R_CreateImage(TexturePack_.loadingScreenW = (the<engine>().eng()->windowWidth / 20),
-                                                            TexturePack_.loadingScreenH = (the<engine>().eng()->windowHeight / 20), R_FormatEnum::R_FORMAT_RGBA);
+            //[&]() {
+            //    METADOT_LOG_SCOPE_F(INFO, "loadingTexture");
+            //    TexturePack_.loadingTexture = R_CreateImage(TexturePack_.loadingScreenW = (the<engine>().eng()->windowWidth / 20),
+            //                                                TexturePack_.loadingScreenH = (the<engine>().eng()->windowHeight / 20), R_FormatEnum::R_FORMAT_RGBA);
 
-                R_SetImageFilter(TexturePack_.loadingTexture, R_FILTER_NEAREST);
-            },
+            //    R_SetImageFilter(TexturePack_.loadingTexture, R_FILTER_NEAREST);
+            //},
             [&]() {
                 METADOT_LOG_SCOPE_F(INFO, "texture");
 
@@ -469,9 +450,6 @@ void game::createTexture() {
                 TexturePack_.pixelsCells = std::vector<u8>(Iso.world->width * Iso.world->height * 4, ME_ALPHA_TRANSPARENT);
                 TexturePack_.pixelsCells_ar = &TexturePack_.pixelsCells[0];
 
-                TexturePack_.pixelsLoading = std::vector<u8>(TexturePack_.loadingTexture->w * TexturePack_.loadingTexture->h * 4, ME_ALPHA_TRANSPARENT);
-                TexturePack_.pixelsLoading_ar = &TexturePack_.pixelsLoading[0];
-
                 TexturePack_.pixelsFire = std::vector<u8>(Iso.world->width * Iso.world->height * 4, 0);
                 TexturePack_.pixelsFire_ar = &TexturePack_.pixelsFire[0];
 
@@ -541,8 +519,6 @@ int game::run(int argc, char *argv[]) {
     // game loop
     while (this->running) {
 
-        ME_profiler_begin_frame();
-
         the<engine>().update_post();
 
 #pragma region SDL_Input
@@ -552,6 +528,7 @@ int game::run(int argc, char *argv[]) {
         // handle window events
         while (SDL_PollEvent(&windowEvent)) {
 
+            // 窗口事件
             if (windowEvent.type == SDL_WINDOWEVENT) {
                 if (windowEvent.window.event == SDL_WINDOWEVENT_RESIZED) {
                     WindowResizeEvent event(windowEvent.window.data1, windowEvent.window.data2);
@@ -559,6 +536,7 @@ int game::run(int argc, char *argv[]) {
                 }
             }
 
+            // ImGui事件
             ImGui_ImplSDL2_ProcessEvent(&windowEvent);
 
             if (ImGui::GetIO().WantCaptureMouse && ImGui::GetIO().WantCaptureKeyboard) {
@@ -596,7 +574,7 @@ int game::run(int argc, char *argv[]) {
                             for (int yy = -global.game->Iso.globaldef.brush_size / 2; yy < (int)(ceil(global.game->Iso.globaldef.brush_size / 2.0)); yy++) {
                                 if (lineX + xx < 0 || lineY + yy < 0 || lineX + xx >= Iso.world->width || lineY + yy >= Iso.world->height) continue;
                                 MaterialInstance tp = TilesCreate(gameUI.DebugDrawUI__selectedMaterial->id, lineX + xx, lineY + yy);
-                                Iso.world->tiles[(lineX + xx) + (lineY + yy) * Iso.world->width] = tp;
+                                Iso.world->real_tiles[(lineX + xx) + (lineY + yy) * Iso.world->width] = tp;
                                 Iso.world->dirty[(lineX + xx) + (lineY + yy) * Iso.world->width] = true;
                             }
                         }
@@ -798,9 +776,9 @@ int game::run(int argc, char *argv[]) {
 
                                         if (cx * cx + cy * cy > 0.25f) continue;
 
-                                        if (Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].mat->physicsType == PhysicsType::SOLID) {
-                                            ME_get_pixel(sfc, xx, yy) = Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].color;
-                                            Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width] = Tiles_NOTHING;
+                                        if (Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width].mat->physicsType == PhysicsType::SOLID) {
+                                            ME_get_pixel(sfc, xx, yy) = Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width].color;
+                                            Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width] = Tiles_NOTHING;
                                             Iso.world->dirty[(x + xx) + (y + yy) * Iso.world->width] = true;
 
                                             n++;
@@ -808,6 +786,7 @@ int game::run(int argc, char *argv[]) {
                                     }
                                 }
 
+                                // 物体被镐子破坏后 形成物理掉落物
                                 if (n > 0) {
                                     global.audio.PlayEvent("event:/Player/Impact");
                                     phy::Rectangle *s = new phy::Rectangle;
@@ -901,7 +880,7 @@ int game::run(int argc, char *argv[]) {
                                         bool hitSolidYet = false;
                                         bool broke = false;
                                         Iso.world->forLineCornered(segSx, segSy, segEx, segEy, [&](int index) {
-                                            if (Iso.world->tiles[index].mat->physicsType != PhysicsType::SOLID) {
+                                            if (Iso.world->real_tiles[index].mat->physicsType != PhysicsType::SOLID) {
                                                 if (hitSolidYet && (abs((index % Iso.world->width) - segSx) + (abs((index / Iso.world->width) - segSy)) > 1)) {
                                                     broke = true;
                                                     return true;
@@ -909,7 +888,7 @@ int game::run(int argc, char *argv[]) {
                                                 return false;
                                             }
                                             hitSolidYet = true;
-                                            Iso.world->tiles[index] = MaterialInstance(&GAME()->materials_list.GENERIC_SAND, ME_draw_darken_color(Iso.world->tiles[index].color, 0.5f));
+                                            Iso.world->real_tiles[index] = MaterialInstance(&GAME()->materials_list.GENERIC_SAND, ME_draw_darken_color(Iso.world->real_tiles[index].color, 0.5f));
                                             Iso.world->dirty[index] = true;
                                             endInd = index;
                                             nTilesChanged++;
@@ -1101,7 +1080,7 @@ int game::run(int argc, char *argv[]) {
         // surface_test_1(surface, 10.0f, 10.0f, fbo_simple_rect.w, fbo_simple_rect.h);
         // surface_test_3(surface, the<engine>().eng()->windowWidth / 2, the<engine>().eng()->windowHeight / 2, arc_radius);
 
-        if (Iso.globaldef.draw_debug_stats) {
+        if (Iso.globaldef.draw_frame_graph) {
             ME_profiler_graph_render(this->surface, the<engine>().eng()->windowWidth - 210, the<engine>().eng()->windowHeight - 45, &this->fps);
             ME_profiler_graph_render(this->surface, the<engine>().eng()->windowWidth - 210 - 200 - 5, the<engine>().eng()->windowHeight - 45, &this->cpuGraph);
         }
@@ -1120,7 +1099,7 @@ int game::run(int argc, char *argv[]) {
             MaterialInstance tile;
 
             if (msx >= 0 && msy >= 0 && msx < Iso.world->width && msy < Iso.world->height) {
-                tile = Iso.world->tiles[msx + msy * Iso.world->width];
+                tile = Iso.world->real_tiles[msx + msy * Iso.world->width];
                 // Drawing::drawText(target, tile.mat->name.c_str(), font16, mx + 14, my, 0xff, 0xff, 0xff, ALIGN_LEFT);
 
                 if (tile.mat->id == GAME()->materials_list.GENERIC_AIR.id) {
@@ -1229,39 +1208,8 @@ int game::run(int argc, char *argv[]) {
 
         the<fontcache>().drawcmd();
 
-        // render fade in/out
-        if (fadeInWaitFrames > 0) {
-            fadeInWaitFrames--;
-            fadeInStart = the<engine>().eng()->time.now;
-            R_RectangleFilled(the<engine>().eng()->target, 0, 0, the<engine>().eng()->windowWidth, the<engine>().eng()->windowHeight, {0, 0, 0, 255});
-        } else if (fadeInStart > 0 && fadeInLength > 0) {
-
-            f32 thru = 1 - (f32)(the<engine>().eng()->time.now - fadeInStart) / fadeInLength;
-
-            if (thru >= 0 && thru <= 1) {
-                R_RectangleFilled(the<engine>().eng()->target, 0, 0, the<engine>().eng()->windowWidth, the<engine>().eng()->windowHeight, {0, 0, 0, (u8)(thru * 255)});
-            } else {
-                fadeInStart = 0;
-                fadeInLength = 0;
-            }
-        }
-
-        if (fadeOutWaitFrames > 0) {
-            fadeOutWaitFrames--;
-            fadeOutStart = the<engine>().eng()->time.now;
-        } else if (fadeOutStart > 0 && fadeOutLength > 0) {
-
-            f32 thru = (f32)(the<engine>().eng()->time.now - fadeOutStart) / fadeOutLength;
-
-            if (thru >= 0 && thru <= 1) {
-                R_RectangleFilled(the<engine>().eng()->target, 0, 0, the<engine>().eng()->windowWidth, the<engine>().eng()->windowHeight, {0, 0, 0, (u8)(thru * 255)});
-            } else {
-                R_RectangleFilled(the<engine>().eng()->target, 0, 0, the<engine>().eng()->windowWidth, the<engine>().eng()->windowHeight, {0, 0, 0, 255});
-                fadeOutStart = 0;
-                fadeOutLength = 0;
-                fadeOutCallback.invoke({});
-            }
-        }
+        // 渲染屏幕渐进
+        renderFade();
 
         R_Flip(the<engine>().eng()->target);
 
@@ -1383,23 +1331,23 @@ void game::updateFrameEarly() {
 
                         MaterialInstance tt = cur->tiles[xx + yy * cur->matWidth];
                         if (tt.mat->id != GAME()->materials_list.GENERIC_AIR.id) {
-                            if (Iso.world->tiles[tx + ty * Iso.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
-                                Iso.world->tiles[tx + ty * Iso.world->width] = tt;
+                            if (Iso.world->real_tiles[tx + ty * Iso.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
+                                Iso.world->real_tiles[tx + ty * Iso.world->width] = tt;
                                 Iso.world->dirty[tx + ty * Iso.world->width] = true;
-                            } else if (Iso.world->tiles[(tx + 1) + ty * Iso.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
-                                Iso.world->tiles[(tx + 1) + ty * Iso.world->width] = tt;
+                            } else if (Iso.world->real_tiles[(tx + 1) + ty * Iso.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
+                                Iso.world->real_tiles[(tx + 1) + ty * Iso.world->width] = tt;
                                 Iso.world->dirty[(tx + 1) + ty * Iso.world->width] = true;
-                            } else if (Iso.world->tiles[(tx - 1) + ty * Iso.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
-                                Iso.world->tiles[(tx - 1) + ty * Iso.world->width] = tt;
+                            } else if (Iso.world->real_tiles[(tx - 1) + ty * Iso.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
+                                Iso.world->real_tiles[(tx - 1) + ty * Iso.world->width] = tt;
                                 Iso.world->dirty[(tx - 1) + ty * Iso.world->width] = true;
-                            } else if (Iso.world->tiles[tx + (ty + 1) * Iso.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
-                                Iso.world->tiles[tx + (ty + 1) * Iso.world->width] = tt;
+                            } else if (Iso.world->real_tiles[tx + (ty + 1) * Iso.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
+                                Iso.world->real_tiles[tx + (ty + 1) * Iso.world->width] = tt;
                                 Iso.world->dirty[tx + (ty + 1) * Iso.world->width] = true;
-                            } else if (Iso.world->tiles[tx + (ty - 1) * Iso.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
-                                Iso.world->tiles[tx + (ty - 1) * Iso.world->width] = tt;
+                            } else if (Iso.world->real_tiles[tx + (ty - 1) * Iso.world->width].mat->id == GAME()->materials_list.GENERIC_AIR.id) {
+                                Iso.world->real_tiles[tx + (ty - 1) * Iso.world->width] = tt;
                                 Iso.world->dirty[tx + (ty - 1) * Iso.world->width] = true;
                             } else {
-                                Iso.world->tiles[tx + ty * Iso.world->width] = TilesCreateObsidian(tx, ty);
+                                Iso.world->real_tiles[tx + ty * Iso.world->width] = TilesCreateObsidian(tx, ty);
                                 Iso.world->dirty[tx + ty * Iso.world->width] = true;
                             }
                         }
@@ -1446,9 +1394,9 @@ void game::updateFrameEarly() {
         for (int xx = 0; xx < 32; xx++) {
             for (int yy = 0; yy < 32; yy++) {
 
-                if (Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].mat->physicsType == PhysicsType::SOLID) {
-                    ME_get_pixel(sfc, xx, yy) = Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].color;
-                    Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width] = Tiles_NOTHING;
+                if (Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width].mat->physicsType == PhysicsType::SOLID) {
+                    ME_get_pixel(sfc, xx, yy) = Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width].color;
+                    Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width] = Tiles_NOTHING;
                     Iso.world->dirty[(x + xx) + (y + yy) * Iso.world->width] = true;
                     n++;
                 }
@@ -1607,20 +1555,20 @@ void game::updateFrameEarly() {
 
                                 if (cx * cx + cy * cy > 0.25f) continue;
 
-                                if (Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].mat->physicsType == PhysicsType::SAND ||
-                                    Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].mat->physicsType == PhysicsType::SOUP) {
-                                    pl->heldItem->carry.push_back(Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width]);
+                                if (Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width].mat->physicsType == PhysicsType::SAND ||
+                                    Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width].mat->physicsType == PhysicsType::SOUP) {
+                                    pl->heldItem->carry.push_back(Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width]);
 
                                     int i = (int)pl->heldItem->carry.size() - 1;
                                     i = (int)((i / (f32)pl->heldItem->capacity) * pl->heldItem->fill.size());
                                     U16Point pt = pl->heldItem->fill[i];
-                                    u32 c = Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].color;
-                                    ME_get_pixel(pl->heldItem->texture->surface(), pt.x, pt.y) = (Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width].mat->alpha << 24) + c;
+                                    u32 c = Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width].color;
+                                    ME_get_pixel(pl->heldItem->texture->surface(), pt.x, pt.y) = (Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width].mat->alpha << 24) + c;
 
                                     pl->heldItem->image = R_CopyImageFromSurface(pl->heldItem->texture->surface());
                                     R_SetImageFilter(pl->heldItem->image, R_FILTER_NEAREST);
 
-                                    Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width] = Tiles_NOTHING;
+                                    Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width] = Tiles_NOTHING;
                                     Iso.world->dirty[(x + xx) + (y + yy) * Iso.world->width] = true;
                                     n++;
                                 }
@@ -1748,7 +1696,7 @@ void game::tick() {
         }
     } else {
 
-        int lastReadyToMergeSize = (int)Iso.world->readyToMerge.size();
+        std::size_t lastReadyToMergeSize = Iso.world->readyToMerge.size();
 
         // check chunk loading
         tickChunkLoading();
@@ -1803,6 +1751,7 @@ void game::tick() {
                 // }
                 // cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
                 // R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
+
                 cur->texNeedsUpdate = false;
             }
 
@@ -1825,7 +1774,8 @@ void game::tick() {
                 R_SetShapeBlendMode(R_BLEND_NORMAL);
             }
 
-            // displace fluids
+            // 液体置换
+            // 当 rigidBody 碰撞到液体时 会将液体挤开轮廓
 
             f32 s = std::sin(cur->body->rotation());
             f32 c = std::cos(cur->body->rotation());
@@ -1846,31 +1796,30 @@ void game::tick() {
                         int wyd = wy + dir.second;
 
                         if (wxd < 0 || wyd < 0 || wxd >= Iso.world->width || wyd >= Iso.world->height) continue;
-                        if (Iso.world->tiles[wxd + wyd * Iso.world->width].mat->physicsType == PhysicsType::AIR) {
-                            Iso.world->tiles[wxd + wyd * Iso.world->width] = rmat;
+
+                        // 这里判断三种cell的物理特征
+                        // AIR 与 SAND 和 SOUP
+                        if (Iso.world->real_tiles[wxd + wyd * Iso.world->width].mat->physicsType == PhysicsType::AIR) {
+                            Iso.world->real_tiles[wxd + wyd * Iso.world->width] = rmat;
                             Iso.world->dirty[wxd + wyd * Iso.world->width] = true;
-                            // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
+                            // objectDelete[wxd + wyd * Iso.world->width] = true;
                             break;
-                        } else if (Iso.world->tiles[wxd + wyd * Iso.world->width].mat->physicsType == PhysicsType::SAND) {
-                            Iso.world->addCell(new CellData(Iso.world->tiles[wxd + wyd * Iso.world->width], (f32)wxd, (f32)(wyd - 3), (f32)((rand() % 10 - 5) / 10.0f),
+                        } else if (Iso.world->real_tiles[wxd + wyd * Iso.world->width].mat->physicsType == PhysicsType::SAND) {
+                            Iso.world->addCell(new CellData(Iso.world->real_tiles[wxd + wyd * Iso.world->width], (f32)wxd, (f32)(wyd - 3), (f32)((rand() % 10 - 5) / 10.0f),
                                                             (f32)(-(rand() % 5 + 5) / 10.0f), 0, (f32)0.1));
-                            Iso.world->tiles[wxd + wyd * Iso.world->width] = rmat;
-                            // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
+                            Iso.world->real_tiles[wxd + wyd * Iso.world->width] = rmat;
+                            // objectDelete[wxd + wyd * Iso.world->width] = true;
                             Iso.world->dirty[wxd + wyd * Iso.world->width] = true;
-                            // cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (f32)0.99, cur->body->GetLinearVelocity().y * (f32)0.99});
-                            // cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (f32)0.98);
 
                             cur->body->velocity() = {cur->body->velocity().x * (f32)0.99, cur->body->velocity().y * (f32)0.99};
                             cur->body->angularVelocity() = cur->body->angularVelocity() * (f32)0.98;
                             break;
-                        } else if (Iso.world->tiles[wxd + wyd * Iso.world->width].mat->physicsType == PhysicsType::SOUP) {
-                            Iso.world->addCell(new CellData(Iso.world->tiles[wxd + wyd * Iso.world->width], (f32)wxd, (f32)(wyd - 3), (f32)((rand() % 10 - 5) / 10.0f),
+                        } else if (Iso.world->real_tiles[wxd + wyd * Iso.world->width].mat->physicsType == PhysicsType::SOUP) {
+                            Iso.world->addCell(new CellData(Iso.world->real_tiles[wxd + wyd * Iso.world->width], (f32)wxd, (f32)(wyd - 3), (f32)((rand() % 10 - 5) / 10.0f),
                                                             (f32)(-(rand() % 5 + 5) / 10.0f), 0, (f32)0.1));
-                            Iso.world->tiles[wxd + wyd * Iso.world->width] = rmat;
-                            // objectDelete[wxd + wyd * GameIsolate_.world->width] = true;
+                            Iso.world->real_tiles[wxd + wyd * Iso.world->width] = rmat;
+                            // objectDelete[wxd + wyd * Iso.world->width] = true;
                             Iso.world->dirty[wxd + wyd * Iso.world->width] = true;
-                            // cur->body->SetLinearVelocity({cur->body->GetLinearVelocity().x * (f32)0.998, cur->body->GetLinearVelocity().y * (f32)0.998});
-                            // cur->body->SetAngularVelocity(cur->body->GetAngularVelocity() * (f32)0.99);
 
                             cur->body->velocity() = {cur->body->velocity().x * (f32)0.998, cur->body->velocity().y * (f32)0.998};
                             cur->body->angularVelocity() = cur->body->angularVelocity() * (f32)0.99;
@@ -1890,6 +1839,7 @@ void game::tick() {
             if (Iso.world->player) {
                 auto [pl_we, pl] = Iso.world->getHostPlayer();
 
+                // 这里绘制锤子的参考线
                 if (pl->holdtype == Hammer) {
                     int x = (int)((mx - GAME()->ofsX - GAME()->camX) / the<engine>().eng()->render_scale);
                     int y = (int)((my - GAME()->ofsY - GAME()->camY) / the<engine>().eng()->render_scale);
@@ -1899,15 +1849,15 @@ void game::tick() {
         }
         R_SetShapeBlendMode(R_BLEND_NORMAL);  // SDL_BLENDMODE_NONE
 
-        entity_update_event e{this};
+        entity_update_event e{.g = this};
         Iso.world->Reg().process_event(e);
 
         if ((Iso.globaldef.tick_world && Iso.world->readyToMerge.size() == 0) || input::DEBUG_TICK->get()) {
             Iso.world->tick();
         }
 
-        // Tick Cam zoom
-
+        // 处理相机缩放
+        // TODO: 相机ECS化后需要修改
         if (state == INGAME && (input::ZOOM_IN->get() || input::ZOOM_OUT->get())) {
             f32 CamZoomIn = (f32)(input::ZOOM_IN->get());
             f32 CamZoomOut = (f32)(input::ZOOM_OUT->get());
@@ -1922,11 +1872,12 @@ void game::tick() {
         } else {
         }
 
-        // player movement
+        // 处理玩家移动
         tickPlayer();
 
-        // update cells, tickObjects, update dirty
-        // TODO: this is not entirely thread safe since tickCells changes World::tiles and World::dirty
+        // 更新 cells, tickObjects, 更新 dirty
+        // TODO: 这并不完全是线程安全的 因为 tickCells 改变了 World::tiles 和 World::dirty
+        //       所以说很哈人
 
         bool hadDirty = false;
         bool hadLayer2Dirty = false;
@@ -1934,9 +1885,6 @@ void game::tick() {
         bool hadFire = false;
         bool hadFlow = false;
 
-        // int pitch;
-        // void* vdpixels_ar = texture->data;
-        // u8* dpixels_ar = (u8*)vdpixels_ar;
         u8 *dpixels_ar = TexturePack_.pixels_ar;
         u8 *dpixelsFire_ar = TexturePack_.pixelsFire_ar;
         u8 *dpixelsFlow_ar = TexturePack_.pixelsFlow_ar;
@@ -1944,18 +1892,14 @@ void game::tick() {
 
         std::vector<std::future<void>> results = {};
 
-        int i = 1;
-
         results.push_back(Iso.updateDirtyPool->push([&](int id) {
-            // SDL_SetRenderTarget(renderer, textureCells);
             void *cellPixels = TexturePack_.pixelsCells_ar;
 
+            // 清空 pixelsCells_ar
             memset(cellPixels, 0, (size_t)Iso.world->width * Iso.world->height * 4);
 
             Iso.world->renderCells((u8 **)&cellPixels);
             Iso.world->tickCells();
-
-            // SDL_SetRenderTarget(renderer, NULL);
         }));
 
         if (Iso.world->readyToMerge.size() == 0) {
@@ -1994,24 +1938,24 @@ void game::tick() {
                         int wyd = wy + dir.second;
 
                         if (wxd < 0 || wyd < 0 || wxd >= Iso.world->width || wyd >= Iso.world->height) continue;
-                        if (Iso.world->tiles[wxd + wyd * Iso.world->width] == rmat) {
-                            cur->tiles[tx + ty * cur->matWidth] = Iso.world->tiles[wxd + wyd * Iso.world->width];
-                            Iso.world->tiles[wxd + wyd * Iso.world->width] = Tiles_NOTHING;
+                        if (Iso.world->real_tiles[wxd + wyd * Iso.world->width] == rmat) {
+                            cur->tiles[tx + ty * cur->matWidth] = Iso.world->real_tiles[wxd + wyd * Iso.world->width];
+                            Iso.world->real_tiles[wxd + wyd * Iso.world->width] = Tiles_NOTHING;
                             Iso.world->dirty[wxd + wyd * Iso.world->width] = true;
                             found = true;
 
                             for (int dxx = -1; dxx <= 1; dxx++) {
                                 for (int dyy = -1; dyy <= 1; dyy++) {
-                                    if (Iso.world->tiles[(wxd + dxx) + (wyd + dyy) * Iso.world->width].mat->physicsType == PhysicsType::SAND ||
-                                        Iso.world->tiles[(wxd + dxx) + (wyd + dyy) * Iso.world->width].mat->physicsType == PhysicsType::SOUP) {
-                                        uint32_t color = Iso.world->tiles[(wxd + dxx) + (wyd + dyy) * Iso.world->width].color;
+                                    if (Iso.world->real_tiles[(wxd + dxx) + (wyd + dyy) * Iso.world->width].mat->physicsType == PhysicsType::SAND ||
+                                        Iso.world->real_tiles[(wxd + dxx) + (wyd + dyy) * Iso.world->width].mat->physicsType == PhysicsType::SOUP) {
+                                        uint32_t color = Iso.world->real_tiles[(wxd + dxx) + (wyd + dyy) * Iso.world->width].color;
 
                                         unsigned int offset = ((wxd + dxx) + (wyd + dyy) * Iso.world->width) * 4;
 
-                                        dpixels_ar[offset + 2] = ((color >> 0) & 0xff);                                                      // b
-                                        dpixels_ar[offset + 1] = ((color >> 8) & 0xff);                                                      // g
-                                        dpixels_ar[offset + 0] = ((color >> 16) & 0xff);                                                     // r
-                                        dpixels_ar[offset + 3] = Iso.world->tiles[(wxd + dxx) + (wyd + dyy) * Iso.world->width].mat->alpha;  // a
+                                        dpixels_ar[offset + 2] = ((color >> 0) & 0xff);                                                           // b
+                                        dpixels_ar[offset + 1] = ((color >> 8) & 0xff);                                                           // g
+                                        dpixels_ar[offset + 0] = ((color >> 16) & 0xff);                                                          // r
+                                        dpixels_ar[offset + 3] = Iso.world->real_tiles[(wxd + dxx) + (wyd + dyy) * Iso.world->width].mat->alpha;  // a
                                     }
                                 }
                             }
@@ -2028,9 +1972,9 @@ void game::tick() {
                         }
                     }
 
-                    if (!found && !Iso.world->tiles.empty()) {
+                    if (!found && !Iso.world->real_tiles.empty()) {
                         try {
-                            if (Iso.world->tiles.at(wx + wy * Iso.world->width).mat->id == GAME()->materials_list.GENERIC_AIR.id) cur->tiles[tx + ty * cur->matWidth] = Tiles_NOTHING;
+                            if (Iso.world->real_tiles.at(wx + wy * Iso.world->width).mat->id == GAME()->materials_list.GENERIC_AIR.id) cur->tiles[tx + ty * cur->matWidth] = Tiles_NOTHING;
                         } catch (const std::out_of_range &ex) {
                             METADOT_ERROR(std::format("[Exception] world->tiles[{0}] {1}", wx + wy * Iso.world->width, ex.what()).c_str());
                         }
@@ -2052,10 +1996,6 @@ void game::tick() {
             // 更新rigidbody的image
             cur->updateImage({});
 
-            // R_FreeImage(cur->get_texture());
-            // cur->set_texture(R_CopyImageFromSurface(cur->get_surface()));
-            // R_SetImageFilter(cur->get_texture(), R_FILTER_NEAREST);
-
             cur->needsUpdate = true;
         }
 
@@ -2074,8 +2014,8 @@ void game::tick() {
 
                 if (Iso.world->dirty[i]) {
                     hadDirty = true;
-                    movingTiles[Iso.world->tiles[i].mat->id]++;
-                    if (Iso.world->tiles[i].mat->physicsType == PhysicsType::AIR) {
+                    movingTiles[Iso.world->real_tiles[i].mat->id]++;
+                    if (Iso.world->real_tiles[i].mat->physicsType == PhysicsType::AIR) {
                         dpixels_ar[offset + 0] = 0;                     // b
                         dpixels_ar[offset + 1] = 0;                     // g
                         dpixels_ar[offset + 2] = 0;                     // r
@@ -2094,27 +2034,27 @@ void game::tick() {
                         Iso.world->flowY[i] = 0;
                         Iso.world->flowX[i] = 0;
                     } else {
-                        u32 color = Iso.world->tiles[i].color;
-                        u32 emit = Iso.world->tiles[i].mat->emitColor;
+                        u32 color = Iso.world->real_tiles[i].color;
+                        u32 emit = Iso.world->real_tiles[i].mat->emitColor;
                         // f32 br = GameIsolate_.world->light[i];
-                        dpixels_ar[offset + 2] = ((color >> 0) & 0xff);           // b
-                        dpixels_ar[offset + 1] = ((color >> 8) & 0xff);           // g
-                        dpixels_ar[offset + 0] = ((color >> 16) & 0xff);          // r
-                        dpixels_ar[offset + 3] = Iso.world->tiles[i].mat->alpha;  // a
+                        dpixels_ar[offset + 2] = ((color >> 0) & 0xff);                // b
+                        dpixels_ar[offset + 1] = ((color >> 8) & 0xff);                // g
+                        dpixels_ar[offset + 0] = ((color >> 16) & 0xff);               // r
+                        dpixels_ar[offset + 3] = Iso.world->real_tiles[i].mat->alpha;  // a
 
                         dpixelsEmission_ar[offset + 2] = ((emit >> 0) & 0xff);   // b
                         dpixelsEmission_ar[offset + 1] = ((emit >> 8) & 0xff);   // g
                         dpixelsEmission_ar[offset + 0] = ((emit >> 16) & 0xff);  // r
                         dpixelsEmission_ar[offset + 3] = ((emit >> 24) & 0xff);  // a
 
-                        if (Iso.world->tiles[i].mat->id == GAME()->materials_list.FIRE.id) {
-                            dpixelsFire_ar[offset + 2] = ((color >> 0) & 0xff);           // b
-                            dpixelsFire_ar[offset + 1] = ((color >> 8) & 0xff);           // g
-                            dpixelsFire_ar[offset + 0] = ((color >> 16) & 0xff);          // r
-                            dpixelsFire_ar[offset + 3] = Iso.world->tiles[i].mat->alpha;  // a
+                        if (Iso.world->real_tiles[i].mat->id == GAME()->materials_list.FIRE.id) {
+                            dpixelsFire_ar[offset + 2] = ((color >> 0) & 0xff);                // b
+                            dpixelsFire_ar[offset + 1] = ((color >> 8) & 0xff);                // g
+                            dpixelsFire_ar[offset + 0] = ((color >> 16) & 0xff);               // r
+                            dpixelsFire_ar[offset + 3] = Iso.world->real_tiles[i].mat->alpha;  // a
                             hadFire = true;
                         }
-                        if (Iso.world->tiles[i].mat->physicsType == PhysicsType::SOUP) {
+                        if (Iso.world->real_tiles[i].mat->physicsType == PhysicsType::SOUP) {
 
                             f32 newFlowX = Iso.world->prevFlowX[i] + (Iso.world->flowX[i] - Iso.world->prevFlowX[i]) * 0.25;
                             f32 newFlowY = Iso.world->prevFlowY[i] + (Iso.world->flowY[i] - Iso.world->prevFlowY[i]) * 0.25;
@@ -2123,9 +2063,9 @@ void game::tick() {
                             f64 a;
                             // r g b a
                             dpixelsFlow_ar[offset + 2] = 0;
-                            a = newFlowY * (3.0 / Iso.world->tiles[i].mat->iterations + 0.5) / 4.0 + 0.5;
+                            a = newFlowY * (3.0 / Iso.world->real_tiles[i].mat->iterations + 0.5) / 4.0 + 0.5;
                             dpixelsFlow_ar[offset + 1] = std::min(std::max(a, 0.0), 1.0) * 255;
-                            a = newFlowX * (3.0 / Iso.world->tiles[i].mat->iterations + 0.5) / 4.0 + 0.5;
+                            a = newFlowX * (3.0 / Iso.world->real_tiles[i].mat->iterations + 0.5) / 4.0 + 0.5;
                             dpixelsFlow_ar[offset + 0] = std::min(std::max(a, 0.0), 1.0) * 255;
                             dpixelsFlow_ar[offset + 3] = 0xff;
 
@@ -2154,7 +2094,7 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
                 const unsigned int offset = i * 4;
                 if (Iso.world->layer2Dirty[i]) {
                     hadLayer2Dirty = true;
-                    if (Iso.world->layer2[i].mat->physicsType == PhysicsType::AIR) {
+                    if (Iso.world->real_layer2[i].mat->physicsType == PhysicsType::AIR) {
                         if (Iso.globaldef.draw_background_grid) {
                             u32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
                             dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff;   // b
@@ -2170,11 +2110,11 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
                             continue;
                         }
                     }
-                    u32 color = Iso.world->layer2[i].color;
-                    dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff;              // b
-                    dpixelsLayer2_ar[offset + 1] = (color >> 8) & 0xff;              // g
-                    dpixelsLayer2_ar[offset + 0] = (color >> 16) & 0xff;             // r
-                    dpixelsLayer2_ar[offset + 3] = Iso.world->layer2[i].mat->alpha;  // a
+                    u32 color = Iso.world->real_layer2[i].color;
+                    dpixelsLayer2_ar[offset + 2] = (color >> 0) & 0xff;                   // b
+                    dpixelsLayer2_ar[offset + 1] = (color >> 8) & 0xff;                   // g
+                    dpixelsLayer2_ar[offset + 0] = (color >> 16) & 0xff;                  // r
+                    dpixelsLayer2_ar[offset + 3] = Iso.world->real_layer2[i].mat->alpha;  // a
                 }
             }
         }));
@@ -2208,8 +2148,10 @@ for (int y = 0; y < GameIsolate_.world->height; y++) {*/
             // const unsigned int i = x + y * GameIsolate_.world->width;
             const unsigned int offset = i * 4;
 
+            // 实行 object delete 操作
+            // 将对应 real_tiles 替换为 Tiles_NOTHING
             if (objectDelete[i]) {
-                Iso.world->tiles[i] = Tiles_NOTHING;
+                Iso.world->real_tiles[i] = Tiles_NOTHING;
             }
         }
 
@@ -2296,18 +2238,18 @@ void game::tickChunkLoading() {
     pix_ar[ofs + 3] = c_a;
 
             if (Iso.world->dirty[i]) {
-                if (Iso.world->tiles[i].mat->physicsType == PhysicsType::AIR) {
+                if (Iso.world->real_tiles[i].mat->physicsType == PhysicsType::AIR) {
                     UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, 0, 0, 0, ME_ALPHA_TRANSPARENT);
                 } else {
-                    u32 color = Iso.world->tiles[i].color;
-                    u32 emit = Iso.world->tiles[i].mat->emitColor;
-                    UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, Iso.world->tiles[i].mat->alpha);
+                    u32 color = Iso.world->real_tiles[i].color;
+                    u32 emit = Iso.world->real_tiles[i].mat->emitColor;
+                    UCH_SET_PIXEL(TexturePack_.pixels_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, Iso.world->real_tiles[i].mat->alpha);
                     UCH_SET_PIXEL(TexturePack_.pixelsEmission_ar, offset, (emit >> 0) & 0xff, (emit >> 8) & 0xff, (emit >> 16) & 0xff, (emit >> 24) & 0xff);
                 }
             }
 
             if (Iso.world->layer2Dirty[i]) {
-                if (Iso.world->layer2[i].mat->physicsType == PhysicsType::AIR) {
+                if (Iso.world->real_layer2[i].mat->physicsType == PhysicsType::AIR) {
                     if (Iso.globaldef.draw_background_grid) {
                         u32 color = ((i) % 2) == 0 ? 0x888888 : 0x444444;
                         UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, ME_ALPHA_OPAQUE);
@@ -2316,8 +2258,8 @@ void game::tickChunkLoading() {
                     }
                     continue;
                 }
-                u32 color = Iso.world->layer2[i].color;
-                UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, Iso.world->layer2[i].mat->alpha);
+                u32 color = Iso.world->real_layer2[i].color;
+                UCH_SET_PIXEL(TexturePack_.pixelsLayer2_ar, offset, (color >> 0) & 0xff, (color >> 8) & 0xff, (color >> 16) & 0xff, Iso.world->real_layer2[i].mat->alpha);
             }
 
             if (Iso.world->backgroundDirty[i]) {
@@ -2467,6 +2409,8 @@ void game::tickPlayer() {
     if (Iso.world->player) {
 
         if (input::PLAYER_UP->get() && !input::DEBUG_DRAW->get()) {
+
+            // 跳跃起步
             if (pl_we->ground) {
                 pl_we->vy = -4;
                 global.audio.PlayEvent("event:/Player/Jump");
@@ -2541,7 +2485,7 @@ void game::tickPlayer() {
                         int sind = -1;
                         bool inObject = true;
                         Iso.world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {
-                            if (Iso.world->tiles[ind].mat->physicsType == PhysicsType::OBJECT) {
+                            if (Iso.world->real_tiles[ind].mat->physicsType == PhysicsType::OBJECT) {
                                 if (!inObject) {
                                     sind = ind;
                                     return true;
@@ -2550,8 +2494,8 @@ void game::tickPlayer() {
                                 inObject = false;
                             }
 
-                            if (Iso.world->tiles[ind].mat->physicsType == PhysicsType::SOLID || Iso.world->tiles[ind].mat->physicsType == PhysicsType::SAND ||
-                                Iso.world->tiles[ind].mat->physicsType == PhysicsType::SOUP) {
+                            if (Iso.world->real_tiles[ind].mat->physicsType == PhysicsType::SOLID || Iso.world->real_tiles[ind].mat->physicsType == PhysicsType::SAND ||
+                                Iso.world->real_tiles[ind].mat->physicsType == PhysicsType::SOUP) {
                                 sind = ind;
                                 return true;
                             }
@@ -2606,10 +2550,10 @@ void game::tickPlayer() {
                                     continue;
                                 }
 
-                                MaterialInstance tile = Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width];
+                                MaterialInstance tile = Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width];
                                 if (tile.mat->physicsType == PhysicsType::SOLID || tile.mat->physicsType == PhysicsType::SAND || tile.mat->physicsType == PhysicsType::SOUP) {
                                     makeCell(tile, x + xx, y + yy);
-                                    Iso.world->tiles[(x + xx) + (y + yy) * Iso.world->width] = Tiles_NOTHING;
+                                    Iso.world->real_tiles[(x + xx) + (y + yy) * Iso.world->width] = Tiles_NOTHING;
                                     // GameIsolate_.world->tiles[(x + xx) + (y + yy) * GameIsolate_.world->width] = TilesCreateFire();
                                     Iso.world->dirty[(x + xx) + (y + yy) * Iso.world->width] = true;
                                 }
@@ -2821,77 +2765,8 @@ void game::renderEarly() {
     the<gui>().render_postupdate();
 
     if (state == LOADING) {
-        if (the<engine>().eng()->time.now - the<engine>().eng()->time.lastLoadingTick > 20) {
-            // render loading screen
-
-            unsigned int *ldPixels = (unsigned int *)TexturePack_.pixelsLoading_ar;
-            bool anyFalse = false;
-            // int drop  = (sin(now / 250.0) + 1) / 2 * loadingScreenW;
-            // int drop2 = (-sin(now / 250.0) + 1) / 2 * loadingScreenW;
-            for (int x = 0; x < TexturePack_.loadingScreenW; x++) {
-                for (int y = TexturePack_.loadingScreenH - 1; y >= 0; y--) {
-                    int i = (x + y * TexturePack_.loadingScreenW);
-                    bool state = ldPixels[i] == loadingOnColor;
-
-                    if (!state) anyFalse = true;
-                    bool newState = state;
-                    // newState = rand() % 2;
-
-                    if (!state && y == 0) {
-                        if (rand() % 6 == 0) {
-                            newState = true;
-                        }
-                        // if (x >= drop - 1 && x <= drop + 1) {
-                        //     newState = true;
-                        // } else if (x >= drop2 - 1 && x <= drop2 + 1) {
-                        //     newState = true;
-                        // }
-                    }
-
-                    if (state && y < TexturePack_.loadingScreenH - 1) {
-                        if (ldPixels[(x + (y + 1) * TexturePack_.loadingScreenW)] == loadingOffColor) {
-                            ldPixels[(x + (y + 1) * TexturePack_.loadingScreenW)] = loadingOnColor;
-                            newState = false;
-                        } else {
-                            bool canLeft = x > 0 && ldPixels[((x - 1) + (y + 1) * TexturePack_.loadingScreenW)] == loadingOffColor;
-                            bool canRight = x < TexturePack_.loadingScreenW - 1 && ldPixels[((x + 1) + (y + 1) * TexturePack_.loadingScreenW)] == loadingOffColor;
-                            if (canLeft && !(canRight && (rand() % 2 == 0))) {
-                                ldPixels[((x - 1) + (y + 1) * TexturePack_.loadingScreenW)] = loadingOnColor;
-                                newState = false;
-                            } else if (canRight) {
-                                ldPixels[((x + 1) + (y + 1) * TexturePack_.loadingScreenW)] = loadingOnColor;
-                                newState = false;
-                            }
-                        }
-                    }
-
-                    ldPixels[(x + y * TexturePack_.loadingScreenW)] = (newState ? loadingOnColor : loadingOffColor);
-                    int sx = the<engine>().eng()->windowWidth / TexturePack_.loadingScreenW;
-                    int sy = the<engine>().eng()->windowHeight / TexturePack_.loadingScreenH;
-                    // R_RectangleFilled(target, x * sx, y * sy, x * sx + sx, y * sy + sy, state ? SDL_Color{ 0xff, 0, 0, 0xff } : SDL_Color{ 0, 0xff, 0, 0xff });
-                }
-            }
-            if (!anyFalse) {
-                u32 tmp = loadingOnColor;
-                loadingOnColor = loadingOffColor;
-                loadingOffColor = tmp;
-            }
-
-            R_UpdateImageBytes(TexturePack_.loadingTexture, NULL, &TexturePack_.pixelsLoading_ar[0], TexturePack_.loadingScreenW * 4);
-
-            the<engine>().eng()->time.lastLoadingTick = the<engine>().eng()->time.now;
-        } else {
-#ifdef _WIN32
-            Sleep(5);
-#else
-            sleep(5 / 1000.0f);
-#endif
-        }
-        R_ActivateShaderProgram(0, NULL);
-        R_BlitRect(TexturePack_.loadingTexture, NULL, the<engine>().eng()->target, NULL);
-
-        std::string test_text = "加载中...";
-        the<fontcache>().push(test_text, basic_font, {0.45, 0.45});
+        //  render loading screen
+        the<fontcache>().push("加载中...", basic_font, {0.45, 0.45});
 
     } else {
         // render entities with LERP
@@ -3362,6 +3237,8 @@ void game::renderOverlays() {
                     centerY + chSize * CHUNK_UNLOAD_DIST + chSize, {0xcc, 0xcc, 0xcc, 0xff});
 
         MErect r = {0, 0, (f32)chSize, (f32)chSize};
+
+        // TODO: 23/7/31 修复 phmap 相关
         for (auto &p : Iso.world->chunkCache) {
             if (p.first == INT_MIN) continue;
             int cx = p.first;
@@ -3450,6 +3327,8 @@ void game::renderOverlays() {
 
         int chCt = 0;
         size_t chCt_size = 0;
+
+        // TODO: 23/7/31 修复 phmap 相关
         for (auto &p : Iso.world->chunkCache) {
             if (p.first == INT_MIN) continue;
             int cx = p.first;
@@ -3486,7 +3365,7 @@ ReadyToMerge ({17})
 
         auto a = std::format(buffAsStdStr1, win_title_client, METADOT_VERSION_TEXT, GAME()->plPosX, GAME()->plPosY, pl_vx, pl_vy, (int)Iso.world->cells.size(), (int)Iso.world->Reg().entity_count(),
                              rbCt, (int)Iso.world->rigidBodies.size(), (int)Iso.world->worldRigidBodies.size(), rbTriACt, rbTriCt, rbTriWCt, chCt, ((f64)chCt_size / 1048576.0f),
-                             (int)Iso.world->readyToReadyToMerge.size(), (int)Iso.world->readyToMerge.size());
+                             (int)Iso.world->toLoadAsyncList.size(), (int)Iso.world->readyToMerge.size());
 
         ME_draw_text(a, {255, 255, 255, 255}, 10, 0, true);
 
@@ -3602,7 +3481,7 @@ void game::renderTemperatureMap(world *world) {
 
     for (int x = 0; x < Iso.world->width; x++) {
         for (int y = 0; y < Iso.world->height; y++) {
-            auto t = Iso.world->tiles[x + y * Iso.world->width];
+            auto t = Iso.world->real_tiles[x + y * Iso.world->width];
             mat_temperature temp = t.temperature;
             u32 color = (u8)((temp + 1024) / 2048.0f * 255);
 
@@ -3665,8 +3544,8 @@ int game::getAimSurface(int dist) {
 
     int startInd = -1;
     Iso.world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {
-        if (Iso.world->tiles[ind].mat->physicsType == PhysicsType::SOLID || Iso.world->tiles[ind].mat->physicsType == PhysicsType::SAND ||
-            Iso.world->tiles[ind].mat->physicsType == PhysicsType::SOUP) {
+        if (Iso.world->real_tiles[ind].mat->physicsType == PhysicsType::SOLID || Iso.world->real_tiles[ind].mat->physicsType == PhysicsType::SAND ||
+            Iso.world->real_tiles[ind].mat->physicsType == PhysicsType::SOUP) {
             startInd = ind;
             return true;
         }
@@ -3750,6 +3629,41 @@ ME_assets_handle_t game::get_assets(std::string path) {
     return handle;
 }
 
+void game::renderFade() {
+    if (fadeInWaitFrames > 0) {
+        fadeInWaitFrames--;
+        fadeInStart = the<engine>().eng()->time.now;
+        R_RectangleFilled(the<engine>().eng()->target, 0, 0, the<engine>().eng()->windowWidth, the<engine>().eng()->windowHeight, {0, 0, 0, 255});
+    } else if (fadeInStart > 0 && fadeInLength > 0) {
+
+        f32 thru = 1 - (f32)(the<engine>().eng()->time.now - fadeInStart) / fadeInLength;
+
+        if (thru >= 0 && thru <= 1) {
+            R_RectangleFilled(the<engine>().eng()->target, 0, 0, the<engine>().eng()->windowWidth, the<engine>().eng()->windowHeight, {0, 0, 0, (u8)(thru * 255)});
+        } else {
+            fadeInStart = 0;
+            fadeInLength = 0;
+        }
+    }
+
+    if (fadeOutWaitFrames > 0) {
+        fadeOutWaitFrames--;
+        fadeOutStart = the<engine>().eng()->time.now;
+    } else if (fadeOutStart > 0 && fadeOutLength > 0) {
+
+        f32 thru = (f32)(the<engine>().eng()->time.now - fadeOutStart) / fadeOutLength;
+
+        if (thru >= 0 && thru <= 1) {
+            R_RectangleFilled(the<engine>().eng()->target, 0, 0, the<engine>().eng()->windowWidth, the<engine>().eng()->windowHeight, {0, 0, 0, (u8)(thru * 255)});
+        } else {
+            R_RectangleFilled(the<engine>().eng()->target, 0, 0, the<engine>().eng()->windowWidth, the<engine>().eng()->windowHeight, {0, 0, 0, 255});
+            fadeOutStart = 0;
+            fadeOutLength = 0;
+            fadeOutCallback.invoke();
+        }
+    }
+}
+
 int game::getAimSolidSurface(int dist) {
     int dcx = this->mx - the<engine>().eng()->windowWidth / 2;
     int dcy = this->my - the<engine>().eng()->windowHeight / 2;
@@ -3769,7 +3683,7 @@ int game::getAimSolidSurface(int dist) {
 
     int startInd = -1;
     Iso.world->forLine(wcx, wcy, wmx, wmy, [&](int ind) {
-        if (Iso.world->tiles[ind].mat->physicsType == PhysicsType::SOLID) {
+        if (Iso.world->real_tiles[ind].mat->physicsType == PhysicsType::SOLID) {
             startInd = ind;
             return true;
         }

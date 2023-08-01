@@ -180,14 +180,14 @@ void WorldEntitySystem::process(ecs::registry &world, const entity_update_event 
                         int wx = (int)(tx + pl.x + evt.g->Iso.world->loadZone.x);
                         int wy = (int)(ty + pl.y + evt.g->Iso.world->loadZone.y);
                         if (wx < 0 || wy < 0 || wx >= evt.g->Iso.world->width || wy >= evt.g->Iso.world->height) continue;
-                        if (evt.g->Iso.world->tiles[wx + wy * evt.g->Iso.world->width].mat->physicsType == PhysicsType::AIR) {
-                            evt.g->Iso.world->tiles[wx + wy * evt.g->Iso.world->width] = Tiles_OBJECT;
+                        if (evt.g->Iso.world->real_tiles[wx + wy * evt.g->Iso.world->width].mat->physicsType == PhysicsType::AIR) {
+                            evt.g->Iso.world->real_tiles[wx + wy * evt.g->Iso.world->width] = Tiles_OBJECT;
                             evt.g->objectDelete[wx + wy * evt.g->Iso.world->width] = true;
-                        } else if (evt.g->Iso.world->tiles[wx + wy * evt.g->Iso.world->width].mat->physicsType == PhysicsType::SAND ||
-                                   evt.g->Iso.world->tiles[wx + wy * evt.g->Iso.world->width].mat->physicsType == PhysicsType::SOUP) {
-                            evt.g->Iso.world->addCell(new CellData(evt.g->Iso.world->tiles[wx + wy * evt.g->Iso.world->width], (f32)(wx + rand() % 3 - 1 - pl.vx), (f32)(wy - abs(pl.vy)),
+                        } else if (evt.g->Iso.world->real_tiles[wx + wy * evt.g->Iso.world->width].mat->physicsType == PhysicsType::SAND ||
+                                   evt.g->Iso.world->real_tiles[wx + wy * evt.g->Iso.world->width].mat->physicsType == PhysicsType::SOUP) {
+                            evt.g->Iso.world->addCell(new CellData(evt.g->Iso.world->real_tiles[wx + wy * evt.g->Iso.world->width], (f32)(wx + rand() % 3 - 1 - pl.vx), (f32)(wy - abs(pl.vy)),
                                                                    (f32)(-pl.vx / 4 + (rand() % 10 - 5) / 5.0f), (f32)(-pl.vy / 4 + -(rand() % 5 + 5) / 5.0f), 0, (f32)0.1));
-                            evt.g->Iso.world->tiles[wx + wy * evt.g->Iso.world->width] = Tiles_OBJECT;
+                            evt.g->Iso.world->real_tiles[wx + wy * evt.g->Iso.world->width] = Tiles_OBJECT;
                             evt.g->objectDelete[wx + wy * evt.g->Iso.world->width] = true;
                             evt.g->Iso.world->dirty[wx + wy * evt.g->Iso.world->width] = true;
                         }

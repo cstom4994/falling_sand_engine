@@ -18,7 +18,7 @@ static const char *win_game = CC("MetaDot");
 
 static const int CHUNK_W = 128;
 static const int CHUNK_H = 128;
-static const int CHUNK_UNLOAD_DIST = 16;
+static const int CHUNK_UNLOAD_DIST = 12;
 
 static const float FLUID_MaxValue = 0.5f;
 static const float FLUID_MinValue = 0.0005f;

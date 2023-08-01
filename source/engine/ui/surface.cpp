@@ -113,26 +113,26 @@ struct MEsurface_context {
     int textTriCount;
 };
 
-static float ME_surface___sqrtf(float a) { return sqrtf(a); }
-static float ME_surface___modf(float a, float b) { return fmodf(a, b); }
-static float ME_surface___sinf(float a) { return sinf(a); }
-static float ME_surface___cosf(float a) { return cosf(a); }
-static float ME_surface___tanf(float a) { return tanf(a); }
-static float ME_surface___atan2f(float a, float b) { return atan2f(a, b); }
-static float ME_surface___acosf(float a) { return acosf(a); }
+static float ME_surface_impl_sqrtf(float a) { return sqrtf(a); }
+static float ME_surface_impl_modf(float a, float b) { return fmodf(a, b); }
+static float ME_surface_impl_sinf(float a) { return sinf(a); }
+static float ME_surface_impl_cosf(float a) { return cosf(a); }
+static float ME_surface_impl_tanf(float a) { return tanf(a); }
+static float ME_surface_impl_atan2f(float a, float b) { return atan2f(a, b); }
+static float ME_surface_impl_acosf(float a) { return acosf(a); }
 
-static int ME_surface___mini(int a, int b) { return a < b ? a : b; }
-static int ME_surface___maxi(int a, int b) { return a > b ? a : b; }
-static int ME_surface___clampi(int a, int mn, int mx) { return a < mn ? mn : (a > mx ? mx : a); }
-static float ME_surface___minf(float a, float b) { return a < b ? a : b; }
-static float ME_surface___maxf(float a, float b) { return a > b ? a : b; }
-static float ME_surface___absf(float a) { return a >= 0.0f ? a : -a; }
-static float ME_surface___signf(float a) { return a >= 0.0f ? 1.0f : -1.0f; }
-static float ME_surface___clampf(float a, float mn, float mx) { return a < mn ? mn : (a > mx ? mx : a); }
-static float ME_surface___cross(float dx0, float dy0, float dx1, float dy1) { return dx1 * dy0 - dx0 * dy1; }
+static int ME_surface_impl_mini(int a, int b) { return a < b ? a : b; }
+static int ME_surface_impl_maxi(int a, int b) { return a > b ? a : b; }
+static int ME_surface_impl_clampi(int a, int mn, int mx) { return a < mn ? mn : (a > mx ? mx : a); }
+static float ME_surface_impl_minf(float a, float b) { return a < b ? a : b; }
+static float ME_surface_impl_maxf(float a, float b) { return a > b ? a : b; }
+static float ME_surface_impl_absf(float a) { return a >= 0.0f ? a : -a; }
+static float ME_surface_impl_signf(float a) { return a >= 0.0f ? 1.0f : -1.0f; }
+static float ME_surface_impl_clampf(float a, float mn, float mx) { return a < mn ? mn : (a > mx ? mx : a); }
+static float ME_surface_impl_cross(float dx0, float dy0, float dx1, float dy1) { return dx1 * dy0 - dx0 * dy1; }
 
-static float ME_surface___normalize(float* x, float* y) {
-    float d = ME_surface___sqrtf((*x) * (*x) + (*y) * (*y));
+static float ME_surface_impl_normalize(float* x, float* y) {
+    float d = ME_surface_impl_sqrtf((*x) * (*x) + (*y) * (*y));
     if (d > 1e-6f) {
         float id = 1.0f / d;
         *x *= id;
@@ -141,7 +141,7 @@ static float ME_surface___normalize(float* x, float* y) {
     return d;
 }
 
-static void ME_surface___deletePathCache(MEsurface_pathCache* c) {
+static void ME_surface_impl_deletePathCache(MEsurface_pathCache* c) {
     if (c == NULL) return;
     if (c->points != NULL) free(c->points);
     if (c->paths != NULL) free(c->paths);
@@ -149,7 +149,7 @@ static void ME_surface___deletePathCache(MEsurface_pathCache* c) {
     free(c);
 }
 
-static MEsurface_pathCache* ME_surface___allocPathCache(void) {
+static MEsurface_pathCache* ME_surface_impl_allocPathCache(void) {
     MEsurface_pathCache* c = (MEsurface_pathCache*)malloc(sizeof(MEsurface_pathCache));
     if (c == NULL) goto error;
     memset(c, 0, sizeof(MEsurface_pathCache));
@@ -171,18 +171,18 @@ static MEsurface_pathCache* ME_surface___allocPathCache(void) {
 
     return c;
 error:
-    ME_surface___deletePathCache(c);
+    ME_surface_impl_deletePathCache(c);
     return NULL;
 }
 
-static void ME_surface___setDevicePixelRatio(MEsurface_context* ctx, float ratio) {
+static void ME_surface_impl_setDevicePixelRatio(MEsurface_context* ctx, float ratio) {
     ctx->tessTol = 0.25f / ratio;
     ctx->distTol = 0.01f / ratio;
     ctx->fringeWidth = 1.0f / ratio;
     ctx->devicePxRatio = ratio;
 }
 
-static MEsurface_compositeOperationState ME_surface___compositeOperationState(int op) {
+static MEsurface_compositeOperationState ME_surface_impl_compositeOperationState(int op) {
     int sfactor, dfactor;
 
     if (op == ME_SURFACE_SOURCE_OVER) {
@@ -231,7 +231,7 @@ static MEsurface_compositeOperationState ME_surface___compositeOperationState(in
     return state;
 }
 
-static MEsurface_state* ME_surface___getState(MEsurface_context* ctx) { return &ctx->states[ctx->nstates - 1]; }
+static MEsurface_state* ME_surface_impl_getState(MEsurface_context* ctx) { return &ctx->states[ctx->nstates - 1]; }
 
 MEsurface_context* ME_surface_CreateInternal(MEsurface_funcs* params) {
     FONSparams fontParams;
@@ -248,13 +248,13 @@ MEsurface_context* ME_surface_CreateInternal(MEsurface_funcs* params) {
     ctx->ncommands = 0;
     ctx->ccommands = ME_SURFACE_INIT_COMMANDS_SIZE;
 
-    ctx->cache = ME_surface___allocPathCache();
+    ctx->cache = ME_surface_impl_allocPathCache();
     if (ctx->cache == NULL) goto error;
 
     ME_surface_Save(ctx);
     ME_surface_Reset(ctx);
 
-    ME_surface___setDevicePixelRatio(ctx, 1.0f);
+    ME_surface_impl_setDevicePixelRatio(ctx, 1.0f);
 
     if (ctx->params.renderCreate(ctx->params.userPtr) == 0) goto error;
 
@@ -289,7 +289,7 @@ void ME_surface_DeleteInternal(MEsurface_context* ctx) {
     int i;
     if (ctx == NULL) return;
     if (ctx->commands != NULL) free(ctx->commands);
-    if (ctx->cache != NULL) ME_surface___deletePathCache(ctx->cache);
+    if (ctx->cache != NULL) ME_surface_impl_deletePathCache(ctx->cache);
 
     if (ctx->fs) fonsDeleteInternal(ctx->fs);
 
@@ -314,7 +314,7 @@ void ME_surface_BeginFrame(MEsurface_context* ctx, float windowWidth, float wind
     ME_surface_Save(ctx);
     ME_surface_Reset(ctx);
 
-    ME_surface___setDevicePixelRatio(ctx, devicePixelRatio);
+    ME_surface_impl_setDevicePixelRatio(ctx, devicePixelRatio);
 
     ctx->params.renderViewport(ctx->params.userPtr, windowWidth, windowHeight, devicePixelRatio);
 
@@ -393,7 +393,7 @@ MEsurface_color ME_surface_LerpRGBA(MEsurface_color c0, MEsurface_color c1, floa
     float oneminu;
     MEsurface_color cint = {{{0}}};
 
-    u = ME_surface___clampf(u, 0.0f, 1.0f);
+    u = ME_surface_impl_clampf(u, 0.0f, 1.0f);
     oneminu = 1.0f - u;
     for (i = 0; i < 4; i++) {
         cint.rgba[i] = c0.rgba[i] * oneminu + c1.rgba[i] * u;
@@ -404,7 +404,7 @@ MEsurface_color ME_surface_LerpRGBA(MEsurface_color c0, MEsurface_color c1, floa
 
 MEsurface_color ME_surface_HSL(float h, float s, float l) { return ME_surface_HSLA(h, s, l, 255); }
 
-static float ME_surface___hue(float h, float m1, float m2) {
+static float ME_surface_impl_hue(float h, float m1, float m2) {
     if (h < 0) h += 1;
     if (h > 1) h -= 1;
     if (h < 1.0f / 6.0f)
@@ -419,15 +419,15 @@ static float ME_surface___hue(float h, float m1, float m2) {
 MEsurface_color ME_surface_HSLA(float h, float s, float l, unsigned char a) {
     float m1, m2;
     MEsurface_color col;
-    h = ME_surface___modf(h, 1.0f);
+    h = ME_surface_impl_modf(h, 1.0f);
     if (h < 0.0f) h += 1.0f;
-    s = ME_surface___clampf(s, 0.0f, 1.0f);
-    l = ME_surface___clampf(l, 0.0f, 1.0f);
+    s = ME_surface_impl_clampf(s, 0.0f, 1.0f);
+    l = ME_surface_impl_clampf(l, 0.0f, 1.0f);
     m2 = l <= 0.5f ? (l * (1 + s)) : (l + s - l * s);
     m1 = 2 * l - m2;
-    col.r = ME_surface___clampf(ME_surface___hue(h + 1.0f / 3.0f, m1, m2), 0.0f, 1.0f);
-    col.g = ME_surface___clampf(ME_surface___hue(h, m1, m2), 0.0f, 1.0f);
-    col.b = ME_surface___clampf(ME_surface___hue(h - 1.0f / 3.0f, m1, m2), 0.0f, 1.0f);
+    col.r = ME_surface_impl_clampf(ME_surface_impl_hue(h + 1.0f / 3.0f, m1, m2), 0.0f, 1.0f);
+    col.g = ME_surface_impl_clampf(ME_surface_impl_hue(h, m1, m2), 0.0f, 1.0f);
+    col.b = ME_surface_impl_clampf(ME_surface_impl_hue(h - 1.0f / 3.0f, m1, m2), 0.0f, 1.0f);
     col.a = a / 255.0f;
     return col;
 }
@@ -460,7 +460,7 @@ void ME_surface_TransformScale(float* t, float sx, float sy) {
 }
 
 void ME_surface_TransformRotate(float* t, float a) {
-    float cs = ME_surface___cosf(a), sn = ME_surface___sinf(a);
+    float cs = ME_surface_impl_cosf(a), sn = ME_surface_impl_sinf(a);
     t[0] = cs;
     t[1] = sn;
     t[2] = -sn;
@@ -472,7 +472,7 @@ void ME_surface_TransformRotate(float* t, float a) {
 void ME_surface_TransformSkewX(float* t, float a) {
     t[0] = 1.0f;
     t[1] = 0.0f;
-    t[2] = ME_surface___tanf(a);
+    t[2] = ME_surface_impl_tanf(a);
     t[3] = 1.0f;
     t[4] = 0.0f;
     t[5] = 0.0f;
@@ -480,7 +480,7 @@ void ME_surface_TransformSkewX(float* t, float a) {
 
 void ME_surface_TransformSkewY(float* t, float a) {
     t[0] = 1.0f;
-    t[1] = ME_surface___tanf(a);
+    t[1] = ME_surface_impl_tanf(a);
     t[2] = 0.0f;
     t[3] = 1.0f;
     t[4] = 0.0f;
@@ -531,7 +531,7 @@ float ME_surface_DegToRad(float deg) { return deg / 180.0f * ME_SURFACE_PI; }
 
 float ME_surface_RadToDeg(float rad) { return rad / ME_SURFACE_PI * 180.0f; }
 
-static void ME_surface___setPaintColor(MEsurface_paint* p, MEsurface_color color) {
+static void ME_surface_impl_setPaintColor(MEsurface_paint* p, MEsurface_color color) {
     memset(p, 0, sizeof(*p));
     ME_surface_TransformIdentity(p->xform);
     p->radius = 0.0f;
@@ -553,12 +553,12 @@ void ME_surface_Restore(MEsurface_context* ctx) {
 }
 
 void ME_surface_Reset(MEsurface_context* ctx) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     memset(state, 0, sizeof(*state));
 
-    ME_surface___setPaintColor(&state->fill, ME_surface_RGBA(255, 255, 255, 255));
-    ME_surface___setPaintColor(&state->stroke, ME_surface_RGBA(0, 0, 0, 255));
-    state->compositeOperation = ME_surface___compositeOperationState(ME_SURFACE_SOURCE_OVER);
+    ME_surface_impl_setPaintColor(&state->fill, ME_surface_RGBA(255, 255, 255, 255));
+    ME_surface_impl_setPaintColor(&state->stroke, ME_surface_RGBA(0, 0, 0, 255));
+    state->compositeOperation = ME_surface_impl_compositeOperationState(ME_SURFACE_SOURCE_OVER);
     state->shapeAntiAlias = 1;
     state->strokeWidth = 1.0f;
     state->miterLimit = 10.0f;
@@ -580,105 +580,105 @@ void ME_surface_Reset(MEsurface_context* ctx) {
 
 // State setting
 void ME_surface_ShapeAntiAlias(MEsurface_context* ctx, int enabled) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->shapeAntiAlias = enabled;
 }
 
 void ME_surface_StrokeWidth(MEsurface_context* ctx, float width) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->strokeWidth = width;
 }
 
 void ME_surface_MiterLimit(MEsurface_context* ctx, float limit) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->miterLimit = limit;
 }
 
 void ME_surface_LineCap(MEsurface_context* ctx, int cap) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->lineCap = cap;
 }
 
 void ME_surface_LineJoin(MEsurface_context* ctx, int join) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->lineJoin = join;
 }
 
 void ME_surface_GlobalAlpha(MEsurface_context* ctx, float alpha) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->alpha = alpha;
 }
 
 void ME_surface_Transform(MEsurface_context* ctx, float a, float b, float c, float d, float e, float f) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     float t[6] = {a, b, c, d, e, f};
     ME_surface_TransformPremultiply(state->xform, t);
 }
 
 void ME_surface_ResetTransform(MEsurface_context* ctx) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     ME_surface_TransformIdentity(state->xform);
 }
 
 void ME_surface_Translate(MEsurface_context* ctx, float x, float y) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     float t[6];
     ME_surface_TransformTranslate(t, x, y);
     ME_surface_TransformPremultiply(state->xform, t);
 }
 
 void ME_surface_Rotate(MEsurface_context* ctx, float angle) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     float t[6];
     ME_surface_TransformRotate(t, angle);
     ME_surface_TransformPremultiply(state->xform, t);
 }
 
 void ME_surface_SkewX(MEsurface_context* ctx, float angle) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     float t[6];
     ME_surface_TransformSkewX(t, angle);
     ME_surface_TransformPremultiply(state->xform, t);
 }
 
 void ME_surface_SkewY(MEsurface_context* ctx, float angle) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     float t[6];
     ME_surface_TransformSkewY(t, angle);
     ME_surface_TransformPremultiply(state->xform, t);
 }
 
 void ME_surface_Scale(MEsurface_context* ctx, float x, float y) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     float t[6];
     ME_surface_TransformScale(t, x, y);
     ME_surface_TransformPremultiply(state->xform, t);
 }
 
 void ME_surface_CurrentTransform(MEsurface_context* ctx, float* xform) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     if (xform == NULL) return;
     memcpy(xform, state->xform, sizeof(float) * 6);
 }
 
 void ME_surface_StrokeColor(MEsurface_context* ctx, MEsurface_color color) {
-    MEsurface_state* state = ME_surface___getState(ctx);
-    ME_surface___setPaintColor(&state->stroke, color);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
+    ME_surface_impl_setPaintColor(&state->stroke, color);
 }
 
 void ME_surface_StrokePaint(MEsurface_context* ctx, MEsurface_paint paint) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->stroke = paint;
     ME_surface_TransformMultiply(state->stroke.xform, state->xform);
 }
 
 void ME_surface_FillColor(MEsurface_context* ctx, MEsurface_color color) {
-    MEsurface_state* state = ME_surface___getState(ctx);
-    ME_surface___setPaintColor(&state->fill, color);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
+    ME_surface_impl_setPaintColor(&state->fill, color);
 }
 
 void ME_surface_FillPaint(MEsurface_context* ctx, MEsurface_paint paint) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->fill = paint;
     ME_surface_TransformMultiply(state->fill.xform, state->xform);
 }
@@ -757,7 +757,7 @@ MEsurface_paint ME_surface_LinearGradient(MEsurface_context* ctx, float sx, floa
 
     p.radius = 0.0f;
 
-    p.feather = ME_surface___maxf(1.0f, d);
+    p.feather = ME_surface_impl_maxf(1.0f, d);
 
     p.innerColor = icol;
     p.outerColor = ocol;
@@ -781,7 +781,7 @@ MEsurface_paint ME_surface_RadialGradient(MEsurface_context* ctx, float cx, floa
 
     p.radius = r;
 
-    p.feather = ME_surface___maxf(1.0f, f);
+    p.feather = ME_surface_impl_maxf(1.0f, f);
 
     p.innerColor = icol;
     p.outerColor = ocol;
@@ -803,7 +803,7 @@ MEsurface_paint ME_surface_BoxGradient(MEsurface_context* ctx, float x, float y,
 
     p.radius = r;
 
-    p.feather = ME_surface___maxf(1.0f, f);
+    p.feather = ME_surface_impl_maxf(1.0f, f);
 
     p.innerColor = icol;
     p.outerColor = ocol;
@@ -832,10 +832,10 @@ MEsurface_paint ME_surface_ImagePattern(MEsurface_context* ctx, float cx, float 
 
 // Scissoring
 void ME_surface_Scissor(MEsurface_context* ctx, float x, float y, float w, float h) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
 
-    w = ME_surface___maxf(0.0f, w);
-    h = ME_surface___maxf(0.0f, h);
+    w = ME_surface_impl_maxf(0.0f, w);
+    h = ME_surface_impl_maxf(0.0f, h);
 
     ME_surface_TransformIdentity(state->scissor.xform);
     state->scissor.xform[4] = x + w * 0.5f;
@@ -846,19 +846,19 @@ void ME_surface_Scissor(MEsurface_context* ctx, float x, float y, float w, float
     state->scissor.extent[1] = h * 0.5f;
 }
 
-static void ME_surface___isectRects(float* dst, float ax, float ay, float aw, float ah, float bx, float by, float bw, float bh) {
-    float minx = ME_surface___maxf(ax, bx);
-    float miny = ME_surface___maxf(ay, by);
-    float maxx = ME_surface___minf(ax + aw, bx + bw);
-    float maxy = ME_surface___minf(ay + ah, by + bh);
+static void ME_surface_impl_isectRects(float* dst, float ax, float ay, float aw, float ah, float bx, float by, float bw, float bh) {
+    float minx = ME_surface_impl_maxf(ax, bx);
+    float miny = ME_surface_impl_maxf(ay, by);
+    float maxx = ME_surface_impl_minf(ax + aw, bx + bw);
+    float maxy = ME_surface_impl_minf(ay + ah, by + bh);
     dst[0] = minx;
     dst[1] = miny;
-    dst[2] = ME_surface___maxf(0.0f, maxx - minx);
-    dst[3] = ME_surface___maxf(0.0f, maxy - miny);
+    dst[2] = ME_surface_impl_maxf(0.0f, maxx - minx);
+    dst[3] = ME_surface_impl_maxf(0.0f, maxy - miny);
 }
 
 void ME_surface_IntersectScissor(MEsurface_context* ctx, float x, float y, float w, float h) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     float pxform[6], invxorm[6];
     float rect[4];
     float ex, ey, tex, tey;
@@ -876,17 +876,17 @@ void ME_surface_IntersectScissor(MEsurface_context* ctx, float x, float y, float
     ey = state->scissor.extent[1];
     ME_surface_TransformInverse(invxorm, state->xform);
     ME_surface_TransformMultiply(pxform, invxorm);
-    tex = ex * ME_surface___absf(pxform[0]) + ey * ME_surface___absf(pxform[2]);
-    tey = ex * ME_surface___absf(pxform[1]) + ey * ME_surface___absf(pxform[3]);
+    tex = ex * ME_surface_impl_absf(pxform[0]) + ey * ME_surface_impl_absf(pxform[2]);
+    tey = ex * ME_surface_impl_absf(pxform[1]) + ey * ME_surface_impl_absf(pxform[3]);
 
     // Intersect rects.
-    ME_surface___isectRects(rect, pxform[4] - tex, pxform[5] - tey, tex * 2, tey * 2, x, y, w, h);
+    ME_surface_impl_isectRects(rect, pxform[4] - tex, pxform[5] - tey, tex * 2, tey * 2, x, y, w, h);
 
     ME_surface_Scissor(ctx, rect[0], rect[1], rect[2], rect[3]);
 }
 
 void ME_surface_ResetScissor(MEsurface_context* ctx) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     memset(state->scissor.xform, 0, sizeof(state->scissor.xform));
     state->scissor.extent[0] = -1.0f;
     state->scissor.extent[1] = -1.0f;
@@ -894,8 +894,8 @@ void ME_surface_ResetScissor(MEsurface_context* ctx) {
 
 // Global composite operation.
 void ME_surface_GlobalCompositeOperation(MEsurface_context* ctx, int op) {
-    MEsurface_state* state = ME_surface___getState(ctx);
-    state->compositeOperation = ME_surface___compositeOperationState(op);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
+    state->compositeOperation = ME_surface_impl_compositeOperationState(op);
 }
 
 void ME_surface_GlobalCompositeBlendFunc(MEsurface_context* ctx, int sfactor, int dfactor) { ME_surface_GlobalCompositeBlendFuncSeparate(ctx, sfactor, dfactor, sfactor, dfactor); }
@@ -907,17 +907,17 @@ void ME_surface_GlobalCompositeBlendFuncSeparate(MEsurface_context* ctx, int src
     op.srcAlpha = srcAlpha;
     op.dstAlpha = dstAlpha;
 
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->compositeOperation = op;
 }
 
-static int ME_surface___ptEquals(float x1, float y1, float x2, float y2, float tol) {
+static int ME_surface_impl_ptEquals(float x1, float y1, float x2, float y2, float tol) {
     float dx = x2 - x1;
     float dy = y2 - y1;
     return dx * dx + dy * dy < tol * tol;
 }
 
-static float ME_surface___distPtSeg(float x, float y, float px, float py, float qx, float qy) {
+static float ME_surface_impl_distPtSeg(float x, float y, float px, float py, float qx, float qy) {
     float pqx, pqy, dx, dy, d, t;
     pqx = qx - px;
     pqy = qy - py;
@@ -935,8 +935,8 @@ static float ME_surface___distPtSeg(float x, float y, float px, float py, float 
     return dx * dx + dy * dy;
 }
 
-static void ME_surface___appendCommands(MEsurface_context* ctx, float* vals, int nvals) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+static void ME_surface_impl_appendCommands(MEsurface_context* ctx, float* vals, int nvals) {
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     int i;
 
     if (ctx->ncommands + nvals > ctx->ccommands) {
@@ -988,17 +988,17 @@ static void ME_surface___appendCommands(MEsurface_context* ctx, float* vals, int
     ctx->ncommands += nvals;
 }
 
-static void ME_surface___clearPathCache(MEsurface_context* ctx) {
+static void ME_surface_impl_clearPathCache(MEsurface_context* ctx) {
     ctx->cache->npoints = 0;
     ctx->cache->npaths = 0;
 }
 
-static MEsurface_path* ME_surface___lastPath(MEsurface_context* ctx) {
+static MEsurface_path* ME_surface_impl_lastPath(MEsurface_context* ctx) {
     if (ctx->cache->npaths > 0) return &ctx->cache->paths[ctx->cache->npaths - 1];
     return NULL;
 }
 
-static void ME_surface___addPath(MEsurface_context* ctx) {
+static void ME_surface_impl_addPath(MEsurface_context* ctx) {
     MEsurface_path* path;
     if (ctx->cache->npaths + 1 > ctx->cache->cpaths) {
         MEsurface_path* paths;
@@ -1016,19 +1016,19 @@ static void ME_surface___addPath(MEsurface_context* ctx) {
     ctx->cache->npaths++;
 }
 
-static MEsurface_point* ME_surface___lastPoint(MEsurface_context* ctx) {
+static MEsurface_point* ME_surface_impl_lastPoint(MEsurface_context* ctx) {
     if (ctx->cache->npoints > 0) return &ctx->cache->points[ctx->cache->npoints - 1];
     return NULL;
 }
 
-static void ME_surface___addPoint(MEsurface_context* ctx, float x, float y, int flags) {
-    MEsurface_path* path = ME_surface___lastPath(ctx);
+static void ME_surface_impl_addPoint(MEsurface_context* ctx, float x, float y, int flags) {
+    MEsurface_path* path = ME_surface_impl_lastPath(ctx);
     MEsurface_point* pt;
     if (path == NULL) return;
 
     if (path->count > 0 && ctx->cache->npoints > 0) {
-        pt = ME_surface___lastPoint(ctx);
-        if (ME_surface___ptEquals(pt->x, pt->y, x, y, ctx->distTol)) {
+        pt = ME_surface_impl_lastPoint(ctx);
+        if (ME_surface_impl_ptEquals(pt->x, pt->y, x, y, ctx->distTol)) {
             pt->flags |= flags;
             return;
         }
@@ -1053,25 +1053,25 @@ static void ME_surface___addPoint(MEsurface_context* ctx, float x, float y, int 
     path->count++;
 }
 
-static void ME_surface___closePath(MEsurface_context* ctx) {
-    MEsurface_path* path = ME_surface___lastPath(ctx);
+static void ME_surface_impl_closePath(MEsurface_context* ctx) {
+    MEsurface_path* path = ME_surface_impl_lastPath(ctx);
     if (path == NULL) return;
     path->closed = 1;
 }
 
-static void ME_surface___pathWinding(MEsurface_context* ctx, int winding) {
-    MEsurface_path* path = ME_surface___lastPath(ctx);
+static void ME_surface_impl_pathWinding(MEsurface_context* ctx, int winding) {
+    MEsurface_path* path = ME_surface_impl_lastPath(ctx);
     if (path == NULL) return;
     path->winding = winding;
 }
 
-static float ME_surface___getAverageScale(float* t) {
+static float ME_surface_impl_getAverageScale(float* t) {
     float sx = sqrtf(t[0] * t[0] + t[2] * t[2]);
     float sy = sqrtf(t[1] * t[1] + t[3] * t[3]);
     return (sx + sy) * 0.5f;
 }
 
-static MEsurface_vertex* ME_surface___allocTempVerts(MEsurface_context* ctx, int nverts) {
+static MEsurface_vertex* ME_surface_impl_allocTempVerts(MEsurface_context* ctx, int nverts) {
     if (nverts > ctx->cache->cverts) {
         MEsurface_vertex* verts;
         int cverts = (nverts + 0xff) & ~0xff;  // Round up to prevent allocations when things change just slightly.
@@ -1084,7 +1084,7 @@ static MEsurface_vertex* ME_surface___allocTempVerts(MEsurface_context* ctx, int
     return ctx->cache->verts;
 }
 
-static float ME_surface___triarea2(float ax, float ay, float bx, float by, float cx, float cy) {
+static float ME_surface_impl_triarea2(float ax, float ay, float bx, float by, float cx, float cy) {
     float abx = bx - ax;
     float aby = by - ay;
     float acx = cx - ax;
@@ -1092,19 +1092,19 @@ static float ME_surface___triarea2(float ax, float ay, float bx, float by, float
     return acx * aby - abx * acy;
 }
 
-static float ME_surface___polyArea(MEsurface_point* pts, int npts) {
+static float ME_surface_impl_polyArea(MEsurface_point* pts, int npts) {
     int i;
     float area = 0;
     for (i = 2; i < npts; i++) {
         MEsurface_point* a = &pts[0];
         MEsurface_point* b = &pts[i - 1];
         MEsurface_point* c = &pts[i];
-        area += ME_surface___triarea2(a->x, a->y, b->x, b->y, c->x, c->y);
+        area += ME_surface_impl_triarea2(a->x, a->y, b->x, b->y, c->x, c->y);
     }
     return area * 0.5f;
 }
 
-static void ME_surface___polyReverse(MEsurface_point* pts, int npts) {
+static void ME_surface_impl_polyReverse(MEsurface_point* pts, int npts) {
     MEsurface_point tmp;
     int i = 0, j = npts - 1;
     while (i < j) {
@@ -1116,14 +1116,14 @@ static void ME_surface___polyReverse(MEsurface_point* pts, int npts) {
     }
 }
 
-static void ME_surface___vset(MEsurface_vertex* vtx, float x, float y, float u, float v) {
+static void ME_surface_impl_vset(MEsurface_vertex* vtx, float x, float y, float u, float v) {
     vtx->x = x;
     vtx->y = y;
     vtx->u = u;
     vtx->v = v;
 }
 
-static void ME_surface___tesselateBezier(MEsurface_context* ctx, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, int level, int type) {
+static void ME_surface_impl_tesselateBezier(MEsurface_context* ctx, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, int level, int type) {
     float x12, y12, x23, y23, x34, y34, x123, y123, x234, y234, x1234, y1234;
     float dx, dy, d2, d3;
 
@@ -1140,16 +1140,16 @@ static void ME_surface___tesselateBezier(MEsurface_context* ctx, float x1, float
 
     dx = x4 - x1;
     dy = y4 - y1;
-    d2 = ME_surface___absf(((x2 - x4) * dy - (y2 - y4) * dx));
-    d3 = ME_surface___absf(((x3 - x4) * dy - (y3 - y4) * dx));
+    d2 = ME_surface_impl_absf(((x2 - x4) * dy - (y2 - y4) * dx));
+    d3 = ME_surface_impl_absf(((x3 - x4) * dy - (y3 - y4) * dx));
 
     if ((d2 + d3) * (d2 + d3) < ctx->tessTol * (dx * dx + dy * dy)) {
-        ME_surface___addPoint(ctx, x4, y4, type);
+        ME_surface_impl_addPoint(ctx, x4, y4, type);
         return;
     }
 
-    /*  if (ME_surface___absf(x1+x3-x2-x2) + ME_surface___absf(y1+y3-y2-y2) + ME_surface___absf(x2+x4-x3-x3) + ME_surface___absf(y2+y4-y3-y3) < ctx->tessTol) {
-            ME_surface___addPoint(ctx, x4, y4, type);
+    /*  if (ME_surface_impl_absf(x1+x3-x2-x2) + ME_surface_impl_absf(y1+y3-y2-y2) + ME_surface_impl_absf(x2+x4-x3-x3) + ME_surface_impl_absf(y2+y4-y3-y3) < ctx->tessTol) {
+            ME_surface_impl_addPoint(ctx, x4, y4, type);
             return;
         }*/
 
@@ -1158,13 +1158,13 @@ static void ME_surface___tesselateBezier(MEsurface_context* ctx, float x1, float
     x1234 = (x123 + x234) * 0.5f;
     y1234 = (y123 + y234) * 0.5f;
 
-    ME_surface___tesselateBezier(ctx, x1, y1, x12, y12, x123, y123, x1234, y1234, level + 1, 0);
-    ME_surface___tesselateBezier(ctx, x1234, y1234, x234, y234, x34, y34, x4, y4, level + 1, type);
+    ME_surface_impl_tesselateBezier(ctx, x1, y1, x12, y12, x123, y123, x1234, y1234, level + 1, 0);
+    ME_surface_impl_tesselateBezier(ctx, x1234, y1234, x234, y234, x34, y34, x4, y4, level + 1, type);
 }
 
-static void ME_surface___flattenPaths(MEsurface_context* ctx) {
+static void ME_surface_impl_flattenPaths(MEsurface_context* ctx) {
     MEsurface_pathCache* cache = ctx->cache;
-    //  MEsurface_state* state = ME_surface___getState(ctx);
+    //  MEsurface_state* state = ME_surface_impl_getState(ctx);
     MEsurface_point* last;
     MEsurface_point* p0;
     MEsurface_point* p1;
@@ -1184,32 +1184,32 @@ static void ME_surface___flattenPaths(MEsurface_context* ctx) {
         int cmd = (int)ctx->commands[i];
         switch (cmd) {
             case ME_SURFACE_MOVETO:
-                ME_surface___addPath(ctx);
+                ME_surface_impl_addPath(ctx);
                 p = &ctx->commands[i + 1];
-                ME_surface___addPoint(ctx, p[0], p[1], ME_SURFACE_PT_CORNER);
+                ME_surface_impl_addPoint(ctx, p[0], p[1], ME_SURFACE_PT_CORNER);
                 i += 3;
                 break;
             case ME_SURFACE_LINETO:
                 p = &ctx->commands[i + 1];
-                ME_surface___addPoint(ctx, p[0], p[1], ME_SURFACE_PT_CORNER);
+                ME_surface_impl_addPoint(ctx, p[0], p[1], ME_SURFACE_PT_CORNER);
                 i += 3;
                 break;
             case ME_SURFACE_BEZIERTO:
-                last = ME_surface___lastPoint(ctx);
+                last = ME_surface_impl_lastPoint(ctx);
                 if (last != NULL) {
                     cp1 = &ctx->commands[i + 1];
                     cp2 = &ctx->commands[i + 3];
                     p = &ctx->commands[i + 5];
-                    ME_surface___tesselateBezier(ctx, last->x, last->y, cp1[0], cp1[1], cp2[0], cp2[1], p[0], p[1], 0, ME_SURFACE_PT_CORNER);
+                    ME_surface_impl_tesselateBezier(ctx, last->x, last->y, cp1[0], cp1[1], cp2[0], cp2[1], p[0], p[1], 0, ME_SURFACE_PT_CORNER);
                 }
                 i += 7;
                 break;
             case ME_SURFACE_CLOSE:
-                ME_surface___closePath(ctx);
+                ME_surface_impl_closePath(ctx);
                 i++;
                 break;
             case ME_SURFACE_WINDING:
-                ME_surface___pathWinding(ctx, (int)ctx->commands[i + 1]);
+                ME_surface_impl_pathWinding(ctx, (int)ctx->commands[i + 1]);
                 i += 2;
                 break;
             default:
@@ -1228,7 +1228,7 @@ static void ME_surface___flattenPaths(MEsurface_context* ctx) {
         // If the first and last points are the same, remove the last, mark as closed path.
         p0 = &pts[path->count - 1];
         p1 = &pts[0];
-        if (ME_surface___ptEquals(p0->x, p0->y, p1->x, p1->y, ctx->distTol)) {
+        if (ME_surface_impl_ptEquals(p0->x, p0->y, p1->x, p1->y, ctx->distTol)) {
             path->count--;
             p0 = &pts[path->count - 1];
             path->closed = 1;
@@ -1236,33 +1236,33 @@ static void ME_surface___flattenPaths(MEsurface_context* ctx) {
 
         // Enforce winding.
         if (path->count > 2) {
-            area = ME_surface___polyArea(pts, path->count);
-            if (path->winding == ME_SURFACE_CCW && area < 0.0f) ME_surface___polyReverse(pts, path->count);
-            if (path->winding == ME_SURFACE_CW && area > 0.0f) ME_surface___polyReverse(pts, path->count);
+            area = ME_surface_impl_polyArea(pts, path->count);
+            if (path->winding == ME_SURFACE_CCW && area < 0.0f) ME_surface_impl_polyReverse(pts, path->count);
+            if (path->winding == ME_SURFACE_CW && area > 0.0f) ME_surface_impl_polyReverse(pts, path->count);
         }
 
         for (i = 0; i < path->count; i++) {
             // Calculate segment direction and length
             p0->dx = p1->x - p0->x;
             p0->dy = p1->y - p0->y;
-            p0->len = ME_surface___normalize(&p0->dx, &p0->dy);
+            p0->len = ME_surface_impl_normalize(&p0->dx, &p0->dy);
             // Update bounds
-            cache->bounds[0] = ME_surface___minf(cache->bounds[0], p0->x);
-            cache->bounds[1] = ME_surface___minf(cache->bounds[1], p0->y);
-            cache->bounds[2] = ME_surface___maxf(cache->bounds[2], p0->x);
-            cache->bounds[3] = ME_surface___maxf(cache->bounds[3], p0->y);
+            cache->bounds[0] = ME_surface_impl_minf(cache->bounds[0], p0->x);
+            cache->bounds[1] = ME_surface_impl_minf(cache->bounds[1], p0->y);
+            cache->bounds[2] = ME_surface_impl_maxf(cache->bounds[2], p0->x);
+            cache->bounds[3] = ME_surface_impl_maxf(cache->bounds[3], p0->y);
             // Advance
             p0 = p1++;
         }
     }
 }
 
-static int ME_surface___curveDivs(float r, float arc, float tol) {
+static int ME_surface_impl_curveDivs(float r, float arc, float tol) {
     float da = acosf(r / (r + tol)) * 2.0f;
-    return ME_surface___maxi(2, (int)ceilf(arc / da));
+    return ME_surface_impl_maxi(2, (int)ceilf(arc / da));
 }
 
-static void ME_surface___chooseBevel(int bevel, MEsurface_point* p0, MEsurface_point* p1, float w, float* x0, float* y0, float* x1, float* y1) {
+static void ME_surface_impl_chooseBevel(int bevel, MEsurface_point* p0, MEsurface_point* p1, float w, float* x0, float* y0, float* x1, float* y1) {
     if (bevel) {
         *x0 = p1->x + p0->dy * w;
         *y0 = p1->y - p0->dx * w;
@@ -1276,7 +1276,7 @@ static void ME_surface___chooseBevel(int bevel, MEsurface_point* p0, MEsurface_p
     }
 }
 
-static MEsurface_vertex* ME_surface___roundJoin(MEsurface_vertex* dst, MEsurface_point* p0, MEsurface_point* p1, float lw, float rw, float lu, float ru, int ncap, float fringe) {
+static MEsurface_vertex* ME_surface_impl_roundJoin(MEsurface_vertex* dst, MEsurface_point* p0, MEsurface_point* p1, float lw, float rw, float lu, float ru, int ncap, float fringe) {
     int i, n;
     float dlx0 = p0->dy;
     float dly0 = -p0->dx;
@@ -1285,66 +1285,66 @@ static MEsurface_vertex* ME_surface___roundJoin(MEsurface_vertex* dst, MEsurface
 
     if (p1->flags & ME_SURFACE_PT_LEFT) {
         float lx0, ly0, lx1, ly1, a0, a1;
-        ME_surface___chooseBevel(p1->flags & ME_SURFACE_PR_INNERBEVEL, p0, p1, lw, &lx0, &ly0, &lx1, &ly1);
+        ME_surface_impl_chooseBevel(p1->flags & ME_SURFACE_PR_INNERBEVEL, p0, p1, lw, &lx0, &ly0, &lx1, &ly1);
         a0 = atan2f(-dly0, -dlx0);
         a1 = atan2f(-dly1, -dlx1);
         if (a1 > a0) a1 -= ME_SURFACE_PI * 2;
 
-        ME_surface___vset(dst, lx0, ly0, lu, 1);
+        ME_surface_impl_vset(dst, lx0, ly0, lu, 1);
         dst++;
-        ME_surface___vset(dst, p1->x - dlx0 * rw, p1->y - dly0 * rw, ru, 1);
+        ME_surface_impl_vset(dst, p1->x - dlx0 * rw, p1->y - dly0 * rw, ru, 1);
         dst++;
 
-        n = ME_surface___clampi((int)ceilf(((a0 - a1) / ME_SURFACE_PI) * ncap), 2, ncap);
+        n = ME_surface_impl_clampi((int)ceilf(((a0 - a1) / ME_SURFACE_PI) * ncap), 2, ncap);
         for (i = 0; i < n; i++) {
             float u = i / (float)(n - 1);
             float a = a0 + u * (a1 - a0);
             float rx = p1->x + cosf(a) * rw;
             float ry = p1->y + sinf(a) * rw;
-            ME_surface___vset(dst, p1->x, p1->y, 0.5f, 1);
+            ME_surface_impl_vset(dst, p1->x, p1->y, 0.5f, 1);
             dst++;
-            ME_surface___vset(dst, rx, ry, ru, 1);
+            ME_surface_impl_vset(dst, rx, ry, ru, 1);
             dst++;
         }
 
-        ME_surface___vset(dst, lx1, ly1, lu, 1);
+        ME_surface_impl_vset(dst, lx1, ly1, lu, 1);
         dst++;
-        ME_surface___vset(dst, p1->x - dlx1 * rw, p1->y - dly1 * rw, ru, 1);
+        ME_surface_impl_vset(dst, p1->x - dlx1 * rw, p1->y - dly1 * rw, ru, 1);
         dst++;
 
     } else {
         float rx0, ry0, rx1, ry1, a0, a1;
-        ME_surface___chooseBevel(p1->flags & ME_SURFACE_PR_INNERBEVEL, p0, p1, -rw, &rx0, &ry0, &rx1, &ry1);
+        ME_surface_impl_chooseBevel(p1->flags & ME_SURFACE_PR_INNERBEVEL, p0, p1, -rw, &rx0, &ry0, &rx1, &ry1);
         a0 = atan2f(dly0, dlx0);
         a1 = atan2f(dly1, dlx1);
         if (a1 < a0) a1 += ME_SURFACE_PI * 2;
 
-        ME_surface___vset(dst, p1->x + dlx0 * rw, p1->y + dly0 * rw, lu, 1);
+        ME_surface_impl_vset(dst, p1->x + dlx0 * rw, p1->y + dly0 * rw, lu, 1);
         dst++;
-        ME_surface___vset(dst, rx0, ry0, ru, 1);
+        ME_surface_impl_vset(dst, rx0, ry0, ru, 1);
         dst++;
 
-        n = ME_surface___clampi((int)ceilf(((a1 - a0) / ME_SURFACE_PI) * ncap), 2, ncap);
+        n = ME_surface_impl_clampi((int)ceilf(((a1 - a0) / ME_SURFACE_PI) * ncap), 2, ncap);
         for (i = 0; i < n; i++) {
             float u = i / (float)(n - 1);
             float a = a0 + u * (a1 - a0);
             float lx = p1->x + cosf(a) * lw;
             float ly = p1->y + sinf(a) * lw;
-            ME_surface___vset(dst, lx, ly, lu, 1);
+            ME_surface_impl_vset(dst, lx, ly, lu, 1);
             dst++;
-            ME_surface___vset(dst, p1->x, p1->y, 0.5f, 1);
+            ME_surface_impl_vset(dst, p1->x, p1->y, 0.5f, 1);
             dst++;
         }
 
-        ME_surface___vset(dst, p1->x + dlx1 * rw, p1->y + dly1 * rw, lu, 1);
+        ME_surface_impl_vset(dst, p1->x + dlx1 * rw, p1->y + dly1 * rw, lu, 1);
         dst++;
-        ME_surface___vset(dst, rx1, ry1, ru, 1);
+        ME_surface_impl_vset(dst, rx1, ry1, ru, 1);
         dst++;
     }
     return dst;
 }
 
-static MEsurface_vertex* ME_surface___bevelJoin(MEsurface_vertex* dst, MEsurface_point* p0, MEsurface_point* p1, float lw, float rw, float lu, float ru, float fringe) {
+static MEsurface_vertex* ME_surface_impl_bevelJoin(MEsurface_vertex* dst, MEsurface_point* p0, MEsurface_point* p1, float lw, float rw, float lu, float ru, float fringe) {
     float rx0, ry0, rx1, ry1;
     float lx0, ly0, lx1, ly1;
     float dlx0 = p0->dy;
@@ -1353,128 +1353,128 @@ static MEsurface_vertex* ME_surface___bevelJoin(MEsurface_vertex* dst, MEsurface
     float dly1 = -p1->dx;
 
     if (p1->flags & ME_SURFACE_PT_LEFT) {
-        ME_surface___chooseBevel(p1->flags & ME_SURFACE_PR_INNERBEVEL, p0, p1, lw, &lx0, &ly0, &lx1, &ly1);
+        ME_surface_impl_chooseBevel(p1->flags & ME_SURFACE_PR_INNERBEVEL, p0, p1, lw, &lx0, &ly0, &lx1, &ly1);
 
-        ME_surface___vset(dst, lx0, ly0, lu, 1);
+        ME_surface_impl_vset(dst, lx0, ly0, lu, 1);
         dst++;
-        ME_surface___vset(dst, p1->x - dlx0 * rw, p1->y - dly0 * rw, ru, 1);
+        ME_surface_impl_vset(dst, p1->x - dlx0 * rw, p1->y - dly0 * rw, ru, 1);
         dst++;
 
         if (p1->flags & ME_SURFACE_PT_BEVEL) {
-            ME_surface___vset(dst, lx0, ly0, lu, 1);
+            ME_surface_impl_vset(dst, lx0, ly0, lu, 1);
             dst++;
-            ME_surface___vset(dst, p1->x - dlx0 * rw, p1->y - dly0 * rw, ru, 1);
+            ME_surface_impl_vset(dst, p1->x - dlx0 * rw, p1->y - dly0 * rw, ru, 1);
             dst++;
 
-            ME_surface___vset(dst, lx1, ly1, lu, 1);
+            ME_surface_impl_vset(dst, lx1, ly1, lu, 1);
             dst++;
-            ME_surface___vset(dst, p1->x - dlx1 * rw, p1->y - dly1 * rw, ru, 1);
+            ME_surface_impl_vset(dst, p1->x - dlx1 * rw, p1->y - dly1 * rw, ru, 1);
             dst++;
         } else {
             rx0 = p1->x - p1->dmx * rw;
             ry0 = p1->y - p1->dmy * rw;
 
-            ME_surface___vset(dst, p1->x, p1->y, 0.5f, 1);
+            ME_surface_impl_vset(dst, p1->x, p1->y, 0.5f, 1);
             dst++;
-            ME_surface___vset(dst, p1->x - dlx0 * rw, p1->y - dly0 * rw, ru, 1);
-            dst++;
-
-            ME_surface___vset(dst, rx0, ry0, ru, 1);
-            dst++;
-            ME_surface___vset(dst, rx0, ry0, ru, 1);
+            ME_surface_impl_vset(dst, p1->x - dlx0 * rw, p1->y - dly0 * rw, ru, 1);
             dst++;
 
-            ME_surface___vset(dst, p1->x, p1->y, 0.5f, 1);
+            ME_surface_impl_vset(dst, rx0, ry0, ru, 1);
             dst++;
-            ME_surface___vset(dst, p1->x - dlx1 * rw, p1->y - dly1 * rw, ru, 1);
+            ME_surface_impl_vset(dst, rx0, ry0, ru, 1);
+            dst++;
+
+            ME_surface_impl_vset(dst, p1->x, p1->y, 0.5f, 1);
+            dst++;
+            ME_surface_impl_vset(dst, p1->x - dlx1 * rw, p1->y - dly1 * rw, ru, 1);
             dst++;
         }
 
-        ME_surface___vset(dst, lx1, ly1, lu, 1);
+        ME_surface_impl_vset(dst, lx1, ly1, lu, 1);
         dst++;
-        ME_surface___vset(dst, p1->x - dlx1 * rw, p1->y - dly1 * rw, ru, 1);
+        ME_surface_impl_vset(dst, p1->x - dlx1 * rw, p1->y - dly1 * rw, ru, 1);
         dst++;
 
     } else {
-        ME_surface___chooseBevel(p1->flags & ME_SURFACE_PR_INNERBEVEL, p0, p1, -rw, &rx0, &ry0, &rx1, &ry1);
+        ME_surface_impl_chooseBevel(p1->flags & ME_SURFACE_PR_INNERBEVEL, p0, p1, -rw, &rx0, &ry0, &rx1, &ry1);
 
-        ME_surface___vset(dst, p1->x + dlx0 * lw, p1->y + dly0 * lw, lu, 1);
+        ME_surface_impl_vset(dst, p1->x + dlx0 * lw, p1->y + dly0 * lw, lu, 1);
         dst++;
-        ME_surface___vset(dst, rx0, ry0, ru, 1);
+        ME_surface_impl_vset(dst, rx0, ry0, ru, 1);
         dst++;
 
         if (p1->flags & ME_SURFACE_PT_BEVEL) {
-            ME_surface___vset(dst, p1->x + dlx0 * lw, p1->y + dly0 * lw, lu, 1);
+            ME_surface_impl_vset(dst, p1->x + dlx0 * lw, p1->y + dly0 * lw, lu, 1);
             dst++;
-            ME_surface___vset(dst, rx0, ry0, ru, 1);
+            ME_surface_impl_vset(dst, rx0, ry0, ru, 1);
             dst++;
 
-            ME_surface___vset(dst, p1->x + dlx1 * lw, p1->y + dly1 * lw, lu, 1);
+            ME_surface_impl_vset(dst, p1->x + dlx1 * lw, p1->y + dly1 * lw, lu, 1);
             dst++;
-            ME_surface___vset(dst, rx1, ry1, ru, 1);
+            ME_surface_impl_vset(dst, rx1, ry1, ru, 1);
             dst++;
         } else {
             lx0 = p1->x + p1->dmx * lw;
             ly0 = p1->y + p1->dmy * lw;
 
-            ME_surface___vset(dst, p1->x + dlx0 * lw, p1->y + dly0 * lw, lu, 1);
+            ME_surface_impl_vset(dst, p1->x + dlx0 * lw, p1->y + dly0 * lw, lu, 1);
             dst++;
-            ME_surface___vset(dst, p1->x, p1->y, 0.5f, 1);
-            dst++;
-
-            ME_surface___vset(dst, lx0, ly0, lu, 1);
-            dst++;
-            ME_surface___vset(dst, lx0, ly0, lu, 1);
+            ME_surface_impl_vset(dst, p1->x, p1->y, 0.5f, 1);
             dst++;
 
-            ME_surface___vset(dst, p1->x + dlx1 * lw, p1->y + dly1 * lw, lu, 1);
+            ME_surface_impl_vset(dst, lx0, ly0, lu, 1);
             dst++;
-            ME_surface___vset(dst, p1->x, p1->y, 0.5f, 1);
+            ME_surface_impl_vset(dst, lx0, ly0, lu, 1);
+            dst++;
+
+            ME_surface_impl_vset(dst, p1->x + dlx1 * lw, p1->y + dly1 * lw, lu, 1);
+            dst++;
+            ME_surface_impl_vset(dst, p1->x, p1->y, 0.5f, 1);
             dst++;
         }
 
-        ME_surface___vset(dst, p1->x + dlx1 * lw, p1->y + dly1 * lw, lu, 1);
+        ME_surface_impl_vset(dst, p1->x + dlx1 * lw, p1->y + dly1 * lw, lu, 1);
         dst++;
-        ME_surface___vset(dst, rx1, ry1, ru, 1);
+        ME_surface_impl_vset(dst, rx1, ry1, ru, 1);
         dst++;
     }
 
     return dst;
 }
 
-static MEsurface_vertex* ME_surface___buttCapStart(MEsurface_vertex* dst, MEsurface_point* p, float dx, float dy, float w, float d, float aa, float u0, float u1) {
+static MEsurface_vertex* ME_surface_impl_buttCapStart(MEsurface_vertex* dst, MEsurface_point* p, float dx, float dy, float w, float d, float aa, float u0, float u1) {
     float px = p->x - dx * d;
     float py = p->y - dy * d;
     float dlx = dy;
     float dly = -dx;
-    ME_surface___vset(dst, px + dlx * w - dx * aa, py + dly * w - dy * aa, u0, 0);
+    ME_surface_impl_vset(dst, px + dlx * w - dx * aa, py + dly * w - dy * aa, u0, 0);
     dst++;
-    ME_surface___vset(dst, px - dlx * w - dx * aa, py - dly * w - dy * aa, u1, 0);
+    ME_surface_impl_vset(dst, px - dlx * w - dx * aa, py - dly * w - dy * aa, u1, 0);
     dst++;
-    ME_surface___vset(dst, px + dlx * w, py + dly * w, u0, 1);
+    ME_surface_impl_vset(dst, px + dlx * w, py + dly * w, u0, 1);
     dst++;
-    ME_surface___vset(dst, px - dlx * w, py - dly * w, u1, 1);
+    ME_surface_impl_vset(dst, px - dlx * w, py - dly * w, u1, 1);
     dst++;
     return dst;
 }
 
-static MEsurface_vertex* ME_surface___buttCapEnd(MEsurface_vertex* dst, MEsurface_point* p, float dx, float dy, float w, float d, float aa, float u0, float u1) {
+static MEsurface_vertex* ME_surface_impl_buttCapEnd(MEsurface_vertex* dst, MEsurface_point* p, float dx, float dy, float w, float d, float aa, float u0, float u1) {
     float px = p->x + dx * d;
     float py = p->y + dy * d;
     float dlx = dy;
     float dly = -dx;
-    ME_surface___vset(dst, px + dlx * w, py + dly * w, u0, 1);
+    ME_surface_impl_vset(dst, px + dlx * w, py + dly * w, u0, 1);
     dst++;
-    ME_surface___vset(dst, px - dlx * w, py - dly * w, u1, 1);
+    ME_surface_impl_vset(dst, px - dlx * w, py - dly * w, u1, 1);
     dst++;
-    ME_surface___vset(dst, px + dlx * w + dx * aa, py + dly * w + dy * aa, u0, 0);
+    ME_surface_impl_vset(dst, px + dlx * w + dx * aa, py + dly * w + dy * aa, u0, 0);
     dst++;
-    ME_surface___vset(dst, px - dlx * w + dx * aa, py - dly * w + dy * aa, u1, 0);
+    ME_surface_impl_vset(dst, px - dlx * w + dx * aa, py - dly * w + dy * aa, u1, 0);
     dst++;
     return dst;
 }
 
-static MEsurface_vertex* ME_surface___roundCapStart(MEsurface_vertex* dst, MEsurface_point* p, float dx, float dy, float w, int ncap, float aa, float u0, float u1) {
+static MEsurface_vertex* ME_surface_impl_roundCapStart(MEsurface_vertex* dst, MEsurface_point* p, float dx, float dy, float w, int ncap, float aa, float u0, float u1) {
     int i;
     float px = p->x;
     float py = p->y;
@@ -1484,41 +1484,41 @@ static MEsurface_vertex* ME_surface___roundCapStart(MEsurface_vertex* dst, MEsur
     for (i = 0; i < ncap; i++) {
         float a = i / (float)(ncap - 1) * ME_SURFACE_PI;
         float ax = cosf(a) * w, ay = sinf(a) * w;
-        ME_surface___vset(dst, px - dlx * ax - dx * ay, py - dly * ax - dy * ay, u0, 1);
+        ME_surface_impl_vset(dst, px - dlx * ax - dx * ay, py - dly * ax - dy * ay, u0, 1);
         dst++;
-        ME_surface___vset(dst, px, py, 0.5f, 1);
+        ME_surface_impl_vset(dst, px, py, 0.5f, 1);
         dst++;
     }
-    ME_surface___vset(dst, px + dlx * w, py + dly * w, u0, 1);
+    ME_surface_impl_vset(dst, px + dlx * w, py + dly * w, u0, 1);
     dst++;
-    ME_surface___vset(dst, px - dlx * w, py - dly * w, u1, 1);
+    ME_surface_impl_vset(dst, px - dlx * w, py - dly * w, u1, 1);
     dst++;
     return dst;
 }
 
-static MEsurface_vertex* ME_surface___roundCapEnd(MEsurface_vertex* dst, MEsurface_point* p, float dx, float dy, float w, int ncap, float aa, float u0, float u1) {
+static MEsurface_vertex* ME_surface_impl_roundCapEnd(MEsurface_vertex* dst, MEsurface_point* p, float dx, float dy, float w, int ncap, float aa, float u0, float u1) {
     int i;
     float px = p->x;
     float py = p->y;
     float dlx = dy;
     float dly = -dx;
 
-    ME_surface___vset(dst, px + dlx * w, py + dly * w, u0, 1);
+    ME_surface_impl_vset(dst, px + dlx * w, py + dly * w, u0, 1);
     dst++;
-    ME_surface___vset(dst, px - dlx * w, py - dly * w, u1, 1);
+    ME_surface_impl_vset(dst, px - dlx * w, py - dly * w, u1, 1);
     dst++;
     for (i = 0; i < ncap; i++) {
         float a = i / (float)(ncap - 1) * ME_SURFACE_PI;
         float ax = cosf(a) * w, ay = sinf(a) * w;
-        ME_surface___vset(dst, px, py, 0.5f, 1);
+        ME_surface_impl_vset(dst, px, py, 0.5f, 1);
         dst++;
-        ME_surface___vset(dst, px - dlx * ax + dx * ay, py - dly * ax + dy * ay, u0, 1);
+        ME_surface_impl_vset(dst, px - dlx * ax + dx * ay, py - dly * ax + dy * ay, u0, 1);
         dst++;
     }
     return dst;
 }
 
-static void ME_surface___calculateJoins(MEsurface_context* ctx, float w, int lineJoin, float miterLimit) {
+static void ME_surface_impl_calculateJoins(MEsurface_context* ctx, float w, int lineJoin, float miterLimit) {
     MEsurface_pathCache* cache = ctx->cache;
     int i, j;
     float iw = 0.0f;
@@ -1565,7 +1565,7 @@ static void ME_surface___calculateJoins(MEsurface_context* ctx, float w, int lin
             }
 
             // Calculate if we should use bevel or miter for inner join.
-            limit = ME_surface___maxf(1.01f, ME_surface___minf(p0->len, p1->len) * iw);
+            limit = ME_surface_impl_maxf(1.01f, ME_surface_impl_minf(p0->len, p1->len) * iw);
             if ((dmr2 * limit * limit) < 1.0f) p1->flags |= ME_SURFACE_PR_INNERBEVEL;
 
             // Check to see if the corner needs to be beveled.
@@ -1584,14 +1584,14 @@ static void ME_surface___calculateJoins(MEsurface_context* ctx, float w, int lin
     }
 }
 
-static int ME_surface___expandStroke(MEsurface_context* ctx, float w, float fringe, int lineCap, int lineJoin, float miterLimit) {
+static int ME_surface_impl_expandStroke(MEsurface_context* ctx, float w, float fringe, int lineCap, int lineJoin, float miterLimit) {
     MEsurface_pathCache* cache = ctx->cache;
     MEsurface_vertex* verts;
     MEsurface_vertex* dst;
     int cverts, i, j;
     float aa = fringe;  // ctx->fringeWidth;
     float u0 = 0.0f, u1 = 1.0f;
-    int ncap = ME_surface___curveDivs(w, ME_SURFACE_PI, ctx->tessTol);  // Calculate divisions per half circle.
+    int ncap = ME_surface_impl_curveDivs(w, ME_SURFACE_PI, ctx->tessTol);  // Calculate divisions per half circle.
 
     w += aa * 0.5f;
 
@@ -1601,7 +1601,7 @@ static int ME_surface___expandStroke(MEsurface_context* ctx, float w, float frin
         u1 = 0.5f;
     }
 
-    ME_surface___calculateJoins(ctx, w, lineJoin, miterLimit);
+    ME_surface_impl_calculateJoins(ctx, w, lineJoin, miterLimit);
 
     // Calculate max vertex usage.
     cverts = 0;
@@ -1622,7 +1622,7 @@ static int ME_surface___expandStroke(MEsurface_context* ctx, float w, float frin
         }
     }
 
-    verts = ME_surface___allocTempVerts(ctx, cverts);
+    verts = ME_surface_impl_allocTempVerts(ctx, cverts);
     if (verts == NULL) return 0;
 
     for (i = 0; i < cache->npaths; i++) {
@@ -1659,26 +1659,26 @@ static int ME_surface___expandStroke(MEsurface_context* ctx, float w, float frin
             // Add cap
             dx = p1->x - p0->x;
             dy = p1->y - p0->y;
-            ME_surface___normalize(&dx, &dy);
+            ME_surface_impl_normalize(&dx, &dy);
             if (lineCap == ME_SURFACE_BUTT)
-                dst = ME_surface___buttCapStart(dst, p0, dx, dy, w, -aa * 0.5f, aa, u0, u1);
+                dst = ME_surface_impl_buttCapStart(dst, p0, dx, dy, w, -aa * 0.5f, aa, u0, u1);
             else if (lineCap == ME_SURFACE_BUTT || lineCap == ME_SURFACE_SQUARE)
-                dst = ME_surface___buttCapStart(dst, p0, dx, dy, w, w - aa, aa, u0, u1);
+                dst = ME_surface_impl_buttCapStart(dst, p0, dx, dy, w, w - aa, aa, u0, u1);
             else if (lineCap == ME_SURFACE_ROUND)
-                dst = ME_surface___roundCapStart(dst, p0, dx, dy, w, ncap, aa, u0, u1);
+                dst = ME_surface_impl_roundCapStart(dst, p0, dx, dy, w, ncap, aa, u0, u1);
         }
 
         for (j = s; j < e; ++j) {
             if ((p1->flags & (ME_SURFACE_PT_BEVEL | ME_SURFACE_PR_INNERBEVEL)) != 0) {
                 if (lineJoin == ME_SURFACE_ROUND) {
-                    dst = ME_surface___roundJoin(dst, p0, p1, w, w, u0, u1, ncap, aa);
+                    dst = ME_surface_impl_roundJoin(dst, p0, p1, w, w, u0, u1, ncap, aa);
                 } else {
-                    dst = ME_surface___bevelJoin(dst, p0, p1, w, w, u0, u1, aa);
+                    dst = ME_surface_impl_bevelJoin(dst, p0, p1, w, w, u0, u1, aa);
                 }
             } else {
-                ME_surface___vset(dst, p1->x + (p1->dmx * w), p1->y + (p1->dmy * w), u0, 1);
+                ME_surface_impl_vset(dst, p1->x + (p1->dmx * w), p1->y + (p1->dmy * w), u0, 1);
                 dst++;
-                ME_surface___vset(dst, p1->x - (p1->dmx * w), p1->y - (p1->dmy * w), u1, 1);
+                ME_surface_impl_vset(dst, p1->x - (p1->dmx * w), p1->y - (p1->dmy * w), u1, 1);
                 dst++;
             }
             p0 = p1++;
@@ -1686,21 +1686,21 @@ static int ME_surface___expandStroke(MEsurface_context* ctx, float w, float frin
 
         if (loop) {
             // Loop it
-            ME_surface___vset(dst, verts[0].x, verts[0].y, u0, 1);
+            ME_surface_impl_vset(dst, verts[0].x, verts[0].y, u0, 1);
             dst++;
-            ME_surface___vset(dst, verts[1].x, verts[1].y, u1, 1);
+            ME_surface_impl_vset(dst, verts[1].x, verts[1].y, u1, 1);
             dst++;
         } else {
             // Add cap
             dx = p1->x - p0->x;
             dy = p1->y - p0->y;
-            ME_surface___normalize(&dx, &dy);
+            ME_surface_impl_normalize(&dx, &dy);
             if (lineCap == ME_SURFACE_BUTT)
-                dst = ME_surface___buttCapEnd(dst, p1, dx, dy, w, -aa * 0.5f, aa, u0, u1);
+                dst = ME_surface_impl_buttCapEnd(dst, p1, dx, dy, w, -aa * 0.5f, aa, u0, u1);
             else if (lineCap == ME_SURFACE_BUTT || lineCap == ME_SURFACE_SQUARE)
-                dst = ME_surface___buttCapEnd(dst, p1, dx, dy, w, w - aa, aa, u0, u1);
+                dst = ME_surface_impl_buttCapEnd(dst, p1, dx, dy, w, w - aa, aa, u0, u1);
             else if (lineCap == ME_SURFACE_ROUND)
-                dst = ME_surface___roundCapEnd(dst, p1, dx, dy, w, ncap, aa, u0, u1);
+                dst = ME_surface_impl_roundCapEnd(dst, p1, dx, dy, w, ncap, aa, u0, u1);
         }
 
         path->nstroke = (int)(dst - verts);
@@ -1711,7 +1711,7 @@ static int ME_surface___expandStroke(MEsurface_context* ctx, float w, float frin
     return 1;
 }
 
-static int ME_surface___expandFill(MEsurface_context* ctx, float w, int lineJoin, float miterLimit) {
+static int ME_surface_impl_expandFill(MEsurface_context* ctx, float w, int lineJoin, float miterLimit) {
     MEsurface_pathCache* cache = ctx->cache;
     MEsurface_vertex* verts;
     MEsurface_vertex* dst;
@@ -1719,7 +1719,7 @@ static int ME_surface___expandFill(MEsurface_context* ctx, float w, int lineJoin
     float aa = ctx->fringeWidth;
     int fringe = w > 0.0f;
 
-    ME_surface___calculateJoins(ctx, w, lineJoin, miterLimit);
+    ME_surface_impl_calculateJoins(ctx, w, lineJoin, miterLimit);
 
     // Calculate max vertex usage.
     cverts = 0;
@@ -1729,7 +1729,7 @@ static int ME_surface___expandFill(MEsurface_context* ctx, float w, int lineJoin
         if (fringe) cverts += (path->count + path->nbevel * 5 + 1) * 2;  // plus one for loop
     }
 
-    verts = ME_surface___allocTempVerts(ctx, cverts);
+    verts = ME_surface_impl_allocTempVerts(ctx, cverts);
     if (verts == NULL) return 0;
 
     convex = cache->npaths == 1 && cache->paths[0].convex;
@@ -1760,27 +1760,27 @@ static int ME_surface___expandFill(MEsurface_context* ctx, float w, int lineJoin
                     if (p1->flags & ME_SURFACE_PT_LEFT) {
                         float lx = p1->x + p1->dmx * woff;
                         float ly = p1->y + p1->dmy * woff;
-                        ME_surface___vset(dst, lx, ly, 0.5f, 1);
+                        ME_surface_impl_vset(dst, lx, ly, 0.5f, 1);
                         dst++;
                     } else {
                         float lx0 = p1->x + dlx0 * woff;
                         float ly0 = p1->y + dly0 * woff;
                         float lx1 = p1->x + dlx1 * woff;
                         float ly1 = p1->y + dly1 * woff;
-                        ME_surface___vset(dst, lx0, ly0, 0.5f, 1);
+                        ME_surface_impl_vset(dst, lx0, ly0, 0.5f, 1);
                         dst++;
-                        ME_surface___vset(dst, lx1, ly1, 0.5f, 1);
+                        ME_surface_impl_vset(dst, lx1, ly1, 0.5f, 1);
                         dst++;
                     }
                 } else {
-                    ME_surface___vset(dst, p1->x + (p1->dmx * woff), p1->y + (p1->dmy * woff), 0.5f, 1);
+                    ME_surface_impl_vset(dst, p1->x + (p1->dmx * woff), p1->y + (p1->dmy * woff), 0.5f, 1);
                     dst++;
                 }
                 p0 = p1++;
             }
         } else {
             for (j = 0; j < path->count; ++j) {
-                ME_surface___vset(dst, pts[j].x, pts[j].y, 0.5f, 1);
+                ME_surface_impl_vset(dst, pts[j].x, pts[j].y, 0.5f, 1);
                 dst++;
             }
         }
@@ -1810,20 +1810,20 @@ static int ME_surface___expandFill(MEsurface_context* ctx, float w, int lineJoin
 
             for (j = 0; j < path->count; ++j) {
                 if ((p1->flags & (ME_SURFACE_PT_BEVEL | ME_SURFACE_PR_INNERBEVEL)) != 0) {
-                    dst = ME_surface___bevelJoin(dst, p0, p1, lw, rw, lu, ru, ctx->fringeWidth);
+                    dst = ME_surface_impl_bevelJoin(dst, p0, p1, lw, rw, lu, ru, ctx->fringeWidth);
                 } else {
-                    ME_surface___vset(dst, p1->x + (p1->dmx * lw), p1->y + (p1->dmy * lw), lu, 1);
+                    ME_surface_impl_vset(dst, p1->x + (p1->dmx * lw), p1->y + (p1->dmy * lw), lu, 1);
                     dst++;
-                    ME_surface___vset(dst, p1->x - (p1->dmx * rw), p1->y - (p1->dmy * rw), ru, 1);
+                    ME_surface_impl_vset(dst, p1->x - (p1->dmx * rw), p1->y - (p1->dmy * rw), ru, 1);
                     dst++;
                 }
                 p0 = p1++;
             }
 
             // Loop it
-            ME_surface___vset(dst, verts[0].x, verts[0].y, lu, 1);
+            ME_surface_impl_vset(dst, verts[0].x, verts[0].y, lu, 1);
             dst++;
-            ME_surface___vset(dst, verts[1].x, verts[1].y, ru, 1);
+            ME_surface_impl_vset(dst, verts[1].x, verts[1].y, ru, 1);
             dst++;
 
             path->nstroke = (int)(dst - verts);
@@ -1840,29 +1840,29 @@ static int ME_surface___expandFill(MEsurface_context* ctx, float w, int lineJoin
 // Draw
 void ME_surface_BeginPath(MEsurface_context* ctx) {
     ctx->ncommands = 0;
-    ME_surface___clearPathCache(ctx);
+    ME_surface_impl_clearPathCache(ctx);
 }
 
 void ME_surface_MoveTo(MEsurface_context* ctx, float x, float y) {
     float vals[] = {ME_SURFACE_MOVETO, x, y};
-    ME_surface___appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
+    ME_surface_impl_appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
 }
 
 void ME_surface_LineTo(MEsurface_context* ctx, float x, float y) {
     float vals[] = {ME_SURFACE_LINETO, x, y};
-    ME_surface___appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
+    ME_surface_impl_appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
 }
 
 void ME_surface_BezierTo(MEsurface_context* ctx, float c1x, float c1y, float c2x, float c2y, float x, float y) {
     float vals[] = {ME_SURFACE_BEZIERTO, c1x, c1y, c2x, c2y, x, y};
-    ME_surface___appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
+    ME_surface_impl_appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
 }
 
 void ME_surface_QuadTo(MEsurface_context* ctx, float cx, float cy, float x, float y) {
     float x0 = ctx->commandx;
     float y0 = ctx->commandy;
     float vals[] = {ME_SURFACE_BEZIERTO, x0 + 2.0f / 3.0f * (cx - x0), y0 + 2.0f / 3.0f * (cy - y0), x + 2.0f / 3.0f * (cx - x), y + 2.0f / 3.0f * (cy - y), x, y};
-    ME_surface___appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
+    ME_surface_impl_appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
 }
 
 void ME_surface_ArcTo(MEsurface_context* ctx, float x1, float y1, float x2, float y2, float radius) {
@@ -1876,8 +1876,8 @@ void ME_surface_ArcTo(MEsurface_context* ctx, float x1, float y1, float x2, floa
     }
 
     // Handle degenerate cases.
-    if (ME_surface___ptEquals(x0, y0, x1, y1, ctx->distTol) || ME_surface___ptEquals(x1, y1, x2, y2, ctx->distTol) || ME_surface___distPtSeg(x1, y1, x0, y0, x2, y2) < ctx->distTol * ctx->distTol ||
-        radius < ctx->distTol) {
+    if (ME_surface_impl_ptEquals(x0, y0, x1, y1, ctx->distTol) || ME_surface_impl_ptEquals(x1, y1, x2, y2, ctx->distTol) ||
+        ME_surface_impl_distPtSeg(x1, y1, x0, y0, x2, y2) < ctx->distTol * ctx->distTol || radius < ctx->distTol) {
         ME_surface_LineTo(ctx, x1, y1);
         return;
     }
@@ -1887,10 +1887,10 @@ void ME_surface_ArcTo(MEsurface_context* ctx, float x1, float y1, float x2, floa
     dy0 = y0 - y1;
     dx1 = x2 - x1;
     dy1 = y2 - y1;
-    ME_surface___normalize(&dx0, &dy0);
-    ME_surface___normalize(&dx1, &dy1);
-    a = ME_surface___acosf(dx0 * dx1 + dy0 * dy1);
-    d = radius / ME_surface___tanf(a / 2.0f);
+    ME_surface_impl_normalize(&dx0, &dy0);
+    ME_surface_impl_normalize(&dx1, &dy1);
+    a = ME_surface_impl_acosf(dx0 * dx1 + dy0 * dy1);
+    d = radius / ME_surface_impl_tanf(a / 2.0f);
 
     //  printf("a=%f° d=%f\n", a/ME_SURFACE_PI*180.0f, d);
 
@@ -1899,18 +1899,18 @@ void ME_surface_ArcTo(MEsurface_context* ctx, float x1, float y1, float x2, floa
         return;
     }
 
-    if (ME_surface___cross(dx0, dy0, dx1, dy1) > 0.0f) {
+    if (ME_surface_impl_cross(dx0, dy0, dx1, dy1) > 0.0f) {
         cx = x1 + dx0 * d + dy0 * radius;
         cy = y1 + dy0 * d + -dx0 * radius;
-        a0 = ME_surface___atan2f(dx0, -dy0);
-        a1 = ME_surface___atan2f(-dx1, dy1);
+        a0 = ME_surface_impl_atan2f(dx0, -dy0);
+        a1 = ME_surface_impl_atan2f(-dx1, dy1);
         dir = ME_SURFACE_CW;
         //      printf("CW c=(%f, %f) a0=%f° a1=%f°\n", cx, cy, a0/ME_SURFACE_PI*180.0f, a1/ME_SURFACE_PI*180.0f);
     } else {
         cx = x1 + dx0 * d + -dy0 * radius;
         cy = y1 + dy0 * d + dx0 * radius;
-        a0 = ME_surface___atan2f(-dx0, dy0);
-        a1 = ME_surface___atan2f(dx1, -dy1);
+        a0 = ME_surface_impl_atan2f(-dx0, dy0);
+        a1 = ME_surface_impl_atan2f(dx1, -dy1);
         dir = ME_SURFACE_CCW;
         //      printf("CCW c=(%f, %f) a0=%f° a1=%f°\n", cx, cy, a0/ME_SURFACE_PI*180.0f, a1/ME_SURFACE_PI*180.0f);
     }
@@ -1920,12 +1920,12 @@ void ME_surface_ArcTo(MEsurface_context* ctx, float x1, float y1, float x2, floa
 
 void ME_surface_ClosePath(MEsurface_context* ctx) {
     float vals[] = {ME_SURFACE_CLOSE};
-    ME_surface___appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
+    ME_surface_impl_appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
 }
 
 void ME_surface_PathWinding(MEsurface_context* ctx, int dir) {
     float vals[] = {ME_SURFACE_WINDING, (float)dir};
-    ME_surface___appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
+    ME_surface_impl_appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
 }
 
 void ME_surface_Arc(MEsurface_context* ctx, float cx, float cy, float r, float a0, float a1, int dir) {
@@ -1939,13 +1939,13 @@ void ME_surface_Arc(MEsurface_context* ctx, float cx, float cy, float r, float a
     // Clamp angles
     da = a1 - a0;
     if (dir == ME_SURFACE_CW) {
-        if (ME_surface___absf(da) >= ME_SURFACE_PI * 2) {
+        if (ME_surface_impl_absf(da) >= ME_SURFACE_PI * 2) {
             da = ME_SURFACE_PI * 2;
         } else {
             while (da < 0.0f) da += ME_SURFACE_PI * 2;
         }
     } else {
-        if (ME_surface___absf(da) >= ME_SURFACE_PI * 2) {
+        if (ME_surface_impl_absf(da) >= ME_SURFACE_PI * 2) {
             da = -ME_SURFACE_PI * 2;
         } else {
             while (da > 0.0f) da -= ME_SURFACE_PI * 2;
@@ -1953,17 +1953,17 @@ void ME_surface_Arc(MEsurface_context* ctx, float cx, float cy, float r, float a
     }
 
     // Split arc into max 90 degree segments.
-    ndivs = ME_surface___maxi(1, ME_surface___mini((int)(ME_surface___absf(da) / (ME_SURFACE_PI * 0.5f) + 0.5f), 5));
+    ndivs = ME_surface_impl_maxi(1, ME_surface_impl_mini((int)(ME_surface_impl_absf(da) / (ME_SURFACE_PI * 0.5f) + 0.5f), 5));
     hda = (da / (float)ndivs) / 2.0f;
-    kappa = ME_surface___absf(4.0f / 3.0f * (1.0f - ME_surface___cosf(hda)) / ME_surface___sinf(hda));
+    kappa = ME_surface_impl_absf(4.0f / 3.0f * (1.0f - ME_surface_impl_cosf(hda)) / ME_surface_impl_sinf(hda));
 
     if (dir == ME_SURFACE_CCW) kappa = -kappa;
 
     nvals = 0;
     for (i = 0; i <= ndivs; i++) {
         a = a0 + da * (i / (float)ndivs);
-        dx = ME_surface___cosf(a);
-        dy = ME_surface___sinf(a);
+        dx = ME_surface_impl_cosf(a);
+        dy = ME_surface_impl_sinf(a);
         x = cx + dx * r;
         y = cy + dy * r;
         tanx = -dy * r * kappa;
@@ -1988,12 +1988,12 @@ void ME_surface_Arc(MEsurface_context* ctx, float cx, float cy, float r, float a
         ptany = tany;
     }
 
-    ME_surface___appendCommands(ctx, vals, nvals);
+    ME_surface_impl_appendCommands(ctx, vals, nvals);
 }
 
 void ME_surface_Rect(MEsurface_context* ctx, float x, float y, float w, float h) {
     float vals[] = {ME_SURFACE_MOVETO, x, y, ME_SURFACE_LINETO, x, y + h, ME_SURFACE_LINETO, x + w, y + h, ME_SURFACE_LINETO, x + w, y, ME_SURFACE_CLOSE};
-    ME_surface___appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
+    ME_surface_impl_appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
 }
 
 void ME_surface_RoundedRect(MEsurface_context* ctx, float x, float y, float w, float h, float r) { ME_surface_RoundedRectVarying(ctx, x, y, w, h, r, r, r, r); }
@@ -2003,12 +2003,12 @@ void ME_surface_RoundedRectVarying(MEsurface_context* ctx, float x, float y, flo
         ME_surface_Rect(ctx, x, y, w, h);
         return;
     } else {
-        float halfw = ME_surface___absf(w) * 0.5f;
-        float halfh = ME_surface___absf(h) * 0.5f;
-        float rxBL = ME_surface___minf(radBottomLeft, halfw) * ME_surface___signf(w), ryBL = ME_surface___minf(radBottomLeft, halfh) * ME_surface___signf(h);
-        float rxBR = ME_surface___minf(radBottomRight, halfw) * ME_surface___signf(w), ryBR = ME_surface___minf(radBottomRight, halfh) * ME_surface___signf(h);
-        float rxTR = ME_surface___minf(radTopRight, halfw) * ME_surface___signf(w), ryTR = ME_surface___minf(radTopRight, halfh) * ME_surface___signf(h);
-        float rxTL = ME_surface___minf(radTopLeft, halfw) * ME_surface___signf(w), ryTL = ME_surface___minf(radTopLeft, halfh) * ME_surface___signf(h);
+        float halfw = ME_surface_impl_absf(w) * 0.5f;
+        float halfh = ME_surface_impl_absf(h) * 0.5f;
+        float rxBL = ME_surface_impl_minf(radBottomLeft, halfw) * ME_surface_impl_signf(w), ryBL = ME_surface_impl_minf(radBottomLeft, halfh) * ME_surface_impl_signf(h);
+        float rxBR = ME_surface_impl_minf(radBottomRight, halfw) * ME_surface_impl_signf(w), ryBR = ME_surface_impl_minf(radBottomRight, halfh) * ME_surface_impl_signf(h);
+        float rxTR = ME_surface_impl_minf(radTopRight, halfw) * ME_surface_impl_signf(w), ryTR = ME_surface_impl_minf(radTopRight, halfh) * ME_surface_impl_signf(h);
+        float rxTL = ME_surface_impl_minf(radTopLeft, halfw) * ME_surface_impl_signf(w), ryTL = ME_surface_impl_minf(radTopLeft, halfh) * ME_surface_impl_signf(h);
         float vals[] = {ME_SURFACE_MOVETO,
                         x,
                         y + ryTL,
@@ -2053,7 +2053,7 @@ void ME_surface_RoundedRectVarying(MEsurface_context* ctx, float x, float y, flo
                         x,
                         y + ryTL,
                         ME_SURFACE_CLOSE};
-        ME_surface___appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
+        ME_surface_impl_appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
     }
 }
 
@@ -2090,7 +2090,7 @@ void ME_surface_Ellipse(MEsurface_context* ctx, float cx, float cy, float rx, fl
                     cx - rx,
                     cy,
                     ME_SURFACE_CLOSE};
-    ME_surface___appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
+    ME_surface_impl_appendCommands(ctx, vals, ME_SURFACE_COUNTOF(vals));
 }
 
 void ME_surface_Circle(MEsurface_context* ctx, float cx, float cy, float r) { ME_surface_Ellipse(ctx, cx, cy, r, r); }
@@ -2115,16 +2115,16 @@ void ME_surface_DebugDumpPathCache(MEsurface_context* ctx) {
 }
 
 void ME_surface_Fill(MEsurface_context* ctx) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     const MEsurface_path* path;
     MEsurface_paint fillPaint = state->fill;
     int i;
 
-    ME_surface___flattenPaths(ctx);
+    ME_surface_impl_flattenPaths(ctx);
     if (ctx->params.edgeAntiAlias && state->shapeAntiAlias)
-        ME_surface___expandFill(ctx, ctx->fringeWidth, ME_SURFACE_MITER, 2.4f);
+        ME_surface_impl_expandFill(ctx, ctx->fringeWidth, ME_SURFACE_MITER, 2.4f);
     else
-        ME_surface___expandFill(ctx, 0.0f, ME_SURFACE_MITER, 2.4f);
+        ME_surface_impl_expandFill(ctx, 0.0f, ME_SURFACE_MITER, 2.4f);
 
     // Apply global alpha
     fillPaint.innerColor.a *= state->alpha;
@@ -2142,9 +2142,9 @@ void ME_surface_Fill(MEsurface_context* ctx) {
 }
 
 void ME_surface_Stroke(MEsurface_context* ctx) {
-    MEsurface_state* state = ME_surface___getState(ctx);
-    float scale = ME_surface___getAverageScale(state->xform);
-    float strokeWidth = ME_surface___clampf(state->strokeWidth * scale, 0.0f, 200.0f);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
+    float scale = ME_surface_impl_getAverageScale(state->xform);
+    float strokeWidth = ME_surface_impl_clampf(state->strokeWidth * scale, 0.0f, 200.0f);
     MEsurface_paint strokePaint = state->stroke;
     const MEsurface_path* path;
     int i;
@@ -2152,7 +2152,7 @@ void ME_surface_Stroke(MEsurface_context* ctx) {
     if (strokeWidth < ctx->fringeWidth) {
         // If the stroke width is less than pixel size, use alpha to emulate coverage.
         // Since coverage is area, scale by alpha*alpha.
-        float alpha = ME_surface___clampf(strokeWidth / ctx->fringeWidth, 0.0f, 1.0f);
+        float alpha = ME_surface_impl_clampf(strokeWidth / ctx->fringeWidth, 0.0f, 1.0f);
         strokePaint.innerColor.a *= alpha * alpha;
         strokePaint.outerColor.a *= alpha * alpha;
         strokeWidth = ctx->fringeWidth;
@@ -2162,12 +2162,12 @@ void ME_surface_Stroke(MEsurface_context* ctx) {
     strokePaint.innerColor.a *= state->alpha;
     strokePaint.outerColor.a *= state->alpha;
 
-    ME_surface___flattenPaths(ctx);
+    ME_surface_impl_flattenPaths(ctx);
 
     if (ctx->params.edgeAntiAlias && state->shapeAntiAlias)
-        ME_surface___expandStroke(ctx, strokeWidth * 0.5f, ctx->fringeWidth, state->lineCap, state->lineJoin, state->miterLimit);
+        ME_surface_impl_expandStroke(ctx, strokeWidth * 0.5f, ctx->fringeWidth, state->lineCap, state->lineJoin, state->miterLimit);
     else
-        ME_surface___expandStroke(ctx, strokeWidth * 0.5f, 0.0f, state->lineCap, state->lineJoin, state->miterLimit);
+        ME_surface_impl_expandStroke(ctx, strokeWidth * 0.5f, 0.0f, state->lineCap, state->lineJoin, state->miterLimit);
 
     ctx->params.renderStroke(ctx->params.userPtr, &strokePaint, state->compositeOperation, &state->scissor, ctx->fringeWidth, strokeWidth, ctx->cache->paths, ctx->cache->npaths);
 
@@ -2210,45 +2210,45 @@ void ME_surface_ResetFallbackFonts(MEsurface_context* ctx, const char* baseFont)
 
 // State setting
 void ME_surface_FontSize(MEsurface_context* ctx, float size) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->fontSize = size;
 }
 
 void ME_surface_FontBlur(MEsurface_context* ctx, float blur) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->fontBlur = blur;
 }
 
 void ME_surface_TextLetterSpacing(MEsurface_context* ctx, float spacing) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->letterSpacing = spacing;
 }
 
 void ME_surface_TextLineHeight(MEsurface_context* ctx, float lineHeight) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->lineHeight = lineHeight;
 }
 
 void ME_surface_TextAlign(MEsurface_context* ctx, int align) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->textAlign = align;
 }
 
 void ME_surface_FontFaceId(MEsurface_context* ctx, int font) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->fontId = font;
 }
 
 void ME_surface_FontFace(MEsurface_context* ctx, const char* font) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     state->fontId = fonsGetFontByName(ctx->fs, font);
 }
 
-static float ME_surface___quantize(float a, float d) { return ((int)(a / d + 0.5f)) * d; }
+static float ME_surface_impl_quantize(float a, float d) { return ((int)(a / d + 0.5f)) * d; }
 
-static float ME_surface___getFontScale(MEsurface_state* state) { return ME_surface___minf(ME_surface___quantize(ME_surface___getAverageScale(state->xform), 0.01f), 4.0f); }
+static float ME_surface_impl_getFontScale(MEsurface_state* state) { return ME_surface_impl_minf(ME_surface_impl_quantize(ME_surface_impl_getAverageScale(state->xform), 0.01f), 4.0f); }
 
-static void ME_surface___flushTextTexture(MEsurface_context* ctx) {
+static void ME_surface_impl_flushTextTexture(MEsurface_context* ctx) {
     int dirty[4];
 
     if (fonsValidateTexture(ctx->fs, dirty)) {
@@ -2266,9 +2266,9 @@ static void ME_surface___flushTextTexture(MEsurface_context* ctx) {
     }
 }
 
-static int ME_surface___allocTextAtlas(MEsurface_context* ctx) {
+static int ME_surface_impl_allocTextAtlas(MEsurface_context* ctx) {
     int iw, ih;
-    ME_surface___flushTextTexture(ctx);
+    ME_surface_impl_flushTextTexture(ctx);
     if (ctx->fontImageIdx >= ME_SURFACE_MAX_FONTIMAGES - 1) return 0;
     // if next fontImage already have a texture
     if (ctx->fontImages[ctx->fontImageIdx + 1] != 0)
@@ -2287,8 +2287,8 @@ static int ME_surface___allocTextAtlas(MEsurface_context* ctx) {
     return 1;
 }
 
-static void ME_surface___renderText(MEsurface_context* ctx, MEsurface_vertex* verts, int nverts) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+static void ME_surface_impl_renderText(MEsurface_context* ctx, MEsurface_vertex* verts, int nverts) {
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     MEsurface_paint paint = state->fill;
 
     // the<engine>().eng()-> triangles.
@@ -2304,21 +2304,21 @@ static void ME_surface___renderText(MEsurface_context* ctx, MEsurface_vertex* ve
     ctx->textTriCount += nverts / 3;
 }
 
-static int ME_surface___isTransformFlipped(const float* xform) {
+static int ME_surface_impl_isTransformFlipped(const float* xform) {
     float det = xform[0] * xform[3] - xform[2] * xform[1];
     return (det < 0);
 }
 
 float ME_surface_Text(MEsurface_context* ctx, float x, float y, const char* string, const char* end) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     FONStextIter iter, prevIter;
     FONSquad q;
     MEsurface_vertex* verts;
-    float scale = ME_surface___getFontScale(state) * ctx->devicePxRatio;
+    float scale = ME_surface_impl_getFontScale(state) * ctx->devicePxRatio;
     float invscale = 1.0f / scale;
     int cverts = 0;
     int nverts = 0;
-    int isFlipped = ME_surface___isTransformFlipped(state->xform);
+    int isFlipped = ME_surface_impl_isTransformFlipped(state->xform);
 
     if (end == NULL) end = string + strlen(string);
 
@@ -2330,8 +2330,8 @@ float ME_surface_Text(MEsurface_context* ctx, float x, float y, const char* stri
     fonsSetAlign(ctx->fs, state->textAlign);
     fonsSetFont(ctx->fs, state->fontId);
 
-    cverts = ME_surface___maxi(2, (int)(end - string)) * 6;  // conservative estimate.
-    verts = ME_surface___allocTempVerts(ctx, cverts);
+    cverts = ME_surface_impl_maxi(2, (int)(end - string)) * 6;  // conservative estimate.
+    verts = ME_surface_impl_allocTempVerts(ctx, cverts);
     if (verts == NULL) return x;
 
     fonsTextIterInit(ctx->fs, &iter, x * scale, y * scale, string, end, FONS_GLYPH_BITMAP_REQUIRED);
@@ -2340,10 +2340,10 @@ float ME_surface_Text(MEsurface_context* ctx, float x, float y, const char* stri
         float c[4 * 2];
         if (iter.prevGlyphIndex == -1) {  // can not retrieve glyph?
             if (nverts != 0) {
-                ME_surface___renderText(ctx, verts, nverts);
+                ME_surface_impl_renderText(ctx, verts, nverts);
                 nverts = 0;
             }
-            if (!ME_surface___allocTextAtlas(ctx)) break;  // no memory :(
+            if (!ME_surface_impl_allocTextAtlas(ctx)) break;  // no memory :(
             iter = prevIter;
             fonsTextIterNext(ctx->fs, &iter, &q);  // try again
             if (iter.prevGlyphIndex == -1)         // still can not find glyph?
@@ -2367,31 +2367,31 @@ float ME_surface_Text(MEsurface_context* ctx, float x, float y, const char* stri
         ME_surface_TransformPoint(&c[6], &c[7], state->xform, q.x0 * invscale, q.y1 * invscale);
         // Create triangles
         if (nverts + 6 <= cverts) {
-            ME_surface___vset(&verts[nverts], c[0], c[1], q.s0, q.t0);
+            ME_surface_impl_vset(&verts[nverts], c[0], c[1], q.s0, q.t0);
             nverts++;
-            ME_surface___vset(&verts[nverts], c[4], c[5], q.s1, q.t1);
+            ME_surface_impl_vset(&verts[nverts], c[4], c[5], q.s1, q.t1);
             nverts++;
-            ME_surface___vset(&verts[nverts], c[2], c[3], q.s1, q.t0);
+            ME_surface_impl_vset(&verts[nverts], c[2], c[3], q.s1, q.t0);
             nverts++;
-            ME_surface___vset(&verts[nverts], c[0], c[1], q.s0, q.t0);
+            ME_surface_impl_vset(&verts[nverts], c[0], c[1], q.s0, q.t0);
             nverts++;
-            ME_surface___vset(&verts[nverts], c[6], c[7], q.s0, q.t1);
+            ME_surface_impl_vset(&verts[nverts], c[6], c[7], q.s0, q.t1);
             nverts++;
-            ME_surface___vset(&verts[nverts], c[4], c[5], q.s1, q.t1);
+            ME_surface_impl_vset(&verts[nverts], c[4], c[5], q.s1, q.t1);
             nverts++;
         }
     }
 
     // TODO: add back-end bit to do this just once per frame.
-    ME_surface___flushTextTexture(ctx);
+    ME_surface_impl_flushTextTexture(ctx);
 
-    ME_surface___renderText(ctx, verts, nverts);
+    ME_surface_impl_renderText(ctx, verts, nverts);
 
     return iter.nextx / scale;
 }
 
 void ME_surface_TextBox(MEsurface_context* ctx, float x, float y, float breakRowWidth, const char* string, const char* end) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     MEsurface_textRow rows[2];
     int nrows = 0, i;
     int oldAlign = state->textAlign;
@@ -2423,8 +2423,8 @@ void ME_surface_TextBox(MEsurface_context* ctx, float x, float y, float breakRow
 }
 
 int ME_surface_TextGlyphPositions(MEsurface_context* ctx, float x, float y, const char* string, const char* end, MEsurface_glyphPosition* positions, int maxPositions) {
-    MEsurface_state* state = ME_surface___getState(ctx);
-    float scale = ME_surface___getFontScale(state) * ctx->devicePxRatio;
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
+    float scale = ME_surface_impl_getFontScale(state) * ctx->devicePxRatio;
     float invscale = 1.0f / scale;
     FONStextIter iter, prevIter;
     FONSquad q;
@@ -2445,15 +2445,15 @@ int ME_surface_TextGlyphPositions(MEsurface_context* ctx, float x, float y, cons
     fonsTextIterInit(ctx->fs, &iter, x * scale, y * scale, string, end, FONS_GLYPH_BITMAP_OPTIONAL);
     prevIter = iter;
     while (fonsTextIterNext(ctx->fs, &iter, &q)) {
-        if (iter.prevGlyphIndex < 0 && ME_surface___allocTextAtlas(ctx)) {  // can not retrieve glyph?
+        if (iter.prevGlyphIndex < 0 && ME_surface_impl_allocTextAtlas(ctx)) {  // can not retrieve glyph?
             iter = prevIter;
             fonsTextIterNext(ctx->fs, &iter, &q);  // try again
         }
         prevIter = iter;
         positions[npos].str = iter.str;
         positions[npos].x = iter.x * invscale;
-        positions[npos].minx = ME_surface___minf(iter.x, q.x0) * invscale;
-        positions[npos].maxx = ME_surface___maxf(iter.nextx, q.x1) * invscale;
+        positions[npos].minx = ME_surface_impl_minf(iter.x, q.x0) * invscale;
+        positions[npos].maxx = ME_surface_impl_maxf(iter.nextx, q.x1) * invscale;
         npos++;
         if (npos >= maxPositions) break;
     }
@@ -2469,8 +2469,8 @@ enum MEsurface_codepointType {
 };
 
 int ME_surface_TextBreakLines(MEsurface_context* ctx, const char* string, const char* end, float breakRowWidth, MEsurface_textRow* rows, int maxRows) {
-    MEsurface_state* state = ME_surface___getState(ctx);
-    float scale = ME_surface___getFontScale(state) * ctx->devicePxRatio;
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
+    float scale = ME_surface_impl_getFontScale(state) * ctx->devicePxRatio;
     float invscale = 1.0f / scale;
     FONStextIter iter, prevIter;
     FONSquad q;
@@ -2508,7 +2508,7 @@ int ME_surface_TextBreakLines(MEsurface_context* ctx, const char* string, const 
     fonsTextIterInit(ctx->fs, &iter, 0, 0, string, end, FONS_GLYPH_BITMAP_OPTIONAL);
     prevIter = iter;
     while (fonsTextIterNext(ctx->fs, &iter, &q)) {
-        if (iter.prevGlyphIndex < 0 && ME_surface___allocTextAtlas(ctx)) {  // can not retrieve glyph?
+        if (iter.prevGlyphIndex < 0 && ME_surface_impl_allocTextAtlas(ctx)) {  // can not retrieve glyph?
             iter = prevIter;
             fonsTextIterNext(ctx->fs, &iter, &q);  // try again
         }
@@ -2666,8 +2666,8 @@ int ME_surface_TextBreakLines(MEsurface_context* ctx, const char* string, const 
 }
 
 float ME_surface_TextBounds(MEsurface_context* ctx, float x, float y, const char* string, const char* end, float* bounds) {
-    MEsurface_state* state = ME_surface___getState(ctx);
-    float scale = ME_surface___getFontScale(state) * ctx->devicePxRatio;
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
+    float scale = ME_surface_impl_getFontScale(state) * ctx->devicePxRatio;
     float invscale = 1.0f / scale;
     float width;
 
@@ -2692,9 +2692,9 @@ float ME_surface_TextBounds(MEsurface_context* ctx, float x, float y, const char
 }
 
 void ME_surface_TextBoxBounds(MEsurface_context* ctx, float x, float y, float breakRowWidth, const char* string, const char* end, float* bounds) {
-    MEsurface_state* state = ME_surface___getState(ctx);
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
     MEsurface_textRow rows[2];
-    float scale = ME_surface___getFontScale(state) * ctx->devicePxRatio;
+    float scale = ME_surface_impl_getFontScale(state) * ctx->devicePxRatio;
     float invscale = 1.0f / scale;
     int nrows = 0, i;
     int oldAlign = state->textAlign;
@@ -2737,11 +2737,11 @@ void ME_surface_TextBoxBounds(MEsurface_context* ctx, float x, float y, float br
                 dx = breakRowWidth - row->width;
             rminx = x + row->minx + dx;
             rmaxx = x + row->maxx + dx;
-            minx = ME_surface___minf(minx, rminx);
-            maxx = ME_surface___maxf(maxx, rmaxx);
+            minx = ME_surface_impl_minf(minx, rminx);
+            maxx = ME_surface_impl_maxf(maxx, rmaxx);
             // Vertical bounds.
-            miny = ME_surface___minf(miny, y + rminy);
-            maxy = ME_surface___maxf(maxy, y + rmaxy);
+            miny = ME_surface_impl_minf(miny, y + rminy);
+            maxy = ME_surface_impl_maxf(maxy, y + rmaxy);
 
             y += lineh * state->lineHeight;
         }
@@ -2759,8 +2759,8 @@ void ME_surface_TextBoxBounds(MEsurface_context* ctx, float x, float y, float br
 }
 
 void ME_surface_TextMetrics(MEsurface_context* ctx, float* ascender, float* descender, float* lineh) {
-    MEsurface_state* state = ME_surface___getState(ctx);
-    float scale = ME_surface___getFontScale(state) * ctx->devicePxRatio;
+    MEsurface_state* state = ME_surface_impl_getState(ctx);
+    float scale = ME_surface_impl_getFontScale(state) * ctx->devicePxRatio;
     float invscale = 1.0f / scale;
 
     if (state->fontId == FONS_INVALID) return;

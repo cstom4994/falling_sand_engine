@@ -287,7 +287,7 @@ float get_scrollable_height();
 void inspect_shader(const char *label, GLuint program);
 void inspect_vertex_array(const char *label, GLuint vao);
 
-#if 0
+#if 1
 
 class ME_debugdraw {
 
@@ -319,18 +319,18 @@ public:
     void AppendFlags(u32 flags) { m_drawFlags |= flags; }
     void ClearFlags(u32 flags) { m_drawFlags &= ~flags; }
 
-    PVec2 transform(const PVec2 &pt);
+    MEvec2 transform(const MEvec2 &pt);
 
-    void DrawPolygon(const PVec2 *vertices, i32 vertexCount, const MEcolor &color);
-    void DrawSolidPolygon(const PVec2 *vertices, i32 vertexCount, const MEcolor &color);
-    void DrawCircle(const PVec2 &center, float radius, const MEcolor &color);
-    void DrawSolidCircle(const PVec2 &center, float radius, const PVec2 &axis, const MEcolor &color);
-    void DrawSegment(const PVec2 &p1, const PVec2 &p2, const MEcolor &color);
-    void DrawTransform(const PTransform &xf);
-    void DrawPoint(const PVec2 &p, float size, const MEcolor &color);
+    void DrawPolygon(const MEvec2 *vertices, i32 vertexCount, const MEcolor &color);
+    void DrawSolidPolygon(const MEvec2 *vertices, i32 vertexCount, const MEcolor &color);
+    void DrawCircle(const MEvec2 &center, float radius, const MEcolor &color);
+    void DrawSolidCircle(const MEvec2 &center, float radius, const MEvec2 &axis, const MEcolor &color);
+    void DrawSegment(const MEvec2 &p1, const MEvec2 &p2, const MEcolor &color);
+    // void DrawTransform(const PTransform &xf);
+    void DrawPoint(const MEvec2 &p, float size, const MEcolor &color);
     void DrawString(int x, int y, const char *string, ...);
-    void DrawString(const PVec2 &p, const char *string, ...);
-    void DrawAABB(b2AABB *aabb, const MEcolor &color);
+    void DrawString(const MEvec2 &p, const char *string, ...);
+    void DrawAABB(MEvec4 *aabb, const MEcolor &color);
 };
 #endif
 

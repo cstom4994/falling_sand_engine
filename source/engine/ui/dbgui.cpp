@@ -41,9 +41,18 @@
 #include "game/player.hpp"
 #include "libs/glad/glad.h"
 
+#if defined(_WIN32)
+#include <CommCtrl.h>
+#include <Psapi.h>
+#include <Windows.h>
+#include <vcruntime_string.h>
+#endif
+
 #define INSPECTSHADER(_c) ::ME::inspect_shader(#_c, global.game->Iso.shaderworker->_c->shader)
 
 namespace ME {
+
+namespace meta_sr = meta::static_refl;
 
 extern int test_wang();
 
@@ -574,7 +583,7 @@ std::string console::execute(std::string cmd_name, std::queue<std::string> argum
     try {
         result = convar.Call(cmd_name, arguments);
         ret = OK;
-    } catch (std::exception &e) {
+    } catch (exception::exception_cvar &e) {
         METADOT_ERROR(std::format("[ConVar] exception thrown {0} : {1}", cmd_name, e.what()).c_str());
         ret = ERR;
     } catch (...) {
@@ -1088,6 +1097,9 @@ int profiler_draw_frame(profiler_frame *_data, void *_buffer, size_t _bufferSize
     }
 
     if (ImGui::BeginTabItem("内存")) {
+
+        static u32 check_timer;
+
         ImGui::Text("MemCurrentUsage: %.2f mb", ME_mem_current_usage_mb());
         ImGui::Text("MemTotalAllocated: %.2lf mb", (f64)(g_allocation_metrics.total_allocated / 1048576.0));
         ImGui::Text("MemTotalFree: %.2lf mb", (f64)(g_allocation_metrics.total_free / 1048576.0));
@@ -1115,9 +1127,36 @@ int profiler_draw_frame(profiler_frame *_data, void *_buffer, size_t _bufferSize
 
         ImGui::Text("ImGui MemoryUsage: %.2lf mb", ((f64)imgui_mem_usage / 1048576.0));
 
-        ImGui::Text("Test: %ld", global.game->Iso.world->layer2.capacity());
-        ImGui::Text("Test: %ld", global.game->Iso.world->tiles.capacity());
+        ImGui::Text("Test: %ld", global.game->Iso.world->real_layer2.capacity());
+        ImGui::Text("Test: %ld", global.game->Iso.world->real_tiles.capacity());
         ImGui::Text("Test: %ld", global.game->Iso.world->background.capacity());
+
+        static u64 virtualMemoryUsed;
+        static u64 physicalMemoryUsed;
+        static u64 peakVirtualMemoryUsed;
+        static u64 peakPhysicalMemoryUsed;
+
+        if (check_timer >= 200) {
+            HANDLE hProcess = GetCurrentProcess();
+            PROCESS_MEMORY_COUNTERS_EX pmc;
+
+            if (GetProcessMemoryInfo(hProcess, (PROCESS_MEMORY_COUNTERS *)&pmc, sizeof(pmc))) {
+                virtualMemoryUsed = pmc.PrivateUsage;
+                physicalMemoryUsed = pmc.WorkingSetSize;
+                peakVirtualMemoryUsed = pmc.PeakPagefileUsage;
+                peakPhysicalMemoryUsed = pmc.PeakWorkingSetSize;
+
+            } else {
+                std::cerr << "获取内存信息失败" << std::endl;
+            }
+        }
+
+        ImGui::Text("Virtual MemoryUsage: %.2lf mb", ((f64)virtualMemoryUsed / 1048576.0));
+        ImGui::Text("Real MemoryUsage: %.2lf mb", ((f64)physicalMemoryUsed / 1048576.0));
+        ImGui::Text("Virtual MemoryUsage Peak: %.2lf mb", ((f64)peakVirtualMemoryUsed / 1048576.0));
+        ImGui::Text("Real MemoryUsage Peak: %.2lf mb", ((f64)peakPhysicalMemoryUsed / 1048576.0));
+
+        check_timer++;
 
         ImGui::EndTabItem();
     }
@@ -1302,12 +1341,6 @@ inline void ImGuiInitStyle(const float pixel_ratio, const float dpi_scaling) {
 }
 
 #if defined(ME_IMM32)
-
-#if defined(_WIN32)
-#include <CommCtrl.h>
-#include <Windows.h>
-#include <vcruntime_string.h>
-#endif
 
 static int common_control_initialize() {
     HMODULE comctl32 = nullptr;
@@ -1521,6 +1554,7 @@ void dbgui::Update() {
 
     if (global.game->Iso.globaldef.draw_imgui_debug) {
         ImGui::ShowDemoWindow();
+        ShowAutoTestWindow();
     }
 
     for (auto &gui : dbgui_list) {
@@ -1529,58 +1563,56 @@ void dbgui::Update() {
 
     if (global.game->Iso.globaldef.ui_tweak) {
 
-        ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_None;
+        ImGuiViewport *viewport = ImGui::GetMainViewport();
 
-        const ImGuiViewport *viewport = ImGui::GetMainViewport();
-        static ImVec2 DockSpaceSize = {400.0f - 16.0f, viewport->Size.y - 16.0f};
-        ImGui::SetNextWindowSize(DockSpaceSize, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowPos({viewport->Size.x - DockSpaceSize.x - 8.0f, 8.0f}, ImGuiCond_FirstUseEver);
-        ImGui::SetNextWindowViewport(viewport->ID);
-
-        window_flags |= ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoSavedSettings;
-        dockspace_flags |= ImGuiDockNodeFlags_PassthruCentralNode;
-
-        ImGui::Begin("Engine", NULL, window_flags);
-        // DockSpaceSize = {ImGui::GetWindowSize().x, viewport->Size.y - 16.0f};
-        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
-            dockspace_id = ImGui::GetID("MyDockSpace");
-            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-        } else {
-            ME_ASSERT(0);
+        if (viewport) {
+            ImGui::SetNextWindowPos(viewport->Pos);
+            ImGui::SetNextWindowSize(viewport->Size);
+            ImGui::SetNextWindowViewport(viewport->ID);
         }
 
-        if (ImGui::BeginMainMenuBar()) {
+        const ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground;
 
-            ImGui::TextColored(ImVec4(0.19f, 1.f, 0.196f, 1.f), METADOT_NAME);
+        const ImGuiDockNodeFlags dock_node_flags = ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoDockingInCentralNode;
 
-            if (ImGui::BeginMenu("File")) {
-                ImGui::EndMenu();
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
+
+        if (ImGui::Begin("me_dock_space_window", nullptr, window_flags)) {
+            ImGui::DockSpace(ImGui::GetID("me_dock_space"), ImVec2(0.f, 0.f), dock_node_flags);
+
+            if (ImGui::BeginMenuBar()) {
+
+                ImGui::TextColored(ImVec4(0.19f, 1.f, 0.196f, 1.f), METADOT_NAME);
+
+                if (ImGui::BeginMenu("File")) {
+                    ImGui::EndMenu();
+                }
+
+                char fpsText[50];
+                snprintf(fpsText, sizeof(fpsText), "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, the<engine>().eng()->time.feelsLikeFps);
+                // ME_draw_text(fpsText, {255, 255, 255, 255}, the<engine>().eng()->windowWidth - ImGui::CalcTextSize(fpsText).x, 0);
+
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() - ImGui::CalcTextSize(fpsText).x - ImGui::GetScrollX());
+
+                ImGui::Text(fpsText);
+
+                ImGui::EndMenuBar();
             }
-
-            char fpsText[50];
-            snprintf(fpsText, sizeof(fpsText), "%.1f ms/frame (%.1f(%d) FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate, the<engine>().eng()->time.feelsLikeFps);
-            // ME_draw_text(fpsText, {255, 255, 255, 255}, the<engine>().eng()->windowWidth - ImGui::CalcTextSize(fpsText).x, 0);
-
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetColumnWidth() - ImGui::CalcTextSize(fpsText).x - ImGui::GetScrollX());
-
-            ImGui::Text(fpsText);
-
-            ImGui::EndMainMenuBar();
         }
-
         ImGui::End();
+
+        ImGui::PopStyleVar(3);
 
         ImGui::SetNextWindowDockID(dockspace_id, ImGuiCond_FirstUseEver);
         if (ImGui::Begin(LANG("ui_tweaks"))) {
             ImGui::BeginTabBar("ui_tweaks_tabbar");
 
             if (ImGui::BeginTabItem(LANG("ui_test"))) {
-                ImGui::BeginTabBar(CC("测试#haha"));
 
-                if (ImGui::BeginTabItem(CC("测试"))) {
-                    if (ImGui::Button("调用回溯")) print_callstack();
-                    ImGui::SameLine();
+                if (ImGui::Button("调用回溯")) print_callstack();
+                ImGui::SameLine();
 
 #if 0
 
@@ -1608,170 +1640,167 @@ void dbgui::Update() {
                         // global.game->GameIsolate_.world.get());
                     }
 #endif
-                    ImGui::SameLine();
-                    if (ImGui::Button("Audio")) {
-                        // static bool play= 1;
-                        // static ME_Audio *test_audio = ME_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
-                        // static Sound test_sound;
-                        // if (play) {
-                        //     ME_ASSERT(test_audio);
-                        //     // metadot_music_play(test_audio, 0.f);
-                        //     // ME_audio_destroy(test_audio);
-                        //     int err;
-                        //     test_sound = metadot_play_sound(test_audio, metadot_sound_params_defaults(), &err);
-                        //     play ^= 1;
-                        // } else {
-                        //     metadot_sound_set_is_paused(test_sound, true);
-                        //     play ^= 1;
-                        // }
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("StaticRefl")) {
+                ImGui::SameLine();
+                if (ImGui::Button("Audio")) {
+                    // static bool play= 1;
+                    // static ME_Audio *test_audio = ME_audio_load_wav(METADOT_RESLOC("data/assets/audio/02_c03_normal_135.wav"));
+                    // static Sound test_sound;
+                    // if (play) {
+                    //     ME_ASSERT(test_audio);
+                    //     // metadot_music_play(test_audio, 0.f);
+                    //     // ME_audio_destroy(test_audio);
+                    //     int err;
+                    //     test_sound = metadot_play_sound(test_audio, metadot_sound_params_defaults(), &err);
+                    //     play ^= 1;
+                    // } else {
+                    //     metadot_sound_set_is_paused(test_sound, true);
+                    //     play ^= 1;
+                    // }
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("StaticRefl")) {
 
-                        if (global.game->Iso.world == nullptr || !global.game->Iso.world->isPlayerInWorld()) {
-                        } else {
-                            using namespace ::ME::meta::static_refl;
+                    if (global.game->Iso.world == nullptr || !global.game->Iso.world->isPlayerInWorld()) {
+                    } else {
 
-                            TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t depth) {
-                                for (std::size_t i = 0; i < depth; i++) std::cout << "  ";
-                                std::cout << t.name << std::endl;
-                            });
+                        meta_sr::TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t depth) {
+                            for (std::size_t i = 0; i < depth; i++) std::cout << "  ";
+                            std::cout << t.name << std::endl;
+                        });
 
-                            std::cout << "[non DFS]" << std::endl;
-                            TypeInfo<Player>::fields.ForEach([&](auto field) {
-                                std::cout << field.name << std::endl;
-                                if (field.name == "holdtype" && TypeInfo<EnumPlayerHoldType>::fields.NameOfValue(field.value) == "hammer") {
-                                    std::cout << "   Passed" << std::endl;
-                                    // if constexpr (std::is_same<decltype(field.value), EnumPlayerHoldType>().value) {
-                                    //     std::cout << "   " << field.value << std::endl;
-                                    // }
-                                }
-                            });
-
-                            std::cout << "[DFS]" << std::endl;
-                            TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t) { t.fields.ForEach([](auto field) { std::cout << field.name << std::endl; }); });
-
-                            constexpr std::size_t fieldNum = TypeInfo<Player>::DFS_Acc(0, [](auto acc, auto, auto) { return acc + 1; });
-                            std::cout << "field number : " << fieldNum << std::endl;
-
-                            std::cout << "[var]" << std::endl;
-
-                            // std::cout << "[left]" << std::endl;
-                            // TypeInfo<Player>::ForEachVarOf(std::move(*global.game->GameIsolate_.world->player), [](auto field, auto &&var) {
-                            //     static_assert(std::is_rvalue_reference_v<decltype(var)>);
-                            //     std::cout << field.name << " : " << var << std::endl;
-                            // });
-                            // std::cout << "[right]" << std::endl;
-                            // TypeInfo<Player>::ForEachVarOf(*global.game->GameIsolate_.world->player, [](auto field, auto &&var) {
-                            //     static_assert(std::is_lvalue_reference_v<decltype(var)>);
-                            //     std::cout << field.name << " : " << var << std::endl;
-                            // });
-
-                            auto p = global.game->Iso.world->Reg().find_component<Player>(global.game->Iso.world->player);
-
-                            // Just for test
-                            Item *i3 = new Item();
-                            i3->setFlag(ItemFlags::ItemFlags_Hammer);
-                            i3->texture = global.game->Iso.texturepack.testHammer;
-                            // i3->image = R_CopyImageFromSurface(i3->surface);
-                            // R_SetImageFilter(i3->image, R_FILTER_NEAREST);
-                            i3->pivotX = 2;
-
-                            TypeInfo<Player>::fields.ForEach([&](auto field) {
-                                if constexpr (field.is_func) {
-                                    if (field.name != "setItemInHand") return;
-                                    if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(WorldEntity * we, Item * item, world * world) /* const */>(&Player::setItemInHand)))
-                                        (p->*(field.value))(global.game->Iso.world->Reg().find_component<WorldEntity>(global.game->Iso.world->player), i3, global.game->Iso.world.get());
-                                    // else if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(Item *item, World *world) /* const */>(&Player::setItemInHand)))
-                                    //     std::cout << (p.*(field.value))(1.f) << std::endl;
-                                    else
-                                        assert(false);
-                                }
-                            });
-
-                            // virtual
-
-                            std::cout << "[Virtual Bases]" << std::endl;
-                            constexpr auto vbs = TypeInfo<Player>::VirtualBases();
-                            vbs.ForEach([](auto info) { std::cout << info.name << std::endl; });
-
-                            std::cout << "[Tree]" << std::endl;
-                            TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t depth) {
-                                for (std::size_t i = 0; i < depth; i++) std::cout << "  ";
-                                std::cout << t.name << std::endl;
-                            });
-
-                            std::cout << "[field]" << std::endl;
-                            TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t) { t.fields.ForEach([](auto field) { std::cout << field.name << std::endl; }); });
-
-                            // std::cout << "[var]" << std::endl;
-
-                            // std::cout << "[var : left]" << std::endl;
-                            // TypeInfo<Player>::ForEachVarOf(std::move(p), [](auto field, auto &&var) {
-                            //     static_assert(std::is_rvalue_reference_v<decltype(var)>);
-                            //     std::cout << var << std::endl;
-                            // });
-                            // std::cout << "[var : right]" << std::endl;
-                            // TypeInfo<Player>::ForEachVarOf(p, [](auto field, auto &&var) {
-                            //     static_assert(std::is_lvalue_reference_v<decltype(var)>);
-                            //     std::cout << field.name << " : " << var << std::endl;
-                            // });
-                        }
-                    }
-                    ImGui::Checkbox("Profiler", &global.game->Iso.globaldef.draw_profiler);
-                    ImGui::Checkbox("控制台", &global.game->Iso.globaldef.draw_console);
-                    ImGui::Checkbox("包编辑器", &global.game->Iso.globaldef.draw_pack_editor);
-                    ImGui::Checkbox("脚本编辑器", &global.game->Iso.globaldef.draw_code_editor);
-                    if (ImGui::Button("Meo")) {
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("Wang")) {
-                        test_wang();
-                    }
-                    ImGui::SameLine();
-                    if (ImGui::Button("mdplot")) {
-                        extern int test_mdplot();
-                        test_mdplot();
-                    }
-                    if (ImGui::Button("Metadesk")) {
-
-                        // setup the global arena
-                        arena = MD_ArenaAlloc();
-
-                        MD_String8 example_code = MD_S8Lit(
-                                "@struct Vec3:\n"
-                                "{\n"
-                                "  x: F32,\n"
-                                "  y: F32,\n"
-                                "  z: F32,\n"
-                                "}\n\n");
-                        MD_ParseResult parse = MD_ParseWholeString(arena, MD_S8Lit("Generated Test Code"), example_code);
-
-                        // Iterate through each top-level node
-                        for (MD_EachNode(node, parse.node->first_child)) {
-                            printf("/ %.*s\n", MD_S8VArg(node->string));
-
-                            // Print the name of each of the node's tags
-                            for (MD_EachNode(tag, node->first_tag)) {
-                                printf("|-- Tag %.*s\n", MD_S8VArg(tag->string));
+                        std::cout << "[non DFS]" << std::endl;
+                        meta_sr::TypeInfo<Player>::fields.ForEach([&](auto field) {
+                            std::cout << field.name << std::endl;
+                            if (field.name == "holdtype" && meta_sr::TypeInfo<EnumPlayerHoldType>::fields.NameOfValue(field.value) == "hammer") {
+                                std::cout << "   Passed" << std::endl;
+                                // if constexpr (std::is_same<decltype(field.value), EnumPlayerHoldType>().value) {
+                                //     std::cout << "   " << field.value << std::endl;
+                                // }
                             }
+                        });
 
-                            // Print the name of each of the node's children
-                            for (MD_EachNode(child, node->first_child)) {
-                                printf("|-- Child %.*s\n", MD_S8VArg(child->string));
+                        std::cout << "[DFS]" << std::endl;
+                        meta_sr::TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t) { t.fields.ForEach([](auto field) { std::cout << field.name << std::endl; }); });
+
+                        constexpr std::size_t fieldNum = meta_sr::TypeInfo<Player>::DFS_Acc(0, [](auto acc, auto, auto) { return acc + 1; });
+                        std::cout << "field number : " << fieldNum << std::endl;
+
+                        std::cout << "[var]" << std::endl;
+
+                        // std::cout << "[left]" << std::endl;
+                        // TypeInfo<Player>::ForEachVarOf(std::move(*global.game->GameIsolate_.world->player), [](auto field, auto &&var) {
+                        //     static_assert(std::is_rvalue_reference_v<decltype(var)>);
+                        //     std::cout << field.name << " : " << var << std::endl;
+                        // });
+                        // std::cout << "[right]" << std::endl;
+                        // TypeInfo<Player>::ForEachVarOf(*global.game->GameIsolate_.world->player, [](auto field, auto &&var) {
+                        //     static_assert(std::is_lvalue_reference_v<decltype(var)>);
+                        //     std::cout << field.name << " : " << var << std::endl;
+                        // });
+
+                        auto p = global.game->Iso.world->Reg().find_component<Player>(global.game->Iso.world->player);
+
+                        // Just for test
+                        Item *i3 = new Item();
+                        i3->setFlag(ItemFlags::ItemFlags_Hammer);
+                        i3->texture = global.game->Iso.texturepack.testHammer;
+                        // i3->image = R_CopyImageFromSurface(i3->surface);
+                        // R_SetImageFilter(i3->image, R_FILTER_NEAREST);
+                        i3->pivotX = 2;
+
+                        meta_sr::TypeInfo<Player>::fields.ForEach([&](auto field) {
+                            if constexpr (field.is_func) {
+                                if (field.name != "setItemInHand") return;
+                                if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(WorldEntity * we, Item * item, world * world) /* const */>(&Player::setItemInHand)))
+                                    (p->*(field.value))(global.game->Iso.world->Reg().find_component<WorldEntity>(global.game->Iso.world->player), i3, global.game->Iso.world.get());
+                                // else if constexpr (field.ValueTypeIsSameWith(static_cast<void (Player::*)(Item *item, World *world) /* const */>(&Player::setItemInHand)))
+                                //     std::cout << (p.*(field.value))(1.f) << std::endl;
+                                else
+                                    assert(false);
                             }
+                        });
+
+                        // virtual
+
+                        std::cout << "[Virtual Bases]" << std::endl;
+                        constexpr auto vbs = meta_sr::TypeInfo<Player>::VirtualBases();
+                        vbs.ForEach([](auto info) { std::cout << info.name << std::endl; });
+
+                        std::cout << "[Tree]" << std::endl;
+                        meta_sr::TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t depth) {
+                            for (std::size_t i = 0; i < depth; i++) std::cout << "  ";
+                            std::cout << t.name << std::endl;
+                        });
+
+                        std::cout << "[field]" << std::endl;
+                        meta_sr::TypeInfo<Player>::DFS_ForEach([](auto t, std::size_t) { t.fields.ForEach([](auto field) { std::cout << field.name << std::endl; }); });
+
+                        // std::cout << "[var]" << std::endl;
+
+                        // std::cout << "[var : left]" << std::endl;
+                        // TypeInfo<Player>::ForEachVarOf(std::move(p), [](auto field, auto &&var) {
+                        //     static_assert(std::is_rvalue_reference_v<decltype(var)>);
+                        //     std::cout << var << std::endl;
+                        // });
+                        // std::cout << "[var : right]" << std::endl;
+                        // TypeInfo<Player>::ForEachVarOf(p, [](auto field, auto &&var) {
+                        //     static_assert(std::is_lvalue_reference_v<decltype(var)>);
+                        //     std::cout << field.name << " : " << var << std::endl;
+                        // });
+                    }
+                }
+                ImGui::Checkbox("Profiler", &global.game->Iso.globaldef.draw_profiler);
+                ImGui::Checkbox("控制台", &global.game->Iso.globaldef.draw_console);
+                ImGui::Checkbox("包编辑器", &global.game->Iso.globaldef.draw_pack_editor);
+                ImGui::Checkbox("脚本编辑器", &global.game->Iso.globaldef.draw_code_editor);
+                if (ImGui::Button("Meo")) {
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Wang")) {
+                    test_wang();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("mdplot")) {
+                    extern int test_mdplot();
+                    test_mdplot();
+                }
+                if (ImGui::Button("Memory")) {
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Metadesk")) {
+
+                    // setup the global arena
+                    arena = MD_ArenaAlloc();
+
+                    MD_String8 example_code = MD_S8Lit(
+                            R"mdesk(@struct Vec3:
+                            {
+                              x: F32,
+                              y: F32,
+                              z: F32,
+                            })mdesk");
+
+                    MD_ParseResult parse = MD_ParseWholeString(arena, MD_S8Lit("Generated Test Code"), example_code);
+
+                    // Iterate through each top-level node
+                    for (MD_EachNode(node, parse.node->first_child)) {
+                        printf("/ %.*s\n", MD_S8VArg(node->string));
+
+                        // Print the name of each of the node's tags
+                        for (MD_EachNode(tag, node->first_tag)) {
+                            printf("|-- Tag %.*s\n", MD_S8VArg(tag->string));
                         }
 
-                        // print the results
-                        MD_PrintDebugDumpFromNode(stdout, parse.node, MD_GenerateFlags_All);
+                        // Print the name of each of the node's children
+                        for (MD_EachNode(child, node->first_child)) {
+                            printf("|-- Child %.*s\n", MD_S8VArg(child->string));
+                        }
                     }
-                    ImGui::EndTabItem();
+
+                    // print the results
+                    MD_PrintDebugDumpFromNode(stdout, parse.node, MD_GenerateFlags_All);
                 }
-                if (ImGui::BeginTabItem(CC("自动序列测试"))) {
-                    ShowAutoTestWindow();
-                    ImGui::EndTabItem();
-                }
-                ImGui::EndTabBar();
+
                 ImGui::EndTabItem();
             }
 

@@ -683,7 +683,7 @@ static int ME_surface_gl_convertPaint(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLfra
     return 1;
 }
 
-static ME_SURFACE_GLfragUniforms* ME_surface___fragUniformPtr(ME_SURFACE_GLcontext* gl, int i);
+static ME_SURFACE_GLfragUniforms* ME_surface_impl_fragUniformPtr(ME_SURFACE_GLcontext* gl, int i);
 
 static void ME_surface_gl_setUniforms(ME_SURFACE_GLcontext* gl, int uniformOffset, int image) {
     ME_SURFACE_GLtexture* tex = NULL;
@@ -795,7 +795,7 @@ static void ME_surface_gl_stroke(ME_SURFACE_GLcontext* gl, ME_SURFACE_GLcall* ca
 
         glDisable(GL_STENCIL_TEST);
 
-        //      ME_surface_gl_convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset + gl->fragSize), paint, scissor, strokeWidth, fringe, 1.0f - 0.5f/255.0f);
+        //      ME_surface_gl_convertPaint(gl, ME_surface_impl_fragUniformPtr(gl, call->uniformOffset + gl->fragSize), paint, scissor, strokeWidth, fringe, 1.0f - 0.5f/255.0f);
 
     } else {
         ME_surface_gl_setUniforms(gl, call->uniformOffset, call->image);
@@ -1001,7 +1001,7 @@ static int ME_surface_gl_allocFragUniforms(ME_SURFACE_GLcontext* gl, int n) {
     return ret;
 }
 
-static ME_SURFACE_GLfragUniforms* ME_surface___fragUniformPtr(ME_SURFACE_GLcontext* gl, int i) { return (ME_SURFACE_GLfragUniforms*)&gl->uniforms[i]; }
+static ME_SURFACE_GLfragUniforms* ME_surface_impl_fragUniformPtr(ME_SURFACE_GLcontext* gl, int i) { return (ME_SURFACE_GLfragUniforms*)&gl->uniforms[i]; }
 
 static void ME_surface_gl_vset(MEsurface_vertex* vtx, float x, float y, float u, float v) {
     vtx->x = x;
@@ -1069,17 +1069,17 @@ static void ME_surface_gl_renderFill(void* uptr, MEsurface_paint* paint, MEsurfa
         call->uniformOffset = ME_surface_gl_allocFragUniforms(gl, 2);
         if (call->uniformOffset == -1) goto error;
         // Simple shader for stencil
-        frag = ME_surface___fragUniformPtr(gl, call->uniformOffset);
+        frag = ME_surface_impl_fragUniformPtr(gl, call->uniformOffset);
         memset(frag, 0, sizeof(*frag));
         frag->strokeThr = -1.0f;
         frag->type = ME_SURFACE_SVG_SHADER_SIMPLE;
         // Fill shader
-        ME_surface_gl_convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset + gl->fragSize), paint, scissor, fringe, fringe, -1.0f);
+        ME_surface_gl_convertPaint(gl, ME_surface_impl_fragUniformPtr(gl, call->uniformOffset + gl->fragSize), paint, scissor, fringe, fringe, -1.0f);
     } else {
         call->uniformOffset = ME_surface_gl_allocFragUniforms(gl, 1);
         if (call->uniformOffset == -1) goto error;
         // Fill shader
-        ME_surface_gl_convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset), paint, scissor, fringe, fringe, -1.0f);
+        ME_surface_gl_convertPaint(gl, ME_surface_impl_fragUniformPtr(gl, call->uniformOffset), paint, scissor, fringe, fringe, -1.0f);
     }
 
     return;
@@ -1127,14 +1127,14 @@ static void ME_surface_gl_renderStroke(void* uptr, MEsurface_paint* paint, MEsur
         call->uniformOffset = ME_surface_gl_allocFragUniforms(gl, 2);
         if (call->uniformOffset == -1) goto error;
 
-        ME_surface_gl_convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset), paint, scissor, strokeWidth, fringe, -1.0f);
-        ME_surface_gl_convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset + gl->fragSize), paint, scissor, strokeWidth, fringe, 1.0f - 0.5f / 255.0f);
+        ME_surface_gl_convertPaint(gl, ME_surface_impl_fragUniformPtr(gl, call->uniformOffset), paint, scissor, strokeWidth, fringe, -1.0f);
+        ME_surface_gl_convertPaint(gl, ME_surface_impl_fragUniformPtr(gl, call->uniformOffset + gl->fragSize), paint, scissor, strokeWidth, fringe, 1.0f - 0.5f / 255.0f);
 
     } else {
         // Fill shader
         call->uniformOffset = ME_surface_gl_allocFragUniforms(gl, 1);
         if (call->uniformOffset == -1) goto error;
-        ME_surface_gl_convertPaint(gl, ME_surface___fragUniformPtr(gl, call->uniformOffset), paint, scissor, strokeWidth, fringe, -1.0f);
+        ME_surface_gl_convertPaint(gl, ME_surface_impl_fragUniformPtr(gl, call->uniformOffset), paint, scissor, strokeWidth, fringe, -1.0f);
     }
 
     return;
@@ -1167,7 +1167,7 @@ static void ME_surface_gl_renderTriangles(void* uptr, MEsurface_paint* paint, ME
     // Fill shader
     call->uniformOffset = ME_surface_gl_allocFragUniforms(gl, 1);
     if (call->uniformOffset == -1) goto error;
-    frag = ME_surface___fragUniformPtr(gl, call->uniformOffset);
+    frag = ME_surface_impl_fragUniformPtr(gl, call->uniformOffset);
     ME_surface_gl_convertPaint(gl, frag, paint, scissor, 1.0f, fringe, -1.0f);
     frag->type = ME_SURFACE_SVG_SHADER_IMG;
 

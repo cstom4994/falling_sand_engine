@@ -2212,7 +2212,7 @@ public:
     const std::vector<type> &get_parameter_types() const { return parameter_types; }
     const type &get_result_type() const { return result_type; }
     result invoke(void *const args[]) const { return func(args); }
-    result invoke(std::initializer_list<void *> args) const { return invoke(args.begin()); }
+    result invoke(std::initializer_list<void *> args = {}) const { return invoke(args.begin()); }
 
 private:
     template <class... T>

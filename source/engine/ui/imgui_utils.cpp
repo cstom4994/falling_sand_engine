@@ -637,9 +637,7 @@ int imgui_md::span(MD_SPANTYPE type, void* d, bool e) {
     return 0;
 }
 
-int imgui_md::print(const std::string& str) {
-    return md_parse(str.c_str(), (MD_SIZE)str.size(), &m_md, this);
-}
+int imgui_md::print(const std::string& str) { return md_parse(str.c_str(), (MD_SIZE)str.size(), &m_md, this); }
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -724,21 +722,21 @@ void ImGuiHelper::file_browser(std::string& path) {
     ImGui::Separator();
 
     if (ImGui::Button("Parent Directory")) {
-        std::filesystem::path currentPath(path);
-        if (!currentPath.empty()) {
-            currentPath = currentPath.parent_path();
-            path = currentPath.string();
+        std::filesystem::path current_path(path);
+        if (!current_path.empty()) {
+            current_path = current_path.parent_path();
+            path = current_path.string();
         }
     }
 
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
-        const auto& entryPath = entry.path();
-        const auto& entryFilename = entryPath.filename().string();
+        const auto& entry_path = entry.path();
+        const auto& filename = entry_path.filename().string();
         if (entry.is_directory()) {
-            if (ImGui::Selectable((entryFilename + "/").c_str())) path = entryPath.string();
+            if (ImGui::Selectable((filename + "/").c_str())) path = entry_path.string();
 
         } else {
-            if (ImGui::Selectable(entryFilename.c_str())) path = entryPath.string();
+            if (ImGui::Selectable(filename.c_str())) path = entry_path.string();
         }
     }
 }

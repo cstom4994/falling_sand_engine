@@ -81,10 +81,9 @@ public:
 
         std::vector<std::vector<phy::Shape *>> polys2s = {};
 
-        std::vector<LoadChunkParams> toLoad;
-        std::vector<std::future<Chunk *>> readyToReadyToMerge;
-
-        std::deque<Chunk *> readyToMerge;  // deque, but std::vector should work
+        std::vector<LoadChunkParams> toLoad;                // 需要加载的区块的列表
+        std::vector<std::future<Chunk *>> toLoadAsyncList;  // 区块生成加载异步对象列表
+        std::deque<Chunk *> readyToMerge;                   // 区块合并列表
 
         std::vector<PlacedStructure> structures;
         std::vector<MEvec2> distributedPoints;
@@ -109,8 +108,8 @@ public:
 
     // 这里应该不同于区块类储存的材料实例
     // 这里储存的应该是世界改变的材料实例
-    std::vector<MaterialInstance> tiles{};
-    std::vector<MaterialInstance> layer2{};
+    std::vector<MaterialInstance> real_tiles{};
+    std::vector<MaterialInstance> real_layer2{};
 
     std::vector<u32> background{};
 
@@ -170,7 +169,8 @@ public:
     void updateChunkMesh(Chunk *chunk);
     void updateWorldMesh();
     void queueLoadChunk(int cx, int cy, bool populate, bool render);
-    Chunk *loadChunk(Chunk *, bool populate, bool render);
+    Chunk *loadChunk(LoadChunkParams para);
+    Chunk *loadChunk(Chunk *ch, bool populate, bool render);
     void unloadChunk(Chunk *ch);
     void writeChunkToDisk(Chunk *ch);
     void chunkSaveCache(Chunk *ch);

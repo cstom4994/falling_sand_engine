@@ -6,22 +6,13 @@
 
 #include "cpp_utils.hpp"
 #include "engine/core/basic_types.h"
+#include "engine/utils/exception.hpp"
 
 namespace ME {
 
 namespace lua_wrapper {
 class State;
 }
-
-class module_not_initialized final : public exception {
-public:
-    const char* what() const noexcept final { return "module not initialized"; }
-};
-
-class module_already_initialized final : public exception {
-public:
-    const char* what() const noexcept final { return "module already initialized"; }
-};
 
 template <typename BaseT>
 class module : private noncopyable {
@@ -40,7 +31,7 @@ public:
     template <typename ImplT, typename... Args>
     static ImplT& initialize(Args&&... args) {
         if (is_initialized()) {
-            throw module_already_initialized();
+            throw exception::module_already_initialized();
         }
         instance_ = create_scope<ImplT>(std::forward<Args>(args)...);
         return static_cast<ImplT&>(*instance_);
@@ -52,7 +43,7 @@ public:
 
     static BaseT& instance() {
         if (!is_initialized()) {
-            throw module_not_initialized();
+            throw exception::module_not_initialized();
         }
         return *instance_;
     }

@@ -40,7 +40,7 @@ Texture::Texture(C_Surface *sur, bool init_image) noexcept {
 
 Texture::~Texture() {
     if (m_image) R_FreeImage(m_image);
-    SDL_FreeSurface(m_surface);
+    // SDL_FreeSurface(m_surface);
 }
 
 void InitTexture(TexturePack &tex) {
