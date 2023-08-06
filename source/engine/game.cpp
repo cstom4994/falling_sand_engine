@@ -1921,7 +1921,7 @@ void game::tick() {
                         int wyd = wy + dir.second;
 
                         if (wxd < 0 || wyd < 0 || wxd >= Iso.world->width || wyd >= Iso.world->height) continue;
-                        if (Iso.world->real_tiles[wxd + wyd * Iso.world->width] == rmat) {
+                        if (Iso.world->real_tiles[wxd + wyd * Iso.world->width].id == rmat.id) {
                             cur->tiles[tx + ty * cur->matWidth] = Iso.world->real_tiles[wxd + wyd * Iso.world->width];
                             Iso.world->real_tiles[wxd + wyd * Iso.world->width] = Tiles_NOTHING;
                             Iso.world->dirty[wxd + wyd * Iso.world->width] = true;

@@ -2783,7 +2783,7 @@ void world::chunkSaveCache(Chunk *ch) {
             int tx = ch->x * CHUNK_W + loadZone.x + x;
             int ty = ch->y * CHUNK_H + loadZone.y + y;
             if (tx < 0 || tx >= width || ty < 0 || ty >= height) continue;
-            if (real_tiles[tx + ty * width] == Tiles_TEST_SOLID) continue;
+            if (real_tiles[tx + ty * width].id == Tiles_TEST_SOLID.id) continue;
             ch->tiles[x + y * CHUNK_W] = real_tiles[tx + ty * width];
             ch->layer2[x + y * CHUNK_W] = real_layer2[tx + ty * width];
             ch->background[x + y * CHUNK_W] = background[tx + ty * width];
